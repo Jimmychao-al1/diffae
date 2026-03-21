@@ -1,6 +1,6 @@
 from .base import *
 from dataclasses import dataclass
-
+import torch
 
 def space_timesteps(num_timesteps, section_counts):
     """
@@ -115,7 +115,7 @@ class SpacedDiffusionBeatGans(GaussianDiffusionBeatGans):
                              self.original_num_steps)
 
     def _scale_timesteps(self, t):
-        # Scaling is done by the wrapped model.
+       
         return t
 
 
@@ -145,10 +145,19 @@ class _WrappedModel:
             if self.rescale_timesteps:
                 new_ts = new_ts.float() * (1000.0 / self.original_num_steps)
             return new_ts
-
+        
         if t_cond is not None:
             # support t_cond
             t_cond = do(t_cond)
+        #print('t :', do(t))
+        # for calibration
+        #if kwargs.pop('_capture_calib', False):
+        #    try:
+        #        import QATcode.globalvar as globalvar
+        #        cond_val = kwargs.get('cond', None)
+        #        globalvar.appendInput((x, do(t), cond_val))
+        #    except Exception:
+        #        pass
 
         return self.model(x=x, t=do(t), t_cond=t_cond, **kwargs)
 

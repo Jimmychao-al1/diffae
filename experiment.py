@@ -24,6 +24,7 @@ from lmdb_writer import *
 from metrics import *
 from renderer import *
 
+EVAL_SAMPLES = 50_000
 
 class LitModel(pl.LightningModule):
     def __init__(self, conf: TrainConfig):
@@ -68,19 +69,23 @@ class LitModel(pl.LightningModule):
 
         if conf.pretrain is not None:
             print(f'loading pretrain ... {conf.pretrain.name}')
-            state = torch.load(conf.pretrain.path, map_location='cpu')
+            state = torch.load(conf.pretrain.path, map_location='cpu', weights_only=False)
             print('step:', state['global_step'])
             self.load_state_dict(state['state_dict'], strict=False)
 
         if conf.latent_infer_path is not None:
             print('loading latent stats ...')
-            state = torch.load(conf.latent_infer_path)
+            state = torch.load(conf.latent_infer_path, weights_only=False)
             self.conds = state['conds']
             self.register_buffer('conds_mean', state['conds_mean'][None, :])
             self.register_buffer('conds_std', state['conds_std'][None, :])
         else:
             self.conds_mean = None
             self.conds_std = None
+            
+        # GroupNorm 統計收集器
+        self.groupnorm_collector = None
+        self.groupnorm_stats_enabled = False
 
     def normalize(self, cond):
         cond = (cond - self.conds_mean.to(self.device)) / self.conds_std.to(
@@ -352,6 +357,10 @@ class LitModel(pl.LightningModule):
         given an input, calculate the loss function
         no optimization at this stage.
         """
+        print('training_step')
+        print('batch:', batch)
+        lr = self.optimizers().param_groups[0]['lr']
+        self.log("lr", lr, prog_bar=True)
         with amp.autocast(False):
             # batch size here is local!
             # forward
@@ -374,7 +383,8 @@ class LitModel(pl.LightningModule):
                 t, weight = self.T_sampler.sample(len(x_start), x_start.device)
                 losses = self.sampler.training_losses(model=self.model,
                                                       x_start=x_start,
-                                                      t=t)
+                                                      t=t,
+                                                      batch_idx=batch_idx)
             elif self.conf.train_mode.is_latent_diffusion():
                 """
                 training the latent variables!
@@ -404,6 +414,16 @@ class LitModel(pl.LightningModule):
                     if key in losses:
                         self.logger.experiment.add_scalar(
                             f'loss/{key}', losses[key], self.num_samples)
+            
+            if batch_idx % 200 == 0 and self.global_rank == 0:
+                print(f"[Grad Check @ Epoch {self.current_epoch} | Batch {batch_idx}]")
+                for name, param in self.model.named_parameters():
+                    if ("weight" in name or "bias" in name):
+                        if param.grad is not None:
+                            grad_norm = param.grad.norm().item()
+                            print(f"  {name}: grad_norm = {grad_norm:.6f}")
+                        else:
+                            print(f"  {name}: grad = None")
 
         return {'loss': loss}
 
@@ -427,7 +447,7 @@ class LitModel(pl.LightningModule):
                 imgs = None
             else:
                 imgs = batch['img']
-            self.log_sample(x_start=imgs)
+            #self.log_sample(x_start=imgs)
             self.evaluate_scores()
 
     def on_before_optimizer_step(self, optimizer: Optimizer,
@@ -735,16 +755,33 @@ class LitModel(pl.LightningModule):
                             'conds_std': conds_std,
                         }, save_path)
 
-        # evals those "fidXX"
+        # evals those "fidXX" with optional GroupNorm statistics
         """
         "fid<T>" = unconditional generation (conf.train_mode = diffusion).
             Note:   Diff. autoenc will still receive real images in this mode.
         "fid<T>,<T_latent>" = unconditional generation for latent models (conf.train_mode = latent_diffusion).
             Note:   Diff. autoenc will still NOT receive real images in this made.
                     but you need to make sure that the train_mode is latent_diffusion.
+        "groupnorm_fid<T>" = FID evaluation with GroupNorm statistics collection
+        "groupnorm_fid<T>,<T_latent>" = FID evaluation with GroupNorm statistics for latent models
         """
         for each in self.conf.eval_programs:
-            if each.startswith('fid'):
+            # 檢查是否需要收集 GroupNorm 統計
+            collect_groupnorm_stats = False
+            groupnorm_strategy = "per_group"  # 默認策略
+            
+            if each.startswith('groupnorm_fid'):
+                collect_groupnorm_stats = True
+                # 從配置中獲取策略，如果有的話
+                if hasattr(self.conf, 'groupnorm_strategy'):
+                    groupnorm_strategy = self.conf.groupnorm_strategy
+                    
+            if each.startswith('fid') or each.startswith('groupnorm_fid'):
+                # 解析參數
+                original_each = each
+                if each.startswith('groupnorm_fid'):
+                    each = each.replace('groupnorm_fid', 'fid')  # 移除前綴以便解析
+                    
                 m = re.match(r'fid\(([0-9]+),([0-9]+)\)', each)
                 clip_latent_noise = False
                 if m is not None:
@@ -752,6 +789,8 @@ class LitModel(pl.LightningModule):
                     T = int(m[1])
                     T_latent = int(m[2])
                     print(f'evaluating FID T = {T}... latent T = {T_latent}')
+                    if collect_groupnorm_stats:
+                        print(f'  + GroupNorm 統計收集 ({groupnorm_strategy})')
                 else:
                     m = re.match(r'fidclip\(([0-9]+),([0-9]+)\)', each)
                     if m is not None:
@@ -762,12 +801,20 @@ class LitModel(pl.LightningModule):
                         print(
                             f'evaluating FID (clip latent noise) T = {T}... latent T = {T_latent}'
                         )
+                        if collect_groupnorm_stats:
+                            print(f'  + GroupNorm 統計收集 ({groupnorm_strategy})')
                     else:
                         # evalT
                         _, T = each.split('fid')
                         T = int(T)
                         T_latent = None
                         print(f'evaluating FID T = {T}...')
+                        if collect_groupnorm_stats:
+                            print(f'  + GroupNorm 統計收集 ({groupnorm_strategy})')
+
+                # 啟用 GroupNorm 統計收集（如果需要）
+                if collect_groupnorm_stats:
+                    self.enable_groupnorm_stats(strategy=groupnorm_strategy)
 
                 self.train_dataloader()
                 sampler = self.conf._make_diffusion_conf(T=T).make_sampler()
@@ -778,7 +825,11 @@ class LitModel(pl.LightningModule):
                     latent_sampler = None
 
                 conf = self.conf.clone()
-                conf.eval_num_images = 50_000
+                conf.eval_num_images = EVAL_SAMPLES
+                print('conds_mean shape:', self.conds_mean.shape)
+                print('conds_std shape:', self.conds_std.shape)
+                
+                # 執行 FID 評估
                 score = evaluate_fid(
                     sampler,
                     self.ema_model,
@@ -791,11 +842,20 @@ class LitModel(pl.LightningModule):
                     conds_std=self.conds_std,
                     remove_cache=False,
                     clip_latent_noise=clip_latent_noise,
+                    T=T,
                 )
+                
+                
+                # 記錄分數
                 if T_latent is None:
-                    self.log(f'fid_ema_T{T}', score)
+                    log_name = f'fid_ema_T{T}'
+                    if collect_groupnorm_stats:
+                        log_name = f'groupnorm_fid_ema_T{T}'
+                    self.log(log_name, score)
                 else:
                     name = 'fid'
+                    if collect_groupnorm_stats:
+                        name = 'groupnorm_fid'
                     if clip_latent_noise:
                         name += '_clip'
                     name += f'_ema_T{T}_Tlatent{T_latent}'
@@ -853,6 +913,7 @@ class LitModel(pl.LightningModule):
                     self.log(f'{k}_inv_ema_T{T}', v)
 
 
+
 def ema(source, target, decay):
     source_dict = source.state_dict()
     target_dict = target.state_dict()
@@ -874,11 +935,18 @@ def is_time(num_samples, every, step_size):
     return num_samples - closest < step_size
 
 
-def train(conf: TrainConfig, gpus, nodes=1, mode: str = 'train'):
-    print('conf:', conf.name)
+def train(conf: TrainConfig, gpus, nodes=1, mode: str = 'train', eval_samples=None):
+    if eval_samples is not None:
+        global EVAL_SAMPLES
+        EVAL_SAMPLES = eval_samples
+        print(f'eval_samples: {EVAL_SAMPLES}')
+    #print('conf:', conf.name)
     # assert not (conf.fp16 and conf.grad_clip > 0
     #             ), 'pytorch lightning has bug with amp + gradient clipping'
     model = LitModel(conf)
+
+    #recorder = InputRecorder()
+    #recorder.register_hooks(model)
 
     if not os.path.exists(conf.logdir):
         os.makedirs(conf.logdir)
@@ -888,6 +956,7 @@ def train(conf: TrainConfig, gpus, nodes=1, mode: str = 'train'):
                                  every_n_train_steps=conf.save_every_samples //
                                  conf.batch_size_effective)
     checkpoint_path = f'{conf.logdir}/last.ckpt'
+    #checkpoint_path = f'{conf.logdir}/epoch=12-step=56249.ckpt'
     print('ckpt path:', checkpoint_path)
     if os.path.exists(checkpoint_path):
         resume = checkpoint_path
@@ -933,8 +1002,21 @@ def train(conf: TrainConfig, gpus, nodes=1, mode: str = 'train'):
         accumulate_grad_batches=conf.accum_batches,
         plugins=plugins,
     )
-
+    
+    
     if mode == 'train':
+        #state = torch.load(resume, map_location='cpu')
+        #model.load_state_dict(state['state_dict'], strict=False)
+        #for name, param in model.named_parameters():
+        #    parts = name.split('.')
+        #    if 'encoder' in parts:
+        #        param.requires_grad = True
+        #    else:
+        #        param.requires_grad = False
+        #from model.nn import quant_fp
+        #with torch.no_grad():
+        #    for p in model.parameters():
+        #        p.data = quant_fp(p.data, 3) 
         trainer.fit(model)
     elif mode == 'eval':
         # load the latest checkpoint
@@ -945,14 +1027,46 @@ def train(conf: TrainConfig, gpus, nodes=1, mode: str = 'train'):
         eval_path = conf.eval_path or checkpoint_path
         # conf.eval_num_images = 50
         print('loading from:', eval_path)
-        state = torch.load(eval_path, map_location='cpu')
+        state = torch.load(eval_path, map_location='cpu', weights_only=False)
         print('step:', state['global_step'])
         model.load_state_dict(state['state_dict'])
-        # trainer.fit(model)
+        # 🔥 應用固定統計值 GroupNorm（如果配置中啟用）
+        #if hasattr(conf, 'use_fixed_groupnorm') and conf.use_fixed_groupnorm:
+        #    print("🔄 應用固定統計值 GroupNorm...")
+        #    from fixed_groupnorm import create_fixed_groupnorm_model
+        #    
+        #    # 獲取模式設置，預設為 per_layer
+        #    groupnorm_mode = getattr(conf, 'fixed_groupnorm_mode', 'per_layer')
+        #    print(f"   模式: {groupnorm_mode}")
+        #    
+        #    # 替換 EMA 模型的 GroupNorm
+        #    if hasattr(model, 'ema_model'):
+        #        print("   替換 EMA 模型的 GroupNorm...")
+        #        model.ema_model = create_fixed_groupnorm_model(
+        #            model.ema_model,
+        #            mode=groupnorm_mode,
+        #            inplace=True
+        #        )
+        #        print("   ✅ EMA 模型 GroupNorm 替換完成")
+        #    
+        #    # 替換主模型的 GroupNorm
+        #    print("   替換主模型的 GroupNorm...")
+        #    model.model = create_fixed_groupnorm_model(
+        #        model.model,
+        #        mode=groupnorm_mode,
+        #        inplace=True
+        #    )
+        #    print("   ✅ 主模型 GroupNorm 替換完成")
+        #    
+        #    print("🎉 固定統計值 GroupNorm 應用完成！")
+
         out = trainer.test(model, dataloaders=dummy)
+
         # first (and only) loader
         out = out[0]
         print(out)
+        #recorder.save_histogram("input_stats")
+        #recorder.save_summary_stats(f"input_stats")
 
         if get_rank() == 0:
             # save to tensorboard

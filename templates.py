@@ -197,6 +197,7 @@ def ffhq128_autoenc_130M():
     conf.eval_ema_every_samples = 10_000_000
     conf.eval_every_samples = 10_000_000
     conf.name = 'ffhq128_autoenc_130M'
+    #conf.name = 'ffhq128_autoenc_130M_new'
     return conf
 
 

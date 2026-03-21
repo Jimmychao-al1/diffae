@@ -101,6 +101,7 @@ class GaussianDiffusionBeatGans:
                         model: Model,
                         x_start: th.Tensor,
                         t: th.Tensor,
+                        batch_idx = None,
                         model_kwargs=None,
                         noise: th.Tensor = None):
         """
@@ -119,7 +120,7 @@ class GaussianDiffusionBeatGans:
             model_kwargs = {}
         if noise is None:
             noise = th.randn_like(x_start)
-
+        print('t:', t)
         x_t = self.q_sample(x_start, t, noise=noise)
 
         terms = {'x_t': x_t}
@@ -167,7 +168,20 @@ class GaussianDiffusionBeatGans:
                 terms["mse"] = mean_flat((target - model_output).abs())
             else:
                 raise NotImplementedError()
-
+            
+            if batch_idx is not None and batch_idx % 100 == 0:
+                pred = model_output.detach()
+                tgt  = target.detach()
+                mse_val = F.mse_loss(pred, tgt).item()
+                cos_sim = F.cosine_similarity(
+                    pred.flatten(1), tgt.flatten(1), dim=1
+                ).mean().item()
+                print(f"[training_losses()] pred vs target")
+                print(f"  MSE     : {mse_val:.6f}")
+                print(f"  CosineS : {cos_sim:.6f}")
+                print(f"  pred    : mean={pred.mean().item():.4f}, std={pred.std().item():.4f}")
+                print(f"  target  : mean={tgt.mean().item():.4f}, std={tgt.std().item():.4f}")
+        
             if "vb" in terms:
                 # if learning the variance also use the vlb loss
                 terms["loss"] = terms["mse"] + terms["vb"]
@@ -186,10 +200,12 @@ class GaussianDiffusionBeatGans:
                x_start=None,
                clip_denoised=True,
                model_kwargs=None,
-               progress=False):
+               progress=False,
+               cache_scheduler=None):
         """
         Args:
             x_start: given for the autoencoder
+            cache_scheduler: Cache scheduler dict for caching layers
         """
         if model_kwargs is None:
             model_kwargs = {}
@@ -210,7 +226,8 @@ class GaussianDiffusionBeatGans:
                                          noise=noise,
                                          clip_denoised=clip_denoised,
                                          model_kwargs=model_kwargs,
-                                         progress=progress)
+                                         progress=progress,
+                                         cache_scheduler=cache_scheduler)
         else:
             raise NotImplementedError()
 
@@ -277,7 +294,9 @@ class GaussianDiffusionBeatGans:
                         t,
                         clip_denoised=True,
                         denoised_fn=None,
-                        model_kwargs=None):
+                        model_kwargs=None,
+                        cached_data=None,
+                        cached_scheduler=None):
         """
         Apply the model to get p(x_{t-1} | x_t), as well as a prediction of
         the initial x, x_0.
@@ -292,20 +311,28 @@ class GaussianDiffusionBeatGans:
             clip_denoised.
         :param model_kwargs: if not None, a dict of extra keyword arguments to
             pass to the model. This can be used for conditioning.
+        :param cached_data: Dict to store cached layer outputs
+        :param cached_scheduler: List indicating which layers should recompute
         :return: a dict with the following keys:
                  - 'mean': the model mean output.
                  - 'variance': the model variance output.
                  - 'log_variance': the log of 'variance'.
                  - 'pred_xstart': the prediction for x_0.
+                 - 'cached_data': updated cached_data dict (if caching enabled)
         """
         if model_kwargs is None:
             model_kwargs = {}
 
         B, C = x.shape[:2]
         assert t.shape == (B, )
+        
         with autocast(self.conf.fp16):
+            #model_kwargs['_capture_calib'] = True # for calibration
+            # 將 cache 相關參數作為顯式參數傳遞，而不是通過 model_kwargs
             model_forward = model.forward(x=x,
                                           t=self._scale_timesteps(t),
+                                          cached_data=cached_data,
+                                          cached_scheduler=cached_scheduler,
                                           **model_kwargs)
         model_output = model_forward.pred
 
@@ -352,13 +379,18 @@ class GaussianDiffusionBeatGans:
 
         assert (model_mean.shape == model_log_variance.shape ==
                 pred_xstart.shape == x.shape)
-        return {
+        result = {
             "mean": model_mean,
             "variance": model_variance,
             "log_variance": model_log_variance,
             "pred_xstart": pred_xstart,
             'model_forward': model_forward,
         }
+        
+        # cached_data 是通過引用傳遞的 mutable dict，model.forward() 的修改會直接反映
+        # 不需要額外操作
+        
+        return result
 
     def _predict_xstart_from_eps(self, x_t, t, eps):
         assert x_t.shape == eps.shape
@@ -397,6 +429,7 @@ class GaussianDiffusionBeatGans:
     def _scale_timesteps(self, t):
         if self.rescale_timesteps:
             # scale t to be maxed out at 1000 steps
+            print("rescale_timesteps")
             return t.float() * (1000.0 / self.num_timesteps)
         return t
 
@@ -591,12 +624,15 @@ class GaussianDiffusionBeatGans:
         cond_fn=None,
         model_kwargs=None,
         eta=0.0,
+        cached_data=None,
+        cached_scheduler=None,
     ):
         """
         Sample x_{t-1} from the model using DDIM.
 
         Same usage as p_sample().
         """
+        
         out = self.p_mean_variance(
             model,
             x,
@@ -604,8 +640,11 @@ class GaussianDiffusionBeatGans:
             clip_denoised=clip_denoised,
             denoised_fn=denoised_fn,
             model_kwargs=model_kwargs,
+            cached_data=cached_data,
+            cached_scheduler=cached_scheduler,
         )
         if cond_fn is not None:
+            print("cond_fn")
             out = self.condition_score(cond_fn,
                                        out,
                                        x,
@@ -725,6 +764,7 @@ class GaussianDiffusionBeatGans:
         device=None,
         progress=False,
         eta=0.0,
+        cache_scheduler=None,
     ):
         """
         Generate samples from the model using DDIM.
@@ -743,6 +783,7 @@ class GaussianDiffusionBeatGans:
                 device=device,
                 progress=progress,
                 eta=eta,
+                cache_scheduler=cache_scheduler,
         ):
             final = sample
         return final["sample"]
@@ -759,6 +800,7 @@ class GaussianDiffusionBeatGans:
         device=None,
         progress=False,
         eta=0.0,
+        cache_scheduler=None,
     ):
         """
         Use DDIM to sample from the model and yield intermediate samples from
@@ -781,14 +823,45 @@ class GaussianDiffusionBeatGans:
 
             indices = tqdm(indices)
 
-        for i in indices:
+        # 初始化 cache 相關變數
+        # 在 ddim_sample_loop_progressive 中建立 dict 用來儲存 cached 起來的 data
+        # 然後當作 function 參數傳遞給 forward，而非採用 kwargs
+        cached_data = {}  # 儲存 cached layer outputs 的 dict
+        activate_cache = cache_scheduler is not None
+        
+        # 確定 layer 順序（encoder -> middle -> decoder）
+        layer_keys = []
+        if activate_cache:
+            # encoder layers
+            encoder_keys = [k for k in sorted(cache_scheduler.keys()) if k.startswith('encoder_layer_')]
+            encoder_keys.sort(key=lambda x: int(x.split('_')[-1]))
+            layer_keys.extend(encoder_keys)
+            # middle layer
+            if 'middle_layer' in cache_scheduler:
+                layer_keys.append('middle_layer')
+            # decoder layers
+            decoder_keys = [k for k in sorted(cache_scheduler.keys()) if k.startswith('decoder_layer_')]
+            decoder_keys.sort(key=lambda x: int(x.split('_')[-1]))
+            layer_keys.extend(decoder_keys)
 
+        for i in indices:
+            #print(f"i: {i}")
             if isinstance(model_kwargs, list):
                 # index dependent model kwargs
                 # (T-1, ..., 0)
                 _kwargs = model_kwargs[i]
             else:
                 _kwargs = model_kwargs
+
+            # 生成 cached_scheduler 列表（每個 layer 在當前 timestep 是否需要重新計算）
+            cached_scheduler = None
+            if activate_cache:
+                cached_scheduler = []
+                for key in layer_keys:
+                    if i in cache_scheduler[key]:
+                        cached_scheduler.append(1)  # 需要重新計算
+                    else:
+                        cached_scheduler.append(0)  # 使用 cache
 
             t = th.tensor([i] * len(img), device=device)
             with th.no_grad():
@@ -801,8 +874,14 @@ class GaussianDiffusionBeatGans:
                     cond_fn=cond_fn,
                     model_kwargs=_kwargs,
                     eta=eta,
+                    cached_data=cached_data if activate_cache else None,
+                    cached_scheduler=cached_scheduler,
                 )
                 out['t'] = t
+                
+                # cached_data 是通過引用傳遞的 mutable dict，model.forward() 的修改會直接反映
+                # 不需要額外操作
+                
                 yield out
                 img = out["sample"]
 

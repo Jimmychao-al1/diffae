@@ -1,0 +1,903 @@
+/home/jimmy/anaconda3/envs/diffae_bw/lib/python3.10/site-packages/lightning_fabric/__init__.py:41: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+使用自動混合精度: torch.bfloat16
+[設定] Log 檔案已設為: QATcode/cache_method/L1_L2_cosine/logs/similarity_model_output_blocks_10.log
+2026-01-26 12:27:53,939 [INFO] Using 100 steps
+2026-01-26 12:27:53,939 [INFO] Using 50000 evaluation samples
+2026-01-26 12:27:53,939 [INFO] Cache enabled: False, method: Res, threshold: 0.1
+2026-01-26 12:27:53,939 [INFO] Quantitative analysis enabled: False, samples: 10
+2026-01-26 12:27:53,939 [INFO] Log file: QATcode/cache_method/L1_L2_cosine/logs/similarity_model_output_blocks_10.log
+2026-01-26 12:27:53,939 [INFO] ==================================================
+2026-01-26 12:27:53,939 [INFO] Diff-AE EfficientDM Step 7 : 生成圖片
+2026-01-26 12:27:53,939 [INFO] ==================================================
+2026-01-26 12:27:53,939 [INFO] 使用設備: cuda
+2026-01-26 12:27:53,939 [INFO] Using 100 steps
+2026-01-26 12:27:53,939 [INFO] Using 50000 evaluation samples
+2026-01-26 12:27:53,939 [INFO] Cache enabled: False, method: Res, threshold: 0.1
+2026-01-26 12:27:53,939 [INFO] Quantitative analysis enabled: False, samples: 10
+2026-01-26 12:27:53,939 [INFO] Log file: QATcode/cache_method/L1_L2_cosine/logs/similarity_model_output_blocks_10.log
+2026-01-26 12:27:53,939 [INFO] ==================================================
+2026-01-26 12:27:53,939 [INFO] Diff-AE EfficientDM Step 7 : 生成圖片
+2026-01-26 12:27:53,939 [INFO] ==================================================
+2026-01-26 12:27:53,939 [INFO] === 新功能狀態 ===
+2026-01-26 12:27:53,939 [INFO] 使用設備: cuda
+2026-01-26 12:27:53,939 [INFO] === 新功能狀態 ===
+2026-01-26 12:27:53,939 [INFO] 載入 Diff-AE 模型: checkpoints/ffhq128_autoenc_latent/last.ckpt
+2026-01-26 12:27:53,939 [INFO] 載入 Diff-AE 模型: checkpoints/ffhq128_autoenc_latent/last.ckpt
+Seed set to 0
+Model params: 174.19 M
+loading pretrain ... 130M
+step: 1019986
+loading latent stats ...
+2026-01-26 12:27:57,001 [INFO] Diff-AE 模型載入完成
+2026-01-26 12:27:57,001 [INFO] Diff-AE 模型載入完成
+2026-01-26 12:27:57,045 [INFO] 執行 'load_diffae_model' 完成，耗時: 3.11 秒
+2026-01-26 12:27:57,045 [INFO] ✅ Diff-AE 模型載入成功
+2026-01-26 12:27:57,045 [INFO] base_model.conf.train_mode: TrainMode.latent_diffusion
+2026-01-26 12:27:57,045 [INFO] === 創建 LoRA 量化模型 ===
+2026-01-26 12:27:57,045 [INFO] === 開始 UNet LoRA 量化改造 ===
+2026-01-26 12:27:57,045 [INFO] 執行 'load_diffae_model' 完成，耗時: 3.11 秒
+2026-01-26 12:27:57,045 [INFO] ✅ Diff-AE 模型載入成功
+2026-01-26 12:27:57,045 [INFO] base_model.conf.train_mode: TrainMode.latent_diffusion
+2026-01-26 12:27:57,045 [INFO] === 創建 LoRA 量化模型 ===
+2026-01-26 12:27:57,045 [INFO] === 開始 UNet LoRA 量化改造 ===
+2026-01-26 12:27:57,045 [INFO] 改造模組: time_embed
+2026-01-26 12:27:57,045 [INFO]   跳過量化特殊模組: 0
+2026-01-26 12:27:57,049 [INFO]   跳過量化特殊模組: 2
+2026-01-26 12:27:57,045 [INFO] 改造模組: time_embed
+2026-01-26 12:27:57,045 [INFO]   跳過量化特殊模組: 0
+2026-01-26 12:27:57,049 [INFO]   跳過量化特殊模組: 2
+2026-01-26 12:27:57,049 [INFO] 改造模組: input_blocks
+2026-01-26 12:27:57,049 [INFO] 改造模組: input_blocks
+2026-01-26 12:27:57,049 [INFO]   跳過量化特殊模組: 0
+2026-01-26 12:27:57,049 [INFO]   跳過量化特殊模組: 0
+2026-01-26 12:27:57,049 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,049 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,125 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,125 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,132 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,132 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,140 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,140 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,146 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,146 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,152 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,152 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,158 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,158 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,164 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,164 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,168 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,168 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,169 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,169 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,170 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,170 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,170 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,170 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,171 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,171 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,172 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,172 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,172 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,172 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,172 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,172 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,173 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,173 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,174 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,174 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,174 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,174 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,175 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,175 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,175 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,175 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,176 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,176 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,177 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,177 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,177 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,177 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,178 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,178 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,179 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,179 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,180 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,180 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,180 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,180 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,182 [INFO]   跳過量化 skip connection: skip_connection
+2026-01-26 12:27:57,182 [INFO]   跳過量化 skip connection: skip_connection
+2026-01-26 12:27:57,182 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,182 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,183 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,183 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,184 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,184 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,185 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,185 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,187 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,187 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,188 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,188 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,189 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,189 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,190 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,190 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,191 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,191 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,194 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,194 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,195 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,195 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,196 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,196 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,200 [INFO]   跳過量化 skip connection: skip_connection
+2026-01-26 12:27:57,200 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,200 [INFO]   跳過量化 skip connection: skip_connection
+2026-01-26 12:27:57,200 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,206 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,206 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,210 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,210 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,215 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,215 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,224 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,224 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,229 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,229 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,233 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,233 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,234 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,234 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,237 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,237 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,243 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,243 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,246 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,246 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,247 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,247 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,254 [INFO]   跳過量化 skip connection: skip_connection
+2026-01-26 12:27:57,254 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,254 [INFO]   跳過量化 skip connection: skip_connection
+2026-01-26 12:27:57,254 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,266 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,266 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,272 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,272 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,277 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,277 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,288 [INFO] 改造模組: middle_block
+2026-01-26 12:27:57,288 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,288 [INFO] 改造模組: middle_block
+2026-01-26 12:27:57,288 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,302 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,302 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,309 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,309 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,315 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,315 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,325 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,325 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,333 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,333 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,337 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,339 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,337 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,339 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,346 [INFO] 改造模組: output_blocks
+2026-01-26 12:27:57,346 [INFO] 改造模組: output_blocks
+2026-01-26 12:27:57,346 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,346 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,361 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,361 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,368 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,368 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,372 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,372 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,385 [INFO]   跳過量化 skip connection: skip_connection
+2026-01-26 12:27:57,385 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,385 [INFO]   跳過量化 skip connection: skip_connection
+2026-01-26 12:27:57,385 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,401 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,401 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,407 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,407 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,411 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,411 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,420 [INFO]   跳過量化 skip connection: skip_connection
+2026-01-26 12:27:57,421 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,420 [INFO]   跳過量化 skip connection: skip_connection
+2026-01-26 12:27:57,421 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,436 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,436 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,440 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,440 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,446 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,446 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,457 [INFO]   跳過量化 skip connection: skip_connection
+2026-01-26 12:27:57,457 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,457 [INFO]   跳過量化 skip connection: skip_connection
+2026-01-26 12:27:57,457 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,466 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,466 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,472 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,472 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,477 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,477 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,484 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,484 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,499 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,499 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,508 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,508 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,512 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,512 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,521 [INFO]   跳過量化 skip connection: skip_connection
+2026-01-26 12:27:57,521 [INFO]   跳過量化 skip connection: skip_connection
+2026-01-26 12:27:57,521 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,521 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,534 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,534 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,538 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,538 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,544 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,544 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,553 [INFO]   跳過量化 skip connection: skip_connection
+2026-01-26 12:27:57,553 [INFO]   跳過量化 skip connection: skip_connection
+2026-01-26 12:27:57,553 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,553 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,562 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,562 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,566 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,566 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,571 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,571 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,581 [INFO]   跳過量化 skip connection: skip_connection
+2026-01-26 12:27:57,581 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,581 [INFO]   跳過量化 skip connection: skip_connection
+2026-01-26 12:27:57,581 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,586 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,586 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,590 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,590 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,596 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,596 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,599 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,599 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,605 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,605 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,606 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,606 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,606 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,606 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,608 [INFO]   跳過量化 skip connection: skip_connection
+2026-01-26 12:27:57,608 [INFO]   跳過量化 skip connection: skip_connection
+2026-01-26 12:27:57,608 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,608 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,612 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,612 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,616 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,616 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,622 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,622 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,627 [INFO]   跳過量化 skip connection: skip_connection
+2026-01-26 12:27:57,627 [INFO]   跳過量化 skip connection: skip_connection
+2026-01-26 12:27:57,627 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,627 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,629 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,629 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,630 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,630 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,631 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,631 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,632 [INFO]   跳過量化 skip connection: skip_connection
+2026-01-26 12:27:57,632 [INFO]   跳過量化 skip connection: skip_connection
+2026-01-26 12:27:57,632 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,632 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,634 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,634 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,635 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,635 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,636 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,636 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,637 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,637 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,639 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,639 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,639 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,639 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,639 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,639 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,640 [INFO]   跳過量化 skip connection: skip_connection
+2026-01-26 12:27:57,640 [INFO]   跳過量化 skip connection: skip_connection
+2026-01-26 12:27:57,640 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,640 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,641 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,641 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,642 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,642 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,642 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,642 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,643 [INFO]   跳過量化 skip connection: skip_connection
+2026-01-26 12:27:57,643 [INFO]   跳過量化 skip connection: skip_connection
+2026-01-26 12:27:57,643 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,643 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,644 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,644 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,645 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,645 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,645 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,645 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,646 [INFO]   跳過量化 skip connection: skip_connection
+2026-01-26 12:27:57,646 [INFO]   跳過量化 skip connection: skip_connection
+2026-01-26 12:27:57,646 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,646 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,646 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,646 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,647 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,647 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,647 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,647 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,648 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,648 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,649 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,649 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,650 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,650 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,650 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,650 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,651 [INFO]   跳過量化 skip connection: skip_connection
+2026-01-26 12:27:57,651 [INFO]   跳過量化 skip connection: skip_connection
+2026-01-26 12:27:57,651 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,651 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,652 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,652 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,652 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,652 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,653 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,653 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,653 [INFO]   跳過量化 skip connection: skip_connection
+2026-01-26 12:27:57,653 [INFO]   跳過量化 skip connection: skip_connection
+2026-01-26 12:27:57,653 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,653 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,654 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,654 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,655 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,655 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,655 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,655 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-01-26 12:27:57,656 [INFO]   跳過量化 skip connection: skip_connection
+2026-01-26 12:27:57,656 [INFO]   跳過量化 skip connection: skip_connection
+2026-01-26 12:27:57,656 [INFO] 改造模組: out
+2026-01-26 12:27:57,656 [INFO] 改造模組: out
+2026-01-26 12:27:57,656 [INFO]   跳過量化特殊模組: 2
+2026-01-26 12:27:57,656 [INFO]   跳過量化特殊模組: 2
+2026-01-26 12:27:57,659 [INFO] 執行 'create_float_quantized_model' 完成，耗時: 0.61 秒
+2026-01-26 12:27:57,659 [INFO] 執行 'create_float_quantized_model' 完成，耗時: 0.61 秒
+2026-01-26 12:27:57,783 [INFO] 載入校準資料...
+2026-01-26 12:27:57,783 [INFO] 載入校準資料...
+2026-01-26 12:27:58,137 [INFO] ✅ 載入真實校準資料成功
+2026-01-26 12:27:58,137 [INFO] ✅ 載入真實校準資料成功
+2026-01-26 12:27:58,140 [INFO] ==================================================
+2026-01-26 12:27:58,140 [INFO] 5. Setting first and last layers to 8-bit...
+2026-01-26 12:27:58,140 [INFO] ==================================================
+2026-01-26 12:27:58,140 [INFO] 5. Setting first and last layers to 8-bit...
+2026-01-26 12:27:58,141 [INFO] 找到 144 個量化模組
+2026-01-26 12:27:58,141 [INFO] 找到 144 個量化模組
+2026-01-26 12:27:58,141 [INFO] ✅ 首尾層 8-bit 設定完成
+2026-01-26 12:27:58,141 [INFO] ✅ 首尾層 8-bit 設定完成
+2026-01-26 12:27:58,141 [INFO] ✅ 量化模型創建成功
+2026-01-26 12:27:58,141 [INFO] set quant state to True, True for layer 1
+2026-01-26 12:27:58,141 [INFO] set quant state to True, True for layer 2
+2026-01-26 12:27:58,141 [INFO] set quant state to True, False for layer 3
+2026-01-26 12:27:58,141 [INFO] ✅ 量化模型創建成功
+2026-01-26 12:27:58,141 [INFO] set quant state to True, True for layer 1
+2026-01-26 12:27:58,141 [INFO] set quant state to True, True for layer 2
+2026-01-26 12:27:58,141 [INFO] set quant state to True, False for layer 3
+2026-01-26 12:27:58,142 [INFO] set quant state to True, True for layer 144
+2026-01-26 12:27:58,142 [INFO] set quant state to True, True for layer 144
+2026-01-26 12:27:59,286 [INFO] ✅ 量化模型載入成功
+2026-01-26 12:27:59,286 [INFO] === 初始化新功能模組 ===
+2026-01-26 12:27:59,286 [INFO] ✅ 量化模型載入成功
+2026-01-26 12:27:59,286 [INFO] === 初始化新功能模組 ===
+local seed: 0
+train data: 70001
+val data: 70001
+2026-01-26 12:27:59,311 [INFO] ✅ 基礎模型設定完成
+2026-01-26 12:27:59,311 [INFO] ✅ 基礎模型設定完成
+on train dataloader start ...
+mean: tensor(-0.0606, device='cuda:0') std: tensor(0.0755, device='cuda:0')
+2026-01-26 12:27:59,406 [INFO] ==================================================
+2026-01-26 12:27:59,407 [INFO] 啟用 Similarity Analysis (L1/L2/Cosine)
+2026-01-26 12:27:59,407 [INFO] FID 評估樣本數: 128
+2026-01-26 12:27:59,407 [INFO] 實際收集樣本數: 20 (用於加速)
+2026-01-26 12:27:59,406 [INFO] ==================================================
+2026-01-26 12:27:59,407 [INFO] 啟用 Similarity Analysis (L1/L2/Cosine)
+2026-01-26 12:27:59,407 [INFO] FID 評估樣本數: 128
+2026-01-26 12:27:59,407 [INFO] 實際收集樣本數: 20 (用於加速)
+2026-01-26 12:27:59,407 [INFO] 擴散步數: 100
+2026-01-26 12:27:59,407 [INFO] 擴散步數: 100
+2026-01-26 12:27:59,407 [INFO] ==================================================
+2026-01-26 12:27:59,407 [INFO] ==================================================
+2026-01-26 12:27:59,408 [INFO] [Similarity] 註冊 block hook: model.output_blocks.10
+2026-01-26 12:27:59,408 [INFO] [Similarity] 註冊 block hook: model.output_blocks.10
+2026-01-26 12:27:59,408 [INFO] [Similarity] 註冊 model step hook 完成
+2026-01-26 12:27:59,408 [INFO] [Similarity] 註冊 model step hook 完成
+generating images:   0%|          | 0/4 [00:00<?, ?it/s]/home/jimmy/diffae/./diffusion/base.py:329: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast(self.conf.fp16):
+2026-01-26 12:28:19,689 [INFO] [Similarity] Batch 0 完成，已收集 20 個樣本
+2026-01-26 12:28:19,689 [INFO] [Similarity] Batch 0 完成，已收集 20 個樣本
+generating images:  25%|██▌       | 1/4 [00:20<01:01, 20.60s/it]2026-01-26 12:28:40,065 [INFO] [Similarity] Batch 1 完成，已收集 20 個樣本
+2026-01-26 12:28:40,065 [INFO] [Similarity] Batch 1 完成，已收集 20 個樣本
+generating images:  50%|█████     | 2/4 [00:41<00:41, 20.52s/it]2026-01-26 12:29:00,524 [INFO] [Similarity] Batch 2 完成，已收集 20 個樣本
+2026-01-26 12:29:00,524 [INFO] [Similarity] Batch 2 完成，已收集 20 個樣本
+generating images:  75%|███████▌  | 3/4 [01:01<00:20, 20.47s/it]2026-01-26 12:29:16,544 [INFO] [Similarity] 已收集 80 个样本，停止数据收集（目标: 80）
+2026-01-26 12:29:16,544 [INFO] [Similarity] 已收集 80 个样本，停止数据收集（目标: 80）
+2026-01-26 12:29:20,946 [INFO] [Similarity] Batch 3 完成，已收集 20 個樣本
+2026-01-26 12:29:20,946 [INFO] [Similarity] Batch 3 完成，已收集 20 個樣本
+generating images: 100%|██████████| 4/4 [01:21<00:00, 20.44s/it]generating images: 100%|██████████| 4/4 [01:21<00:00, 20.46s/it]
+2026-01-26 12:29:21,273 [INFO] [Similarity] FID@128 100 steps score: 0
+2026-01-26 12:29:21,273 [INFO] [Similarity] FID@128 100 steps score: 0
+2026-01-26 12:29:21,274 [INFO] [Similarity] model.output_blocks.10 cosine: min=-0.119642, max=1.000000, diag_mean=1.000000, off_diag_mean=0.816322, off_diag_std=0.190195
+2026-01-26 12:29:21,274 [INFO] [Similarity] model.output_blocks.10 cosine: min=-0.119642, max=1.000000, diag_mean=1.000000, off_diag_mean=0.816322, off_diag_std=0.190195
+2026-01-26 12:29:22,324 [INFO] ✅ Similarity Analysis 完成
+2026-01-26 12:29:22,324 [INFO] ✅ Similarity Analysis 完成
+2026-01-26 12:29:22,367 [INFO] 執行 'main_float_model' 完成，耗時: 88.43 秒
+2026-01-26 12:29:22,367 [INFO] 執行 'main_float_model' 完成，耗時: 88.43 秒
+/home/jimmy/anaconda3/envs/diffae_bw/lib/python3.10/site-packages/torchmetrics/utilities/imports.py:21: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import DistributionNotFound, get_distribution
+使用自動混合精度: torch.bfloat16
+[設定] Log 檔案已設為: QATcode/cache_method/L1_L2_cosine/logs/similarity_model_output_blocks_10.log
+2026-03-20 19:34:23,450 [INFO] Using 100 steps
+2026-03-20 19:34:23,450 [INFO] Using 100 steps
+2026-03-20 19:34:23,450 [INFO] Using 50000 evaluation samples
+2026-03-20 19:34:23,450 [INFO] Using 50000 evaluation samples
+2026-03-20 19:34:23,450 [INFO] Cache enabled: False, method: Res, threshold: 0.1
+2026-03-20 19:34:23,450 [INFO] Cache enabled: False, method: Res, threshold: 0.1
+2026-03-20 19:34:23,450 [INFO] Quantitative analysis enabled: False, samples: 10
+2026-03-20 19:34:23,450 [INFO] Quantitative analysis enabled: False, samples: 10
+2026-03-20 19:34:23,450 [INFO] Log file: QATcode/cache_method/L1_L2_cosine/logs/similarity_model_output_blocks_10.log
+2026-03-20 19:34:23,450 [INFO] Log file: QATcode/cache_method/L1_L2_cosine/logs/similarity_model_output_blocks_10.log
+2026-03-20 19:34:23,450 [INFO] ==================================================
+2026-03-20 19:34:23,450 [INFO] ==================================================
+2026-03-20 19:34:23,450 [INFO] Diff-AE EfficientDM Step 7 : 生成圖片
+2026-03-20 19:34:23,450 [INFO] Diff-AE EfficientDM Step 7 : 生成圖片
+2026-03-20 19:34:23,450 [INFO] ==================================================
+2026-03-20 19:34:23,450 [INFO] ==================================================
+2026-03-20 19:34:23,450 [INFO] 使用設備: cuda
+2026-03-20 19:34:23,450 [INFO] 使用設備: cuda
+2026-03-20 19:34:23,450 [INFO] === 新功能狀態 ===
+2026-03-20 19:34:23,450 [INFO] === 新功能狀態 ===
+2026-03-20 19:34:23,450 [INFO] 載入 Diff-AE 模型: checkpoints/ffhq128_autoenc_latent/last.ckpt
+2026-03-20 19:34:23,450 [INFO] 載入 Diff-AE 模型: checkpoints/ffhq128_autoenc_latent/last.ckpt
+Global seed set to 0
+2026-03-20 19:34:25,275 [INFO] Diff-AE 模型載入完成
+2026-03-20 19:34:25,275 [INFO] Diff-AE 模型載入完成
+2026-03-20 19:34:25,313 [INFO] 執行 'load_diffae_model' 完成，耗時: 1.86 秒
+2026-03-20 19:34:25,313 [INFO] 執行 'load_diffae_model' 完成，耗時: 1.86 秒
+2026-03-20 19:34:25,313 [INFO] ✅ Diff-AE 模型載入成功
+2026-03-20 19:34:25,313 [INFO] ✅ Diff-AE 模型載入成功
+2026-03-20 19:34:25,313 [INFO] base_model.conf.train_mode: TrainMode.latent_diffusion
+2026-03-20 19:34:25,313 [INFO] base_model.conf.train_mode: TrainMode.latent_diffusion
+2026-03-20 19:34:25,313 [INFO] === 創建 LoRA 量化模型 ===
+2026-03-20 19:34:25,313 [INFO] === 創建 LoRA 量化模型 ===
+2026-03-20 19:34:25,314 [INFO] === 開始 UNet LoRA 量化改造 ===
+2026-03-20 19:34:25,314 [INFO] === 開始 UNet LoRA 量化改造 ===
+2026-03-20 19:34:25,314 [INFO] 改造模組: time_embed
+2026-03-20 19:34:25,314 [INFO] 改造模組: time_embed
+2026-03-20 19:34:25,314 [INFO]   跳過量化特殊模組: 0
+2026-03-20 19:34:25,314 [INFO]   跳過量化特殊模組: 0
+2026-03-20 19:34:25,314 [INFO]   跳過量化特殊模組: 2
+2026-03-20 19:34:25,314 [INFO]   跳過量化特殊模組: 2
+2026-03-20 19:34:25,314 [INFO] 改造模組: input_blocks
+2026-03-20 19:34:25,314 [INFO] 改造模組: input_blocks
+2026-03-20 19:34:25,314 [INFO]   跳過量化特殊模組: 0
+2026-03-20 19:34:25,314 [INFO]   跳過量化特殊模組: 0
+2026-03-20 19:34:25,314 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,314 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,376 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,376 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,377 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,377 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,377 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,377 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,378 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,378 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,379 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,379 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,380 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,380 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,380 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,380 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,381 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,381 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,382 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,382 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,382 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,382 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,383 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,383 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,384 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,384 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,384 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,384 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,385 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,385 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,385 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,385 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,386 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,386 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,387 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,387 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,387 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,387 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,388 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,388 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,389 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,389 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,389 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,389 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,390 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,390 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,390 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,390 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,391 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,391 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,392 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,392 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,393 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,393 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,394 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,394 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,396 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-20 19:34:25,396 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-20 19:34:25,396 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,396 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,399 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,399 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,400 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,400 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,401 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,401 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,403 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,403 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,405 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,405 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,406 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,406 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,407 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,407 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,410 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,410 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,413 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,413 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,415 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,415 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,415 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,415 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,419 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-20 19:34:25,419 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-20 19:34:25,419 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,419 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,424 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,424 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,426 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,426 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,426 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,426 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,430 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,430 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,434 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,434 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,436 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,436 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,437 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,437 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,441 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,441 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,446 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,446 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,448 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,448 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,450 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,450 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,458 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-20 19:34:25,458 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-20 19:34:25,458 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,458 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,467 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,467 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,469 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,469 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,470 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,470 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,480 [INFO] 改造模組: middle_block
+2026-03-20 19:34:25,480 [INFO] 改造模組: middle_block
+2026-03-20 19:34:25,480 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,480 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,487 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,487 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,489 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,489 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,490 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,490 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,498 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,498 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,505 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,505 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,507 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,507 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,509 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,509 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,517 [INFO] 改造模組: output_blocks
+2026-03-20 19:34:25,517 [INFO] 改造模組: output_blocks
+2026-03-20 19:34:25,517 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,517 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,530 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,530 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,532 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,532 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,533 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,533 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,540 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-20 19:34:25,540 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-20 19:34:25,540 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,540 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,553 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,553 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,555 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,555 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,556 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,556 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,563 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-20 19:34:25,563 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-20 19:34:25,563 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,563 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,576 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,576 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,579 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,579 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,580 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,580 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,587 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-20 19:34:25,587 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-20 19:34:25,587 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,587 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,594 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,594 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,596 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,596 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,597 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,597 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,604 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,604 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,613 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,613 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,615 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,615 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,616 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,616 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,621 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-20 19:34:25,621 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-20 19:34:25,621 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,621 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,628 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,628 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,630 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,630 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,631 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,631 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,635 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-20 19:34:25,635 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-20 19:34:25,635 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,635 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,642 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,642 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,643 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,643 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,644 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,644 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,648 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-20 19:34:25,648 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-20 19:34:25,648 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,648 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,652 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,652 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,653 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,653 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,654 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,654 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,658 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,658 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,663 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,663 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,664 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,664 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,665 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,665 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,667 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-20 19:34:25,667 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-20 19:34:25,667 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,667 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,672 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,672 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,674 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,674 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,674 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,674 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,677 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-20 19:34:25,677 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-20 19:34:25,677 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,677 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,681 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,681 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,683 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,683 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,683 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,683 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,686 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-20 19:34:25,686 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-20 19:34:25,686 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,686 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,688 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,688 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,689 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,689 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,690 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,690 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,693 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,693 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,695 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,695 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,696 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,696 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,696 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,696 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,697 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-20 19:34:25,697 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-20 19:34:25,697 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,697 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,698 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,698 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,699 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,699 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,700 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,700 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,701 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-20 19:34:25,701 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-20 19:34:25,701 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,701 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,702 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,702 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,703 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,703 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,703 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,703 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,704 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-20 19:34:25,704 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-20 19:34:25,704 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,704 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,705 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,705 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,705 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,705 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,706 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,706 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,707 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,707 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,708 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,708 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,708 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,708 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,709 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,709 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,709 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-20 19:34:25,709 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-20 19:34:25,709 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,709 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,711 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,711 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,711 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,711 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,712 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,712 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,712 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-20 19:34:25,712 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-20 19:34:25,712 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,712 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,714 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,714 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,714 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,714 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,715 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,715 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-20 19:34:25,716 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-20 19:34:25,716 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-20 19:34:25,716 [INFO] 改造模組: out
+2026-03-20 19:34:25,716 [INFO] 改造模組: out
+2026-03-20 19:34:25,716 [INFO]   跳過量化特殊模組: 2
+2026-03-20 19:34:25,716 [INFO]   跳過量化特殊模組: 2
+2026-03-20 19:34:25,719 [INFO] 執行 'create_float_quantized_model' 完成，耗時: 0.41 秒
+2026-03-20 19:34:25,719 [INFO] 執行 'create_float_quantized_model' 完成，耗時: 0.41 秒
+2026-03-20 19:34:25,805 [INFO] 載入校準資料...
+2026-03-20 19:34:25,805 [INFO] 載入校準資料...
+2026-03-20 19:34:26,025 [INFO] ✅ 載入真實校準資料成功
+2026-03-20 19:34:26,025 [INFO] ✅ 載入真實校準資料成功
+2026-03-20 19:34:26,027 [INFO] ==================================================
+2026-03-20 19:34:26,027 [INFO] ==================================================
+2026-03-20 19:34:26,027 [INFO] 5. Setting first and last layers to 8-bit...
+2026-03-20 19:34:26,027 [INFO] 5. Setting first and last layers to 8-bit...
+2026-03-20 19:34:26,029 [INFO] 找到 144 個量化模組
+2026-03-20 19:34:26,029 [INFO] 找到 144 個量化模組
+2026-03-20 19:34:26,029 [INFO] ✅ 首尾層 8-bit 設定完成
+2026-03-20 19:34:26,029 [INFO] ✅ 首尾層 8-bit 設定完成
+2026-03-20 19:34:26,029 [INFO] ✅ 量化模型創建成功
+2026-03-20 19:34:26,029 [INFO] ✅ 量化模型創建成功
+2026-03-20 19:34:26,029 [INFO] set quant state to True, True for layer 1
+2026-03-20 19:34:26,029 [INFO] set quant state to True, True for layer 1
+2026-03-20 19:34:26,029 [INFO] set quant state to True, True for layer 2
+2026-03-20 19:34:26,029 [INFO] set quant state to True, True for layer 2
+2026-03-20 19:34:26,029 [INFO] set quant state to True, False for layer 3
+2026-03-20 19:34:26,029 [INFO] set quant state to True, False for layer 3
+2026-03-20 19:34:26,030 [INFO] set quant state to True, True for layer 144
+2026-03-20 19:34:26,030 [INFO] set quant state to True, True for layer 144
+2026-03-20 19:34:26,966 [INFO] EMA(load from ema_model.model.*): provided=1822 effective_loaded=1822 missing=280 unexpected=0
+2026-03-20 19:34:26,966 [INFO] EMA(load from ema_model.model.*): provided=1822 effective_loaded=1822 missing=280 unexpected=0
+2026-03-20 19:34:26,966 [WARNING] EMA missing keys (前10): ['model.input_blocks.1.0.in_layers.2.intn_dequantizer.delta', 'model.input_blocks.1.0.in_layers.2.intn_dequantizer.zero_point', 'model.input_blocks.1.0.emb_layers.1.intn_dequantizer.delta', 'model.input_blocks.1.0.emb_layers.1.intn_dequantizer.zero_point', 'model.input_blocks.1.0.cond_emb_layers.1.intn_dequantizer.delta', 'model.input_blocks.1.0.cond_emb_layers.1.intn_dequantizer.zero_point', 'model.input_blocks.1.0.out_layers.3.intn_dequantizer.delta', 'model.input_blocks.1.0.out_layers.3.intn_dequantizer.zero_point', 'model.input_blocks.2.0.in_layers.2.intn_dequantizer.delta', 'model.input_blocks.2.0.in_layers.2.intn_dequantizer.zero_point']
+2026-03-20 19:34:26,966 [WARNING] EMA missing keys (前10): ['model.input_blocks.1.0.in_layers.2.intn_dequantizer.delta', 'model.input_blocks.1.0.in_layers.2.intn_dequantizer.zero_point', 'model.input_blocks.1.0.emb_layers.1.intn_dequantizer.delta', 'model.input_blocks.1.0.emb_layers.1.intn_dequantizer.zero_point', 'model.input_blocks.1.0.cond_emb_layers.1.intn_dequantizer.delta', 'model.input_blocks.1.0.cond_emb_layers.1.intn_dequantizer.zero_point', 'model.input_blocks.1.0.out_layers.3.intn_dequantizer.delta', 'model.input_blocks.1.0.out_layers.3.intn_dequantizer.zero_point', 'model.input_blocks.2.0.in_layers.2.intn_dequantizer.delta', 'model.input_blocks.2.0.in_layers.2.intn_dequantizer.zero_point']
+2026-03-20 19:34:27,022 [INFO] MODEL(load from model.model.*): provided=1822 effective_loaded=1822 missing=280 unexpected=0
+2026-03-20 19:34:27,022 [INFO] MODEL(load from model.model.*): provided=1822 effective_loaded=1822 missing=280 unexpected=0
+2026-03-20 19:34:27,022 [INFO] ✅ 量化模型載入成功
+2026-03-20 19:34:27,022 [INFO] ✅ 量化模型載入成功
+2026-03-20 19:34:27,022 [INFO] === 初始化新功能模組 ===
+2026-03-20 19:34:27,022 [INFO] === 初始化新功能模組 ===
+2026-03-20 19:34:27,050 [INFO] ✅ 基礎模型設定完成
+2026-03-20 19:34:27,050 [INFO] ✅ 基礎模型設定完成
+2026-03-20 19:34:27,082 [INFO] ==================================================
+2026-03-20 19:34:27,082 [INFO] ==================================================
+2026-03-20 19:34:27,082 [INFO] 啟用 Similarity Analysis (L1/L2/Cosine)
+2026-03-20 19:34:27,082 [INFO] 啟用 Similarity Analysis (L1/L2/Cosine)
+2026-03-20 19:34:27,082 [INFO] FID 評估樣本數: 128
+2026-03-20 19:34:27,082 [INFO] FID 評估樣本數: 128
+2026-03-20 19:34:27,082 [INFO] 實際收集樣本數: 20 (用於加速)
+2026-03-20 19:34:27,082 [INFO] 實際收集樣本數: 20 (用於加速)
+2026-03-20 19:34:27,082 [INFO] 擴散步數: 100
+2026-03-20 19:34:27,082 [INFO] 擴散步數: 100
+2026-03-20 19:34:27,082 [INFO] ==================================================
+2026-03-20 19:34:27,082 [INFO] ==================================================
+2026-03-20 19:34:27,083 [INFO] [Similarity] 註冊 block hook: model.output_blocks.10
+2026-03-20 19:34:27,083 [INFO] [Similarity] 註冊 block hook: model.output_blocks.10
+2026-03-20 19:34:27,084 [INFO] [Similarity] 註冊 model step hook 完成
+2026-03-20 19:34:27,084 [INFO] [Similarity] 註冊 model step hook 完成
+Model params: 174.19 M
+loading pretrain ... 130M
+step: 1019986
+loading latent stats ...
+local seed: 0
+train data: 70001
+val data: 70001
+on train dataloader start ...
+mean: tensor(-0.0606, device='cuda:0') std: tensor(0.0755, device='cuda:0')
+generating images:   0%|          | 0/4 [00:00<?, ?it/s]/home/jimmy/diffae/./diffusion/base.py:329: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast(self.conf.fp16):
+2026-03-20 19:34:47,294 [INFO] [Similarity] Batch 0 完成，已收集 20 個樣本
+2026-03-20 19:34:47,294 [INFO] [Similarity] Batch 0 完成，已收集 20 個樣本
+generating images:  25%|██▌       | 1/4 [00:20<01:01, 20.35s/it]2026-03-20 19:35:07,496 [INFO] [Similarity] Batch 1 完成，已收集 20 個樣本
+2026-03-20 19:35:07,496 [INFO] [Similarity] Batch 1 完成，已收集 20 個樣本
+generating images:  50%|█████     | 2/4 [00:40<00:40, 20.27s/it]2026-03-20 19:35:27,685 [INFO] [Similarity] Batch 2 完成，已收集 20 個樣本
+2026-03-20 19:35:27,685 [INFO] [Similarity] Batch 2 完成，已收集 20 個樣本
+generating images:  75%|███████▌  | 3/4 [01:00<00:20, 20.23s/it]2026-03-20 19:35:43,480 [INFO] [Similarity] 已收集 80 个样本，停止数据收集（目标: 80）
+2026-03-20 19:35:43,480 [INFO] [Similarity] 已收集 80 个样本，停止数据收集（目标: 80）
+2026-03-20 19:35:47,869 [INFO] [Similarity] Batch 3 完成，已收集 20 個樣本
+2026-03-20 19:35:47,869 [INFO] [Similarity] Batch 3 完成，已收集 20 個樣本
+generating images: 100%|██████████| 4/4 [01:20<00:00, 20.21s/it]generating images: 100%|██████████| 4/4 [01:20<00:00, 20.23s/it]
+2026-03-20 19:35:48,015 [INFO] [Similarity] FID@128 100 steps score: 0
+2026-03-20 19:35:48,015 [INFO] [Similarity] FID@128 100 steps score: 0
+2026-03-20 19:35:48,016 [INFO] [Similarity] model.output_blocks.10 cosine: min=-0.158913, max=1.000000, diag_mean=1.000000, off_diag_mean=0.808414, off_diag_std=0.197938
+2026-03-20 19:35:48,016 [INFO] [Similarity] model.output_blocks.10 cosine: min=-0.158913, max=1.000000, diag_mean=1.000000, off_diag_mean=0.808414, off_diag_std=0.197938
+2026-03-20 19:35:49,007 [INFO] ✅ Similarity Analysis 完成
+2026-03-20 19:35:49,007 [INFO] ✅ Similarity Analysis 完成
+2026-03-20 19:35:49,051 [INFO] 執行 'main_float_model' 完成，耗時: 85.60 秒
+2026-03-20 19:35:49,051 [INFO] 執行 'main_float_model' 完成，耗時: 85.60 秒

@@ -1,1 +1,30 @@
-{"fid_ema_T10_Tlatent10": 20.634624481201172}
+#FID@50k
+{"fid_ema_T20_Tlatent20": 16.249731063842773}
+
+#FID@5K
+{"fid_ema_T20_Tlatent20": 21.1950626373291}
+{"fid_ema_T100_Tlatent100": 15.672866821289062}
+
+#FID@50K
+{"fid_ema_T20_Tlatent20": 16.249792098999023}
+{"fid_ema_T100_Tlatent100": 10.065070152282715}
+{"fid_ema_T20_Tlatent20": 0.0}
+{"fid_ema_T20_Tlatent20": 21.126529693603516}
+{"fid_ema_T100_Tlatent100": 15.651143074035645}
+{"fid_ema_T20_Tlatent20": 21.126529693603516}
+{"fid_ema_T20_Tlatent20": 21.126529693603516}
+{"fid_ema_T20_Tlatent20": 16.22492218017578}
+{"fid_ema_T20_Tlatent20": 21.126529693603516}
+{"fid_ema_T20_Tlatent20": 21.126529693603516}
+{"fid_ema_T20_Tlatent20": 21.126529693603516}
+{"fid_ema_T20_Tlatent20": 16.22492218017578}
+{"fid_ema_T20_Tlatent20": 21.126529693603516}
+{"fid_ema_T20_Tlatent20": 16.22492218017578}
+{"fid_ema_T100_Tlatent100": 15.651143074035645}
+{"fid_ema_T100_Tlatent100": 10.040779113769531}
+{"fid_ema_T20_Tlatent20": 21.126529693603516}
+{"fid_ema_T20_Tlatent20": 16.22492218017578}
+{"fid_ema_T20_Tlatent20": 21.126529693603516}
+{"fid_ema_T20_Tlatent20": 16.373973846435547}
+{"fid_ema_T100_Tlatent100": 15.651143074035645}
+{"fid_ema_T100_Tlatent100": 10.195898056030273}

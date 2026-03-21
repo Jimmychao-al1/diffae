@@ -30,12 +30,21 @@ def render_uncondition(conf: TrainConfig,
             noise=latent_noise,
             clip_denoised=conf.latent_clip_sample,
         )
-
+        # for calibration
+        #import QATcode.globalvar as globalvar
+        #globalvar.clearInputs()
+        
         if conf.latent_znormalize:
             cond = cond * conds_std.to(device) + conds_mean.to(device)
 
         # the diffusion on the model
-        return sampler.sample(model=model, noise=x_T, cond=cond)
+
+        return sampler.sample(
+            model=model, 
+            noise=x_T, 
+            cond=cond,
+            cache_scheduler=getattr(conf, 'cache_scheduler', None)
+        )
     else:
         raise NotImplementedError()
 

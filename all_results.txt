@@ -1,0 +1,560 @@
+
+找到 31 個 NPZ 文件
+
+============================================================
+檢查 Block: model_input_blocks_0
+數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_input_blocks_0.npz
+============================================================
+[Compare] L1rel vs L1rel Rate
+Pearson  : 0.9960
+Spearman : 1.0000
+
+Top-5 Jaccard (largest): 0.4286
+Top-10 Jaccard (largest): 0.6667
+Top-20 Jaccard (largest): 0.9048
+Top-50 Jaccard (largest): 1.0000
+
+Percentile-80 agreement (largest): 0.9978
+Percentile-90 agreement (largest): 0.9968
+Percentile-95 agreement (largest): 0.9992
+
+
+============================================================
+檢查 Block: model_input_blocks_1
+數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_input_blocks_1.npz
+============================================================
+[Compare] L1rel vs L1rel Rate
+Pearson  : 0.9932
+Spearman : 0.9993
+
+Top-5 Jaccard (largest): 0.0000
+Top-10 Jaccard (largest): 0.0000
+Top-20 Jaccard (largest): 0.0000
+Top-50 Jaccard (largest): 0.3514
+
+Percentile-80 agreement (largest): 0.9884
+Percentile-90 agreement (largest): 0.9932
+Percentile-95 agreement (largest): 0.9902
+
+
+============================================================
+檢查 Block: model_input_blocks_10
+數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_input_blocks_10.npz
+============================================================
+[Compare] L1rel vs L1rel Rate
+Pearson  : 0.9969
+Spearman : 0.9998
+
+Top-5 Jaccard (largest): 0.1111
+Top-10 Jaccard (largest): 0.2500
+Top-20 Jaccard (largest): 0.4286
+Top-50 Jaccard (largest): 0.4706
+
+Percentile-80 agreement (largest): 0.9964
+Percentile-90 agreement (largest): 0.9948
+Percentile-95 agreement (largest): 0.9934
+
+
+============================================================
+檢查 Block: model_input_blocks_11
+數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_input_blocks_11.npz
+============================================================
+[Compare] L1rel vs L1rel Rate
+Pearson  : 0.9968
+Spearman : 0.9992
+
+Top-5 Jaccard (largest): 0.0000
+Top-10 Jaccard (largest): 0.0000
+Top-20 Jaccard (largest): 0.1111
+Top-50 Jaccard (largest): 0.2821
+
+Percentile-80 agreement (largest): 0.9876
+Percentile-90 agreement (largest): 0.9866
+Percentile-95 agreement (largest): 0.9876
+
+
+============================================================
+檢查 Block: model_input_blocks_12
+數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_input_blocks_12.npz
+============================================================
+[Compare] L1rel vs L1rel Rate
+Pearson  : 0.9966
+Spearman : 0.9983
+
+Top-5 Jaccard (largest): 0.2500
+Top-10 Jaccard (largest): 0.4286
+Top-20 Jaccard (largest): 0.1765
+Top-50 Jaccard (largest): 0.1905
+
+Percentile-80 agreement (largest): 0.9794
+Percentile-90 agreement (largest): 0.9790
+Percentile-95 agreement (largest): 0.9818
+
+
+============================================================
+檢查 Block: model_input_blocks_13
+數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_input_blocks_13.npz
+============================================================
+[Compare] L1rel vs L1rel Rate
+Pearson  : 0.9949
+Spearman : 0.9971
+
+Top-5 Jaccard (largest): 0.0000
+Top-10 Jaccard (largest): 0.0000
+Top-20 Jaccard (largest): 0.0000
+Top-50 Jaccard (largest): 0.0000
+
+Percentile-80 agreement (largest): 0.9734
+Percentile-90 agreement (largest): 0.9728
+Percentile-95 agreement (largest): 0.9768
+
+
+============================================================
+檢查 Block: model_input_blocks_14
+數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_input_blocks_14.npz
+============================================================
+[Compare] L1rel vs L1rel Rate
+Pearson  : 0.9943
+Spearman : 0.9969
+
+Top-5 Jaccard (largest): 0.0000
+Top-10 Jaccard (largest): 0.0000
+Top-20 Jaccard (largest): 0.0000
+Top-50 Jaccard (largest): 0.0204
+
+Percentile-80 agreement (largest): 0.9742
+Percentile-90 agreement (largest): 0.9684
+Percentile-95 agreement (largest): 0.9720
+
+
+============================================================
+檢查 Block: model_input_blocks_2
+數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_input_blocks_2.npz
+============================================================
+[Compare] L1rel vs L1rel Rate
+Pearson  : 0.9979
+Spearman : 0.9993
+
+Top-5 Jaccard (largest): 0.0000
+Top-10 Jaccard (largest): 0.0000
+Top-20 Jaccard (largest): 0.0000
+Top-50 Jaccard (largest): 0.3889
+
+Percentile-80 agreement (largest): 0.9894
+Percentile-90 agreement (largest): 0.9922
+Percentile-95 agreement (largest): 0.9938
+
+
+============================================================
+檢查 Block: model_input_blocks_3
+數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_input_blocks_3.npz
+============================================================
+[Compare] L1rel vs L1rel Rate
+Pearson  : 0.9983
+Spearman : 0.9990
+
+Top-5 Jaccard (largest): 0.0000
+Top-10 Jaccard (largest): 0.0000
+Top-20 Jaccard (largest): 0.3793
+Top-50 Jaccard (largest): 1.0000
+
+Percentile-80 agreement (largest): 0.9856
+Percentile-90 agreement (largest): 0.9894
+Percentile-95 agreement (largest): 0.9952
+
+
+============================================================
+檢查 Block: model_input_blocks_4
+數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_input_blocks_4.npz
+============================================================
+[Compare] L1rel vs L1rel Rate
+Pearson  : 0.9982
+Spearman : 0.9989
+
+Top-5 Jaccard (largest): 0.0000
+Top-10 Jaccard (largest): 0.4286
+Top-20 Jaccard (largest): 0.9048
+Top-50 Jaccard (largest): 1.0000
+
+Percentile-80 agreement (largest): 0.9830
+Percentile-90 agreement (largest): 0.9902
+Percentile-95 agreement (largest): 0.9938
+
+
+============================================================
+檢查 Block: model_input_blocks_5
+數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_input_blocks_5.npz
+============================================================
+[Compare] L1rel vs L1rel Rate
+Pearson  : 0.9940
+Spearman : 0.9998
+
+Top-5 Jaccard (largest): 1.0000
+Top-10 Jaccard (largest): 0.6667
+Top-20 Jaccard (largest): 1.0000
+Top-50 Jaccard (largest): 1.0000
+
+Percentile-80 agreement (largest): 0.9938
+Percentile-90 agreement (largest): 0.9954
+Percentile-95 agreement (largest): 0.9966
+
+
+============================================================
+檢查 Block: model_input_blocks_6
+數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_input_blocks_6.npz
+============================================================
+[Compare] L1rel vs L1rel Rate
+Pearson  : 0.9933
+Spearman : 0.9999
+
+Top-5 Jaccard (largest): 0.2500
+Top-10 Jaccard (largest): 0.4286
+Top-20 Jaccard (largest): 0.8182
+Top-50 Jaccard (largest): 1.0000
+
+Percentile-80 agreement (largest): 0.9956
+Percentile-90 agreement (largest): 0.9966
+Percentile-95 agreement (largest): 0.9974
+
+
+============================================================
+檢查 Block: model_input_blocks_7
+數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_input_blocks_7.npz
+============================================================
+[Compare] L1rel vs L1rel Rate
+Pearson  : 0.9919
+Spearman : 0.9999
+
+Top-5 Jaccard (largest): 0.2500
+Top-10 Jaccard (largest): 0.4286
+Top-20 Jaccard (largest): 0.8182
+Top-50 Jaccard (largest): 0.8519
+
+Percentile-80 agreement (largest): 0.9948
+Percentile-90 agreement (largest): 0.9956
+Percentile-95 agreement (largest): 0.9960
+
+
+============================================================
+檢查 Block: model_input_blocks_8
+數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_input_blocks_8.npz
+============================================================
+[Compare] L1rel vs L1rel Rate
+Pearson  : 0.9892
+Spearman : 0.9998
+
+Top-5 Jaccard (largest): 0.4286
+Top-10 Jaccard (largest): 0.6667
+Top-20 Jaccard (largest): 0.8182
+Top-50 Jaccard (largest): 0.6129
+
+Percentile-80 agreement (largest): 0.9950
+Percentile-90 agreement (largest): 0.9970
+Percentile-95 agreement (largest): 0.9966
+
+
+============================================================
+檢查 Block: model_input_blocks_9
+數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_input_blocks_9.npz
+============================================================
+[Compare] L1rel vs L1rel Rate
+Pearson  : 0.9915
+Spearman : 0.9996
+
+Top-5 Jaccard (largest): 0.2500
+Top-10 Jaccard (largest): 0.6667
+Top-20 Jaccard (largest): 0.6667
+Top-50 Jaccard (largest): 0.5625
+
+Percentile-80 agreement (largest): 0.9922
+Percentile-90 agreement (largest): 0.9940
+Percentile-95 agreement (largest): 0.9960
+
+
+============================================================
+檢查 Block: model_middle_block
+數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_middle_block.npz
+============================================================
+[Compare] L1rel vs L1rel Rate
+Pearson  : 0.9936
+Spearman : 0.9973
+
+Top-5 Jaccard (largest): 0.0000
+Top-10 Jaccard (largest): 0.0000
+Top-20 Jaccard (largest): 0.0811
+Top-50 Jaccard (largest): 0.3158
+
+Percentile-80 agreement (largest): 0.9754
+Percentile-90 agreement (largest): 0.9710
+Percentile-95 agreement (largest): 0.9704
+
+
+============================================================
+檢查 Block: model_output_blocks_0
+數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_output_blocks_0.npz
+============================================================
+[Compare] L1rel vs L1rel Rate
+Pearson  : 0.9917
+Spearman : 0.9963
+
+Top-5 Jaccard (largest): 0.0000
+Top-10 Jaccard (largest): 0.1111
+Top-20 Jaccard (largest): 0.1429
+Top-50 Jaccard (largest): 0.3699
+
+Percentile-80 agreement (largest): 0.9694
+Percentile-90 agreement (largest): 0.9662
+Percentile-95 agreement (largest): 0.9680
+
+
+============================================================
+檢查 Block: model_output_blocks_1
+數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_output_blocks_1.npz
+============================================================
+[Compare] L1rel vs L1rel Rate
+Pearson  : 0.9897
+Spearman : 0.9954
+
+Top-5 Jaccard (largest): 0.0000
+Top-10 Jaccard (largest): 0.1111
+Top-20 Jaccard (largest): 0.2121
+Top-50 Jaccard (largest): 0.4925
+
+Percentile-80 agreement (largest): 0.9638
+Percentile-90 agreement (largest): 0.9624
+Percentile-95 agreement (largest): 0.9646
+
+
+============================================================
+檢查 Block: model_output_blocks_10
+數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_output_blocks_10.npz
+============================================================
+[Compare] L1rel vs L1rel Rate
+Pearson  : 0.9902
+Spearman : 0.9943
+
+Top-5 Jaccard (largest): 1.0000
+Top-10 Jaccard (largest): 1.0000
+Top-20 Jaccard (largest): 1.0000
+Top-50 Jaccard (largest): 0.7241
+
+Percentile-80 agreement (largest): 0.9536
+Percentile-90 agreement (largest): 0.9682
+Percentile-95 agreement (largest): 0.9836
+
+
+============================================================
+檢查 Block: model_output_blocks_11
+數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_output_blocks_11.npz
+============================================================
+[Compare] L1rel vs L1rel Rate
+Pearson  : 0.9977
+Spearman : 0.9986
+
+Top-5 Jaccard (largest): 1.0000
+Top-10 Jaccard (largest): 1.0000
+Top-20 Jaccard (largest): 1.0000
+Top-50 Jaccard (largest): 0.9231
+
+Percentile-80 agreement (largest): 0.9788
+Percentile-90 agreement (largest): 0.9854
+Percentile-95 agreement (largest): 0.9936
+
+
+============================================================
+檢查 Block: model_output_blocks_12
+數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_output_blocks_12.npz
+============================================================
+[Compare] L1rel vs L1rel Rate
+Pearson  : 0.9980
+Spearman : 0.9992
+
+Top-5 Jaccard (largest): 0.6667
+Top-10 Jaccard (largest): 0.6667
+Top-20 Jaccard (largest): 0.9048
+Top-50 Jaccard (largest): 0.9231
+
+Percentile-80 agreement (largest): 0.9888
+Percentile-90 agreement (largest): 0.9940
+Percentile-95 agreement (largest): 0.9980
+
+
+============================================================
+檢查 Block: model_output_blocks_13
+數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_output_blocks_13.npz
+============================================================
+[Compare] L1rel vs L1rel Rate
+Pearson  : 0.9958
+Spearman : 0.9997
+
+Top-5 Jaccard (largest): 0.4286
+Top-10 Jaccard (largest): 0.8182
+Top-20 Jaccard (largest): 1.0000
+Top-50 Jaccard (largest): 0.9608
+
+Percentile-80 agreement (largest): 0.9938
+Percentile-90 agreement (largest): 0.9956
+Percentile-95 agreement (largest): 0.9950
+
+
+============================================================
+檢查 Block: model_output_blocks_14
+數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_output_blocks_14.npz
+============================================================
+[Compare] L1rel vs L1rel Rate
+Pearson  : 0.9881
+Spearman : 1.0000
+
+Top-5 Jaccard (largest): 0.2500
+Top-10 Jaccard (largest): 0.2500
+Top-20 Jaccard (largest): 0.3793
+Top-50 Jaccard (largest): 0.8519
+
+Percentile-80 agreement (largest): 0.9996
+Percentile-90 agreement (largest): 0.9992
+Percentile-95 agreement (largest): 0.9972
+
+
+============================================================
+檢查 Block: model_output_blocks_2
+數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_output_blocks_2.npz
+============================================================
+[Compare] L1rel vs L1rel Rate
+Pearson  : 0.9899
+Spearman : 0.9956
+
+Top-5 Jaccard (largest): 0.0000
+Top-10 Jaccard (largest): 0.0000
+Top-20 Jaccard (largest): 0.1111
+Top-50 Jaccard (largest): 0.5152
+
+Percentile-80 agreement (largest): 0.9608
+Percentile-90 agreement (largest): 0.9652
+Percentile-95 agreement (largest): 0.9696
+
+
+============================================================
+檢查 Block: model_output_blocks_3
+數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_output_blocks_3.npz
+============================================================
+[Compare] L1rel vs L1rel Rate
+Pearson  : 0.9942
+Spearman : 0.9972
+
+Top-5 Jaccard (largest): 0.0000
+Top-10 Jaccard (largest): 0.0000
+Top-20 Jaccard (largest): 0.0000
+Top-50 Jaccard (largest): 0.2195
+
+Percentile-80 agreement (largest): 0.9714
+Percentile-90 agreement (largest): 0.9718
+Percentile-95 agreement (largest): 0.9774
+
+
+============================================================
+檢查 Block: model_output_blocks_4
+數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_output_blocks_4.npz
+============================================================
+[Compare] L1rel vs L1rel Rate
+Pearson  : 0.9956
+Spearman : 0.9976
+
+Top-5 Jaccard (largest): 1.0000
+Top-10 Jaccard (largest): 0.4286
+Top-20 Jaccard (largest): 0.4286
+Top-50 Jaccard (largest): 0.2500
+
+Percentile-80 agreement (largest): 0.9720
+Percentile-90 agreement (largest): 0.9758
+Percentile-95 agreement (largest): 0.9804
+
+
+============================================================
+檢查 Block: model_output_blocks_5
+數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_output_blocks_5.npz
+============================================================
+[Compare] L1rel vs L1rel Rate
+Pearson  : 0.9907
+Spearman : 0.9960
+
+Top-5 Jaccard (largest): 0.0000
+Top-10 Jaccard (largest): 0.1111
+Top-20 Jaccard (largest): 0.2500
+Top-50 Jaccard (largest): 0.3514
+
+Percentile-80 agreement (largest): 0.9628
+Percentile-90 agreement (largest): 0.9676
+Percentile-95 agreement (largest): 0.9736
+
+
+============================================================
+檢查 Block: model_output_blocks_6
+數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_output_blocks_6.npz
+============================================================
+[Compare] L1rel vs L1rel Rate
+Pearson  : 0.9885
+Spearman : 0.9943
+
+Top-5 Jaccard (largest): 0.2500
+Top-10 Jaccard (largest): 0.2500
+Top-20 Jaccard (largest): 0.2500
+Top-50 Jaccard (largest): 0.3889
+
+Percentile-80 agreement (largest): 0.9526
+Percentile-90 agreement (largest): 0.9610
+Percentile-95 agreement (largest): 0.9724
+
+
+============================================================
+檢查 Block: model_output_blocks_7
+數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_output_blocks_7.npz
+============================================================
+[Compare] L1rel vs L1rel Rate
+Pearson  : 0.9876
+Spearman : 0.9937
+
+Top-5 Jaccard (largest): 0.4286
+Top-10 Jaccard (largest): 0.4286
+Top-20 Jaccard (largest): 0.4815
+Top-50 Jaccard (largest): 0.4706
+
+Percentile-80 agreement (largest): 0.9504
+Percentile-90 agreement (largest): 0.9584
+Percentile-95 agreement (largest): 0.9708
+
+
+============================================================
+檢查 Block: model_output_blocks_8
+數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_output_blocks_8.npz
+============================================================
+[Compare] L1rel vs L1rel Rate
+Pearson  : 0.9874
+Spearman : 0.9952
+
+Top-5 Jaccard (largest): 0.0000
+Top-10 Jaccard (largest): 0.1111
+Top-20 Jaccard (largest): 0.2500
+Top-50 Jaccard (largest): 0.5625
+
+Percentile-80 agreement (largest): 0.9608
+Percentile-90 agreement (largest): 0.9710
+Percentile-95 agreement (largest): 0.9820
+
+
+============================================================
+檢查 Block: model_output_blocks_9
+數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_output_blocks_9.npz
+============================================================
+[Compare] L1rel vs L1rel Rate
+Pearson  : 0.9850
+Spearman : 0.9926
+
+Top-5 Jaccard (largest): 1.0000
+Top-10 Jaccard (largest): 1.0000
+Top-20 Jaccard (largest): 0.6667
+Top-50 Jaccard (largest): 0.5625
+
+Percentile-80 agreement (largest): 0.9484
+Percentile-90 agreement (largest): 0.9556
+Percentile-95 agreement (largest): 0.9726
+

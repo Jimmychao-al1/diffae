@@ -1,0 +1,5 @@
+steps,method,threshold,enable_cache,original_size_mb,quantized_size_mb,compression_ratio,original_macs_g,quantized_macs_g,quantized_cache_macs_g,cache_reduction_ratio,original_time_s,quantized_time_s,quantized_cache_time_s,original_transfer_mb,quantized_transfer_mb
+20,Att,0.01,True,696.77,458.54,1.52,1738.63,547.32,54731.85,0.0,0.318,0.896,0.9,458.64,246.56
+20,Res,0.01,True,696.77,458.54,1.52,1738.63,547.32,54731.85,0.0,0.31,0.888,0.898,458.64,246.56
+100,Att,0.01,True,696.77,458.54,1.52,1738.63,547.32,54731.85,0.0,1.575,4.475,4.455,458.64,246.56
+100,Res,0.01,True,696.77,458.54,1.52,1738.63,547.32,54731.85,0.0,1.508,4.248,4.281,458.64,246.56

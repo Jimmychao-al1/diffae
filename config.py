@@ -19,7 +19,7 @@ from torch.utils.data.distributed import DistributedSampler
 
 data_paths = {
     'ffhqlmdb256':
-    os.path.expanduser('datasets/ffhq256.lmdb'),
+    os.path.expanduser('datasets/ffhq256_lmdb'),
     # used for training a classifier
     'celeba':
     os.path.expanduser('datasets/celeba'),
@@ -158,8 +158,8 @@ class TrainConfig(BaseConfig):
     eval_path: str = None
     base_dir: str = 'checkpoints'
     use_cache_dataset: bool = False
-    data_cache_dir: str = os.path.expanduser('~/cache')
-    work_cache_dir: str = os.path.expanduser('~/mycache')
+    data_cache_dir: str = os.path.expanduser('cache')
+    work_cache_dir: str = os.path.expanduser('mycache')
     # to be overridden
     name: str = ''
 

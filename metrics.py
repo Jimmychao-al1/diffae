@@ -14,7 +14,7 @@ from config import *
 from diffusion import Sampler
 from dist_utils import *
 import lpips
-from ssim import ssim
+#from ssim import ssim
 
 
 def make_subset_loader(conf: TrainConfig,
@@ -121,8 +121,8 @@ def evaluate_lpips(
             norm_imgs = (imgs + 1) / 2
             norm_pred_imgs = (pred_imgs + 1) / 2
             # (n, )
-            scores['ssim'].append(
-                ssim(norm_imgs, norm_pred_imgs, size_average=False))
+            #scores['ssim'].append(
+            #    ssim(norm_imgs, norm_pred_imgs, size_average=False))
             # (n, )
             scores['mse'].append(
                 (norm_imgs - norm_pred_imgs).pow(2).mean(dim=[1, 2, 3]))
@@ -177,7 +177,12 @@ def evaluate_fid(
     conds_std=None,
     remove_cache: bool = True,
     clip_latent_noise: bool = False,
+    T: int = None,
+    output_dir: str = None,
 ):
+    """
+    Original FID evaluation function (Student vs Real)
+    """
     assert conf.fid_cache is not None
     if get_rank() == 0:
         # no parallel
@@ -192,7 +197,8 @@ def evaluate_fid(
         cache_dir = f'{conf.fid_cache}_{conf.eval_num_images}'
         if (os.path.exists(cache_dir)
                 and len(os.listdir(cache_dir)) < conf.eval_num_images):
-            shutil.rmtree(cache_dir)
+            #shutil.rmtree(cache_dir)
+            pass
 
         if not os.path.exists(cache_dir):
             # write files to the cache
@@ -200,9 +206,12 @@ def evaluate_fid(
             loader_to_path(val_loader, cache_dir, denormalize=True)
 
         # create the generate dir
-        if os.path.exists(conf.generate_dir):
-            shutil.rmtree(conf.generate_dir)
-        os.makedirs(conf.generate_dir)
+        #out_put_dir = f'{conf.generate_dir}_l2TF_cache_analysis_T{T}' #if output_dir is None else output_dir
+        out_put_dir = f'{conf.generate_dir}_T{T}' if output_dir is None else output_dir
+        if os.path.exists(out_put_dir):
+            shutil.rmtree(out_put_dir)
+            pass
+        os.makedirs(out_put_dir, exist_ok=True)
 
     barrier()
 
@@ -214,12 +223,20 @@ def evaluate_fid(
         return world_size * idx + rank
 
     model.eval()
+    seed = conf.seed
+
     with torch.no_grad():
         if conf.model_type.can_sample():
             eval_num_images = chunk_size(conf.eval_num_images, rank,
                                          world_size)
             desc = "generating images"
             for i in trange(0, eval_num_images, batch_size, desc=desc):
+                #if i % batch_size == 0:
+                #    # set the seed for each batch
+                #    torch.manual_seed(seed + i // batch_size)
+                #    np.random.seed(seed + i // batch_size)
+                #    torch.cuda.manual_seed(seed + i // batch_size)
+                    
                 batch_size = min(batch_size, eval_num_images - i)
                 x_T = torch.randn(
                     (batch_size, 3, conf.img_size, conf.img_size),
@@ -248,6 +265,11 @@ def evaluate_fid(
                                              world_size)
                 desc = "generating images"
                 for i in trange(0, eval_num_images, batch_size, desc=desc):
+                    #if i % batch_size == 0:
+                    #    # set the seed for each batch
+                    #    torch.manual_seed(seed + i // batch_size)
+                    #    np.random.seed(seed + i // batch_size)
+                    #    torch.cuda.manual_seed(seed + i // batch_size)
                     batch_size = min(batch_size, eval_num_images - i)
                     x_T = torch.randn(
                         (batch_size, 3, conf.img_size, conf.img_size),
@@ -263,12 +285,18 @@ def evaluate_fid(
                         clip_latent_noise=clip_latent_noise,
                     ).cpu()
                     batch_images = (batch_images + 1) / 2
+                    
                     # keep the generated images
                     for j in range(len(batch_images)):
                         img_name = filename(i + j)
                         torchvision.utils.save_image(
                             batch_images[j],
-                            os.path.join(conf.generate_dir, f'{img_name}.png'))
+                            os.path.join(out_put_dir, f'{img_name}.png'))
+                # for calibration
+                #import QATcode.globalvar as globalvar
+                #data_list = globalvar.getInputList()
+                #torch.save(data_list, 'QATcode/calibration_diffae.pth')
+                #print(f"save {len(data_list)} data to QATcode/calibration_diffae.pth")
             else:
                 # evaulate autoencoder (given the images)
                 # to make the FID fair, autoencoder must not see the validation dataset
@@ -310,13 +338,15 @@ def evaluate_fid(
                     i += len(imgs)
         else:
             raise NotImplementedError()
+    fid = 0
+    '''
     model.train()
 
     barrier()
-
+    
     if get_rank() == 0:
         fid = fid_score.calculate_fid_given_paths(
-            [cache_dir, conf.generate_dir],
+            [cache_dir, out_put_dir],
             batch_size,
             device=device,
             dims=2048)
@@ -336,8 +366,166 @@ def evaluate_fid(
         broadcast(fid, 0)
     fid = fid.item()
     print(f'fid ({get_rank()}):', fid)
-
+    '''
     return fid
+
+
+def evaluate_dfid_teacher_reference(
+    teacher_sampler: Sampler,
+    student_sampler: Sampler,
+    teacher_model: Model,
+    student_model: Model,
+    conf: TrainConfig,
+    device,
+    latent_sampler: Sampler = None,
+    conds_mean=None,
+    conds_std=None,
+    remove_cache: bool = True,
+    clip_latent_noise: bool = False,
+    num_images: int = None,
+):
+    """
+    Evaluate dFID using Teacher as reference (Student vs Teacher)
+    Similar to evaluate_fid but compares Student generated images against Teacher generated images
+    
+    Args:
+        teacher_sampler: Teacher model sampler
+        student_sampler: Student model sampler  
+        teacher_model: Teacher model
+        student_model: Student model
+        conf: Configuration
+        device: Device
+        num_images: Number of images to generate (overrides conf.eval_num_images if provided)
+        
+    Returns:
+        float: dFID score (Student vs Teacher)
+    """
+    eval_num_images = num_images or conf.eval_num_images
+    
+    # Create temporary directories for teacher and student generated images
+    teacher_dir = f'{conf.generate_dir}_teacher'
+    student_dir = f'{conf.generate_dir}_student'
+    
+    if get_rank() == 0:
+        # Clean up existing directories
+        for dir_path in [teacher_dir, student_dir]:
+            if os.path.exists(dir_path):
+                shutil.rmtree(dir_path)
+            os.makedirs(dir_path)
+
+    barrier()
+
+    world_size = get_world_size()
+    rank = get_rank()
+    batch_size = chunk_size(conf.batch_size_eval, rank, world_size)
+
+    def filename(idx):
+        return world_size * idx + rank
+
+    def generate_images(model, sampler, output_dir, model_name):
+        """Generate images using the specified model and sampler"""
+        model.eval()
+        seed = conf.seed
+        
+        with torch.no_grad():
+            if conf.model_type.can_sample():
+                eval_num_images_per_rank = chunk_size(eval_num_images, rank, world_size)
+                desc = f"generating {model_name} images"
+                
+                for i in trange(0, eval_num_images_per_rank, batch_size, desc=desc):
+                    current_batch_size = min(batch_size, eval_num_images_per_rank - i)
+                    x_T = torch.randn(
+                        (current_batch_size, 3, conf.img_size, conf.img_size),
+                        device=device)
+                    
+                    batch_images = render_uncondition(
+                        conf=conf,
+                        model=model,
+                        x_T=x_T,
+                        sampler=sampler,
+                        latent_sampler=latent_sampler,
+                        conds_mean=conds_mean,
+                        conds_std=conds_std).cpu()
+
+                    batch_images = (batch_images + 1) / 2
+                    
+                    # Save generated images
+                    for j in range(len(batch_images)):
+                        img_name = filename(i + j)
+                        torchvision.utils.save_image(
+                            batch_images[j],
+                            os.path.join(output_dir, f'{img_name}.png'))
+                            
+            elif conf.model_type == ModelType.autoencoder:
+                if conf.train_mode.is_latent_diffusion():
+                    eval_num_images_per_rank = chunk_size(eval_num_images, rank, world_size)
+                    desc = f"generating {model_name} images"
+                    
+                    for i in trange(0, eval_num_images_per_rank, batch_size, desc=desc):
+                        current_batch_size = min(batch_size, eval_num_images_per_rank - i)
+                        x_T = torch.randn(
+                            (current_batch_size, 3, conf.img_size, conf.img_size),
+                            device=device)
+                        
+                        batch_images = render_uncondition(
+                            conf=conf,
+                            model=model,
+                            x_T=x_T,
+                            sampler=sampler,
+                            latent_sampler=latent_sampler,
+                            conds_mean=conds_mean,
+                            conds_std=conds_std,
+                            clip_latent_noise=clip_latent_noise,
+                        ).cpu()
+                        
+                        batch_images = (batch_images + 1) / 2
+                        
+                        # Save generated images
+                        for j in range(len(batch_images)):
+                            img_name = filename(i + j)
+                            torchvision.utils.save_image(
+                                batch_images[j],
+                                os.path.join(output_dir, f'{img_name}.png'))
+                else:
+                    raise NotImplementedError("Non-latent diffusion autoencoder not supported for dFID")
+            else:
+                raise NotImplementedError()
+
+    # Generate teacher images
+    generate_images(teacher_model, teacher_sampler, teacher_dir, "teacher")
+    
+    # Generate student images  
+    generate_images(student_model, student_sampler, student_dir, "student")
+
+    barrier()
+    
+    # Calculate FID between teacher and student generated images
+    if get_rank() == 0:
+        dfid = fid_score.calculate_fid_given_paths(
+            [teacher_dir, student_dir],
+            batch_size,
+            device=device,
+            dims=2048)
+
+        # Clean up temporary directories
+        if remove_cache:
+            for dir_path in [teacher_dir, student_dir]:
+                if os.path.exists(dir_path):
+                    shutil.rmtree(dir_path)
+
+    barrier()
+
+    if get_rank() == 0:
+        # need to float it! unless the broadcasted value is wrong
+        dfid = torch.tensor(float(dfid), device=device)
+        broadcast(dfid, 0)
+    else:
+        dfid = torch.tensor(0., device=device)
+        broadcast(dfid, 0)
+    dfid = dfid.item()
+    print(f'dFID ({get_rank()}):', dfid)
+
+    return dfid
 
 
 def loader_to_path(loader: DataLoader, path: str, denormalize: bool):

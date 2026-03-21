@@ -273,6 +273,8 @@ class BeatGANsUNetModel(nn.Module):
         # print(input_block_chans)
         # print('inputs:', self.input_num_blocks)
         # print('outputs:', self.output_num_blocks)
+        #print('input blocks: ', self.input_blocks)
+        #print('output blocks: ', self.output_blocks)
 
         if conf.resnet_use_zero_module:
             self.out = nn.Sequential(

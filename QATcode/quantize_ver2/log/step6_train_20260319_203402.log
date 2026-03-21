@@ -1,0 +1,1289 @@
+2026-03-19 20:34:02,068 [INFO] TensorBoard 已啟用，輸出目錄: QATcode/quantize_ver2/tb_runs/step6_train_20260319_203402
+2026-03-19 20:34:02,068 [INFO] ==================================================
+2026-03-19 20:34:02,068 [INFO] Diff-AE EfficientDM Step 6: 量化感知微調 (QAT)
+2026-03-19 20:34:02,068 [INFO] ==================================================
+2026-03-19 20:34:02,068 [INFO] 訓練 log 檔案: QATcode/quantize_ver2/log/step6_train_20260319_203402.log
+2026-03-19 20:34:02,068 [INFO] 使用設備: cuda
+2026-03-19 20:34:02,068 [INFO] === 新功能狀態 ===
+2026-03-19 20:34:02,068 [INFO] Layer-by-Layer 訓練: 關閉
+2026-03-19 20:34:02,068 [INFO] 代理指標驗證: 關閉
+2026-03-19 20:34:02,068 [INFO] 實驗目錄: runs/default
+2026-03-19 20:34:02,068 [INFO] 量化更新診斷 interval: 8
+2026-03-19 20:34:02,068 [INFO] 量化更新診斷 topk: 12
+2026-03-19 20:34:02,068 [INFO] 量化更新診斷 root: QATcode/quantize_ver2/quant_diag_runs
+2026-03-19 20:34:02,068 [INFO] Loss chunk size(optimizer/global step): 20
+2026-03-19 20:34:02,068 [INFO] 量化更新診斷輸出目錄: QATcode/quantize_ver2/quant_diag_runs/20260319_203402
+2026-03-19 20:34:02,068 [INFO] 載入 Diff-AE 模型: checkpoints/ffhq128_autoenc_latent/last.ckpt
+2026-03-19 20:34:03,831 [INFO] Diff-AE 模型載入完成
+2026-03-19 20:34:03,866 [INFO] 執行 'load_diffae_model' 完成，耗時: 1.80 秒
+2026-03-19 20:34:03,866 [INFO] ✅ Diff-AE 模型載入成功
+2026-03-19 20:34:04,052 [INFO] ✅ FP Diff-AE 模型載入成功
+2026-03-19 20:34:04,053 [INFO] base_model.conf.train_mode: TrainMode.latent_diffusion
+2026-03-19 20:34:04,119 [INFO] === 創建 LoRA 量化模型 ===
+2026-03-19 20:34:04,119 [INFO] === 開始 UNet LoRA 量化改造 ===
+2026-03-19 20:34:04,119 [INFO] 改造模組: time_embed
+2026-03-19 20:34:04,119 [INFO]   跳過量化特殊模組: 0
+2026-03-19 20:34:04,119 [INFO]   跳過量化特殊模組: 2
+2026-03-19 20:34:04,120 [INFO] 改造模組: input_blocks
+2026-03-19 20:34:04,120 [INFO]   跳過量化特殊模組: 0
+2026-03-19 20:34:04,120 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,121 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,121 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,121 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,122 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,123 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,123 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,124 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,124 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,125 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,125 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,125 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,126 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,127 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,127 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,127 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,128 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,129 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,129 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,129 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,130 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,131 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,131 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,131 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,132 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,133 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,134 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,135 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,136 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-19 20:34:04,136 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,138 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,139 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,139 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,141 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,142 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,143 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,143 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,145 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,147 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,148 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,149 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,152 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-19 20:34:04,152 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,155 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,156 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,157 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,160 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,163 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,164 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,165 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,168 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,172 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,173 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,174 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,179 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-19 20:34:04,179 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,185 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,186 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,187 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,192 [INFO] 改造模組: middle_block
+2026-03-19 20:34:04,192 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,197 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,198 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,199 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,204 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,210 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,211 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,212 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,217 [INFO] 改造模組: output_blocks
+2026-03-19 20:34:04,217 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,228 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,229 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,230 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,235 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-19 20:34:04,235 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,245 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,247 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,247 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,253 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-19 20:34:04,253 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,262 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,263 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,264 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,269 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-19 20:34:04,269 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,274 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,276 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,276 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,281 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,288 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,290 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,290 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,293 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-19 20:34:04,293 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,299 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,300 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,301 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,304 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-19 20:34:04,304 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,309 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,310 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,311 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,314 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-19 20:34:04,314 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,317 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,318 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,319 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,322 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,325 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,326 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,327 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,328 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-19 20:34:04,328 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,331 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,332 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,333 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,334 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-19 20:34:04,335 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,337 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,337 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,338 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,339 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-19 20:34:04,339 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,341 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,342 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,343 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,344 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,346 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,346 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,347 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,347 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-19 20:34:04,347 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,348 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,349 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,349 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,350 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-19 20:34:04,350 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,351 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,351 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,351 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,352 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-19 20:34:04,352 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,352 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,353 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,353 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,354 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,355 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,355 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,356 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,356 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-19 20:34:04,356 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,357 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,358 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,358 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,358 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-19 20:34:04,358 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,359 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,360 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,360 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-19 20:34:04,361 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-19 20:34:04,361 [INFO] 改造模組: out
+2026-03-19 20:34:04,361 [INFO]   跳過量化特殊模組: 2
+2026-03-19 20:34:04,402 [INFO] 執行 'create_quantized_model' 完成，耗時: 0.28 秒
+2026-03-19 20:34:04,408 [INFO] 載入校準資料...
+2026-03-19 20:34:04,622 [INFO] ✅ 載入真實校準資料成功
+2026-03-19 20:34:04,624 [INFO] ==================================================
+2026-03-19 20:34:04,624 [INFO] 5. Setting first and last layers to 8-bit...
+2026-03-19 20:34:04,625 [INFO] 找到 144 個量化模組
+2026-03-19 20:34:04,626 [INFO] ✅ 首尾層 8-bit 設定完成
+2026-03-19 20:34:04,626 [INFO] ✅ 量化模型創建成功
+2026-03-19 20:34:04,626 [INFO] set quant state to True, True for layer 1
+2026-03-19 20:34:04,626 [INFO] set quant state to True, True for layer 2
+2026-03-19 20:34:04,626 [INFO] set quant state to False, False for layer 3
+2026-03-19 20:34:04,627 [INFO] set quant state to False, False for layer 144
+2026-03-19 20:34:04,941 [INFO] ✅ 量化模型載入成功
+2026-03-19 20:34:04,941 [INFO] === 初始化新功能模組 ===
+2026-03-19 20:34:04,945 [INFO] 
+=== 模型參數統計 ===
+2026-03-19 20:34:04,947 [INFO] 可訓練參數: 9,803,440 || 總參數: 96,366,131 || 可訓練比例: 10.17%
+2026-03-19 20:34:05,145 [INFO] === 自適應學習率設定 (DIFFAE) ===
+2026-03-19 20:34:05,145 [INFO] LoRA 因子: 700
+2026-03-19 20:34:05,145 [INFO] 權重量化 LR: 1.00e-06
+2026-03-19 20:34:05,145 [INFO] 激活量化 LR: 1.00e-05
+2026-03-19 20:34:05,145 [INFO] 統計信息: {'avg_weight_scale': 0.05926775469311646, 'max_weight_scale': 0.08894378691911697, 'error_ratio': 0.32857142857142857, 'total_layers': 140}
+2026-03-19 20:34:05,151 [INFO] Optimizer param groups - LoRA: 140, Act-quant(scale_list): 140
+2026-03-19 20:34:05,161 [INFO] ✅ 基礎模型設定完成
+2026-03-19 20:34:05,161 [INFO] === 創建整合訓練器 ===
+2026-03-19 20:34:05,170 [INFO] DDIM 時間步序列長度: 100
+2026-03-19 20:34:05,170 [INFO] EMA 初始化完成
+2026-03-19 20:34:05,170 [INFO] SpacedDiffusionBeatGans_Trainer 初始化完成
+2026-03-19 20:34:05,170 [INFO] ✅ Diff-AE + EfficientDM 整合訓練器創建成功
+2026-03-19 20:34:05,174 [INFO] DDIM 時間步序列長度: 100
+2026-03-19 20:34:05,174 [INFO] EMA 初始化完成
+2026-03-19 20:34:05,174 [INFO] SpacedDiffusionBeatGans_Trainer 初始化完成
+2026-03-19 20:34:05,174 [INFO] ✅ Diff-AE + EfficientDM 整合訓練器創建成功
+2026-03-19 20:34:05,174 [INFO] 
+=== 開始 EfficientDM 風格訓練 (共 160 epoch) ===
+2026-03-19 20:34:05,174 [INFO] DDIM timestep 定義: t=99 為高噪聲端，t=0 為接近清晰圖端。
+2026-03-19 20:34:05,178 [INFO] 
+--- Epoch 1/160 ---
+2026-03-19 20:34:07,876 [INFO] Step 20 - DDIM step 80: current_step_loss=0.000036 | running_mean_ddim_loss=0.000030
+2026-03-19 20:34:10,228 [INFO] Step 40 - DDIM step 60: current_step_loss=0.000069 | running_mean_ddim_loss=0.000036
+2026-03-19 20:34:12,569 [INFO] Step 60 - DDIM step 40: current_step_loss=0.000267 | running_mean_ddim_loss=0.000079
+2026-03-19 20:34:14,942 [INFO] Step 80 - DDIM step 20: current_step_loss=0.000632 | running_mean_ddim_loss=0.000171
+2026-03-19 20:34:17,291 [INFO] Step 100 - DDIM step 0: current_step_loss=0.011452 | running_mean_ddim_loss=0.000421
+2026-03-19 20:34:17,292 [INFO] 
+Epoch 1/160 完成:
+2026-03-19 20:34:17,292 [INFO]   平均蒸餾損失(DDIM全步平均): 0.000421
+2026-03-19 20:34:17,292 [INFO]   平均損失(目前等同蒸餾損失): 0.000421
+2026-03-19 20:34:17,292 [INFO]   時間: 12.12秒
+2026-03-19 20:34:17,302 [INFO] [LossSummary] tail_ratio=3.373049 | tail_outlier_ratio=8.058109 | mean(t=0..19)=1.421185e-03 | mean(t=80..99)=2.995613e-05
+2026-03-19 20:34:17,302 [INFO] [LossSummary] per-timestep mean (first5): t000:1.145e-02, t001:1.753e-03, t002:1.204e-03, t003:1.051e-03, t004:9.611e-04
+2026-03-19 20:34:17,302 [INFO] [LossSummary] per-timestep mean (last5): t095:2.623e-05, t096:2.752e-05, t097:2.749e-05, t098:2.971e-05, t099:3.786e-05
+2026-03-19 20:34:17,302 [INFO] [LossChunk] steps=1..20 size=20 | total(mean=0.000030 std=0.000005 max=0.000044 min=0.000025) | distill(mean=0.000030 std=0.000005 max=0.000044 min=0.000025)
+2026-03-19 20:34:17,302 [INFO] [LossChunk] steps=21..40 size=20 | total(mean=0.000042 std=0.000012 max=0.000069 min=0.000026) | distill(mean=0.000042 std=0.000012 max=0.000069 min=0.000026)
+2026-03-19 20:34:17,303 [INFO] [LossChunk] steps=41..60 size=20 | total(mean=0.000164 std=0.000061 max=0.000267 min=0.000080) | distill(mean=0.000164 std=0.000061 max=0.000267 min=0.000080)
+2026-03-19 20:34:17,303 [INFO] [LossChunk] steps=61..80 size=20 | total(mean=0.000450 std=0.000099 max=0.000632 min=0.000299) | distill(mean=0.000450 std=0.000099 max=0.000632 min=0.000299)
+2026-03-19 20:34:17,303 [INFO] [LossChunk] steps=81..100 size=20 | total(mean=0.001421 std=0.002313 max=0.011452 min=0.000665) | distill(mean=0.001421 std=0.002313 max=0.011452 min=0.000665)
+2026-03-19 20:34:17,343 [INFO] [QuantUpdateDiag] Epoch 1/160 | layers=140 | weighted_changed_ratio(dynamic)=0.025827 | weighted_changed_ratio(same_scale)=0.024937 | mean|ΔW_fp|=9.963316e-05 | mean|ΔW_qnorm|=3.544597e-04
+2026-03-19 20:34:17,343 [INFO] [QuantUpdateDiag] Top-12 layers by changed_ratio_dynamic:
+2026-03-19 20:34:17,343 [INFO]   layer=model.output_blocks.5.0.cond_emb_layers.1 | ratio_dyn=0.081701 | ratio_same_scale=0.079102 | mean|ΔW_fp|=2.135075e-04 | mean|ΔW_qnorm|=6.436326e-04 | numel=196608
+2026-03-19 20:34:17,343 [INFO]   layer=model.output_blocks.4.0.cond_emb_layers.1 | ratio_dyn=0.078512 | ratio_same_scale=0.075846 | mean|ΔW_fp|=2.162561e-04 | mean|ΔW_qnorm|=6.182413e-04 | numel=196608
+2026-03-19 20:34:17,343 [INFO]   layer=model.output_blocks.6.0.cond_emb_layers.1 | ratio_dyn=0.077583 | ratio_same_scale=0.075195 | mean|ΔW_fp|=1.964033e-04 | mean|ΔW_qnorm|=6.114329e-04 | numel=131072
+2026-03-19 20:34:17,343 [INFO]   layer=model.input_blocks.10.0.cond_emb_layers.1 | ratio_dyn=0.077204 | ratio_same_scale=0.074453 | mean|ΔW_fp|=2.186415e-04 | mean|ΔW_qnorm|=6.079086e-04 | numel=196608
+2026-03-19 20:34:17,343 [INFO]   layer=model.output_blocks.3.0.emb_layers.1 | ratio_dyn=0.077184 | ratio_same_scale=0.073283 | mean|ΔW_fp|=7.302078e-05 | mean|ΔW_qnorm|=6.079687e-04 | numel=393216
+2026-03-19 20:34:17,343 [INFO]   layer=model.output_blocks.1.0.cond_emb_layers.1 | ratio_dyn=0.077171 | ratio_same_scale=0.074593 | mean|ΔW_fp|=2.253922e-04 | mean|ΔW_qnorm|=6.076483e-04 | numel=262144
+2026-03-19 20:34:17,343 [INFO]   layer=model.output_blocks.2.0.cond_emb_layers.1 | ratio_dyn=0.075954 | ratio_same_scale=0.073269 | mean|ΔW_fp|=2.188376e-04 | mean|ΔW_qnorm|=5.980664e-04 | numel=262144
+2026-03-19 20:34:17,343 [INFO]   layer=model.output_blocks.11.0.emb_layers.1 | ratio_dyn=0.075935 | ratio_same_scale=0.072891 | mean|ΔW_fp|=9.702268e-05 | mean|ΔW_qnorm|=5.980363e-04 | numel=131072
+2026-03-19 20:34:17,343 [INFO]   layer=model.output_blocks.5.0.emb_layers.1 | ratio_dyn=0.075587 | ratio_same_scale=0.069176 | mean|ΔW_fp|=7.579550e-05 | mean|ΔW_qnorm|=5.951729e-04 | numel=393216
+2026-03-19 20:34:17,343 [INFO]   layer=model.output_blocks.3.0.cond_emb_layers.1 | ratio_dyn=0.075180 | ratio_same_scale=0.072291 | mean|ΔW_fp|=2.099279e-04 | mean|ΔW_qnorm|=5.919689e-04 | numel=196608
+2026-03-19 20:34:17,343 [INFO]   layer=model.output_blocks.4.0.emb_layers.1 | ratio_dyn=0.074898 | ratio_same_scale=0.069132 | mean|ΔW_fp|=7.368203e-05 | mean|ΔW_qnorm|=5.899264e-04 | numel=393216
+2026-03-19 20:34:17,343 [INFO]   layer=model.input_blocks.9.0.cond_emb_layers.1 | ratio_dyn=0.074394 | ratio_same_scale=0.071579 | mean|ΔW_fp|=1.931894e-04 | mean|ΔW_qnorm|=5.857813e-04 | numel=131072
+2026-03-19 20:34:19,870 [INFO] 模型已保存: QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth (base=3321 keys, raw=1106 keys, ema=1106 keys)
+2026-03-19 20:34:19,871 [INFO]   ✅ 新的最佳模型已保存 (Loss: 0.000421)
+2026-03-19 20:34:19,872 [INFO] 
+=== Epoch 1 驗證生成 (使用 EMA 模型) ===
+2026-03-19 20:34:19,933 [INFO] EMA 權重應用完成，共應用 420 個參數
+2026-03-19 20:34:19,933 [INFO] set quant state to True, True for layer 1
+2026-03-19 20:34:19,933 [INFO] set quant state to True, True for layer 2
+2026-03-19 20:34:19,933 [INFO] set quant state to False, False for layer 3
+2026-03-19 20:34:19,934 [INFO] set quant state to False, False for layer 144
+2026-03-19 20:34:19,936 [INFO] set quant state to True, True for layer 1
+2026-03-19 20:34:19,936 [INFO] set quant state to True, True for layer 2
+2026-03-19 20:34:19,936 [INFO] set quant state to False, False for layer 3
+2026-03-19 20:34:19,937 [INFO] set quant state to False, False for layer 144
+2026-03-19 20:34:25,044 [INFO] 生成圖像數值範圍: [-1.0000, 1.0000]
+2026-03-19 20:34:25,044 [INFO] 生成圖像均值: -0.0424
+2026-03-19 20:34:25,045 [INFO] 生成圖像標準差: 0.5130
+2026-03-19 20:34:25,045 [INFO] 正規化後數值範圍: [0.0000, 1.0000]
+2026-03-19 20:34:25,159 [INFO] ✅ Epoch 1 EMA 模型驗證生成完成:
+2026-03-19 20:34:25,169 [INFO]   生成時間: 5.17秒
+2026-03-19 20:34:25,199 [INFO]   圖像範圍: [-1.000, 1.000]
+2026-03-19 20:34:25,199 [INFO]   保存路徑: QATcode/quantize_ver2/training_samples/
+2026-03-19 20:34:25,199 [INFO] 驗證後量化器 current_step: 99
+2026-03-19 20:34:25,218 [INFO] 
+--- Epoch 2/160 ---
+2026-03-19 20:34:27,692 [INFO] Step 20 - DDIM step 80: current_step_loss=0.000015 | running_mean_ddim_loss=0.000017
+2026-03-19 20:34:30,063 [INFO] Step 40 - DDIM step 60: current_step_loss=0.000056 | running_mean_ddim_loss=0.000023
+2026-03-19 20:34:32,462 [INFO] Step 60 - DDIM step 40: current_step_loss=0.000241 | running_mean_ddim_loss=0.000058
+2026-03-19 20:34:34,833 [INFO] Step 80 - DDIM step 20: current_step_loss=0.000591 | running_mean_ddim_loss=0.000142
+2026-03-19 20:34:37,191 [INFO] Step 100 - DDIM step 0: current_step_loss=0.011493 | running_mean_ddim_loss=0.000391
+2026-03-19 20:34:37,193 [INFO] 
+Epoch 2/160 完成:
+2026-03-19 20:34:37,193 [INFO]   平均蒸餾損失(DDIM全步平均): 0.000391
+2026-03-19 20:34:37,193 [INFO]   平均損失(目前等同蒸餾損失): 0.000391
+2026-03-19 20:34:37,193 [INFO]   時間: 11.98秒
+2026-03-19 20:34:37,199 [INFO] [LossSummary] tail_ratio=3.543687 | tail_outlier_ratio=8.290517 | mean(t=0..19)=1.386252e-03 | mean(t=80..99)=1.726726e-05
+2026-03-19 20:34:37,199 [INFO] [LossSummary] per-timestep mean (first5): t000:1.149e-02, t001:1.763e-03, t002:1.213e-03, t003:1.024e-03, t004:9.640e-04
+2026-03-19 20:34:37,199 [INFO] [LossSummary] per-timestep mean (last5): t095:1.580e-05, t096:1.954e-05, t097:2.292e-05, t098:2.207e-05, t099:3.165e-05
+2026-03-19 20:34:37,199 [INFO] [LossChunk] steps=101..120 size=20 | total(mean=0.000017 std=0.000004 max=0.000032 min=0.000014) | distill(mean=0.000017 std=0.000004 max=0.000032 min=0.000014)
+2026-03-19 20:34:37,199 [INFO] [LossChunk] steps=121..140 size=20 | total(mean=0.000028 std=0.000012 max=0.000056 min=0.000016) | distill(mean=0.000028 std=0.000012 max=0.000056 min=0.000016)
+2026-03-19 20:34:37,199 [INFO] [LossChunk] steps=141..160 size=20 | total(mean=0.000129 std=0.000053 max=0.000241 min=0.000059) | distill(mean=0.000129 std=0.000053 max=0.000241 min=0.000059)
+2026-03-19 20:34:37,199 [INFO] [LossChunk] steps=161..180 size=20 | total(mean=0.000395 std=0.000104 max=0.000591 min=0.000244) | distill(mean=0.000395 std=0.000104 max=0.000591 min=0.000244)
+2026-03-19 20:34:37,200 [INFO] [LossChunk] steps=181..200 size=20 | total(mean=0.001386 std=0.002333 max=0.011493 min=0.000593) | distill(mean=0.001386 std=0.002333 max=0.011493 min=0.000593)
+2026-03-19 20:34:39,393 [INFO] 模型已保存: QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth (base=3321 keys, raw=1106 keys, ema=1106 keys)
+2026-03-19 20:34:39,395 [INFO]   ✅ 新的最佳模型已保存 (Loss: 0.000391)
+2026-03-19 20:34:39,398 [INFO] 
+--- Epoch 3/160 ---
+2026-03-19 20:34:41,892 [INFO] Step 20 - DDIM step 80: current_step_loss=0.000017 | running_mean_ddim_loss=0.000017
+2026-03-19 20:34:44,270 [INFO] Step 40 - DDIM step 60: current_step_loss=0.000058 | running_mean_ddim_loss=0.000026
+2026-03-19 20:34:46,648 [INFO] Step 60 - DDIM step 40: current_step_loss=0.000240 | running_mean_ddim_loss=0.000064
+2026-03-19 20:34:49,021 [INFO] Step 80 - DDIM step 20: current_step_loss=0.000537 | running_mean_ddim_loss=0.000144
+2026-03-19 20:34:51,400 [INFO] Step 100 - DDIM step 0: current_step_loss=0.011134 | running_mean_ddim_loss=0.000379
+2026-03-19 20:34:51,402 [INFO] 
+Epoch 3/160 完成:
+2026-03-19 20:34:51,402 [INFO]   平均蒸餾損失(DDIM全步平均): 0.000379
+2026-03-19 20:34:51,402 [INFO]   平均損失(目前等同蒸餾損失): 0.000379
+2026-03-19 20:34:51,402 [INFO]   時間: 12.01秒
+2026-03-19 20:34:51,408 [INFO] [LossSummary] tail_ratio=3.477956 | tail_outlier_ratio=8.452244 | mean(t=0..19)=1.317251e-03 | mean(t=80..99)=1.681771e-05
+2026-03-19 20:34:51,408 [INFO] [LossSummary] per-timestep mean (first5): t000:1.113e-02, t001:1.687e-03, t002:1.144e-03, t003:9.868e-04, t004:9.096e-04
+2026-03-19 20:34:51,408 [INFO] [LossSummary] per-timestep mean (last5): t095:1.963e-05, t096:2.396e-05, t097:2.500e-05, t098:2.760e-05, t099:1.979e-05
+2026-03-19 20:34:51,408 [INFO] [LossChunk] steps=201..220 size=20 | total(mean=0.000017 std=0.000004 max=0.000028 min=0.000012) | distill(mean=0.000017 std=0.000004 max=0.000028 min=0.000012)
+2026-03-19 20:34:51,408 [INFO] [LossChunk] steps=221..240 size=20 | total(mean=0.000034 std=0.000015 max=0.000066 min=0.000017) | distill(mean=0.000034 std=0.000015 max=0.000066 min=0.000017)
+2026-03-19 20:34:51,409 [INFO] [LossChunk] steps=241..260 size=20 | total(mean=0.000141 std=0.000052 max=0.000240 min=0.000073) | distill(mean=0.000141 std=0.000052 max=0.000240 min=0.000073)
+2026-03-19 20:34:51,409 [INFO] [LossChunk] steps=261..280 size=20 | total(mean=0.000384 std=0.000093 max=0.000537 min=0.000244) | distill(mean=0.000384 std=0.000093 max=0.000537 min=0.000244)
+2026-03-19 20:34:51,409 [INFO] [LossChunk] steps=281..300 size=20 | total(mean=0.001317 std=0.002266 max=0.011134 min=0.000532) | distill(mean=0.001317 std=0.002266 max=0.011134 min=0.000532)
+2026-03-19 20:34:53,744 [INFO] 模型已保存: QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth (base=3321 keys, raw=1106 keys, ema=1106 keys)
+2026-03-19 20:34:53,746 [INFO]   ✅ 新的最佳模型已保存 (Loss: 0.000379)
+2026-03-19 20:34:53,750 [INFO] 
+--- Epoch 4/160 ---
+2026-03-19 20:34:56,222 [INFO] Step 20 - DDIM step 80: current_step_loss=0.000014 | running_mean_ddim_loss=0.000013
+2026-03-19 20:34:58,581 [INFO] Step 40 - DDIM step 60: current_step_loss=0.000049 | running_mean_ddim_loss=0.000020
+2026-03-19 20:35:00,954 [INFO] Step 60 - DDIM step 40: current_step_loss=0.000208 | running_mean_ddim_loss=0.000053
+2026-03-19 20:35:03,340 [INFO] Step 80 - DDIM step 20: current_step_loss=0.000488 | running_mean_ddim_loss=0.000125
+2026-03-19 20:35:05,703 [INFO] Step 100 - DDIM step 0: current_step_loss=0.011656 | running_mean_ddim_loss=0.000365
+2026-03-19 20:35:05,705 [INFO] 
+Epoch 4/160 完成:
+2026-03-19 20:35:05,705 [INFO]   平均蒸餾損失(DDIM全步平均): 0.000365
+2026-03-19 20:35:05,705 [INFO]   平均損失(目前等同蒸餾損失): 0.000365
+2026-03-19 20:35:05,705 [INFO]   時間: 11.96秒
+2026-03-19 20:35:05,711 [INFO] [LossSummary] tail_ratio=3.624665 | tail_outlier_ratio=8.819860 | mean(t=0..19)=1.321520e-03 | mean(t=80..99)=1.339122e-05
+2026-03-19 20:35:05,711 [INFO] [LossSummary] per-timestep mean (first5): t000:1.166e-02, t001:1.656e-03, t002:1.117e-03, t003:9.554e-04, t004:8.763e-04
+2026-03-19 20:35:05,711 [INFO] [LossSummary] per-timestep mean (last5): t095:1.230e-05, t096:1.242e-05, t097:1.235e-05, t098:1.186e-05, t099:1.398e-05
+2026-03-19 20:35:05,711 [INFO] [LossChunk] steps=301..320 size=20 | total(mean=0.000013 std=0.000001 max=0.000017 min=0.000012) | distill(mean=0.000013 std=0.000001 max=0.000017 min=0.000012)
+2026-03-19 20:35:05,712 [INFO] [LossChunk] steps=321..340 size=20 | total(mean=0.000027 std=0.000011 max=0.000049 min=0.000014) | distill(mean=0.000027 std=0.000011 max=0.000049 min=0.000014)
+2026-03-19 20:35:05,712 [INFO] [LossChunk] steps=341..360 size=20 | total(mean=0.000117 std=0.000045 max=0.000208 min=0.000056) | distill(mean=0.000117 std=0.000045 max=0.000208 min=0.000056)
+2026-03-19 20:35:05,712 [INFO] [LossChunk] steps=361..380 size=20 | total(mean=0.000344 std=0.000087 max=0.000488 min=0.000219) | distill(mean=0.000344 std=0.000087 max=0.000488 min=0.000219)
+2026-03-19 20:35:05,712 [INFO] [LossChunk] steps=381..400 size=20 | total(mean=0.001322 std=0.002384 max=0.011656 min=0.000514) | distill(mean=0.001322 std=0.002384 max=0.011656 min=0.000514)
+2026-03-19 20:35:07,851 [INFO] 模型已保存: QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth (base=3321 keys, raw=1106 keys, ema=1106 keys)
+2026-03-19 20:35:07,853 [INFO]   ✅ 新的最佳模型已保存 (Loss: 0.000365)
+2026-03-19 20:35:07,856 [INFO] 
+--- Epoch 5/160 ---
+2026-03-19 20:35:10,326 [INFO] Step 20 - DDIM step 80: current_step_loss=0.000017 | running_mean_ddim_loss=0.000015
+2026-03-19 20:35:12,695 [INFO] Step 40 - DDIM step 60: current_step_loss=0.000061 | running_mean_ddim_loss=0.000023
+2026-03-19 20:35:15,066 [INFO] Step 60 - DDIM step 40: current_step_loss=0.000242 | running_mean_ddim_loss=0.000062
+2026-03-19 20:35:17,437 [INFO] Step 80 - DDIM step 20: current_step_loss=0.000563 | running_mean_ddim_loss=0.000144
+2026-03-19 20:35:19,810 [INFO] Step 100 - DDIM step 0: current_step_loss=0.012772 | running_mean_ddim_loss=0.000407
+2026-03-19 20:35:19,811 [INFO] 
+Epoch 5/160 完成:
+2026-03-19 20:35:19,812 [INFO]   平均蒸餾損失(DDIM全步平均): 0.000407
+2026-03-19 20:35:19,812 [INFO]   平均損失(目前等同蒸餾損失): 0.000407
+2026-03-19 20:35:19,812 [INFO]   時間: 11.96秒
+2026-03-19 20:35:19,818 [INFO] [LossSummary] tail_ratio=3.583319 | tail_outlier_ratio=8.765237 | mean(t=0..19)=1.457171e-03 | mean(t=80..99)=1.452970e-05
+2026-03-19 20:35:19,818 [INFO] [LossSummary] per-timestep mean (first5): t000:1.277e-02, t001:1.997e-03, t002:1.300e-03, t003:1.087e-03, t004:9.683e-04
+2026-03-19 20:35:19,818 [INFO] [LossSummary] per-timestep mean (last5): t095:1.334e-05, t096:1.331e-05, t097:1.384e-05, t098:1.447e-05, t099:1.623e-05
+2026-03-19 20:35:19,818 [INFO] [LossChunk] steps=401..420 size=20 | total(mean=0.000015 std=0.000002 max=0.000020 min=0.000013) | distill(mean=0.000015 std=0.000002 max=0.000020 min=0.000013)
+2026-03-19 20:35:19,819 [INFO] [LossChunk] steps=421..440 size=20 | total(mean=0.000032 std=0.000013 max=0.000061 min=0.000017) | distill(mean=0.000032 std=0.000013 max=0.000061 min=0.000017)
+2026-03-19 20:35:19,819 [INFO] [LossChunk] steps=441..460 size=20 | total(mean=0.000139 std=0.000053 max=0.000242 min=0.000065) | distill(mean=0.000139 std=0.000053 max=0.000242 min=0.000065)
+2026-03-19 20:35:19,819 [INFO] [LossChunk] steps=461..480 size=20 | total(mean=0.000391 std=0.000093 max=0.000563 min=0.000231) | distill(mean=0.000391 std=0.000093 max=0.000563 min=0.000231)
+2026-03-19 20:35:19,820 [INFO] [LossChunk] steps=481..500 size=20 | total(mean=0.001457 std=0.002615 max=0.012772 min=0.000568) | distill(mean=0.001457 std=0.002615 max=0.012772 min=0.000568)
+2026-03-19 20:35:19,823 [INFO] 
+--- Epoch 6/160 ---
+2026-03-19 20:35:22,293 [INFO] Step 20 - DDIM step 80: current_step_loss=0.000015 | running_mean_ddim_loss=0.000013
+2026-03-19 20:35:24,674 [INFO] Step 40 - DDIM step 60: current_step_loss=0.000058 | running_mean_ddim_loss=0.000023
+2026-03-19 20:35:27,039 [INFO] Step 60 - DDIM step 40: current_step_loss=0.000248 | running_mean_ddim_loss=0.000063
+2026-03-19 20:35:29,417 [INFO] Step 80 - DDIM step 20: current_step_loss=0.000568 | running_mean_ddim_loss=0.000150
+2026-03-19 20:35:31,801 [INFO] Step 100 - DDIM step 0: current_step_loss=0.012501 | running_mean_ddim_loss=0.000421
+2026-03-19 20:35:31,803 [INFO] 
+Epoch 6/160 完成:
+2026-03-19 20:35:31,803 [INFO]   平均蒸餾損失(DDIM全步平均): 0.000421
+2026-03-19 20:35:31,803 [INFO]   平均損失(目前等同蒸餾損失): 0.000421
+2026-03-19 20:35:31,803 [INFO]   時間: 11.98秒
+2026-03-19 20:35:31,809 [INFO] [LossSummary] tail_ratio=3.577648 | tail_outlier_ratio=8.306991 | mean(t=0..19)=1.504838e-03 | mean(t=80..99)=1.341662e-05
+2026-03-19 20:35:31,809 [INFO] [LossSummary] per-timestep mean (first5): t000:1.250e-02, t001:2.102e-03, t002:1.407e-03, t003:1.176e-03, t004:1.069e-03
+2026-03-19 20:35:31,809 [INFO] [LossSummary] per-timestep mean (last5): t095:1.292e-05, t096:1.189e-05, t097:1.209e-05, t098:1.233e-05, t099:1.266e-05
+2026-03-19 20:35:31,809 [INFO] [LossChunk] steps=501..520 size=20 | total(mean=0.000013 std=0.000001 max=0.000017 min=0.000012) | distill(mean=0.000013 std=0.000001 max=0.000017 min=0.000012)
+2026-03-19 20:35:31,809 [INFO] [LossChunk] steps=521..540 size=20 | total(mean=0.000032 std=0.000013 max=0.000058 min=0.000016) | distill(mean=0.000032 std=0.000013 max=0.000058 min=0.000016)
+2026-03-19 20:35:31,809 [INFO] [LossChunk] steps=541..560 size=20 | total(mean=0.000145 std=0.000056 max=0.000248 min=0.000070) | distill(mean=0.000145 std=0.000056 max=0.000248 min=0.000070)
+2026-03-19 20:35:31,810 [INFO] [LossChunk] steps=561..580 size=20 | total(mean=0.000408 std=0.000098 max=0.000568 min=0.000252) | distill(mean=0.000408 std=0.000098 max=0.000568 min=0.000252)
+2026-03-19 20:35:31,810 [INFO] [LossChunk] steps=581..600 size=20 | total(mean=0.001505 std=0.002544 max=0.012501 min=0.000644) | distill(mean=0.001505 std=0.002544 max=0.012501 min=0.000644)
+2026-03-19 20:35:31,812 [INFO] 
+--- Epoch 7/160 ---
+2026-03-19 20:35:34,283 [INFO] Step 20 - DDIM step 80: current_step_loss=0.000015 | running_mean_ddim_loss=0.000013
+2026-03-19 20:35:36,664 [INFO] Step 40 - DDIM step 60: current_step_loss=0.000054 | running_mean_ddim_loss=0.000020
+2026-03-19 20:35:39,037 [INFO] Step 60 - DDIM step 40: current_step_loss=0.000197 | running_mean_ddim_loss=0.000052
+2026-03-19 20:35:41,421 [INFO] Step 80 - DDIM step 20: current_step_loss=0.000516 | running_mean_ddim_loss=0.000125
+2026-03-19 20:35:43,796 [INFO] Step 100 - DDIM step 0: current_step_loss=0.012040 | running_mean_ddim_loss=0.000371
+2026-03-19 20:35:43,797 [INFO] 
+Epoch 7/160 完成:
+2026-03-19 20:35:43,798 [INFO]   平均蒸餾損失(DDIM全步平均): 0.000371
+2026-03-19 20:35:43,798 [INFO]   平均損失(目前等同蒸餾損失): 0.000371
+2026-03-19 20:35:43,798 [INFO]   時間: 11.99秒
+2026-03-19 20:35:43,805 [INFO] [LossSummary] tail_ratio=3.650267 | tail_outlier_ratio=8.881288 | mean(t=0..19)=1.355691e-03 | mean(t=80..99)=1.301573e-05
+2026-03-19 20:35:43,805 [INFO] [LossSummary] per-timestep mean (first5): t000:1.204e-02, t001:1.780e-03, t002:1.200e-03, t003:1.013e-03, t004:9.264e-04
+2026-03-19 20:35:43,805 [INFO] [LossSummary] per-timestep mean (last5): t095:1.397e-05, t096:1.260e-05, t097:1.203e-05, t098:1.317e-05, t099:1.213e-05
+2026-03-19 20:35:43,805 [INFO] [LossChunk] steps=601..620 size=20 | total(mean=0.000013 std=0.000001 max=0.000018 min=0.000011) | distill(mean=0.000013 std=0.000001 max=0.000018 min=0.000011)
+2026-03-19 20:35:43,805 [INFO] [LossChunk] steps=621..640 size=20 | total(mean=0.000027 std=0.000011 max=0.000054 min=0.000015) | distill(mean=0.000027 std=0.000011 max=0.000054 min=0.000015)
+2026-03-19 20:35:43,805 [INFO] [LossChunk] steps=641..660 size=20 | total(mean=0.000116 std=0.000045 max=0.000197 min=0.000054) | distill(mean=0.000116 std=0.000045 max=0.000197 min=0.000054)
+2026-03-19 20:35:43,805 [INFO] [LossChunk] steps=661..680 size=20 | total(mean=0.000345 std=0.000091 max=0.000516 min=0.000202) | distill(mean=0.000345 std=0.000091 max=0.000516 min=0.000202)
+2026-03-19 20:35:43,806 [INFO] [LossChunk] steps=681..700 size=20 | total(mean=0.001356 std=0.002467 max=0.012040 min=0.000515) | distill(mean=0.001356 std=0.002467 max=0.012040 min=0.000515)
+2026-03-19 20:35:43,808 [INFO] 
+--- Epoch 8/160 ---
+2026-03-19 20:35:46,291 [INFO] Step 20 - DDIM step 80: current_step_loss=0.000013 | running_mean_ddim_loss=0.000013
+2026-03-19 20:35:48,671 [INFO] Step 40 - DDIM step 60: current_step_loss=0.000046 | running_mean_ddim_loss=0.000019
+2026-03-19 20:35:51,059 [INFO] Step 60 - DDIM step 40: current_step_loss=0.000171 | running_mean_ddim_loss=0.000049
+2026-03-19 20:35:53,440 [INFO] Step 80 - DDIM step 20: current_step_loss=0.000475 | running_mean_ddim_loss=0.000116
+2026-03-19 20:35:55,818 [INFO] Step 100 - DDIM step 0: current_step_loss=0.011113 | running_mean_ddim_loss=0.000343
+2026-03-19 20:35:55,819 [INFO] 
+Epoch 8/160 完成:
+2026-03-19 20:35:55,820 [INFO]   平均蒸餾損失(DDIM全步平均): 0.000343
+2026-03-19 20:35:55,820 [INFO]   平均損失(目前等同蒸餾損失): 0.000343
+2026-03-19 20:35:55,820 [INFO]   時間: 12.01秒
+2026-03-19 20:35:55,873 [INFO] [LossSummary] tail_ratio=3.650083 | tail_outlier_ratio=8.865072 | mean(t=0..19)=1.253560e-03 | mean(t=80..99)=1.289825e-05
+2026-03-19 20:35:55,873 [INFO] [LossSummary] per-timestep mean (first5): t000:1.111e-02, t001:1.622e-03, t002:1.073e-03, t003:9.442e-04, t004:8.719e-04
+2026-03-19 20:35:55,873 [INFO] [LossSummary] per-timestep mean (last5): t095:1.187e-05, t096:1.177e-05, t097:1.215e-05, t098:1.213e-05, t099:1.683e-05
+2026-03-19 20:35:55,873 [INFO] [LossChunk] steps=701..720 size=20 | total(mean=0.000013 std=0.000001 max=0.000017 min=0.000011) | distill(mean=0.000013 std=0.000001 max=0.000017 min=0.000011)
+2026-03-19 20:35:55,874 [INFO] [LossChunk] steps=721..740 size=20 | total(mean=0.000026 std=0.000009 max=0.000046 min=0.000015) | distill(mean=0.000026 std=0.000009 max=0.000046 min=0.000015)
+2026-03-19 20:35:55,874 [INFO] [LossChunk] steps=741..760 size=20 | total(mean=0.000109 std=0.000041 max=0.000179 min=0.000054) | distill(mean=0.000109 std=0.000041 max=0.000179 min=0.000054)
+2026-03-19 20:35:55,874 [INFO] [LossChunk] steps=761..780 size=20 | total(mean=0.000316 std=0.000083 max=0.000475 min=0.000191) | distill(mean=0.000316 std=0.000083 max=0.000475 min=0.000191)
+2026-03-19 20:35:55,874 [INFO] [LossChunk] steps=781..800 size=20 | total(mean=0.001254 std=0.002276 max=0.011113 min=0.000469) | distill(mean=0.001254 std=0.002276 max=0.011113 min=0.000469)
+2026-03-19 20:35:55,915 [INFO] [QuantUpdateDiag] Epoch 8/160 | layers=140 | weighted_changed_ratio(dynamic)=0.098016 | weighted_changed_ratio(same_scale)=0.094744 | mean|ΔW_fp|=3.138441e-04 | mean|ΔW_qnorm|=1.164474e-03
+2026-03-19 20:35:55,915 [INFO] [QuantUpdateDiag] Top-12 layers by changed_ratio_dynamic:
+2026-03-19 20:35:55,915 [INFO]   layer=model.output_blocks.3.0.emb_layers.1 | ratio_dyn=0.336306 | ratio_same_scale=0.325274 | mean|ΔW_fp|=3.973548e-04 | mean|ΔW_qnorm|=3.124027e-03 | numel=393216
+2026-03-19 20:35:55,915 [INFO]   layer=model.output_blocks.1.0.emb_layers.1 | ratio_dyn=0.322670 | ratio_same_scale=0.291042 | mean|ΔW_fp|=3.873781e-04 | mean|ΔW_qnorm|=2.956480e-03 | numel=524288
+2026-03-19 20:35:55,915 [INFO]   layer=model.output_blocks.0.0.cond_emb_layers.1 | ratio_dyn=0.313293 | ratio_same_scale=0.303791 | mean|ΔW_fp|=8.813872e-04 | mean|ΔW_qnorm|=2.749586e-03 | numel=262144
+2026-03-19 20:35:55,915 [INFO]   layer=model.output_blocks.2.0.emb_layers.1 | ratio_dyn=0.293982 | ratio_same_scale=0.280947 | mean|ΔW_fp|=3.389635e-04 | mean|ΔW_qnorm|=2.601053e-03 | numel=524288
+2026-03-19 20:35:55,915 [INFO]   layer=model.output_blocks.1.0.cond_emb_layers.1 | ratio_dyn=0.288410 | ratio_same_scale=0.279331 | mean|ΔW_fp|=8.838287e-04 | mean|ΔW_qnorm|=2.438493e-03 | numel=262144
+2026-03-19 20:35:55,915 [INFO]   layer=model.input_blocks.13.0.emb_layers.1 | ratio_dyn=0.279659 | ratio_same_scale=0.263882 | mean|ΔW_fp|=2.994622e-04 | mean|ΔW_qnorm|=2.444169e-03 | numel=524288
+2026-03-19 20:35:55,915 [INFO]   layer=model.input_blocks.10.0.emb_layers.1 | ratio_dyn=0.275139 | ratio_same_scale=0.262624 | mean|ΔW_fp|=2.788683e-04 | mean|ΔW_qnorm|=2.416576e-03 | numel=393216
+2026-03-19 20:35:55,915 [INFO]   layer=model.output_blocks.2.1.emb_layers.1 | ratio_dyn=0.269138 | ratio_same_scale=0.256447 | mean|ΔW_fp|=2.938146e-04 | mean|ΔW_qnorm|=2.315656e-03 | numel=524288
+2026-03-19 20:35:55,915 [INFO]   layer=model.output_blocks.6.0.emb_layers.1 | ratio_dyn=0.268059 | ratio_same_scale=0.256706 | mean|ΔW_fp|=3.315468e-04 | mean|ΔW_qnorm|=2.301524e-03 | numel=262144
+2026-03-19 20:35:55,915 [INFO]   layer=model.output_blocks.5.2.emb_layers.1 | ratio_dyn=0.267367 | ratio_same_scale=0.255018 | mean|ΔW_fp|=3.046154e-04 | mean|ΔW_qnorm|=2.270336e-03 | numel=393216
+2026-03-19 20:35:55,915 [INFO]   layer=model.output_blocks.0.0.emb_layers.1 | ratio_dyn=0.265879 | ratio_same_scale=0.248688 | mean|ΔW_fp|=2.976101e-04 | mean|ΔW_qnorm|=2.257730e-03 | numel=524288
+2026-03-19 20:35:55,915 [INFO]   layer=model.output_blocks.4.0.emb_layers.1 | ratio_dyn=0.265803 | ratio_same_scale=0.250847 | mean|ΔW_fp|=2.914061e-04 | mean|ΔW_qnorm|=2.234592e-03 | numel=393216
+2026-03-19 20:35:58,355 [INFO] 模型已保存: QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth (base=3321 keys, raw=1106 keys, ema=1106 keys)
+2026-03-19 20:35:58,357 [INFO]   ✅ 新的最佳模型已保存 (Loss: 0.000343)
+2026-03-19 20:35:58,361 [INFO] 
+--- Epoch 9/160 ---
+2026-03-19 20:36:00,838 [INFO] Step 20 - DDIM step 80: current_step_loss=0.000016 | running_mean_ddim_loss=0.000013
+2026-03-19 20:36:03,214 [INFO] Step 40 - DDIM step 60: current_step_loss=0.000076 | running_mean_ddim_loss=0.000024
+2026-03-19 20:36:05,591 [INFO] Step 60 - DDIM step 40: current_step_loss=0.000268 | running_mean_ddim_loss=0.000070
+2026-03-19 20:36:07,969 [INFO] Step 80 - DDIM step 20: current_step_loss=0.000599 | running_mean_ddim_loss=0.000159
+2026-03-19 20:36:10,353 [INFO] Step 100 - DDIM step 0: current_step_loss=0.013169 | running_mean_ddim_loss=0.000431
+2026-03-19 20:36:10,355 [INFO] 
+Epoch 9/160 完成:
+2026-03-19 20:36:10,355 [INFO]   平均蒸餾損失(DDIM全步平均): 0.000431
+2026-03-19 20:36:10,355 [INFO]   平均損失(目前等同蒸餾損失): 0.000431
+2026-03-19 20:36:10,355 [INFO]   時間: 12.00秒
+2026-03-19 20:36:10,361 [INFO] [LossSummary] tail_ratio=3.523531 | tail_outlier_ratio=8.678111 | mean(t=0..19)=1.517508e-03 | mean(t=80..99)=1.319872e-05
+2026-03-19 20:36:10,361 [INFO] [LossSummary] per-timestep mean (first5): t000:1.317e-02, t001:1.997e-03, t002:1.322e-03, t003:1.119e-03, t004:1.017e-03
+2026-03-19 20:36:10,361 [INFO] [LossSummary] per-timestep mean (last5): t095:1.315e-05, t096:1.108e-05, t097:1.152e-05, t098:1.159e-05, t099:1.289e-05
+2026-03-19 20:36:10,361 [INFO] [LossChunk] steps=801..820 size=20 | total(mean=0.000013 std=0.000002 max=0.000018 min=0.000011) | distill(mean=0.000013 std=0.000002 max=0.000018 min=0.000011)
+2026-03-19 20:36:10,361 [INFO] [LossChunk] steps=821..840 size=20 | total(mean=0.000036 std=0.000017 max=0.000076 min=0.000017) | distill(mean=0.000036 std=0.000017 max=0.000076 min=0.000017)
+2026-03-19 20:36:10,361 [INFO] [LossChunk] steps=841..860 size=20 | total(mean=0.000161 std=0.000058 max=0.000268 min=0.000081) | distill(mean=0.000161 std=0.000058 max=0.000268 min=0.000081)
+2026-03-19 20:36:10,361 [INFO] [LossChunk] steps=861..880 size=20 | total(mean=0.000426 std=0.000099 max=0.000599 min=0.000273) | distill(mean=0.000426 std=0.000099 max=0.000599 min=0.000273)
+2026-03-19 20:36:10,362 [INFO] [LossChunk] steps=881..900 size=20 | total(mean=0.001518 std=0.002690 max=0.013169 min=0.000637) | distill(mean=0.001518 std=0.002690 max=0.013169 min=0.000637)
+2026-03-19 20:36:10,362 [INFO] 
+=== Epoch 9 驗證生成 (使用 EMA 模型) ===
+2026-03-19 20:36:10,425 [INFO] EMA 權重應用完成，共應用 420 個參數
+2026-03-19 20:36:10,425 [INFO] set quant state to True, True for layer 1
+2026-03-19 20:36:10,425 [INFO] set quant state to True, True for layer 2
+2026-03-19 20:36:10,425 [INFO] set quant state to False, False for layer 3
+2026-03-19 20:36:10,426 [INFO] set quant state to False, False for layer 144
+2026-03-19 20:36:10,431 [INFO] set quant state to True, True for layer 1
+2026-03-19 20:36:10,431 [INFO] set quant state to True, True for layer 2
+2026-03-19 20:36:10,431 [INFO] set quant state to False, False for layer 3
+2026-03-19 20:36:10,432 [INFO] set quant state to False, False for layer 144
+2026-03-19 20:36:15,544 [INFO] 生成圖像數值範圍: [-1.0000, 1.0000]
+2026-03-19 20:36:15,544 [INFO] 生成圖像均值: -0.0445
+2026-03-19 20:36:15,544 [INFO] 生成圖像標準差: 0.5125
+2026-03-19 20:36:15,544 [INFO] 正規化後數值範圍: [0.0000, 1.0000]
+2026-03-19 20:36:15,657 [INFO] ✅ Epoch 9 EMA 模型驗證生成完成:
+2026-03-19 20:36:15,668 [INFO]   生成時間: 5.18秒
+2026-03-19 20:36:15,692 [INFO]   圖像範圍: [-1.000, 1.000]
+2026-03-19 20:36:15,692 [INFO]   保存路徑: QATcode/quantize_ver2/training_samples/
+2026-03-19 20:36:15,692 [INFO] 驗證後量化器 current_step: 99
+2026-03-19 20:36:15,714 [INFO] 
+--- Epoch 10/160 ---
+2026-03-19 20:36:18,188 [INFO] Step 20 - DDIM step 80: current_step_loss=0.000014 | running_mean_ddim_loss=0.000014
+2026-03-19 20:36:20,569 [INFO] Step 40 - DDIM step 60: current_step_loss=0.000055 | running_mean_ddim_loss=0.000022
+2026-03-19 20:36:22,948 [INFO] Step 60 - DDIM step 40: current_step_loss=0.000224 | running_mean_ddim_loss=0.000058
+2026-03-19 20:36:25,344 [INFO] Step 80 - DDIM step 20: current_step_loss=0.000526 | running_mean_ddim_loss=0.000138
+2026-03-19 20:36:27,714 [INFO] Step 100 - DDIM step 0: current_step_loss=0.012921 | running_mean_ddim_loss=0.000397
+2026-03-19 20:36:27,715 [INFO] 
+Epoch 10/160 完成:
+2026-03-19 20:36:27,715 [INFO]   平均蒸餾損失(DDIM全步平均): 0.000397
+2026-03-19 20:36:27,715 [INFO]   平均損失(目前等同蒸餾損失): 0.000397
+2026-03-19 20:36:27,715 [INFO]   時間: 12.00秒
+2026-03-19 20:36:27,721 [INFO] [LossSummary] tail_ratio=3.606449 | tail_outlier_ratio=9.017857 | mean(t=0..19)=1.432855e-03 | mean(t=80..99)=1.440284e-05
+2026-03-19 20:36:27,722 [INFO] [LossSummary] per-timestep mean (first5): t000:1.292e-02, t001:1.839e-03, t002:1.205e-03, t003:1.038e-03, t004:9.420e-04
+2026-03-19 20:36:27,722 [INFO] [LossSummary] per-timestep mean (last5): t095:1.181e-05, t096:1.559e-05, t097:1.593e-05, t098:1.566e-05, t099:2.269e-05
+2026-03-19 20:36:27,722 [INFO] [LossChunk] steps=901..920 size=20 | total(mean=0.000014 std=0.000002 max=0.000023 min=0.000012) | distill(mean=0.000014 std=0.000002 max=0.000023 min=0.000012)
+2026-03-19 20:36:27,722 [INFO] [LossChunk] steps=921..940 size=20 | total(mean=0.000029 std=0.000012 max=0.000055 min=0.000016) | distill(mean=0.000029 std=0.000012 max=0.000055 min=0.000016)
+2026-03-19 20:36:27,722 [INFO] [LossChunk] steps=941..960 size=20 | total(mean=0.000130 std=0.000051 max=0.000224 min=0.000060) | distill(mean=0.000130 std=0.000051 max=0.000224 min=0.000060)
+2026-03-19 20:36:27,722 [INFO] [LossChunk] steps=961..980 size=20 | total(mean=0.000381 std=0.000090 max=0.000526 min=0.000229) | distill(mean=0.000381 std=0.000090 max=0.000526 min=0.000229)
+2026-03-19 20:36:27,722 [INFO] [LossChunk] steps=981..1000 size=20 | total(mean=0.001433 std=0.002650 max=0.012921 min=0.000575) | distill(mean=0.001433 std=0.002650 max=0.012921 min=0.000575)
+2026-03-19 20:36:27,725 [INFO] 
+--- Epoch 11/160 ---
+2026-03-19 20:36:30,196 [INFO] Step 20 - DDIM step 80: current_step_loss=0.000015 | running_mean_ddim_loss=0.000013
+2026-03-19 20:36:32,561 [INFO] Step 40 - DDIM step 60: current_step_loss=0.000064 | running_mean_ddim_loss=0.000022
+2026-03-19 20:36:34,928 [INFO] Step 60 - DDIM step 40: current_step_loss=0.000260 | running_mean_ddim_loss=0.000064
+2026-03-19 20:36:37,297 [INFO] Step 80 - DDIM step 20: current_step_loss=0.000578 | running_mean_ddim_loss=0.000148
+2026-03-19 20:36:39,657 [INFO] Step 100 - DDIM step 0: current_step_loss=0.012227 | running_mean_ddim_loss=0.000399
+2026-03-19 20:36:39,659 [INFO] 
+Epoch 11/160 完成:
+2026-03-19 20:36:39,659 [INFO]   平均蒸餾損失(DDIM全步平均): 0.000399
+2026-03-19 20:36:39,659 [INFO]   平均損失(目前等同蒸餾損失): 0.000399
+2026-03-19 20:36:39,659 [INFO]   時間: 11.94秒
+2026-03-19 20:36:39,665 [INFO] [LossSummary] tail_ratio=3.516410 | tail_outlier_ratio=8.711285 | mean(t=0..19)=1.403620e-03 | mean(t=80..99)=1.294693e-05
+2026-03-19 20:36:39,665 [INFO] [LossSummary] per-timestep mean (first5): t000:1.223e-02, t001:1.774e-03, t002:1.186e-03, t003:1.015e-03, t004:9.200e-04
+2026-03-19 20:36:39,665 [INFO] [LossSummary] per-timestep mean (last5): t095:1.194e-05, t096:1.161e-05, t097:1.187e-05, t098:1.236e-05, t099:1.382e-05
+2026-03-19 20:36:39,665 [INFO] [LossChunk] steps=1001..1020 size=20 | total(mean=0.000013 std=0.000001 max=0.000016 min=0.000012) | distill(mean=0.000013 std=0.000001 max=0.000016 min=0.000012)
+2026-03-19 20:36:39,665 [INFO] [LossChunk] steps=1021..1040 size=20 | total(mean=0.000032 std=0.000014 max=0.000064 min=0.000016) | distill(mean=0.000032 std=0.000014 max=0.000064 min=0.000016)
+2026-03-19 20:36:39,665 [INFO] [LossChunk] steps=1041..1060 size=20 | total(mean=0.000149 std=0.000055 max=0.000260 min=0.000074) | distill(mean=0.000149 std=0.000055 max=0.000260 min=0.000074)
+2026-03-19 20:36:39,666 [INFO] [LossChunk] steps=1061..1080 size=20 | total(mean=0.000399 std=0.000093 max=0.000578 min=0.000254) | distill(mean=0.000399 std=0.000093 max=0.000578 min=0.000254)
+2026-03-19 20:36:39,666 [INFO] [LossChunk] steps=1081..1100 size=20 | total(mean=0.001404 std=0.002496 max=0.012227 min=0.000591) | distill(mean=0.001404 std=0.002496 max=0.012227 min=0.000591)
+2026-03-19 20:36:39,668 [INFO] 
+--- Epoch 12/160 ---
+2026-03-19 20:36:42,142 [INFO] Step 20 - DDIM step 80: current_step_loss=0.000016 | running_mean_ddim_loss=0.000014
+2026-03-19 20:36:44,520 [INFO] Step 40 - DDIM step 60: current_step_loss=0.000076 | running_mean_ddim_loss=0.000025
+2026-03-19 20:36:46,903 [INFO] Step 60 - DDIM step 40: current_step_loss=0.000249 | running_mean_ddim_loss=0.000067
+2026-03-19 20:36:49,273 [INFO] Step 80 - DDIM step 20: current_step_loss=0.000536 | running_mean_ddim_loss=0.000146
+2026-03-19 20:36:51,662 [INFO] Step 100 - DDIM step 0: current_step_loss=0.012434 | running_mean_ddim_loss=0.000394
+2026-03-19 20:36:51,664 [INFO] 
+Epoch 12/160 完成:
+2026-03-19 20:36:51,664 [INFO]   平均蒸餾損失(DDIM全步平均): 0.000394
+2026-03-19 20:36:51,664 [INFO]   平均損失(目前等同蒸餾損失): 0.000394
+2026-03-19 20:36:51,664 [INFO]   時間: 12.00秒
+2026-03-19 20:36:51,673 [INFO] [LossSummary] tail_ratio=3.521391 | tail_outlier_ratio=8.954591 | mean(t=0..19)=1.388516e-03 | mean(t=80..99)=1.405992e-05
+2026-03-19 20:36:51,673 [INFO] [LossSummary] per-timestep mean (first5): t000:1.243e-02, t001:1.837e-03, t002:1.225e-03, t003:1.019e-03, t004:9.143e-04
+2026-03-19 20:36:51,673 [INFO] [LossSummary] per-timestep mean (last5): t095:1.300e-05, t096:1.307e-05, t097:1.461e-05, t098:1.534e-05, t099:1.724e-05
+2026-03-19 20:36:51,673 [INFO] [LossChunk] steps=1101..1120 size=20 | total(mean=0.000014 std=0.000002 max=0.000017 min=0.000012) | distill(mean=0.000014 std=0.000002 max=0.000017 min=0.000012)
+2026-03-19 20:36:51,673 [INFO] [LossChunk] steps=1121..1140 size=20 | total(mean=0.000035 std=0.000017 max=0.000076 min=0.000016) | distill(mean=0.000035 std=0.000017 max=0.000076 min=0.000016)
+2026-03-19 20:36:51,673 [INFO] [LossChunk] steps=1141..1160 size=20 | total(mean=0.000151 std=0.000055 max=0.000249 min=0.000070) | distill(mean=0.000151 std=0.000055 max=0.000249 min=0.000070)
+2026-03-19 20:36:51,674 [INFO] [LossChunk] steps=1161..1180 size=20 | total(mean=0.000383 std=0.000086 max=0.000536 min=0.000252) | distill(mean=0.000383 std=0.000086 max=0.000536 min=0.000252)
+2026-03-19 20:36:51,674 [INFO] [LossChunk] steps=1181..1200 size=20 | total(mean=0.001389 std=0.002550 max=0.012434 min=0.000540) | distill(mean=0.001389 std=0.002550 max=0.012434 min=0.000540)
+2026-03-19 20:36:51,677 [INFO] 
+--- Epoch 13/160 ---
+2026-03-19 20:36:54,173 [INFO] Step 20 - DDIM step 80: current_step_loss=0.000013 | running_mean_ddim_loss=0.000013
+2026-03-19 20:36:56,548 [INFO] Step 40 - DDIM step 60: current_step_loss=0.000047 | running_mean_ddim_loss=0.000020
+2026-03-19 20:36:58,916 [INFO] Step 60 - DDIM step 40: current_step_loss=0.000194 | running_mean_ddim_loss=0.000052
+2026-03-19 20:37:01,295 [INFO] Step 80 - DDIM step 20: current_step_loss=0.000474 | running_mean_ddim_loss=0.000121
+2026-03-19 20:37:03,669 [INFO] Step 100 - DDIM step 0: current_step_loss=0.011737 | running_mean_ddim_loss=0.000360
+2026-03-19 20:37:03,670 [INFO] 
+Epoch 13/160 完成:
+2026-03-19 20:37:03,671 [INFO]   平均蒸餾損失(DDIM全步平均): 0.000360
+2026-03-19 20:37:03,671 [INFO]   平均損失(目前等同蒸餾損失): 0.000360
+2026-03-19 20:37:03,671 [INFO]   時間: 12.00秒
+2026-03-19 20:37:03,677 [INFO] [LossSummary] tail_ratio=3.652675 | tail_outlier_ratio=8.922687 | mean(t=0..19)=1.315361e-03 | mean(t=80..99)=1.308612e-05
+2026-03-19 20:37:03,677 [INFO] [LossSummary] per-timestep mean (first5): t000:1.174e-02, t001:1.763e-03, t002:1.144e-03, t003:9.928e-04, t004:8.796e-04
+2026-03-19 20:37:03,677 [INFO] [LossSummary] per-timestep mean (last5): t095:1.147e-05, t096:1.283e-05, t097:1.274e-05, t098:1.223e-05, t099:1.771e-05
+2026-03-19 20:37:03,677 [INFO] [LossChunk] steps=1201..1220 size=20 | total(mean=0.000013 std=0.000002 max=0.000018 min=0.000011) | distill(mean=0.000013 std=0.000002 max=0.000018 min=0.000011)
+2026-03-19 20:37:03,677 [INFO] [LossChunk] steps=1221..1240 size=20 | total(mean=0.000026 std=0.000011 max=0.000048 min=0.000015) | distill(mean=0.000026 std=0.000011 max=0.000048 min=0.000015)
+2026-03-19 20:37:03,677 [INFO] [LossChunk] steps=1241..1260 size=20 | total(mean=0.000115 std=0.000045 max=0.000194 min=0.000055) | distill(mean=0.000115 std=0.000045 max=0.000194 min=0.000055)
+2026-03-19 20:37:03,678 [INFO] [LossChunk] steps=1261..1280 size=20 | total(mean=0.000330 std=0.000084 max=0.000474 min=0.000199) | distill(mean=0.000330 std=0.000084 max=0.000474 min=0.000199)
+2026-03-19 20:37:03,678 [INFO] [LossChunk] steps=1281..1300 size=20 | total(mean=0.001315 std=0.002407 max=0.011737 min=0.000501) | distill(mean=0.001315 std=0.002407 max=0.011737 min=0.000501)
+2026-03-19 20:37:03,680 [INFO] 
+--- Epoch 14/160 ---
+2026-03-19 20:37:06,170 [INFO] Step 20 - DDIM step 80: current_step_loss=0.000015 | running_mean_ddim_loss=0.000013
+2026-03-19 20:37:08,550 [INFO] Step 40 - DDIM step 60: current_step_loss=0.000053 | running_mean_ddim_loss=0.000021
+2026-03-19 20:37:11,050 [INFO] Step 60 - DDIM step 40: current_step_loss=0.000207 | running_mean_ddim_loss=0.000054
+2026-03-19 20:37:13,416 [INFO] Step 80 - DDIM step 20: current_step_loss=0.000493 | running_mean_ddim_loss=0.000127
+2026-03-19 20:37:15,782 [INFO] Step 100 - DDIM step 0: current_step_loss=0.012433 | running_mean_ddim_loss=0.000374
+2026-03-19 20:37:15,783 [INFO] 
+Epoch 14/160 完成:
+2026-03-19 20:37:15,783 [INFO]   平均蒸餾損失(DDIM全步平均): 0.000374
+2026-03-19 20:37:15,783 [INFO]   平均損失(目前等同蒸餾損失): 0.000374
+2026-03-19 20:37:15,783 [INFO]   時間: 12.10秒
+2026-03-19 20:37:15,789 [INFO] [LossSummary] tail_ratio=3.643420 | tail_outlier_ratio=9.133229 | mean(t=0..19)=1.361298e-03 | mean(t=80..99)=1.311031e-05
+2026-03-19 20:37:15,789 [INFO] [LossSummary] per-timestep mean (first5): t000:1.243e-02, t001:1.751e-03, t002:1.145e-03, t003:9.620e-04, t004:8.980e-04
+2026-03-19 20:37:15,789 [INFO] [LossSummary] per-timestep mean (last5): t095:1.147e-05, t096:1.204e-05, t097:1.271e-05, t098:1.238e-05, t099:1.689e-05
+2026-03-19 20:37:15,789 [INFO] [LossChunk] steps=1301..1320 size=20 | total(mean=0.000013 std=0.000001 max=0.000017 min=0.000011) | distill(mean=0.000013 std=0.000001 max=0.000017 min=0.000011)
+2026-03-19 20:37:15,790 [INFO] [LossChunk] steps=1321..1340 size=20 | total(mean=0.000028 std=0.000012 max=0.000053 min=0.000015) | distill(mean=0.000028 std=0.000012 max=0.000053 min=0.000015)
+2026-03-19 20:37:15,790 [INFO] [LossChunk] steps=1341..1360 size=20 | total(mean=0.000121 std=0.000047 max=0.000212 min=0.000056) | distill(mean=0.000121 std=0.000047 max=0.000212 min=0.000056)
+2026-03-19 20:37:15,790 [INFO] [LossChunk] steps=1361..1380 size=20 | total(mean=0.000345 std=0.000082 max=0.000493 min=0.000228) | distill(mean=0.000345 std=0.000082 max=0.000493 min=0.000228)
+2026-03-19 20:37:15,790 [INFO] [LossChunk] steps=1381..1400 size=20 | total(mean=0.001361 std=0.002555 max=0.012433 min=0.000506) | distill(mean=0.001361 std=0.002555 max=0.012433 min=0.000506)
+2026-03-19 20:37:15,793 [INFO] 
+--- Epoch 15/160 ---
+2026-03-19 20:37:18,256 [INFO] Step 20 - DDIM step 80: current_step_loss=0.000016 | running_mean_ddim_loss=0.000014
+2026-03-19 20:37:20,634 [INFO] Step 40 - DDIM step 60: current_step_loss=0.000060 | running_mean_ddim_loss=0.000024
+2026-03-19 20:37:23,007 [INFO] Step 60 - DDIM step 40: current_step_loss=0.000241 | running_mean_ddim_loss=0.000062
+2026-03-19 20:37:25,393 [INFO] Step 80 - DDIM step 20: current_step_loss=0.000543 | running_mean_ddim_loss=0.000138
+2026-03-19 20:37:27,763 [INFO] Step 100 - DDIM step 0: current_step_loss=0.011575 | running_mean_ddim_loss=0.000378
+2026-03-19 20:37:27,765 [INFO] 
+Epoch 15/160 完成:
+2026-03-19 20:37:27,765 [INFO]   平均蒸餾損失(DDIM全步平均): 0.000378
+2026-03-19 20:37:27,765 [INFO]   平均損失(目前等同蒸餾損失): 0.000378
+2026-03-19 20:37:27,765 [INFO]   時間: 11.97秒
+2026-03-19 20:37:27,874 [INFO] [LossSummary] tail_ratio=3.536578 | tail_outlier_ratio=8.652546 | mean(t=0..19)=1.337725e-03 | mean(t=80..99)=1.420349e-05
+2026-03-19 20:37:27,874 [INFO] [LossSummary] per-timestep mean (first5): t000:1.157e-02, t001:1.780e-03, t002:1.177e-03, t003:9.969e-04, t004:9.179e-04
+2026-03-19 20:37:27,874 [INFO] [LossSummary] per-timestep mean (last5): t095:1.201e-05, t096:1.396e-05, t097:1.525e-05, t098:1.460e-05, t099:2.142e-05
+2026-03-19 20:37:27,874 [INFO] [LossChunk] steps=1401..1420 size=20 | total(mean=0.000014 std=0.000002 max=0.000021 min=0.000012) | distill(mean=0.000014 std=0.000002 max=0.000021 min=0.000012)
+2026-03-19 20:37:27,874 [INFO] [LossChunk] steps=1421..1440 size=20 | total(mean=0.000034 std=0.000014 max=0.000063 min=0.000016) | distill(mean=0.000034 std=0.000014 max=0.000063 min=0.000016)
+2026-03-19 20:37:27,874 [INFO] [LossChunk] steps=1441..1460 size=20 | total(mean=0.000138 std=0.000052 max=0.000241 min=0.000061) | distill(mean=0.000138 std=0.000052 max=0.000241 min=0.000061)
+2026-03-19 20:37:27,875 [INFO] [LossChunk] steps=1461..1480 size=20 | total(mean=0.000367 std=0.000085 max=0.000543 min=0.000247) | distill(mean=0.000367 std=0.000085 max=0.000543 min=0.000247)
+2026-03-19 20:37:27,875 [INFO] [LossChunk] steps=1481..1500 size=20 | total(mean=0.001338 std=0.002365 max=0.011575 min=0.000524) | distill(mean=0.001338 std=0.002365 max=0.011575 min=0.000524)
+2026-03-19 20:37:27,878 [INFO] 
+--- Epoch 16/160 ---
+2026-03-19 20:37:30,347 [INFO] Step 20 - DDIM step 80: current_step_loss=0.000015 | running_mean_ddim_loss=0.000013
+2026-03-19 20:37:32,718 [INFO] Step 40 - DDIM step 60: current_step_loss=0.000056 | running_mean_ddim_loss=0.000022
+2026-03-19 20:37:35,079 [INFO] Step 60 - DDIM step 40: current_step_loss=0.000216 | running_mean_ddim_loss=0.000059
+2026-03-19 20:37:37,449 [INFO] Step 80 - DDIM step 20: current_step_loss=0.000554 | running_mean_ddim_loss=0.000138
+2026-03-19 20:37:39,813 [INFO] Step 100 - DDIM step 0: current_step_loss=0.011650 | running_mean_ddim_loss=0.000390
+2026-03-19 20:37:39,814 [INFO] 
+Epoch 16/160 完成:
+2026-03-19 20:37:39,814 [INFO]   平均蒸餾損失(DDIM全步平均): 0.000390
+2026-03-19 20:37:39,814 [INFO]   平均損失(目前等同蒸餾損失): 0.000390
+2026-03-19 20:37:39,814 [INFO]   時間: 11.94秒
+2026-03-19 20:37:39,821 [INFO] [LossSummary] tail_ratio=3.583186 | tail_outlier_ratio=8.329558 | mean(t=0..19)=1.398660e-03 | mean(t=80..99)=1.278360e-05
+2026-03-19 20:37:39,821 [INFO] [LossSummary] per-timestep mean (first5): t000:1.165e-02, t001:1.863e-03, t002:1.278e-03, t003:1.086e-03, t004:9.987e-04
+2026-03-19 20:37:39,821 [INFO] [LossSummary] per-timestep mean (last5): t095:1.287e-05, t096:1.186e-05, t097:1.277e-05, t098:1.294e-05, t099:1.279e-05
+2026-03-19 20:37:39,821 [INFO] [LossChunk] steps=1501..1520 size=20 | total(mean=0.000013 std=0.000001 max=0.000018 min=0.000011) | distill(mean=0.000013 std=0.000001 max=0.000018 min=0.000011)
+2026-03-19 20:37:39,821 [INFO] [LossChunk] steps=1521..1540 size=20 | total(mean=0.000031 std=0.000014 max=0.000056 min=0.000015) | distill(mean=0.000031 std=0.000014 max=0.000056 min=0.000015)
+2026-03-19 20:37:39,821 [INFO] [LossChunk] steps=1541..1560 size=20 | total(mean=0.000133 std=0.000046 max=0.000216 min=0.000067) | distill(mean=0.000133 std=0.000046 max=0.000216 min=0.000067)
+2026-03-19 20:37:39,821 [INFO] [LossChunk] steps=1561..1580 size=20 | total(mean=0.000377 std=0.000098 max=0.000554 min=0.000235) | distill(mean=0.000377 std=0.000098 max=0.000554 min=0.000235)
+2026-03-19 20:37:39,822 [INFO] [LossChunk] steps=1581..1600 size=20 | total(mean=0.001399 std=0.002369 max=0.011650 min=0.000579) | distill(mean=0.001399 std=0.002369 max=0.011650 min=0.000579)
+2026-03-19 20:37:39,862 [INFO] [QuantUpdateDiag] Epoch 16/160 | layers=140 | weighted_changed_ratio(dynamic)=0.144222 | weighted_changed_ratio(same_scale)=0.139777 | mean|ΔW_fp|=4.367498e-04 | mean|ΔW_qnorm|=1.600240e-03
+2026-03-19 20:37:39,862 [INFO] [QuantUpdateDiag] Top-12 layers by changed_ratio_dynamic:
+2026-03-19 20:37:39,862 [INFO]   layer=model.output_blocks.1.0.emb_layers.1 | ratio_dyn=0.437975 | ratio_same_scale=0.391356 | mean|ΔW_fp|=6.168840e-04 | mean|ΔW_qnorm|=4.715101e-03 | numel=524288
+2026-03-19 20:37:39,862 [INFO]   layer=model.output_blocks.0.0.cond_emb_layers.1 | ratio_dyn=0.420391 | ratio_same_scale=0.411663 | mean|ΔW_fp|=1.358789e-03 | mean|ΔW_qnorm|=4.230139e-03 | numel=262144
+2026-03-19 20:37:39,862 [INFO]   layer=model.output_blocks.3.0.emb_layers.1 | ratio_dyn=0.403720 | ratio_same_scale=0.390889 | mean|ΔW_fp|=5.466363e-04 | mean|ΔW_qnorm|=4.078042e-03 | numel=393216
+2026-03-19 20:37:39,862 [INFO]   layer=model.output_blocks.2.0.emb_layers.1 | ratio_dyn=0.364717 | ratio_same_scale=0.352354 | mean|ΔW_fp|=4.560293e-04 | mean|ΔW_qnorm|=3.398625e-03 | numel=524288
+2026-03-19 20:37:39,862 [INFO]   layer=model.output_blocks.1.0.cond_emb_layers.1 | ratio_dyn=0.362988 | ratio_same_scale=0.353409 | mean|ΔW_fp|=1.164557e-03 | mean|ΔW_qnorm|=3.219725e-03 | numel=262144
+2026-03-19 20:37:39,862 [INFO]   layer=model.output_blocks.0.0.emb_layers.1 | ratio_dyn=0.340326 | ratio_same_scale=0.324362 | mean|ΔW_fp|=4.164489e-04 | mean|ΔW_qnorm|=3.059613e-03 | numel=524288
+2026-03-19 20:37:39,862 [INFO]   layer=model.output_blocks.2.1.emb_layers.1 | ratio_dyn=0.338974 | ratio_same_scale=0.325935 | mean|ΔW_fp|=4.008903e-04 | mean|ΔW_qnorm|=3.099892e-03 | numel=524288
+2026-03-19 20:37:39,862 [INFO]   layer=model.output_blocks.6.0.emb_layers.1 | ratio_dyn=0.334198 | ratio_same_scale=0.321465 | mean|ΔW_fp|=4.413383e-04 | mean|ΔW_qnorm|=3.018627e-03 | numel=262144
+2026-03-19 20:37:39,862 [INFO]   layer=model.input_blocks.10.0.emb_layers.1 | ratio_dyn=0.330755 | ratio_same_scale=0.316477 | mean|ΔW_fp|=3.532343e-04 | mean|ΔW_qnorm|=3.035698e-03 | numel=393216
+2026-03-19 20:37:39,862 [INFO]   layer=model.output_blocks.2.0.cond_emb_layers.1 | ratio_dyn=0.330097 | ratio_same_scale=0.319992 | mean|ΔW_fp|=9.963176e-04 | mean|ΔW_qnorm|=2.746011e-03 | numel=262144
+2026-03-19 20:37:39,862 [INFO]   layer=model.middle_block.2.cond_emb_layers.1 | ratio_dyn=0.329765 | ratio_same_scale=0.321465 | mean|ΔW_fp|=9.072970e-04 | mean|ΔW_qnorm|=2.949932e-03 | numel=262144
+2026-03-19 20:37:39,862 [INFO]   layer=model.input_blocks.13.0.emb_layers.1 | ratio_dyn=0.328396 | ratio_same_scale=0.314037 | mean|ΔW_fp|=3.717702e-04 | mean|ΔW_qnorm|=2.979324e-03 | numel=524288
+2026-03-19 20:37:40,013 [INFO] 
+--- Epoch 17/160 ---
+2026-03-19 20:37:42,496 [INFO] Step 20 - DDIM step 80: current_step_loss=0.000015 | running_mean_ddim_loss=0.000014
+2026-03-19 20:37:44,879 [INFO] Step 40 - DDIM step 60: current_step_loss=0.000065 | running_mean_ddim_loss=0.000025
+2026-03-19 20:37:47,268 [INFO] Step 60 - DDIM step 40: current_step_loss=0.000273 | running_mean_ddim_loss=0.000068
+2026-03-19 20:37:49,643 [INFO] Step 80 - DDIM step 20: current_step_loss=0.000584 | running_mean_ddim_loss=0.000154
+2026-03-19 20:37:52,026 [INFO] Step 100 - DDIM step 0: current_step_loss=0.012938 | running_mean_ddim_loss=0.000419
+2026-03-19 20:37:52,027 [INFO] 
+Epoch 17/160 完成:
+2026-03-19 20:37:52,028 [INFO]   平均蒸餾損失(DDIM全步平均): 0.000419
+2026-03-19 20:37:52,028 [INFO]   平均損失(目前等同蒸餾損失): 0.000419
+2026-03-19 20:37:52,028 [INFO]   時間: 12.02秒
+2026-03-19 20:37:52,034 [INFO] [LossSummary] tail_ratio=3.528996 | tail_outlier_ratio=8.754781 | mean(t=0..19)=1.477809e-03 | mean(t=80..99)=1.368900e-05
+2026-03-19 20:37:52,034 [INFO] [LossSummary] per-timestep mean (first5): t000:1.294e-02, t001:1.959e-03, t002:1.281e-03, t003:1.100e-03, t004:9.765e-04
+2026-03-19 20:37:52,034 [INFO] [LossSummary] per-timestep mean (last5): t095:1.162e-05, t096:1.263e-05, t097:1.413e-05, t098:1.171e-05, t099:1.929e-05
+2026-03-19 20:37:52,034 [INFO] [LossChunk] steps=1601..1620 size=20 | total(mean=0.000014 std=0.000002 max=0.000019 min=0.000012) | distill(mean=0.000014 std=0.000002 max=0.000019 min=0.000012)
+2026-03-19 20:37:52,034 [INFO] [LossChunk] steps=1621..1640 size=20 | total(mean=0.000036 std=0.000016 max=0.000065 min=0.000017) | distill(mean=0.000036 std=0.000016 max=0.000065 min=0.000017)
+2026-03-19 20:37:52,034 [INFO] [LossChunk] steps=1641..1660 size=20 | total(mean=0.000153 std=0.000056 max=0.000273 min=0.000073) | distill(mean=0.000153 std=0.000056 max=0.000273 min=0.000073)
+2026-03-19 20:37:52,034 [INFO] [LossChunk] steps=1661..1680 size=20 | total(mean=0.000413 std=0.000093 max=0.000584 min=0.000278) | distill(mean=0.000413 std=0.000093 max=0.000584 min=0.000278)
+2026-03-19 20:37:52,035 [INFO] [LossChunk] steps=1681..1700 size=20 | total(mean=0.001478 std=0.002646 max=0.012938 min=0.000588) | distill(mean=0.001478 std=0.002646 max=0.012938 min=0.000588)
+2026-03-19 20:37:52,035 [INFO] 
+=== Epoch 17 驗證生成 (使用 EMA 模型) ===
+2026-03-19 20:37:52,094 [INFO] EMA 權重應用完成，共應用 420 個參數
+2026-03-19 20:37:52,094 [INFO] set quant state to True, True for layer 1
+2026-03-19 20:37:52,094 [INFO] set quant state to True, True for layer 2
+2026-03-19 20:37:52,094 [INFO] set quant state to False, False for layer 3
+2026-03-19 20:37:52,095 [INFO] set quant state to False, False for layer 144
+2026-03-19 20:37:52,100 [INFO] set quant state to True, True for layer 1
+2026-03-19 20:37:52,100 [INFO] set quant state to True, True for layer 2
+2026-03-19 20:37:52,100 [INFO] set quant state to False, False for layer 3
+2026-03-19 20:37:52,101 [INFO] set quant state to False, False for layer 144
+2026-03-19 20:37:57,194 [INFO] 生成圖像數值範圍: [-1.0000, 1.0000]
+2026-03-19 20:37:57,195 [INFO] 生成圖像均值: -0.0463
+2026-03-19 20:37:57,195 [INFO] 生成圖像標準差: 0.5125
+2026-03-19 20:37:57,195 [INFO] 正規化後數值範圍: [0.0000, 1.0000]
+2026-03-19 20:37:57,310 [INFO] ✅ Epoch 17 EMA 模型驗證生成完成:
+2026-03-19 20:37:57,320 [INFO]   生成時間: 5.16秒
+2026-03-19 20:37:57,346 [INFO]   圖像範圍: [-1.000, 1.000]
+2026-03-19 20:37:57,346 [INFO]   保存路徑: QATcode/quantize_ver2/training_samples/
+2026-03-19 20:37:57,346 [INFO] 驗證後量化器 current_step: 99
+2026-03-19 20:37:57,368 [INFO] 
+--- Epoch 18/160 ---
+2026-03-19 20:37:59,848 [INFO] Step 20 - DDIM step 80: current_step_loss=0.000016 | running_mean_ddim_loss=0.000014
+2026-03-19 20:38:02,222 [INFO] Step 40 - DDIM step 60: current_step_loss=0.000060 | running_mean_ddim_loss=0.000022
+2026-03-19 20:38:04,591 [INFO] Step 60 - DDIM step 40: current_step_loss=0.000227 | running_mean_ddim_loss=0.000060
+2026-03-19 20:38:06,966 [INFO] Step 80 - DDIM step 20: current_step_loss=0.000485 | running_mean_ddim_loss=0.000133
+2026-03-19 20:38:09,328 [INFO] Step 100 - DDIM step 0: current_step_loss=0.011991 | running_mean_ddim_loss=0.000373
+2026-03-19 20:38:09,329 [INFO] 
+Epoch 18/160 完成:
+2026-03-19 20:38:09,330 [INFO]   平均蒸餾損失(DDIM全步平均): 0.000373
+2026-03-19 20:38:09,330 [INFO]   平均損失(目前等同蒸餾損失): 0.000373
+2026-03-19 20:38:09,330 [INFO]   時間: 11.96秒
+2026-03-19 20:38:09,335 [INFO] [LossSummary] tail_ratio=3.573339 | tail_outlier_ratio=8.989497 | mean(t=0..19)=1.333871e-03 | mean(t=80..99)=1.362996e-05
+2026-03-19 20:38:09,335 [INFO] [LossSummary] per-timestep mean (first5): t000:1.199e-02, t001:1.718e-03, t002:1.140e-03, t003:9.476e-04, t004:8.802e-04
+2026-03-19 20:38:09,335 [INFO] [LossSummary] per-timestep mean (last5): t095:1.548e-05, t096:1.550e-05, t097:1.373e-05, t098:1.819e-05, t099:1.183e-05
+2026-03-19 20:38:09,335 [INFO] [LossChunk] steps=1701..1720 size=20 | total(mean=0.000014 std=0.000002 max=0.000021 min=0.000011) | distill(mean=0.000014 std=0.000002 max=0.000021 min=0.000011)
+2026-03-19 20:38:09,336 [INFO] [LossChunk] steps=1721..1740 size=20 | total(mean=0.000031 std=0.000014 max=0.000060 min=0.000015) | distill(mean=0.000031 std=0.000014 max=0.000060 min=0.000015)
+2026-03-19 20:38:09,336 [INFO] [LossChunk] steps=1741..1760 size=20 | total(mean=0.000136 std=0.000049 max=0.000227 min=0.000063) | distill(mean=0.000136 std=0.000049 max=0.000227 min=0.000063)
+2026-03-19 20:38:09,336 [INFO] [LossChunk] steps=1761..1780 size=20 | total(mean=0.000352 std=0.000084 max=0.000499 min=0.000227) | distill(mean=0.000352 std=0.000084 max=0.000499 min=0.000227)
+2026-03-19 20:38:09,336 [INFO] [LossChunk] steps=1781..1800 size=20 | total(mean=0.001334 std=0.002459 max=0.011991 min=0.000504) | distill(mean=0.001334 std=0.002459 max=0.011991 min=0.000504)
+2026-03-19 20:38:09,339 [INFO] 
+--- Epoch 19/160 ---
+2026-03-19 20:38:11,819 [INFO] Step 20 - DDIM step 80: current_step_loss=0.000014 | running_mean_ddim_loss=0.000014
+2026-03-19 20:38:14,184 [INFO] Step 40 - DDIM step 60: current_step_loss=0.000053 | running_mean_ddim_loss=0.000021
+2026-03-19 20:38:16,564 [INFO] Step 60 - DDIM step 40: current_step_loss=0.000204 | running_mean_ddim_loss=0.000053
+2026-03-19 20:38:18,945 [INFO] Step 80 - DDIM step 20: current_step_loss=0.000485 | running_mean_ddim_loss=0.000124
+2026-03-19 20:38:21,319 [INFO] Step 100 - DDIM step 0: current_step_loss=0.009964 | running_mean_ddim_loss=0.000343
+2026-03-19 20:38:21,320 [INFO] 
+Epoch 19/160 完成:
+2026-03-19 20:38:21,320 [INFO]   平均蒸餾損失(DDIM全步平均): 0.000343
+2026-03-19 20:38:21,320 [INFO]   平均損失(目前等同蒸餾損失): 0.000343
+2026-03-19 20:38:21,320 [INFO]   時間: 11.98秒
+2026-03-19 20:38:21,326 [INFO] [LossSummary] tail_ratio=3.552661 | tail_outlier_ratio=8.168553 | mean(t=0..19)=1.219741e-03 | mean(t=80..99)=1.412576e-05
+2026-03-19 20:38:21,326 [INFO] [LossSummary] per-timestep mean (first5): t000:9.964e-03, t001:1.605e-03, t002:1.085e-03, t003:9.848e-04, t004:8.702e-04
+2026-03-19 20:38:21,326 [INFO] [LossSummary] per-timestep mean (last5): t095:1.209e-05, t096:1.430e-05, t097:1.760e-05, t098:1.551e-05, t099:2.559e-05
+2026-03-19 20:38:21,326 [INFO] [LossChunk] steps=1801..1820 size=20 | total(mean=0.000014 std=0.000003 max=0.000026 min=0.000012) | distill(mean=0.000014 std=0.000003 max=0.000026 min=0.000012)
+2026-03-19 20:38:21,326 [INFO] [LossChunk] steps=1821..1840 size=20 | total(mean=0.000027 std=0.000011 max=0.000053 min=0.000015) | distill(mean=0.000027 std=0.000011 max=0.000053 min=0.000015)
+2026-03-19 20:38:21,327 [INFO] [LossChunk] steps=1841..1860 size=20 | total(mean=0.000118 std=0.000046 max=0.000204 min=0.000054) | distill(mean=0.000118 std=0.000046 max=0.000204 min=0.000054)
+2026-03-19 20:38:21,327 [INFO] [LossChunk] steps=1861..1880 size=20 | total(mean=0.000338 std=0.000084 max=0.000485 min=0.000205) | distill(mean=0.000338 std=0.000084 max=0.000485 min=0.000205)
+2026-03-19 20:38:21,327 [INFO] [LossChunk] steps=1881..1900 size=20 | total(mean=0.001220 std=0.002021 max=0.009964 min=0.000498) | distill(mean=0.001220 std=0.002021 max=0.009964 min=0.000498)
+2026-03-19 20:38:23,682 [INFO] 模型已保存: QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth (base=3321 keys, raw=1106 keys, ema=1106 keys)
+2026-03-19 20:38:23,684 [INFO]   ✅ 新的最佳模型已保存 (Loss: 0.000343)
+2026-03-19 20:38:23,688 [INFO] 
+--- Epoch 20/160 ---
+2026-03-19 20:38:26,168 [INFO] Step 20 - DDIM step 80: current_step_loss=0.000015 | running_mean_ddim_loss=0.000013
+2026-03-19 20:38:28,536 [INFO] Step 40 - DDIM step 60: current_step_loss=0.000053 | running_mean_ddim_loss=0.000020
+2026-03-19 20:38:30,907 [INFO] Step 60 - DDIM step 40: current_step_loss=0.000208 | running_mean_ddim_loss=0.000054
+2026-03-19 20:38:33,290 [INFO] Step 80 - DDIM step 20: current_step_loss=0.000503 | running_mean_ddim_loss=0.000125
+2026-03-19 20:38:35,674 [INFO] Step 100 - DDIM step 0: current_step_loss=0.011242 | running_mean_ddim_loss=0.000355
+2026-03-19 20:38:35,675 [INFO] 
+Epoch 20/160 完成:
+2026-03-19 20:38:35,675 [INFO]   平均蒸餾損失(DDIM全步平均): 0.000355
+2026-03-19 20:38:35,675 [INFO]   平均損失(目前等同蒸餾損失): 0.000355
+2026-03-19 20:38:35,675 [INFO]   時間: 11.99秒
+2026-03-19 20:38:35,683 [INFO] [LossSummary] tail_ratio=3.593616 | tail_outlier_ratio=8.820112 | mean(t=0..19)=1.274552e-03 | mean(t=80..99)=1.271804e-05
+2026-03-19 20:38:35,683 [INFO] [LossSummary] per-timestep mean (first5): t000:1.124e-02, t001:1.635e-03, t002:1.086e-03, t003:9.054e-04, t004:8.531e-04
+2026-03-19 20:38:35,683 [INFO] [LossSummary] per-timestep mean (last5): t095:1.282e-05, t096:1.241e-05, t097:1.198e-05, t098:1.347e-05, t099:1.248e-05
+2026-03-19 20:38:35,683 [INFO] [LossChunk] steps=1901..1920 size=20 | total(mean=0.000013 std=0.000002 max=0.000019 min=0.000012) | distill(mean=0.000013 std=0.000002 max=0.000019 min=0.000012)
+2026-03-19 20:38:35,683 [INFO] [LossChunk] steps=1921..1940 size=20 | total(mean=0.000028 std=0.000012 max=0.000053 min=0.000015) | distill(mean=0.000028 std=0.000012 max=0.000053 min=0.000015)
+2026-03-19 20:38:35,683 [INFO] [LossChunk] steps=1941..1960 size=20 | total(mean=0.000121 std=0.000044 max=0.000208 min=0.000060) | distill(mean=0.000121 std=0.000044 max=0.000208 min=0.000060)
+2026-03-19 20:38:35,683 [INFO] [LossChunk] steps=1961..1980 size=20 | total(mean=0.000337 std=0.000085 max=0.000503 min=0.000218) | distill(mean=0.000337 std=0.000085 max=0.000503 min=0.000218)
+2026-03-19 20:38:35,683 [INFO] [LossChunk] steps=1981..2000 size=20 | total(mean=0.001275 std=0.002300 max=0.011242 min=0.000494) | distill(mean=0.001275 std=0.002300 max=0.011242 min=0.000494)
+2026-03-19 20:38:35,686 [INFO] 
+--- Epoch 21/160 ---
+2026-03-19 20:38:38,158 [INFO] Step 20 - DDIM step 80: current_step_loss=0.000014 | running_mean_ddim_loss=0.000013
+2026-03-19 20:38:40,546 [INFO] Step 40 - DDIM step 60: current_step_loss=0.000053 | running_mean_ddim_loss=0.000021
+2026-03-19 20:38:42,928 [INFO] Step 60 - DDIM step 40: current_step_loss=0.000205 | running_mean_ddim_loss=0.000055
+2026-03-19 20:38:45,307 [INFO] Step 80 - DDIM step 20: current_step_loss=0.000495 | running_mean_ddim_loss=0.000129
+2026-03-19 20:38:47,676 [INFO] Step 100 - DDIM step 0: current_step_loss=0.011201 | running_mean_ddim_loss=0.000363
+2026-03-19 20:38:47,678 [INFO] 
+Epoch 21/160 完成:
+2026-03-19 20:38:47,678 [INFO]   平均蒸餾損失(DDIM全步平均): 0.000363
+2026-03-19 20:38:47,678 [INFO]   平均損失(目前等同蒸餾損失): 0.000363
+2026-03-19 20:38:47,678 [INFO]   時間: 11.99秒
+2026-03-19 20:38:47,684 [INFO] [LossSummary] tail_ratio=3.577679 | tail_outlier_ratio=8.614709 | mean(t=0..19)=1.300205e-03 | mean(t=80..99)=1.336757e-05
+2026-03-19 20:38:47,684 [INFO] [LossSummary] per-timestep mean (first5): t000:1.120e-02, t001:1.712e-03, t002:1.119e-03, t003:9.544e-04, t004:8.807e-04
+2026-03-19 20:38:47,684 [INFO] [LossSummary] per-timestep mean (last5): t095:1.186e-05, t096:1.335e-05, t097:1.453e-05, t098:1.365e-05, t099:1.867e-05
+2026-03-19 20:38:47,684 [INFO] [LossChunk] steps=2001..2020 size=20 | total(mean=0.000013 std=0.000002 max=0.000019 min=0.000011) | distill(mean=0.000013 std=0.000002 max=0.000019 min=0.000011)
+2026-03-19 20:38:47,684 [INFO] [LossChunk] steps=2021..2040 size=20 | total(mean=0.000029 std=0.000012 max=0.000053 min=0.000014) | distill(mean=0.000029 std=0.000012 max=0.000053 min=0.000014)
+2026-03-19 20:38:47,685 [INFO] [LossChunk] steps=2041..2060 size=20 | total(mean=0.000124 std=0.000045 max=0.000205 min=0.000060) | distill(mean=0.000124 std=0.000045 max=0.000205 min=0.000060)
+2026-03-19 20:38:47,685 [INFO] [LossChunk] steps=2061..2080 size=20 | total(mean=0.000350 std=0.000084 max=0.000495 min=0.000217) | distill(mean=0.000350 std=0.000084 max=0.000495 min=0.000217)
+2026-03-19 20:38:47,685 [INFO] [LossChunk] steps=2081..2100 size=20 | total(mean=0.001300 std=0.002286 max=0.011201 min=0.000530) | distill(mean=0.001300 std=0.002286 max=0.011201 min=0.000530)
+2026-03-19 20:38:47,687 [INFO] 
+--- Epoch 22/160 ---
+2026-03-19 20:38:50,165 [INFO] Step 20 - DDIM step 80: current_step_loss=0.000015 | running_mean_ddim_loss=0.000015
+2026-03-19 20:38:52,547 [INFO] Step 40 - DDIM step 60: current_step_loss=0.000040 | running_mean_ddim_loss=0.000019
+2026-03-19 20:38:54,934 [INFO] Step 60 - DDIM step 40: current_step_loss=0.000169 | running_mean_ddim_loss=0.000044
+2026-03-19 20:38:57,314 [INFO] Step 80 - DDIM step 20: current_step_loss=0.000410 | running_mean_ddim_loss=0.000103
+2026-03-19 20:38:59,695 [INFO] Step 100 - DDIM step 0: current_step_loss=0.010274 | running_mean_ddim_loss=0.000318
+2026-03-19 20:38:59,697 [INFO] 
+Epoch 22/160 完成:
+2026-03-19 20:38:59,697 [INFO]   平均蒸餾損失(DDIM全步平均): 0.000318
+2026-03-19 20:38:59,697 [INFO]   平均損失(目前等同蒸餾損失): 0.000318
+2026-03-19 20:38:59,697 [INFO]   時間: 12.01秒
+2026-03-19 20:38:59,719 [INFO] [LossSummary] tail_ratio=3.702269 | tail_outlier_ratio=8.717138 | mean(t=0..19)=1.178570e-03 | mean(t=80..99)=1.461890e-05
+2026-03-19 20:38:59,719 [INFO] [LossSummary] per-timestep mean (first5): t000:1.027e-02, t001:1.515e-03, t002:1.042e-03, t003:8.768e-04, t004:8.279e-04
+2026-03-19 20:38:59,719 [INFO] [LossSummary] per-timestep mean (last5): t095:1.693e-05, t096:1.777e-05, t097:1.654e-05, t098:2.292e-05, t099:1.707e-05
+2026-03-19 20:38:59,719 [INFO] [LossChunk] steps=2101..2120 size=20 | total(mean=0.000015 std=0.000003 max=0.000023 min=0.000011) | distill(mean=0.000015 std=0.000003 max=0.000023 min=0.000011)
+2026-03-19 20:38:59,720 [INFO] [LossChunk] steps=2121..2140 size=20 | total(mean=0.000022 std=0.000008 max=0.000040 min=0.000013) | distill(mean=0.000022 std=0.000008 max=0.000040 min=0.000013)
+2026-03-19 20:38:59,720 [INFO] [LossChunk] steps=2141..2160 size=20 | total(mean=0.000094 std=0.000037 max=0.000169 min=0.000043) | distill(mean=0.000094 std=0.000037 max=0.000169 min=0.000043)
+2026-03-19 20:38:59,720 [INFO] [LossChunk] steps=2161..2180 size=20 | total(mean=0.000282 std=0.000071 max=0.000410 min=0.000178) | distill(mean=0.000282 std=0.000071 max=0.000410 min=0.000178)
+2026-03-19 20:38:59,720 [INFO] [LossChunk] steps=2181..2200 size=20 | total(mean=0.001179 std=0.002100 max=0.010274 min=0.000430) | distill(mean=0.001179 std=0.002100 max=0.010274 min=0.000430)
+2026-03-19 20:39:01,989 [INFO] 模型已保存: QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth (base=3321 keys, raw=1106 keys, ema=1106 keys)
+2026-03-19 20:39:01,992 [INFO]   ✅ 新的最佳模型已保存 (Loss: 0.000318)
+2026-03-19 20:39:01,995 [INFO] 
+--- Epoch 23/160 ---
+2026-03-19 20:39:04,483 [INFO] Step 20 - DDIM step 80: current_step_loss=0.000013 | running_mean_ddim_loss=0.000013
+2026-03-19 20:39:06,865 [INFO] Step 40 - DDIM step 60: current_step_loss=0.000046 | running_mean_ddim_loss=0.000019
+2026-03-19 20:39:09,243 [INFO] Step 60 - DDIM step 40: current_step_loss=0.000181 | running_mean_ddim_loss=0.000049
+2026-03-19 20:39:11,623 [INFO] Step 80 - DDIM step 20: current_step_loss=0.000457 | running_mean_ddim_loss=0.000116
+2026-03-19 20:39:13,994 [INFO] Step 100 - DDIM step 0: current_step_loss=0.011556 | running_mean_ddim_loss=0.000350
+2026-03-19 20:39:13,997 [INFO] 
+Epoch 23/160 完成:
+2026-03-19 20:39:13,997 [INFO]   平均蒸餾損失(DDIM全步平均): 0.000350
+2026-03-19 20:39:13,997 [INFO]   平均損失(目前等同蒸餾損失): 0.000350
+2026-03-19 20:39:13,997 [INFO]   時間: 12.00秒
+2026-03-19 20:39:14,003 [INFO] [LossSummary] tail_ratio=3.670835 | tail_outlier_ratio=8.994057 | mean(t=0..19)=1.284826e-03 | mean(t=80..99)=1.272996e-05
+2026-03-19 20:39:14,003 [INFO] [LossSummary] per-timestep mean (first5): t000:1.156e-02, t001:1.686e-03, t002:1.105e-03, t003:9.383e-04, t004:8.565e-04
+2026-03-19 20:39:14,003 [INFO] [LossSummary] per-timestep mean (last5): t095:1.202e-05, t096:1.189e-05, t097:1.228e-05, t098:1.281e-05, t099:1.616e-05
+2026-03-19 20:39:14,003 [INFO] [LossChunk] steps=2201..2220 size=20 | total(mean=0.000013 std=0.000001 max=0.000016 min=0.000011) | distill(mean=0.000013 std=0.000001 max=0.000016 min=0.000011)
+2026-03-19 20:39:14,004 [INFO] [LossChunk] steps=2221..2240 size=20 | total(mean=0.000025 std=0.000009 max=0.000046 min=0.000014) | distill(mean=0.000025 std=0.000009 max=0.000046 min=0.000014)
+2026-03-19 20:39:14,004 [INFO] [LossChunk] steps=2241..2260 size=20 | total(mean=0.000110 std=0.000043 max=0.000181 min=0.000052) | distill(mean=0.000110 std=0.000043 max=0.000181 min=0.000052)
+2026-03-19 20:39:14,004 [INFO] [LossChunk] steps=2261..2280 size=20 | total(mean=0.000318 std=0.000080 max=0.000457 min=0.000193) | distill(mean=0.000318 std=0.000080 max=0.000457 min=0.000193)
+2026-03-19 20:39:14,004 [INFO] [LossChunk] steps=2281..2300 size=20 | total(mean=0.001285 std=0.002371 max=0.011556 min=0.000475) | distill(mean=0.001285 std=0.002371 max=0.011556 min=0.000475)
+2026-03-19 20:39:14,007 [INFO] 
+--- Epoch 24/160 ---
+2026-03-19 20:39:16,488 [INFO] Step 20 - DDIM step 80: current_step_loss=0.000016 | running_mean_ddim_loss=0.000014
+2026-03-19 20:39:18,862 [INFO] Step 40 - DDIM step 60: current_step_loss=0.000066 | running_mean_ddim_loss=0.000025
+2026-03-19 20:39:21,242 [INFO] Step 60 - DDIM step 40: current_step_loss=0.000258 | running_mean_ddim_loss=0.000067
+2026-03-19 20:39:23,634 [INFO] Step 80 - DDIM step 20: current_step_loss=0.000588 | running_mean_ddim_loss=0.000152
+2026-03-19 20:39:26,016 [INFO] Step 100 - DDIM step 0: current_step_loss=0.012005 | running_mean_ddim_loss=0.000407
+2026-03-19 20:39:26,017 [INFO] 
+Epoch 24/160 完成:
+2026-03-19 20:39:26,018 [INFO]   平均蒸餾損失(DDIM全步平均): 0.000407
+2026-03-19 20:39:26,018 [INFO]   平均損失(目前等同蒸餾損失): 0.000407
+2026-03-19 20:39:26,018 [INFO]   時間: 12.01秒
+2026-03-19 20:39:26,024 [INFO] [LossSummary] tail_ratio=3.508789 | tail_outlier_ratio=8.404216 | mean(t=0..19)=1.428418e-03 | mean(t=80..99)=1.421631e-05
+2026-03-19 20:39:26,024 [INFO] [LossSummary] per-timestep mean (first5): t000:1.200e-02, t001:1.907e-03, t002:1.261e-03, t003:1.076e-03, t004:9.678e-04
+2026-03-19 20:39:26,024 [INFO] [LossSummary] per-timestep mean (last5): t095:1.517e-05, t096:1.644e-05, t097:1.472e-05, t098:1.675e-05, t099:1.469e-05
+2026-03-19 20:39:26,024 [INFO] [LossChunk] steps=2301..2320 size=20 | total(mean=0.000014 std=0.000002 max=0.000019 min=0.000011) | distill(mean=0.000014 std=0.000002 max=0.000019 min=0.000011)
+2026-03-19 20:39:26,024 [INFO] [LossChunk] steps=2321..2340 size=20 | total(mean=0.000035 std=0.000016 max=0.000068 min=0.000017) | distill(mean=0.000035 std=0.000016 max=0.000068 min=0.000017)
+2026-03-19 20:39:26,024 [INFO] [LossChunk] steps=2341..2360 size=20 | total(mean=0.000151 std=0.000056 max=0.000258 min=0.000077) | distill(mean=0.000151 std=0.000056 max=0.000258 min=0.000077)
+2026-03-19 20:39:26,024 [INFO] [LossChunk] steps=2361..2380 size=20 | total(mean=0.000407 std=0.000095 max=0.000588 min=0.000261) | distill(mean=0.000407 std=0.000095 max=0.000588 min=0.000261)
+2026-03-19 20:39:26,024 [INFO] [LossChunk] steps=2381..2400 size=20 | total(mean=0.001428 std=0.002443 max=0.012005 min=0.000615) | distill(mean=0.001428 std=0.002443 max=0.012005 min=0.000615)
+2026-03-19 20:39:26,065 [INFO] [QuantUpdateDiag] Epoch 24/160 | layers=140 | weighted_changed_ratio(dynamic)=0.178075 | weighted_changed_ratio(same_scale)=0.172799 | mean|ΔW_fp|=5.209809e-04 | mean|ΔW_qnorm|=1.890344e-03
+2026-03-19 20:39:26,065 [INFO] [QuantUpdateDiag] Top-12 layers by changed_ratio_dynamic:
+2026-03-19 20:39:26,065 [INFO]   layer=model.output_blocks.1.0.emb_layers.1 | ratio_dyn=0.487219 | ratio_same_scale=0.436468 | mean|ΔW_fp|=7.573519e-04 | mean|ΔW_qnorm|=5.580316e-03 | numel=524288
+2026-03-19 20:39:26,065 [INFO]   layer=model.output_blocks.0.0.cond_emb_layers.1 | ratio_dyn=0.472843 | ratio_same_scale=0.464001 | mean|ΔW_fp|=1.670068e-03 | mean|ΔW_qnorm|=5.196789e-03 | numel=262144
+2026-03-19 20:39:26,065 [INFO]   layer=model.output_blocks.3.0.emb_layers.1 | ratio_dyn=0.432114 | ratio_same_scale=0.415761 | mean|ΔW_fp|=6.228227e-04 | mean|ΔW_qnorm|=4.652389e-03 | numel=393216
+2026-03-19 20:39:26,065 [INFO]   layer=model.output_blocks.1.0.cond_emb_layers.1 | ratio_dyn=0.420502 | ratio_same_scale=0.409336 | mean|ΔW_fp|=1.407480e-03 | mean|ΔW_qnorm|=3.876603e-03 | numel=262144
+2026-03-19 20:39:26,065 [INFO]   layer=model.output_blocks.2.0.emb_layers.1 | ratio_dyn=0.405815 | ratio_same_scale=0.391991 | mean|ΔW_fp|=5.332717e-04 | mean|ΔW_qnorm|=3.964792e-03 | numel=524288
+2026-03-19 20:39:26,065 [INFO]   layer=model.output_blocks.2.0.cond_emb_layers.1 | ratio_dyn=0.401825 | ratio_same_scale=0.390327 | mean|ΔW_fp|=1.265356e-03 | mean|ΔW_qnorm|=3.485251e-03 | numel=262144
+2026-03-19 20:39:26,065 [INFO]   layer=model.output_blocks.2.1.emb_layers.1 | ratio_dyn=0.391283 | ratio_same_scale=0.373182 | mean|ΔW_fp|=4.787084e-04 | mean|ΔW_qnorm|=3.753182e-03 | numel=524288
+2026-03-19 20:39:26,065 [INFO]   layer=model.output_blocks.4.0.emb_layers.1 | ratio_dyn=0.375666 | ratio_same_scale=0.357000 | mean|ΔW_fp|=4.558740e-04 | mean|ΔW_qnorm|=3.407296e-03 | numel=393216
+2026-03-19 20:39:26,065 [INFO]   layer=model.output_blocks.6.0.emb_layers.1 | ratio_dyn=0.372990 | ratio_same_scale=0.357304 | mean|ΔW_fp|=5.129316e-04 | mean|ΔW_qnorm|=3.546437e-03 | numel=262144
+2026-03-19 20:39:26,065 [INFO]   layer=model.output_blocks.0.0.emb_layers.1 | ratio_dyn=0.371798 | ratio_same_scale=0.357788 | mean|ΔW_fp|=4.711590e-04 | mean|ΔW_qnorm|=3.401448e-03 | numel=524288
+2026-03-19 20:39:26,065 [INFO]   layer=model.middle_block.2.cond_emb_layers.1 | ratio_dyn=0.370117 | ratio_same_scale=0.361118 | mean|ΔW_fp|=1.023719e-03 | mean|ΔW_qnorm|=3.341404e-03 | numel=262144
+2026-03-19 20:39:26,065 [INFO]   layer=model.output_blocks.9.0.emb_layers.1 | ratio_dyn=0.368591 | ratio_same_scale=0.353607 | mean|ΔW_fp|=4.031149e-04 | mean|ΔW_qnorm|=3.188606e-03 | numel=131072
+2026-03-19 20:39:26,214 [INFO] 
+--- Epoch 25/160 ---
+2026-03-19 20:39:28,709 [INFO] Step 20 - DDIM step 80: current_step_loss=0.000016 | running_mean_ddim_loss=0.000013
+2026-03-19 20:39:31,089 [INFO] Step 40 - DDIM step 60: current_step_loss=0.000072 | running_mean_ddim_loss=0.000025
+2026-03-19 20:39:33,467 [INFO] Step 60 - DDIM step 40: current_step_loss=0.000248 | running_mean_ddim_loss=0.000067
+2026-03-19 20:39:35,867 [INFO] Step 80 - DDIM step 20: current_step_loss=0.000575 | running_mean_ddim_loss=0.000150
+2026-03-19 20:39:38,250 [INFO] Step 100 - DDIM step 0: current_step_loss=0.012620 | running_mean_ddim_loss=0.000403
+2026-03-19 20:39:38,252 [INFO] 
+Epoch 25/160 完成:
+2026-03-19 20:39:38,252 [INFO]   平均蒸餾損失(DDIM全步平均): 0.000403
+2026-03-19 20:39:38,252 [INFO]   平均損失(目前等同蒸餾損失): 0.000403
+2026-03-19 20:39:38,252 [INFO]   時間: 12.04秒
+2026-03-19 20:39:38,261 [INFO] [LossSummary] tail_ratio=3.511649 | tail_outlier_ratio=8.920605 | mean(t=0..19)=1.414742e-03 | mean(t=80..99)=1.308166e-05
+2026-03-19 20:39:38,261 [INFO] [LossSummary] per-timestep mean (first5): t000:1.262e-02, t001:1.869e-03, t002:1.217e-03, t003:1.020e-03, t004:9.320e-04
+2026-03-19 20:39:38,261 [INFO] [LossSummary] per-timestep mean (last5): t095:1.113e-05, t096:1.145e-05, t097:1.301e-05, t098:1.091e-05, t099:1.303e-05
+2026-03-19 20:39:38,261 [INFO] [LossChunk] steps=2401..2420 size=20 | total(mean=0.000013 std=0.000002 max=0.000019 min=0.000011) | distill(mean=0.000013 std=0.000002 max=0.000019 min=0.000011)
+2026-03-19 20:39:38,261 [INFO] [LossChunk] steps=2421..2440 size=20 | total(mean=0.000036 std=0.000017 max=0.000072 min=0.000017) | distill(mean=0.000036 std=0.000017 max=0.000072 min=0.000017)
+2026-03-19 20:39:38,262 [INFO] [LossChunk] steps=2441..2460 size=20 | total(mean=0.000152 std=0.000055 max=0.000248 min=0.000074) | distill(mean=0.000152 std=0.000055 max=0.000248 min=0.000074)
+2026-03-19 20:39:38,262 [INFO] [LossChunk] steps=2461..2480 size=20 | total(mean=0.000399 std=0.000090 max=0.000575 min=0.000263) | distill(mean=0.000399 std=0.000090 max=0.000575 min=0.000263)
+2026-03-19 20:39:38,262 [INFO] [LossChunk] steps=2481..2500 size=20 | total(mean=0.001415 std=0.002587 max=0.012620 min=0.000536) | distill(mean=0.001415 std=0.002587 max=0.012620 min=0.000536)
+2026-03-19 20:39:38,262 [INFO] 
+=== Epoch 25 驗證生成 (使用 EMA 模型) ===
+2026-03-19 20:39:38,454 [INFO] EMA 權重應用完成，共應用 420 個參數
+2026-03-19 20:39:38,454 [INFO] set quant state to True, True for layer 1
+2026-03-19 20:39:38,454 [INFO] set quant state to True, True for layer 2
+2026-03-19 20:39:38,454 [INFO] set quant state to False, False for layer 3
+2026-03-19 20:39:38,455 [INFO] set quant state to False, False for layer 144
+2026-03-19 20:39:38,460 [INFO] set quant state to True, True for layer 1
+2026-03-19 20:39:38,460 [INFO] set quant state to True, True for layer 2
+2026-03-19 20:39:38,460 [INFO] set quant state to False, False for layer 3
+2026-03-19 20:39:38,461 [INFO] set quant state to False, False for layer 144
+2026-03-19 20:39:43,584 [INFO] 生成圖像數值範圍: [-1.0000, 1.0000]
+2026-03-19 20:39:43,584 [INFO] 生成圖像均值: -0.0476
+2026-03-19 20:39:43,585 [INFO] 生成圖像標準差: 0.5124
+2026-03-19 20:39:43,585 [INFO] 正規化後數值範圍: [0.0000, 1.0000]
+2026-03-19 20:39:43,700 [INFO] ✅ Epoch 25 EMA 模型驗證生成完成:
+2026-03-19 20:39:43,710 [INFO]   生成時間: 5.32秒
+2026-03-19 20:39:43,738 [INFO]   圖像範圍: [-1.000, 1.000]
+2026-03-19 20:39:43,738 [INFO]   保存路徑: QATcode/quantize_ver2/training_samples/
+2026-03-19 20:39:43,739 [INFO] 驗證後量化器 current_step: 99
+2026-03-19 20:39:43,760 [INFO] 
+--- Epoch 26/160 ---
+2026-03-19 20:39:46,246 [INFO] Step 20 - DDIM step 80: current_step_loss=0.000015 | running_mean_ddim_loss=0.000013
+2026-03-19 20:39:48,623 [INFO] Step 40 - DDIM step 60: current_step_loss=0.000067 | running_mean_ddim_loss=0.000023
+2026-03-19 20:39:50,990 [INFO] Step 60 - DDIM step 40: current_step_loss=0.000282 | running_mean_ddim_loss=0.000067
+2026-03-19 20:39:53,354 [INFO] Step 80 - DDIM step 20: current_step_loss=0.000608 | running_mean_ddim_loss=0.000160
+2026-03-19 20:39:55,731 [INFO] Step 100 - DDIM step 0: current_step_loss=0.012889 | running_mean_ddim_loss=0.000433
+2026-03-19 20:39:55,733 [INFO] 
+Epoch 26/160 完成:
+2026-03-19 20:39:55,733 [INFO]   平均蒸餾損失(DDIM全步平均): 0.000433
+2026-03-19 20:39:55,733 [INFO]   平均損失(目前等同蒸餾損失): 0.000433
+2026-03-19 20:39:55,733 [INFO]   時間: 11.97秒
+2026-03-19 20:39:55,739 [INFO] [LossSummary] tail_ratio=3.522577 | tail_outlier_ratio=8.444311 | mean(t=0..19)=1.526298e-03 | mean(t=80..99)=1.300150e-05
+2026-03-19 20:39:55,739 [INFO] [LossSummary] per-timestep mean (first5): t000:1.289e-02, t001:2.099e-03, t002:1.393e-03, t003:1.144e-03, t004:1.035e-03
+2026-03-19 20:39:55,739 [INFO] [LossSummary] per-timestep mean (last5): t095:1.272e-05, t096:1.270e-05, t097:1.222e-05, t098:1.557e-05, t099:1.281e-05
+2026-03-19 20:39:55,739 [INFO] [LossChunk] steps=2501..2520 size=20 | total(mean=0.000013 std=0.000001 max=0.000016 min=0.000012) | distill(mean=0.000013 std=0.000001 max=0.000016 min=0.000012)
+2026-03-19 20:39:55,739 [INFO] [LossChunk] steps=2521..2540 size=20 | total(mean=0.000033 std=0.000015 max=0.000067 min=0.000016) | distill(mean=0.000033 std=0.000015 max=0.000067 min=0.000016)
+2026-03-19 20:39:55,739 [INFO] [LossChunk] steps=2541..2560 size=20 | total(mean=0.000156 std=0.000059 max=0.000282 min=0.000072) | distill(mean=0.000156 std=0.000059 max=0.000282 min=0.000072)
+2026-03-19 20:39:55,739 [INFO] [LossChunk] steps=2561..2580 size=20 | total(mean=0.000438 std=0.000105 max=0.000608 min=0.000258) | distill(mean=0.000438 std=0.000105 max=0.000608 min=0.000258)
+2026-03-19 20:39:55,740 [INFO] [LossChunk] steps=2581..2600 size=20 | total(mean=0.001526 std=0.002626 max=0.012889 min=0.000630) | distill(mean=0.001526 std=0.002626 max=0.012889 min=0.000630)
+2026-03-19 20:39:55,742 [INFO] 
+--- Epoch 27/160 ---
+2026-03-19 20:39:58,212 [INFO] Step 20 - DDIM step 80: current_step_loss=0.000015 | running_mean_ddim_loss=0.000013
+2026-03-19 20:40:00,590 [INFO] Step 40 - DDIM step 60: current_step_loss=0.000061 | running_mean_ddim_loss=0.000022
+2026-03-19 20:40:02,958 [INFO] Step 60 - DDIM step 40: current_step_loss=0.000220 | running_mean_ddim_loss=0.000060
+2026-03-19 20:40:05,323 [INFO] Step 80 - DDIM step 20: current_step_loss=0.000524 | running_mean_ddim_loss=0.000136
+2026-03-19 20:40:07,692 [INFO] Step 100 - DDIM step 0: current_step_loss=0.011338 | running_mean_ddim_loss=0.000373
+2026-03-19 20:40:07,693 [INFO] 
+Epoch 27/160 完成:
+2026-03-19 20:40:07,693 [INFO]   平均蒸餾損失(DDIM全步平均): 0.000373
+2026-03-19 20:40:07,693 [INFO]   平均損失(目前等同蒸餾損失): 0.000373
+2026-03-19 20:40:07,693 [INFO]   時間: 11.95秒
+2026-03-19 20:40:07,699 [INFO] [LossSummary] tail_ratio=3.543566 | tail_outlier_ratio=8.574369 | mean(t=0..19)=1.322348e-03 | mean(t=80..99)=1.273322e-05
+2026-03-19 20:40:07,699 [INFO] [LossSummary] per-timestep mean (first5): t000:1.134e-02, t001:1.719e-03, t002:1.150e-03, t003:9.927e-04, t004:8.863e-04
+2026-03-19 20:40:07,699 [INFO] [LossSummary] per-timestep mean (last5): t095:1.166e-05, t096:1.142e-05, t097:1.180e-05, t098:1.172e-05, t099:1.371e-05
+2026-03-19 20:40:07,700 [INFO] [LossChunk] steps=2601..2620 size=20 | total(mean=0.000013 std=0.000002 max=0.000018 min=0.000011) | distill(mean=0.000013 std=0.000002 max=0.000018 min=0.000011)
+2026-03-19 20:40:07,700 [INFO] [LossChunk] steps=2621..2640 size=20 | total(mean=0.000031 std=0.000013 max=0.000061 min=0.000016) | distill(mean=0.000031 std=0.000013 max=0.000061 min=0.000016)
+2026-03-19 20:40:07,700 [INFO] [LossChunk] steps=2641..2660 size=20 | total(mean=0.000136 std=0.000048 max=0.000220 min=0.000062) | distill(mean=0.000136 std=0.000048 max=0.000220 min=0.000062)
+2026-03-19 20:40:07,700 [INFO] [LossChunk] steps=2661..2680 size=20 | total(mean=0.000364 std=0.000086 max=0.000524 min=0.000244) | distill(mean=0.000364 std=0.000086 max=0.000524 min=0.000244)
+2026-03-19 20:40:07,700 [INFO] [LossChunk] steps=2681..2700 size=20 | total(mean=0.001322 std=0.002312 max=0.011338 min=0.000518) | distill(mean=0.001322 std=0.002312 max=0.011338 min=0.000518)
+2026-03-19 20:40:07,703 [INFO] 
+--- Epoch 28/160 ---
+2026-03-19 20:40:10,174 [INFO] Step 20 - DDIM step 80: current_step_loss=0.000014 | running_mean_ddim_loss=0.000013
+2026-03-19 20:40:12,544 [INFO] Step 40 - DDIM step 60: current_step_loss=0.000057 | running_mean_ddim_loss=0.000022
+2026-03-19 20:40:14,909 [INFO] Step 60 - DDIM step 40: current_step_loss=0.000220 | running_mean_ddim_loss=0.000058
+2026-03-19 20:40:17,278 [INFO] Step 80 - DDIM step 20: current_step_loss=0.000508 | running_mean_ddim_loss=0.000135
+2026-03-19 20:40:19,645 [INFO] Step 100 - DDIM step 0: current_step_loss=0.012464 | running_mean_ddim_loss=0.000388
+2026-03-19 20:40:19,646 [INFO] 
+Epoch 28/160 完成:
+2026-03-19 20:40:19,647 [INFO]   平均蒸餾損失(DDIM全步平均): 0.000388
+2026-03-19 20:40:19,647 [INFO]   平均損失(目前等同蒸餾損失): 0.000388
+2026-03-19 20:40:19,647 [INFO]   時間: 11.95秒
+2026-03-19 20:40:19,653 [INFO] [LossSummary] tail_ratio=3.603033 | tail_outlier_ratio=8.921787 | mean(t=0..19)=1.396990e-03 | mean(t=80..99)=1.269294e-05
+2026-03-19 20:40:19,653 [INFO] [LossSummary] per-timestep mean (first5): t000:1.246e-02, t001:1.870e-03, t002:1.229e-03, t003:1.016e-03, t004:9.625e-04
+2026-03-19 20:40:19,653 [INFO] [LossSummary] per-timestep mean (last5): t095:1.289e-05, t096:1.257e-05, t097:1.166e-05, t098:1.439e-05, t099:1.194e-05
+2026-03-19 20:40:19,653 [INFO] [LossChunk] steps=2701..2720 size=20 | total(mean=0.000013 std=0.000001 max=0.000018 min=0.000011) | distill(mean=0.000013 std=0.000001 max=0.000018 min=0.000011)
+2026-03-19 20:40:19,653 [INFO] [LossChunk] steps=2721..2740 size=20 | total(mean=0.000031 std=0.000013 max=0.000057 min=0.000015) | distill(mean=0.000031 std=0.000013 max=0.000057 min=0.000015)
+2026-03-19 20:40:19,654 [INFO] [LossChunk] steps=2741..2760 size=20 | total(mean=0.000132 std=0.000049 max=0.000220 min=0.000061) | distill(mean=0.000132 std=0.000049 max=0.000220 min=0.000061)
+2026-03-19 20:40:19,654 [INFO] [LossChunk] steps=2761..2780 size=20 | total(mean=0.000367 std=0.000085 max=0.000508 min=0.000233) | distill(mean=0.000367 std=0.000085 max=0.000508 min=0.000233)
+2026-03-19 20:40:19,654 [INFO] [LossChunk] steps=2781..2800 size=20 | total(mean=0.001397 std=0.002556 max=0.012464 min=0.000518) | distill(mean=0.001397 std=0.002556 max=0.012464 min=0.000518)
+2026-03-19 20:40:19,656 [INFO] 
+--- Epoch 29/160 ---
+2026-03-19 20:40:22,116 [INFO] Step 20 - DDIM step 80: current_step_loss=0.000014 | running_mean_ddim_loss=0.000013
+2026-03-19 20:40:24,488 [INFO] Step 40 - DDIM step 60: current_step_loss=0.000055 | running_mean_ddim_loss=0.000021
+2026-03-19 20:40:26,862 [INFO] Step 60 - DDIM step 40: current_step_loss=0.000212 | running_mean_ddim_loss=0.000057
+2026-03-19 20:40:29,236 [INFO] Step 80 - DDIM step 20: current_step_loss=0.000508 | running_mean_ddim_loss=0.000132
+2026-03-19 20:40:31,609 [INFO] Step 100 - DDIM step 0: current_step_loss=0.011213 | running_mean_ddim_loss=0.000366
+2026-03-19 20:40:31,610 [INFO] 
+Epoch 29/160 完成:
+2026-03-19 20:40:31,611 [INFO]   平均蒸餾損失(DDIM全步平均): 0.000366
+2026-03-19 20:40:31,611 [INFO]   平均損失(目前等同蒸餾損失): 0.000366
+2026-03-19 20:40:31,611 [INFO]   時間: 11.96秒
+2026-03-19 20:40:31,714 [INFO] [LossSummary] tail_ratio=3.554972 | tail_outlier_ratio=8.608780 | mean(t=0..19)=1.302499e-03 | mean(t=80..99)=1.267371e-05
+2026-03-19 20:40:31,714 [INFO] [LossSummary] per-timestep mean (first5): t000:1.121e-02, t001:1.734e-03, t002:1.169e-03, t003:9.873e-04, t004:8.960e-04
+2026-03-19 20:40:31,715 [INFO] [LossSummary] per-timestep mean (last5): t095:1.154e-05, t096:1.167e-05, t097:1.263e-05, t098:1.212e-05, t099:1.616e-05
+2026-03-19 20:40:31,715 [INFO] [LossChunk] steps=2801..2820 size=20 | total(mean=0.000013 std=0.000001 max=0.000017 min=0.000011) | distill(mean=0.000013 std=0.000001 max=0.000017 min=0.000011)
+2026-03-19 20:40:31,715 [INFO] [LossChunk] steps=2821..2840 size=20 | total(mean=0.000029 std=0.000012 max=0.000055 min=0.000016) | distill(mean=0.000029 std=0.000012 max=0.000055 min=0.000016)
+2026-03-19 20:40:31,715 [INFO] [LossChunk] steps=2841..2860 size=20 | total(mean=0.000129 std=0.000047 max=0.000212 min=0.000065) | distill(mean=0.000129 std=0.000047 max=0.000212 min=0.000065)
+2026-03-19 20:40:31,716 [INFO] [LossChunk] steps=2861..2880 size=20 | total(mean=0.000359 std=0.000088 max=0.000508 min=0.000226) | distill(mean=0.000359 std=0.000088 max=0.000508 min=0.000226)
+2026-03-19 20:40:31,716 [INFO] [LossChunk] steps=2881..2900 size=20 | total(mean=0.001302 std=0.002290 max=0.011213 min=0.000513) | distill(mean=0.001302 std=0.002290 max=0.011213 min=0.000513)
+2026-03-19 20:40:31,719 [INFO] 
+--- Epoch 30/160 ---
+2026-03-19 20:40:34,187 [INFO] Step 20 - DDIM step 80: current_step_loss=0.000014 | running_mean_ddim_loss=0.000012
+2026-03-19 20:40:36,565 [INFO] Step 40 - DDIM step 60: current_step_loss=0.000058 | running_mean_ddim_loss=0.000021
+2026-03-19 20:40:38,941 [INFO] Step 60 - DDIM step 40: current_step_loss=0.000221 | running_mean_ddim_loss=0.000059
+2026-03-19 20:40:41,313 [INFO] Step 80 - DDIM step 20: current_step_loss=0.000538 | running_mean_ddim_loss=0.000136
+2026-03-19 20:40:43,678 [INFO] Step 100 - DDIM step 0: current_step_loss=0.012132 | running_mean_ddim_loss=0.000381
+2026-03-19 20:40:43,679 [INFO] 
+Epoch 30/160 完成:
+2026-03-19 20:40:43,679 [INFO]   平均蒸餾損失(DDIM全步平均): 0.000381
+2026-03-19 20:40:43,679 [INFO]   平均損失(目前等同蒸餾損失): 0.000381
+2026-03-19 20:40:43,679 [INFO]   時間: 11.96秒
+2026-03-19 20:40:43,685 [INFO] [LossSummary] tail_ratio=3.574867 | tail_outlier_ratio=8.915903 | mean(t=0..19)=1.360715e-03 | mean(t=80..99)=1.238754e-05
+2026-03-19 20:40:43,686 [INFO] [LossSummary] per-timestep mean (first5): t000:1.213e-02, t001:1.777e-03, t002:1.166e-03, t003:9.836e-04, t004:8.887e-04
+2026-03-19 20:40:43,686 [INFO] [LossSummary] per-timestep mean (last5): t095:1.133e-05, t096:1.144e-05, t097:1.118e-05, t098:1.186e-05, t099:1.271e-05
+2026-03-19 20:40:43,686 [INFO] [LossChunk] steps=2901..2920 size=20 | total(mean=0.000012 std=0.000001 max=0.000017 min=0.000011) | distill(mean=0.000012 std=0.000001 max=0.000017 min=0.000011)
+2026-03-19 20:40:43,686 [INFO] [LossChunk] steps=2921..2940 size=20 | total(mean=0.000029 std=0.000013 max=0.000058 min=0.000015) | distill(mean=0.000029 std=0.000013 max=0.000058 min=0.000015)
+2026-03-19 20:40:43,686 [INFO] [LossChunk] steps=2941..2960 size=20 | total(mean=0.000135 std=0.000050 max=0.000221 min=0.000067) | distill(mean=0.000135 std=0.000050 max=0.000221 min=0.000067)
+2026-03-19 20:40:43,686 [INFO] [LossChunk] steps=2961..2980 size=20 | total(mean=0.000366 std=0.000092 max=0.000538 min=0.000228) | distill(mean=0.000366 std=0.000092 max=0.000538 min=0.000228)
+2026-03-19 20:40:43,686 [INFO] [LossChunk] steps=2981..3000 size=20 | total(mean=0.001361 std=0.002486 max=0.012132 min=0.000536) | distill(mean=0.001361 std=0.002486 max=0.012132 min=0.000536)
+2026-03-19 20:40:43,689 [INFO] 
+--- Epoch 31/160 ---
+2026-03-19 20:40:46,160 [INFO] Step 20 - DDIM step 80: current_step_loss=0.000014 | running_mean_ddim_loss=0.000013
+2026-03-19 20:40:48,539 [INFO] Step 40 - DDIM step 60: current_step_loss=0.000062 | running_mean_ddim_loss=0.000023
+2026-03-19 20:40:50,909 [INFO] Step 60 - DDIM step 40: current_step_loss=0.000248 | running_mean_ddim_loss=0.000064
+2026-03-19 20:40:53,280 [INFO] Step 80 - DDIM step 20: current_step_loss=0.000603 | running_mean_ddim_loss=0.000151
+2026-03-19 20:40:55,661 [INFO] Step 100 - DDIM step 0: current_step_loss=0.012703 | running_mean_ddim_loss=0.000413
+2026-03-19 20:40:55,662 [INFO] 
+Epoch 31/160 完成:
+2026-03-19 20:40:55,662 [INFO]   平均蒸餾損失(DDIM全步平均): 0.000413
+2026-03-19 20:40:55,662 [INFO]   平均損失(目前等同蒸餾損失): 0.000413
+2026-03-19 20:40:55,662 [INFO]   時間: 11.98秒
+2026-03-19 20:40:55,669 [INFO] [LossSummary] tail_ratio=3.536769 | tail_outlier_ratio=8.689843 | mean(t=0..19)=1.461794e-03 | mean(t=80..99)=1.285702e-05
+2026-03-19 20:40:55,669 [INFO] [LossSummary] per-timestep mean (first5): t000:1.270e-02, t001:1.898e-03, t002:1.253e-03, t003:1.047e-03, t004:9.629e-04
+2026-03-19 20:40:55,669 [INFO] [LossSummary] per-timestep mean (last5): t095:1.142e-05, t096:1.116e-05, t097:1.228e-05, t098:1.102e-05, t099:1.591e-05
+2026-03-19 20:40:55,669 [INFO] [LossChunk] steps=3001..3020 size=20 | total(mean=0.000013 std=0.000002 max=0.000018 min=0.000011) | distill(mean=0.000013 std=0.000002 max=0.000018 min=0.000011)
+2026-03-19 20:40:55,669 [INFO] [LossChunk] steps=3021..3040 size=20 | total(mean=0.000032 std=0.000014 max=0.000062 min=0.000016) | distill(mean=0.000032 std=0.000014 max=0.000062 min=0.000016)
+2026-03-19 20:40:55,669 [INFO] [LossChunk] steps=3041..3060 size=20 | total(mean=0.000148 std=0.000056 max=0.000248 min=0.000073) | distill(mean=0.000148 std=0.000056 max=0.000248 min=0.000073)
+2026-03-19 20:40:55,669 [INFO] [LossChunk] steps=3061..3080 size=20 | total(mean=0.000412 std=0.000099 max=0.000603 min=0.000254) | distill(mean=0.000412 std=0.000099 max=0.000603 min=0.000254)
+2026-03-19 20:40:55,670 [INFO] [LossChunk] steps=3081..3100 size=20 | total(mean=0.001462 std=0.002594 max=0.012703 min=0.000579) | distill(mean=0.001462 std=0.002594 max=0.012703 min=0.000579)
+2026-03-19 20:40:55,672 [INFO] 
+--- Epoch 32/160 ---
+2026-03-19 20:40:58,152 [INFO] Step 20 - DDIM step 80: current_step_loss=0.000014 | running_mean_ddim_loss=0.000012
+2026-03-19 20:41:00,519 [INFO] Step 40 - DDIM step 60: current_step_loss=0.000049 | running_mean_ddim_loss=0.000020
+2026-03-19 20:41:02,899 [INFO] Step 60 - DDIM step 40: current_step_loss=0.000201 | running_mean_ddim_loss=0.000053
+2026-03-19 20:41:05,278 [INFO] Step 80 - DDIM step 20: current_step_loss=0.000479 | running_mean_ddim_loss=0.000123
+2026-03-19 20:41:07,655 [INFO] Step 100 - DDIM step 0: current_step_loss=0.012142 | running_mean_ddim_loss=0.000365
+2026-03-19 20:41:07,656 [INFO] 
+Epoch 32/160 完成:
+2026-03-19 20:41:07,656 [INFO]   平均蒸餾損失(DDIM全步平均): 0.000365
+2026-03-19 20:41:07,656 [INFO]   平均損失(目前等同蒸餾損失): 0.000365
+2026-03-19 20:41:07,656 [INFO]   時間: 11.99秒
+2026-03-19 20:41:07,662 [INFO] [LossSummary] tail_ratio=3.647305 | tail_outlier_ratio=9.118770 | mean(t=0..19)=1.331496e-03 | mean(t=80..99)=1.232747e-05
+2026-03-19 20:41:07,662 [INFO] [LossSummary] per-timestep mean (first5): t000:1.214e-02, t001:1.769e-03, t002:1.158e-03, t003:9.576e-04, t004:8.868e-04
+2026-03-19 20:41:07,662 [INFO] [LossSummary] per-timestep mean (last5): t095:1.204e-05, t096:1.203e-05, t097:1.105e-05, t098:1.291e-05, t099:1.121e-05
+2026-03-19 20:41:07,662 [INFO] [LossChunk] steps=3101..3120 size=20 | total(mean=0.000012 std=0.000001 max=0.000017 min=0.000011) | distill(mean=0.000012 std=0.000001 max=0.000017 min=0.000011)
+2026-03-19 20:41:07,662 [INFO] [LossChunk] steps=3121..3140 size=20 | total(mean=0.000027 std=0.000011 max=0.000049 min=0.000014) | distill(mean=0.000027 std=0.000011 max=0.000049 min=0.000014)
+2026-03-19 20:41:07,662 [INFO] [LossChunk] steps=3141..3160 size=20 | total(mean=0.000120 std=0.000045 max=0.000201 min=0.000055) | distill(mean=0.000120 std=0.000045 max=0.000201 min=0.000055)
+2026-03-19 20:41:07,662 [INFO] [LossChunk] steps=3161..3180 size=20 | total(mean=0.000335 std=0.000082 max=0.000479 min=0.000202) | distill(mean=0.000335 std=0.000082 max=0.000479 min=0.000202)
+2026-03-19 20:41:07,663 [INFO] [LossChunk] steps=3181..3200 size=20 | total(mean=0.001331 std=0.002496 max=0.012142 min=0.000488) | distill(mean=0.001331 std=0.002496 max=0.012142 min=0.000488)
+2026-03-19 20:41:07,702 [INFO] [QuantUpdateDiag] Epoch 32/160 | layers=140 | weighted_changed_ratio(dynamic)=0.207304 | weighted_changed_ratio(same_scale)=0.201448 | mean|ΔW_fp|=5.956212e-04 | mean|ΔW_qnorm|=2.141075e-03
+2026-03-19 20:41:07,702 [INFO] [QuantUpdateDiag] Top-12 layers by changed_ratio_dynamic:
+2026-03-19 20:41:07,702 [INFO]   layer=model.output_blocks.0.0.cond_emb_layers.1 | ratio_dyn=0.522732 | ratio_same_scale=0.514858 | mean|ΔW_fp|=1.947399e-03 | mean|ΔW_qnorm|=6.053383e-03 | numel=262144
+2026-03-19 20:41:07,702 [INFO]   layer=model.output_blocks.1.0.emb_layers.1 | ratio_dyn=0.508101 | ratio_same_scale=0.458542 | mean|ΔW_fp|=8.407425e-04 | mean|ΔW_qnorm|=6.056283e-03 | numel=524288
+2026-03-19 20:41:07,703 [INFO]   layer=model.output_blocks.1.0.cond_emb_layers.1 | ratio_dyn=0.469021 | ratio_same_scale=0.457958 | mean|ΔW_fp|=1.625103e-03 | mean|ΔW_qnorm|=4.478875e-03 | numel=262144
+2026-03-19 20:41:07,703 [INFO]   layer=model.output_blocks.3.0.emb_layers.1 | ratio_dyn=0.463740 | ratio_same_scale=0.445356 | mean|ΔW_fp|=7.057361e-04 | mean|ΔW_qnorm|=5.242375e-03 | numel=393216
+2026-03-19 20:41:07,703 [INFO]   layer=model.output_blocks.2.0.cond_emb_layers.1 | ratio_dyn=0.447121 | ratio_same_scale=0.434086 | mean|ΔW_fp|=1.461965e-03 | mean|ΔW_qnorm|=4.031444e-03 | numel=262144
+2026-03-19 20:41:07,703 [INFO]   layer=model.output_blocks.2.0.emb_layers.1 | ratio_dyn=0.430063 | ratio_same_scale=0.416245 | mean|ΔW_fp|=5.770508e-04 | mean|ΔW_qnorm|=4.310262e-03 | numel=524288
+2026-03-19 20:41:07,703 [INFO]   layer=model.middle_block.2.cond_emb_layers.1 | ratio_dyn=0.424610 | ratio_same_scale=0.414314 | mean|ΔW_fp|=1.254347e-03 | mean|ΔW_qnorm|=4.103052e-03 | numel=262144
+2026-03-19 20:41:07,703 [INFO]   layer=model.output_blocks.6.0.emb_layers.1 | ratio_dyn=0.417000 | ratio_same_scale=0.397980 | mean|ΔW_fp|=5.915968e-04 | mean|ΔW_qnorm|=4.137024e-03 | numel=262144
+2026-03-19 20:41:07,703 [INFO]   layer=model.output_blocks.4.0.emb_layers.1 | ratio_dyn=0.411781 | ratio_same_scale=0.392779 | mean|ΔW_fp|=5.238740e-04 | mean|ΔW_qnorm|=3.913439e-03 | numel=393216
+2026-03-19 20:41:07,703 [INFO]   layer=model.output_blocks.9.0.emb_layers.1 | ratio_dyn=0.406235 | ratio_same_scale=0.391090 | mean|ΔW_fp|=4.594005e-04 | mean|ΔW_qnorm|=3.642886e-03 | numel=131072
+2026-03-19 20:41:07,703 [INFO]   layer=model.output_blocks.2.1.emb_layers.1 | ratio_dyn=0.402416 | ratio_same_scale=0.385098 | mean|ΔW_fp|=4.984280e-04 | mean|ΔW_qnorm|=3.879277e-03 | numel=524288
+2026-03-19 20:41:07,703 [INFO]   layer=model.input_blocks.10.0.emb_layers.1 | ratio_dyn=0.396566 | ratio_same_scale=0.380328 | mean|ΔW_fp|=4.581847e-04 | mean|ΔW_qnorm|=3.916223e-03 | numel=393216
+2026-03-19 20:41:07,854 [INFO] 
+--- Epoch 33/160 ---
+2026-03-19 20:41:10,329 [INFO] Step 20 - DDIM step 80: current_step_loss=0.000013 | running_mean_ddim_loss=0.000012
+2026-03-19 20:41:12,711 [INFO] Step 40 - DDIM step 60: current_step_loss=0.000051 | running_mean_ddim_loss=0.000019
+2026-03-19 20:41:15,080 [INFO] Step 60 - DDIM step 40: current_step_loss=0.000194 | running_mean_ddim_loss=0.000052
+2026-03-19 20:41:17,468 [INFO] Step 80 - DDIM step 20: current_step_loss=0.000495 | running_mean_ddim_loss=0.000120
+2026-03-19 20:41:19,832 [INFO] Step 100 - DDIM step 0: current_step_loss=0.009989 | running_mean_ddim_loss=0.000342
+2026-03-19 20:41:19,834 [INFO] 
+Epoch 33/160 完成:
+2026-03-19 20:41:19,834 [INFO]   平均蒸餾損失(DDIM全步平均): 0.000342
+2026-03-19 20:41:19,834 [INFO]   平均損失(目前等同蒸餾損失): 0.000342
+2026-03-19 20:41:19,834 [INFO]   時間: 11.98秒
+2026-03-19 20:41:19,840 [INFO] [LossSummary] tail_ratio=3.598970 | tail_outlier_ratio=8.106059 | mean(t=0..19)=1.232228e-03 | mean(t=80..99)=1.202502e-05
+2026-03-19 20:41:19,840 [INFO] [LossSummary] per-timestep mean (first5): t000:9.989e-03, t001:1.596e-03, t002:1.083e-03, t003:9.570e-04, t004:9.081e-04
+2026-03-19 20:41:19,840 [INFO] [LossSummary] per-timestep mean (last5): t095:1.061e-05, t096:1.072e-05, t097:1.078e-05, t098:1.044e-05, t099:1.286e-05
+2026-03-19 20:41:19,840 [INFO] [LossChunk] steps=3201..3220 size=20 | total(mean=0.000012 std=0.000001 max=0.000016 min=0.000010) | distill(mean=0.000012 std=0.000001 max=0.000016 min=0.000010)
+2026-03-19 20:41:19,840 [INFO] [LossChunk] steps=3221..3240 size=20 | total(mean=0.000027 std=0.000011 max=0.000051 min=0.000014) | distill(mean=0.000027 std=0.000011 max=0.000051 min=0.000014)
+2026-03-19 20:41:19,840 [INFO] [LossChunk] steps=3241..3260 size=20 | total(mean=0.000116 std=0.000042 max=0.000194 min=0.000054) | distill(mean=0.000116 std=0.000042 max=0.000194 min=0.000054)
+2026-03-19 20:41:19,840 [INFO] [LossChunk] steps=3261..3280 size=20 | total(mean=0.000325 std=0.000083 max=0.000495 min=0.000193) | distill(mean=0.000325 std=0.000083 max=0.000495 min=0.000193)
+2026-03-19 20:41:19,841 [INFO] [LossChunk] steps=3281..3300 size=20 | total(mean=0.001232 std=0.002023 max=0.009989 min=0.000476) | distill(mean=0.001232 std=0.002023 max=0.009989 min=0.000476)
+2026-03-19 20:41:19,841 [INFO] 
+=== Epoch 33 驗證生成 (使用 EMA 模型) ===
+2026-03-19 20:41:20,029 [INFO] EMA 權重應用完成，共應用 420 個參數
+2026-03-19 20:41:20,030 [INFO] set quant state to True, True for layer 1
+2026-03-19 20:41:20,030 [INFO] set quant state to True, True for layer 2
+2026-03-19 20:41:20,030 [INFO] set quant state to False, False for layer 3
+2026-03-19 20:41:20,031 [INFO] set quant state to False, False for layer 144
+2026-03-19 20:41:20,036 [INFO] set quant state to True, True for layer 1
+2026-03-19 20:41:20,036 [INFO] set quant state to True, True for layer 2
+2026-03-19 20:41:20,036 [INFO] set quant state to False, False for layer 3
+2026-03-19 20:41:20,037 [INFO] set quant state to False, False for layer 144
+2026-03-19 20:41:25,142 [INFO] 生成圖像數值範圍: [-1.0000, 1.0000]
+2026-03-19 20:41:25,142 [INFO] 生成圖像均值: -0.0449
+2026-03-19 20:41:25,142 [INFO] 生成圖像標準差: 0.5121
+2026-03-19 20:41:25,142 [INFO] 正規化後數值範圍: [0.0000, 1.0000]
+2026-03-19 20:41:25,258 [INFO] ✅ Epoch 33 EMA 模型驗證生成完成:
+2026-03-19 20:41:25,268 [INFO]   生成時間: 5.30秒
+2026-03-19 20:41:25,293 [INFO]   圖像範圍: [-1.000, 1.000]
+2026-03-19 20:41:25,293 [INFO]   保存路徑: QATcode/quantize_ver2/training_samples/
+2026-03-19 20:41:25,294 [INFO] 驗證後量化器 current_step: 99
+2026-03-19 20:41:25,315 [INFO] 
+--- Epoch 34/160 ---
+2026-03-19 20:41:27,798 [INFO] Step 20 - DDIM step 80: current_step_loss=0.000015 | running_mean_ddim_loss=0.000012
+2026-03-19 20:41:30,173 [INFO] Step 40 - DDIM step 60: current_step_loss=0.000051 | running_mean_ddim_loss=0.000020
+2026-03-19 20:41:32,546 [INFO] Step 60 - DDIM step 40: current_step_loss=0.000203 | running_mean_ddim_loss=0.000054
+2026-03-19 20:41:34,910 [INFO] Step 80 - DDIM step 20: current_step_loss=0.000474 | running_mean_ddim_loss=0.000124
+2026-03-19 20:41:37,273 [INFO] Step 100 - DDIM step 0: current_step_loss=0.011686 | running_mean_ddim_loss=0.000358
+2026-03-19 20:41:37,274 [INFO] 
+Epoch 34/160 完成:
+2026-03-19 20:41:37,275 [INFO]   平均蒸餾損失(DDIM全步平均): 0.000358
+2026-03-19 20:41:37,275 [INFO]   平均損失(目前等同蒸餾損失): 0.000358
+2026-03-19 20:41:37,275 [INFO]   時間: 11.96秒
+2026-03-19 20:41:37,281 [INFO] [LossSummary] tail_ratio=3.615121 | tail_outlier_ratio=9.022621 | mean(t=0..19)=1.295218e-03 | mean(t=80..99)=1.243226e-05
+2026-03-19 20:41:37,281 [INFO] [LossSummary] per-timestep mean (first5): t000:1.169e-02, t001:1.661e-03, t002:1.117e-03, t003:9.413e-04, t004:8.543e-04
+2026-03-19 20:41:37,281 [INFO] [LossSummary] per-timestep mean (last5): t095:1.203e-05, t096:1.137e-05, t097:1.107e-05, t098:1.285e-05, t099:1.085e-05
+2026-03-19 20:41:37,281 [INFO] [LossChunk] steps=3301..3320 size=20 | total(mean=0.000012 std=0.000001 max=0.000017 min=0.000011) | distill(mean=0.000012 std=0.000001 max=0.000017 min=0.000011)
+2026-03-19 20:41:37,281 [INFO] [LossChunk] steps=3321..3340 size=20 | total(mean=0.000028 std=0.000011 max=0.000051 min=0.000015) | distill(mean=0.000028 std=0.000011 max=0.000051 min=0.000015)
+2026-03-19 20:41:37,282 [INFO] [LossChunk] steps=3341..3360 size=20 | total(mean=0.000121 std=0.000046 max=0.000203 min=0.000052) | distill(mean=0.000121 std=0.000046 max=0.000203 min=0.000052)
+2026-03-19 20:41:37,282 [INFO] [LossChunk] steps=3361..3380 size=20 | total(mean=0.000335 std=0.000079 max=0.000474 min=0.000214) | distill(mean=0.000335 std=0.000079 max=0.000474 min=0.000214)
+2026-03-19 20:41:37,282 [INFO] [LossChunk] steps=3381..3400 size=20 | total(mean=0.001295 std=0.002398 max=0.011686 min=0.000508) | distill(mean=0.001295 std=0.002398 max=0.011686 min=0.000508)
+2026-03-19 20:41:37,284 [INFO] 
+--- Epoch 35/160 ---
+2026-03-19 20:41:39,748 [INFO] Step 20 - DDIM step 80: current_step_loss=0.000014 | running_mean_ddim_loss=0.000012
+2026-03-19 20:41:42,126 [INFO] Step 40 - DDIM step 60: current_step_loss=0.000068 | running_mean_ddim_loss=0.000023
+2026-03-19 20:41:44,491 [INFO] Step 60 - DDIM step 40: current_step_loss=0.000260 | running_mean_ddim_loss=0.000067
+2026-03-19 20:41:46,861 [INFO] Step 80 - DDIM step 20: current_step_loss=0.000547 | running_mean_ddim_loss=0.000148
+2026-03-19 20:41:49,233 [INFO] Step 100 - DDIM step 0: current_step_loss=0.012004 | running_mean_ddim_loss=0.000396
+2026-03-19 20:41:49,234 [INFO] 
+Epoch 35/160 完成:
+2026-03-19 20:41:49,235 [INFO]   平均蒸餾損失(DDIM全步平均): 0.000396
+2026-03-19 20:41:49,235 [INFO]   平均損失(目前等同蒸餾損失): 0.000396
+2026-03-19 20:41:49,235 [INFO]   時間: 11.95秒
+2026-03-19 20:41:49,241 [INFO] [LossSummary] tail_ratio=3.500903 | tail_outlier_ratio=8.668571 | mean(t=0..19)=1.384729e-03 | mean(t=80..99)=1.228191e-05
+2026-03-19 20:41:49,241 [INFO] [LossSummary] per-timestep mean (first5): t000:1.200e-02, t001:1.880e-03, t002:1.261e-03, t003:1.056e-03, t004:9.806e-04
+2026-03-19 20:41:49,241 [INFO] [LossSummary] per-timestep mean (last5): t095:1.127e-05, t096:1.127e-05, t097:1.079e-05, t098:1.132e-05, t099:1.201e-05
+2026-03-19 20:41:49,241 [INFO] [LossChunk] steps=3401..3420 size=20 | total(mean=0.000012 std=0.000001 max=0.000016 min=0.000011) | distill(mean=0.000012 std=0.000001 max=0.000016 min=0.000011)
+2026-03-19 20:41:49,241 [INFO] [LossChunk] steps=3421..3440 size=20 | total(mean=0.000034 std=0.000016 max=0.000068 min=0.000016) | distill(mean=0.000034 std=0.000016 max=0.000068 min=0.000016)
+2026-03-19 20:41:49,241 [INFO] [LossChunk] steps=3441..3460 size=20 | total(mean=0.000155 std=0.000059 max=0.000260 min=0.000074) | distill(mean=0.000155 std=0.000059 max=0.000260 min=0.000074)
+2026-03-19 20:41:49,241 [INFO] [LossChunk] steps=3461..3480 size=20 | total(mean=0.000392 std=0.000083 max=0.000547 min=0.000257) | distill(mean=0.000392 std=0.000083 max=0.000547 min=0.000257)
+2026-03-19 20:41:49,242 [INFO] [LossChunk] steps=3481..3500 size=20 | total(mean=0.001385 std=0.002454 max=0.012004 min=0.000530) | distill(mean=0.001385 std=0.002454 max=0.012004 min=0.000530)
+2026-03-19 20:41:49,244 [INFO] 
+--- Epoch 36/160 ---
+2026-03-19 20:41:51,716 [INFO] Step 20 - DDIM step 80: current_step_loss=0.000014 | running_mean_ddim_loss=0.000012
+2026-03-19 20:41:54,093 [INFO] Step 40 - DDIM step 60: current_step_loss=0.000046 | running_mean_ddim_loss=0.000019
+2026-03-19 20:41:56,456 [INFO] Step 60 - DDIM step 40: current_step_loss=0.000181 | running_mean_ddim_loss=0.000048
+2026-03-19 20:41:58,832 [INFO] Step 80 - DDIM step 20: current_step_loss=0.000432 | running_mean_ddim_loss=0.000111
+2026-03-19 20:42:01,202 [INFO] Step 100 - DDIM step 0: current_step_loss=0.011800 | running_mean_ddim_loss=0.000340
+2026-03-19 20:42:01,203 [INFO] 
+Epoch 36/160 完成:
+2026-03-19 20:42:01,203 [INFO]   平均蒸餾損失(DDIM全步平均): 0.000340
+2026-03-19 20:42:01,203 [INFO]   平均損失(目前等同蒸餾損失): 0.000340
+2026-03-19 20:42:01,203 [INFO]   時間: 11.96秒
+2026-03-19 20:42:01,209 [INFO] [LossSummary] tail_ratio=3.691906 | tail_outlier_ratio=9.397999 | mean(t=0..19)=1.255628e-03 | mean(t=80..99)=1.218385e-05
+2026-03-19 20:42:01,209 [INFO] [LossSummary] per-timestep mean (first5): t000:1.180e-02, t001:1.602e-03, t002:1.055e-03, t003:8.822e-04, t004:8.048e-04
+2026-03-19 20:42:01,209 [INFO] [LossSummary] per-timestep mean (last5): t095:1.239e-05, t096:1.121e-05, t097:1.113e-05, t098:1.219e-05, t099:1.112e-05
+2026-03-19 20:42:01,209 [INFO] [LossChunk] steps=3501..3520 size=20 | total(mean=0.000012 std=0.000001 max=0.000017 min=0.000011) | distill(mean=0.000012 std=0.000001 max=0.000017 min=0.000011)
+2026-03-19 20:42:01,209 [INFO] [LossChunk] steps=3521..3540 size=20 | total(mean=0.000026 std=0.000010 max=0.000046 min=0.000014) | distill(mean=0.000026 std=0.000010 max=0.000046 min=0.000014)
+2026-03-19 20:42:01,209 [INFO] [LossChunk] steps=3541..3560 size=20 | total(mean=0.000106 std=0.000041 max=0.000181 min=0.000052) | distill(mean=0.000106 std=0.000041 max=0.000181 min=0.000052)
+2026-03-19 20:42:01,210 [INFO] [LossChunk] steps=3561..3580 size=20 | total(mean=0.000300 std=0.000073 max=0.000432 min=0.000191) | distill(mean=0.000300 std=0.000073 max=0.000432 min=0.000191)
+2026-03-19 20:42:01,210 [INFO] [LossChunk] steps=3581..3600 size=20 | total(mean=0.001256 std=0.002432 max=0.011800 min=0.000457) | distill(mean=0.001256 std=0.002432 max=0.011800 min=0.000457)
+2026-03-19 20:42:01,212 [INFO] 
+--- Epoch 37/160 ---
+2026-03-19 20:42:03,699 [INFO] Step 20 - DDIM step 80: current_step_loss=0.000013 | running_mean_ddim_loss=0.000012
+2026-03-19 20:42:06,073 [INFO] Step 40 - DDIM step 60: current_step_loss=0.000039 | running_mean_ddim_loss=0.000018
+2026-03-19 20:42:08,441 [INFO] Step 60 - DDIM step 40: current_step_loss=0.000166 | running_mean_ddim_loss=0.000043
+2026-03-19 20:42:10,811 [INFO] Step 80 - DDIM step 20: current_step_loss=0.000411 | running_mean_ddim_loss=0.000101
+2026-03-19 20:42:13,180 [INFO] Step 100 - DDIM step 0: current_step_loss=0.011446 | running_mean_ddim_loss=0.000328
+2026-03-19 20:42:13,181 [INFO] 
+Epoch 37/160 完成:
+2026-03-19 20:42:13,181 [INFO]   平均蒸餾損失(DDIM全步平均): 0.000328
+2026-03-19 20:42:13,181 [INFO]   平均損失(目前等同蒸餾損失): 0.000328
+2026-03-19 20:42:13,181 [INFO]   時間: 11.97秒
+2026-03-19 20:42:13,194 [INFO] [LossSummary] tail_ratio=3.771698 | tail_outlier_ratio=9.254279 | mean(t=0..19)=1.236861e-03 | mean(t=80..99)=1.248504e-05
+2026-03-19 20:42:13,194 [INFO] [LossSummary] per-timestep mean (first5): t000:1.145e-02, t001:1.597e-03, t002:1.049e-03, t003:9.000e-04, t004:8.257e-04
+2026-03-19 20:42:13,194 [INFO] [LossSummary] per-timestep mean (last5): t095:1.128e-05, t096:1.138e-05, t097:1.340e-05, t098:1.278e-05, t099:1.505e-05
+2026-03-19 20:42:13,194 [INFO] [LossChunk] steps=3601..3620 size=20 | total(mean=0.000012 std=0.000001 max=0.000015 min=0.000011) | distill(mean=0.000012 std=0.000001 max=0.000015 min=0.000011)
+2026-03-19 20:42:13,195 [INFO] [LossChunk] steps=3621..3640 size=20 | total(mean=0.000023 std=0.000008 max=0.000039 min=0.000014) | distill(mean=0.000023 std=0.000008 max=0.000039 min=0.000014)
+2026-03-19 20:42:13,195 [INFO] [LossChunk] steps=3641..3660 size=20 | total(mean=0.000094 std=0.000034 max=0.000166 min=0.000045) | distill(mean=0.000094 std=0.000034 max=0.000166 min=0.000045)
+2026-03-19 20:42:13,195 [INFO] [LossChunk] steps=3661..3680 size=20 | total(mean=0.000273 std=0.000075 max=0.000411 min=0.000170) | distill(mean=0.000273 std=0.000075 max=0.000411 min=0.000170)
+2026-03-19 20:42:13,195 [INFO] [LossChunk] steps=3681..3700 size=20 | total(mean=0.001237 std=0.002356 max=0.011446 min=0.000446) | distill(mean=0.001237 std=0.002356 max=0.011446 min=0.000446)
+2026-03-19 20:42:13,198 [INFO] 
+--- Epoch 38/160 ---
+2026-03-19 20:42:15,664 [INFO] Step 20 - DDIM step 80: current_step_loss=0.000015 | running_mean_ddim_loss=0.000013
+2026-03-19 20:42:18,032 [INFO] Step 40 - DDIM step 60: current_step_loss=0.000063 | running_mean_ddim_loss=0.000023
+2026-03-19 20:42:20,393 [INFO] Step 60 - DDIM step 40: current_step_loss=0.000230 | running_mean_ddim_loss=0.000062
+2026-03-19 20:42:22,759 [INFO] Step 80 - DDIM step 20: current_step_loss=0.000526 | running_mean_ddim_loss=0.000139
+2026-03-19 20:42:25,129 [INFO] Step 100 - DDIM step 0: current_step_loss=0.012306 | running_mean_ddim_loss=0.000390
+2026-03-19 20:42:25,130 [INFO] 
+Epoch 38/160 完成:
+2026-03-19 20:42:25,130 [INFO]   平均蒸餾損失(DDIM全步平均): 0.000390
+2026-03-19 20:42:25,130 [INFO]   平均損失(目前等同蒸餾損失): 0.000390
+2026-03-19 20:42:25,130 [INFO]   時間: 11.93秒
+2026-03-19 20:42:25,137 [INFO] [LossSummary] tail_ratio=3.573293 | tail_outlier_ratio=8.835113 | mean(t=0..19)=1.392824e-03 | mean(t=80..99)=1.331071e-05
+2026-03-19 20:42:25,137 [INFO] [LossSummary] per-timestep mean (first5): t000:1.231e-02, t001:1.886e-03, t002:1.264e-03, t003:1.023e-03, t004:9.281e-04
+2026-03-19 20:42:25,137 [INFO] [LossSummary] per-timestep mean (last5): t095:1.381e-05, t096:1.290e-05, t097:1.209e-05, t098:1.454e-05, t099:1.387e-05
+2026-03-19 20:42:25,137 [INFO] [LossChunk] steps=3701..3720 size=20 | total(mean=0.000013 std=0.000002 max=0.000019 min=0.000012) | distill(mean=0.000013 std=0.000002 max=0.000019 min=0.000012)
+2026-03-19 20:42:25,137 [INFO] [LossChunk] steps=3721..3740 size=20 | total(mean=0.000033 std=0.000015 max=0.000064 min=0.000015) | distill(mean=0.000033 std=0.000015 max=0.000064 min=0.000015)
+2026-03-19 20:42:25,138 [INFO] [LossChunk] steps=3741..3760 size=20 | total(mean=0.000139 std=0.000052 max=0.000230 min=0.000071) | distill(mean=0.000139 std=0.000052 max=0.000230 min=0.000071)
+2026-03-19 20:42:25,138 [INFO] [LossChunk] steps=3761..3780 size=20 | total(mean=0.000371 std=0.000084 max=0.000526 min=0.000236) | distill(mean=0.000371 std=0.000084 max=0.000526 min=0.000236)
+2026-03-19 20:42:25,138 [INFO] [LossChunk] steps=3781..3800 size=20 | total(mean=0.001393 std=0.002521 max=0.012306 min=0.000544) | distill(mean=0.001393 std=0.002521 max=0.012306 min=0.000544)
+2026-03-19 20:42:25,140 [INFO] 
+--- Epoch 39/160 ---
+2026-03-19 20:42:27,604 [INFO] Step 20 - DDIM step 80: current_step_loss=0.000016 | running_mean_ddim_loss=0.000013
+2026-03-19 20:42:29,993 [INFO] Step 40 - DDIM step 60: current_step_loss=0.000062 | running_mean_ddim_loss=0.000023
+2026-03-19 20:42:32,362 [INFO] Step 60 - DDIM step 40: current_step_loss=0.000266 | running_mean_ddim_loss=0.000066
+2026-03-19 20:42:34,729 [INFO] Step 80 - DDIM step 20: current_step_loss=0.000552 | running_mean_ddim_loss=0.000151
+2026-03-19 20:42:37,091 [INFO] Step 100 - DDIM step 0: current_step_loss=0.011775 | running_mean_ddim_loss=0.000397
+2026-03-19 20:42:37,092 [INFO] 
+Epoch 39/160 完成:
+2026-03-19 20:42:37,092 [INFO]   平均蒸餾損失(DDIM全步平均): 0.000397
+2026-03-19 20:42:37,092 [INFO]   平均損失(目前等同蒸餾損失): 0.000397
+2026-03-19 20:42:37,092 [INFO]   時間: 11.95秒
+2026-03-19 20:42:37,098 [INFO] [LossSummary] tail_ratio=3.482618 | tail_outlier_ratio=8.509258 | mean(t=0..19)=1.383737e-03 | mean(t=80..99)=1.269921e-05
+2026-03-19 20:42:37,098 [INFO] [LossSummary] per-timestep mean (first5): t000:1.177e-02, t001:1.818e-03, t002:1.206e-03, t003:1.035e-03, t004:9.431e-04
+2026-03-19 20:42:37,098 [INFO] [LossSummary] per-timestep mean (last5): t095:1.155e-05, t096:1.146e-05, t097:1.131e-05, t098:1.193e-05, t099:1.155e-05
+2026-03-19 20:42:37,098 [INFO] [LossChunk] steps=3801..3820 size=20 | total(mean=0.000013 std=0.000002 max=0.000017 min=0.000011) | distill(mean=0.000013 std=0.000002 max=0.000017 min=0.000011)
+2026-03-19 20:42:37,098 [INFO] [LossChunk] steps=3821..3840 size=20 | total(mean=0.000033 std=0.000014 max=0.000062 min=0.000016) | distill(mean=0.000033 std=0.000014 max=0.000062 min=0.000016)
+2026-03-19 20:42:37,099 [INFO] [LossChunk] steps=3841..3860 size=20 | total(mean=0.000151 std=0.000060 max=0.000266 min=0.000073) | distill(mean=0.000151 std=0.000060 max=0.000266 min=0.000073)
+2026-03-19 20:42:37,099 [INFO] [LossChunk] steps=3861..3880 size=20 | total(mean=0.000406 std=0.000085 max=0.000552 min=0.000261) | distill(mean=0.000406 std=0.000085 max=0.000552 min=0.000261)
+2026-03-19 20:42:37,099 [INFO] [LossChunk] steps=3881..3900 size=20 | total(mean=0.001384 std=0.002399 max=0.011775 min=0.000559) | distill(mean=0.001384 std=0.002399 max=0.011775 min=0.000559)
+2026-03-19 20:42:37,101 [INFO] 
+--- Epoch 40/160 ---
+2026-03-19 20:42:39,569 [INFO] Step 20 - DDIM step 80: current_step_loss=0.000013 | running_mean_ddim_loss=0.000012
+2026-03-19 20:42:41,945 [INFO] Step 40 - DDIM step 60: current_step_loss=0.000041 | running_mean_ddim_loss=0.000018
+2026-03-19 20:42:44,314 [INFO] Step 60 - DDIM step 40: current_step_loss=0.000167 | running_mean_ddim_loss=0.000044
+2026-03-19 20:42:46,680 [INFO] Step 80 - DDIM step 20: current_step_loss=0.000424 | running_mean_ddim_loss=0.000107
+2026-03-19 20:42:49,054 [INFO] Step 100 - DDIM step 0: current_step_loss=0.011903 | running_mean_ddim_loss=0.000343
+2026-03-19 20:42:49,055 [INFO] 
+Epoch 40/160 完成:
+2026-03-19 20:42:49,056 [INFO]   平均蒸餾損失(DDIM全步平均): 0.000343
+2026-03-19 20:42:49,056 [INFO]   平均損失(目前等同蒸餾損失): 0.000343
+2026-03-19 20:42:49,056 [INFO]   時間: 11.96秒
+2026-03-19 20:42:49,062 [INFO] [LossSummary] tail_ratio=3.753876 | tail_outlier_ratio=9.252253 | mean(t=0..19)=1.286504e-03 | mean(t=80..99)=1.205217e-05
+2026-03-19 20:42:49,062 [INFO] [LossSummary] per-timestep mean (first5): t000:1.190e-02, t001:1.703e-03, t002:1.102e-03, t003:9.248e-04, t004:8.714e-04
+2026-03-19 20:42:49,062 [INFO] [LossSummary] per-timestep mean (last5): t095:1.152e-05, t096:1.158e-05, t097:1.213e-05, t098:1.212e-05, t099:1.234e-05
+2026-03-19 20:42:49,062 [INFO] [LossChunk] steps=3901..3920 size=20 | total(mean=0.000012 std=0.000001 max=0.000016 min=0.000011) | distill(mean=0.000012 std=0.000001 max=0.000016 min=0.000011)
+2026-03-19 20:42:49,062 [INFO] [LossChunk] steps=3921..3940 size=20 | total(mean=0.000025 std=0.000009 max=0.000041 min=0.000014) | distill(mean=0.000025 std=0.000009 max=0.000041 min=0.000014)
+2026-03-19 20:42:49,062 [INFO] [LossChunk] steps=3941..3960 size=20 | total(mean=0.000097 std=0.000037 max=0.000167 min=0.000046) | distill(mean=0.000097 std=0.000037 max=0.000167 min=0.000046)
+2026-03-19 20:42:49,063 [INFO] [LossChunk] steps=3961..3980 size=20 | total(mean=0.000294 std=0.000081 max=0.000441 min=0.000177) | distill(mean=0.000294 std=0.000081 max=0.000441 min=0.000177)
+2026-03-19 20:42:49,063 [INFO] [LossChunk] steps=3981..4000 size=20 | total(mean=0.001287 std=0.002451 max=0.011903 min=0.000468) | distill(mean=0.001287 std=0.002451 max=0.011903 min=0.000468)
+2026-03-19 20:42:49,103 [INFO] [QuantUpdateDiag] Epoch 40/160 | layers=140 | weighted_changed_ratio(dynamic)=0.228333 | weighted_changed_ratio(same_scale)=0.222005 | mean|ΔW_fp|=6.475605e-04 | mean|ΔW_qnorm|=2.320508e-03
+2026-03-19 20:42:49,103 [INFO] [QuantUpdateDiag] Top-12 layers by changed_ratio_dynamic:
+2026-03-19 20:42:49,103 [INFO]   layer=model.output_blocks.1.0.emb_layers.1 | ratio_dyn=0.533640 | ratio_same_scale=0.478487 | mean|ΔW_fp|=9.485396e-04 | mean|ΔW_qnorm|=6.810646e-03 | numel=524288
+2026-03-19 20:42:49,103 [INFO]   layer=model.output_blocks.0.0.cond_emb_layers.1 | ratio_dyn=0.527847 | ratio_same_scale=0.519566 | mean|ΔW_fp|=1.886333e-03 | mean|ΔW_qnorm|=5.865622e-03 | numel=262144
+2026-03-19 20:42:49,103 [INFO]   layer=model.output_blocks.1.0.cond_emb_layers.1 | ratio_dyn=0.503082 | ratio_same_scale=0.491238 | mean|ΔW_fp|=1.800340e-03 | mean|ΔW_qnorm|=4.962561e-03 | numel=262144
+2026-03-19 20:42:49,103 [INFO]   layer=model.output_blocks.2.0.cond_emb_layers.1 | ratio_dyn=0.482765 | ratio_same_scale=0.471096 | mean|ΔW_fp|=1.637211e-03 | mean|ΔW_qnorm|=4.507921e-03 | numel=262144
+2026-03-19 20:42:49,103 [INFO]   layer=model.output_blocks.3.0.emb_layers.1 | ratio_dyn=0.477414 | ratio_same_scale=0.457868 | mean|ΔW_fp|=7.268933e-04 | mean|ΔW_qnorm|=5.452914e-03 | numel=393216
+2026-03-19 20:42:49,103 [INFO]   layer=model.output_blocks.2.0.emb_layers.1 | ratio_dyn=0.451351 | ratio_same_scale=0.436556 | mean|ΔW_fp|=6.326140e-04 | mean|ΔW_qnorm|=4.719216e-03 | numel=524288
+2026-03-19 20:42:49,103 [INFO]   layer=model.output_blocks.9.0.emb_layers.1 | ratio_dyn=0.440498 | ratio_same_scale=0.423454 | mean|ΔW_fp|=5.120207e-04 | mean|ΔW_qnorm|=4.101430e-03 | numel=131072
+2026-03-19 20:42:49,103 [INFO]   layer=model.middle_block.2.cond_emb_layers.1 | ratio_dyn=0.439747 | ratio_same_scale=0.430176 | mean|ΔW_fp|=1.307112e-03 | mean|ΔW_qnorm|=4.270779e-03 | numel=262144
+2026-03-19 20:42:49,103 [INFO]   layer=model.output_blocks.2.1.emb_layers.1 | ratio_dyn=0.427502 | ratio_same_scale=0.408571 | mean|ΔW_fp|=5.461276e-04 | mean|ΔW_qnorm|=4.236852e-03 | numel=524288
+2026-03-19 20:42:49,103 [INFO]   layer=model.output_blocks.6.0.emb_layers.1 | ratio_dyn=0.426674 | ratio_same_scale=0.409096 | mean|ΔW_fp|=6.046778e-04 | mean|ΔW_qnorm|=4.230138e-03 | numel=262144
+2026-03-19 20:42:49,103 [INFO]   layer=model.output_blocks.4.0.emb_layers.1 | ratio_dyn=0.426524 | ratio_same_scale=0.403394 | mean|ΔW_fp|=5.515327e-04 | mean|ΔW_qnorm|=4.159702e-03 | numel=393216
+2026-03-19 20:42:49,103 [INFO]   layer=model.output_blocks.7.0.emb_layers.1 | ratio_dyn=0.419395 | ratio_same_scale=0.393105 | mean|ΔW_fp|=5.506104e-04 | mean|ΔW_qnorm|=4.063193e-03 | numel=262144
+2026-03-19 20:42:49,249 [INFO] 
+--- Epoch 41/160 ---
+2026-03-19 20:42:51,715 [INFO] Step 20 - DDIM step 80: current_step_loss=0.000013 | running_mean_ddim_loss=0.000012
+2026-03-19 20:42:54,094 [INFO] Step 40 - DDIM step 60: current_step_loss=0.000048 | running_mean_ddim_loss=0.000019
+2026-03-19 20:42:56,469 [INFO] Step 60 - DDIM step 40: current_step_loss=0.000197 | running_mean_ddim_loss=0.000052
+2026-03-19 20:42:58,838 [INFO] Step 80 - DDIM step 20: current_step_loss=0.000508 | running_mean_ddim_loss=0.000124
+2026-03-19 20:43:01,214 [INFO] Step 100 - DDIM step 0: current_step_loss=0.011813 | running_mean_ddim_loss=0.000364
+2026-03-19 20:43:01,215 [INFO] 
+Epoch 41/160 完成:
+2026-03-19 20:43:01,216 [INFO]   平均蒸餾損失(DDIM全步平均): 0.000364
+2026-03-19 20:43:01,216 [INFO]   平均損失(目前等同蒸餾損失): 0.000364
+2026-03-19 20:43:01,216 [INFO]   時間: 11.97秒
+2026-03-19 20:43:01,222 [INFO] [LossSummary] tail_ratio=3.637506 | tail_outlier_ratio=8.926597 | mean(t=0..19)=1.323323e-03 | mean(t=80..99)=1.230647e-05
+2026-03-19 20:43:01,222 [INFO] [LossSummary] per-timestep mean (first5): t000:1.181e-02, t001:1.693e-03, t002:1.129e-03, t003:9.948e-04, t004:9.066e-04
+2026-03-19 20:43:01,222 [INFO] [LossSummary] per-timestep mean (last5): t095:1.123e-05, t096:1.124e-05, t097:1.146e-05, t098:1.188e-05, t099:1.329e-05
+2026-03-19 20:43:01,222 [INFO] [LossChunk] steps=4001..4020 size=20 | total(mean=0.000012 std=0.000001 max=0.000017 min=0.000011) | distill(mean=0.000012 std=0.000001 max=0.000017 min=0.000011)
+2026-03-19 20:43:01,222 [INFO] [LossChunk] steps=4021..4040 size=20 | total(mean=0.000027 std=0.000010 max=0.000048 min=0.000014) | distill(mean=0.000027 std=0.000010 max=0.000048 min=0.000014)
+2026-03-19 20:43:01,223 [INFO] [LossChunk] steps=4041..4060 size=20 | total(mean=0.000118 std=0.000046 max=0.000198 min=0.000054) | distill(mean=0.000118 std=0.000046 max=0.000198 min=0.000054)
+2026-03-19 20:43:01,223 [INFO] [LossChunk] steps=4061..4080 size=20 | total(mean=0.000339 std=0.000088 max=0.000508 min=0.000210) | distill(mean=0.000339 std=0.000088 max=0.000508 min=0.000210)
+2026-03-19 20:43:01,223 [INFO] [LossChunk] steps=4081..4100 size=20 | total(mean=0.001323 std=0.002421 max=0.011813 min=0.000518) | distill(mean=0.001323 std=0.002421 max=0.011813 min=0.000518)
+2026-03-19 20:43:01,223 [INFO] 
+=== Epoch 41 驗證生成 (使用 EMA 模型) ===
+2026-03-19 20:43:01,411 [INFO] EMA 權重應用完成，共應用 420 個參數
+2026-03-19 20:43:01,411 [INFO] set quant state to True, True for layer 1
+2026-03-19 20:43:01,412 [INFO] set quant state to True, True for layer 2
+2026-03-19 20:43:01,412 [INFO] set quant state to False, False for layer 3
+2026-03-19 20:43:01,413 [INFO] set quant state to False, False for layer 144
+2026-03-19 20:43:01,418 [INFO] set quant state to True, True for layer 1
+2026-03-19 20:43:01,418 [INFO] set quant state to True, True for layer 2
+2026-03-19 20:43:01,418 [INFO] set quant state to False, False for layer 3
+2026-03-19 20:43:01,419 [INFO] set quant state to False, False for layer 144
+2026-03-19 20:43:06,521 [INFO] 生成圖像數值範圍: [-1.0000, 1.0000]
+2026-03-19 20:43:06,521 [INFO] 生成圖像均值: -0.0441
+2026-03-19 20:43:06,521 [INFO] 生成圖像標準差: 0.5124
+2026-03-19 20:43:06,521 [INFO] 正規化後數值範圍: [0.0000, 1.0000]
+2026-03-19 20:43:06,639 [INFO] ✅ Epoch 41 EMA 模型驗證生成完成:
+2026-03-19 20:43:06,649 [INFO]   生成時間: 5.30秒
+2026-03-19 20:43:06,674 [INFO]   圖像範圍: [-1.000, 1.000]
+2026-03-19 20:43:06,674 [INFO]   保存路徑: QATcode/quantize_ver2/training_samples/
+2026-03-19 20:43:06,674 [INFO] 驗證後量化器 current_step: 99
+2026-03-19 20:43:06,696 [INFO] 
+--- Epoch 42/160 ---
+2026-03-19 20:43:09,181 [INFO] Step 20 - DDIM step 80: current_step_loss=0.000014 | running_mean_ddim_loss=0.000012
+2026-03-19 20:43:11,560 [INFO] Step 40 - DDIM step 60: current_step_loss=0.000048 | running_mean_ddim_loss=0.000019
+2026-03-19 20:43:13,930 [INFO] Step 60 - DDIM step 40: current_step_loss=0.000185 | running_mean_ddim_loss=0.000049
+2026-03-19 20:43:16,308 [INFO] Step 80 - DDIM step 20: current_step_loss=0.000444 | running_mean_ddim_loss=0.000115
+2026-03-19 20:43:18,680 [INFO] Step 100 - DDIM step 0: current_step_loss=0.010688 | running_mean_ddim_loss=0.000337
+2026-03-19 20:43:18,681 [INFO] 
+Epoch 42/160 完成:
+2026-03-19 20:43:18,681 [INFO]   平均蒸餾損失(DDIM全步平均): 0.000337
+2026-03-19 20:43:18,682 [INFO]   平均損失(目前等同蒸餾損失): 0.000337
+2026-03-19 20:43:18,682 [INFO]   時間: 11.99秒
+2026-03-19 20:43:18,688 [INFO] [LossSummary] tail_ratio=3.636917 | tail_outlier_ratio=8.715295 | mean(t=0..19)=1.226320e-03 | mean(t=80..99)=1.245357e-05
+2026-03-19 20:43:18,688 [INFO] [LossSummary] per-timestep mean (first5): t000:1.069e-02, t001:1.641e-03, t002:1.094e-03, t003:9.450e-04, t004:8.662e-04
+2026-03-19 20:43:18,688 [INFO] [LossSummary] per-timestep mean (last5): t095:1.287e-05, t096:1.224e-05, t097:1.279e-05, t098:1.182e-05, t099:1.326e-05
+2026-03-19 20:43:18,688 [INFO] [LossChunk] steps=4101..4120 size=20 | total(mean=0.000012 std=0.000001 max=0.000015 min=0.000012) | distill(mean=0.000012 std=0.000001 max=0.000015 min=0.000012)
+2026-03-19 20:43:18,688 [INFO] [LossChunk] steps=4121..4140 size=20 | total(mean=0.000026 std=0.000010 max=0.000048 min=0.000015) | distill(mean=0.000026 std=0.000010 max=0.000048 min=0.000015)
+2026-03-19 20:43:18,688 [INFO] [LossChunk] steps=4141..4160 size=20 | total(mean=0.000109 std=0.000042 max=0.000185 min=0.000052) | distill(mean=0.000109 std=0.000042 max=0.000185 min=0.000052)
+2026-03-19 20:43:18,689 [INFO] [LossChunk] steps=4161..4180 size=20 | total(mean=0.000312 std=0.000077 max=0.000444 min=0.000184) | distill(mean=0.000312 std=0.000077 max=0.000444 min=0.000184)
+2026-03-19 20:43:18,689 [INFO] [LossChunk] steps=4181..4200 size=20 | total(mean=0.001226 std=0.002186 max=0.010688 min=0.000477) | distill(mean=0.001226 std=0.002186 max=0.010688 min=0.000477)
+2026-03-19 20:43:18,691 [INFO] 
+--- Epoch 43/160 ---
+2026-03-19 20:43:21,168 [INFO] Step 20 - DDIM step 80: current_step_loss=0.000014 | running_mean_ddim_loss=0.000013
+2026-03-19 20:43:23,546 [INFO] Step 40 - DDIM step 60: current_step_loss=0.000049 | running_mean_ddim_loss=0.000020
+2026-03-19 20:43:24,480 [INFO] TensorBoard writer 已關閉。

@@ -1,0 +1,25 @@
+{
+  "block": "model_input_blocks_0",
+  "T": 99,
+  "rank_r": 6,
+  "correlation": {
+    "L1_vs_SVD": {
+      "pearson": 0.203882686619124,
+      "spearman": 0.6870620788146561,
+      "pearson_pvalue": 0.04404705948107775,
+      "spearman_pvalue": 5.651147759366755e-15
+    },
+    "L2_vs_SVD": {
+      "pearson": 0.20843408313395145,
+      "spearman": 0.6870620788146561,
+      "pearson_pvalue": 0.03943708669925255,
+      "spearman_pvalue": 5.651147759366755e-15
+    },
+    "CosDist_vs_SVD": {
+      "pearson": 0.1410810919104622,
+      "spearman": 0.3852506289970251,
+      "pearson_pvalue": 0.165852820805923,
+      "spearman_pvalue": 8.95921762400071e-05
+    }
+  }
+}

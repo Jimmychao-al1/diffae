@@ -99,7 +99,8 @@ class ResBlock(TimestepBlock):
         #############################
         # IN LAYERS
         #############################
-        assert conf.lateral_channels is None
+        #assert conf.lateral_channels is None
+
         layers = [
             normalization(conf.channels),
             nn.SiLU(),
@@ -448,7 +449,7 @@ class AttentionBlock(nn.Module):
         h = self.proj_out(h)
         return (x + h).reshape(b, c, *spatial)
 
-
+import numpy as np
 def count_flops_attn(model, _x, y):
     """
     A counter for the `thop` package to count the operations in an

@@ -127,6 +127,8 @@ class BeatGANsAutoencModel(BeatGANsUNetModel):
                 style=None,
                 noise=None,
                 t_cond=None,
+                cached_data=None,
+                cached_scheduler=None,
                 **kwargs):
         """
         Apply the model to an input batch.
@@ -135,6 +137,8 @@ class BeatGANsAutoencModel(BeatGANsUNetModel):
             x_start: the original image to encode
             cond: output of the encoder
             noise: random noise (to predict the cond)
+            cached_data: Dict to store cached layer outputs (created in ddim_sample_loop_progressive)
+            cached_scheduler: List indicating which layers should recompute
         """
 
         if t_cond is None:
@@ -143,6 +147,7 @@ class BeatGANsAutoencModel(BeatGANsUNetModel):
         if noise is not None:
             # if the noise is given, we predict the cond from noise
             cond = self.noise_to_cond(noise)
+            print('using noise to cond')
 
         if cond is None:
             if x is not None:
@@ -150,6 +155,7 @@ class BeatGANsAutoencModel(BeatGANsUNetModel):
 
             tmp = self.encode(x_start)
             cond = tmp['cond']
+            #print('using x_start to cond')
 
         if t is not None:
             _t_emb = timestep_embedding(t, self.conf.model_channels)
@@ -193,13 +199,28 @@ class BeatGANsAutoencModel(BeatGANsUNetModel):
         enc_time_emb = emb
         mid_time_emb = emb
         dec_time_emb = emb
+        #print('emb:', emb.data)
         # where in the model to supply style conditions
         enc_cond_emb = cond_emb
         mid_cond_emb = cond_emb
         dec_cond_emb = cond_emb
-
+        #print('cond_emb:', cond_emb.data)
         # hs = []
         hs = [[] for _ in range(len(self.conf.channel_mult))]
+
+        # 提取 cache 相關參數（優先使用顯式參數，否則從 kwargs 獲取以保持向後兼容）
+        if cached_data is None:
+            cached_data = kwargs.get('cached_data', None)
+        if cached_scheduler is None:
+            cached_scheduler = kwargs.get('cached_scheduler', None)
+        activate_cache = cached_data is not None and cached_scheduler is not None
+        
+        # 如果啟用 cache 但 cached_data 為 None，初始化它
+        if activate_cache and cached_data is None:
+            cached_data = {}
+        
+        # 初始化 layer_count（用於索引 cached_scheduler）
+        layer_count = 0
 
         if x is not None:
             h = x.type(self.dtype)
@@ -208,17 +229,52 @@ class BeatGANsAutoencModel(BeatGANsUNetModel):
             k = 0
             for i in range(len(self.input_num_blocks)):
                 for j in range(self.input_num_blocks[i]):
-                    h = self.input_blocks[k](h,
-                                             emb=enc_time_emb,
-                                             cond=enc_cond_emb)
+                    if activate_cache:
+                        # 檢查是否應該重新計算
+                        # 如果 layer_count 超出 cached_scheduler 範圍，默認重新計算
+                        if layer_count < len(cached_scheduler) and cached_scheduler[layer_count] == 1:
+                            # 需要重新計算
+                            h = self.input_blocks[k](h,
+                                                     emb=enc_time_emb,
+                                                     cond=enc_cond_emb)
+                            # 存入 cache
+                            cached_data[f'encoder_layer_{k}'] = h
+                        elif layer_count < len(cached_scheduler) and cached_scheduler[layer_count] == 0:
+                            # 使用 cache
+                            h = cached_data[f'encoder_layer_{k}']
+                        else:
+                            # layer_count 超出範圍，默認重新計算
+                            h = self.input_blocks[k](h,
+                                                     emb=enc_time_emb,
+                                                     cond=enc_cond_emb)
+                            cached_data[f'encoder_layer_{k}'] = h
+                    else:
+                        # 不使用 cache，正常計算
+                        h = self.input_blocks[k](h,
+                                                 emb=enc_time_emb,
+                                                 cond=enc_cond_emb)
 
                     # print(i, j, h.shape)
                     hs[i].append(h)
                     k += 1
+                    if activate_cache:
+                        layer_count += 1
             assert k == len(self.input_blocks)
 
             # middle blocks
-            h = self.middle_block(h, emb=mid_time_emb, cond=mid_cond_emb)
+            if activate_cache:
+                if layer_count < len(cached_scheduler) and cached_scheduler[layer_count] == 1:
+                    h = self.middle_block(h, emb=mid_time_emb, cond=mid_cond_emb)
+                    cached_data['middle_layer'] = h
+                elif layer_count < len(cached_scheduler) and cached_scheduler[layer_count] == 0:
+                    h = cached_data['middle_layer']
+                else:
+                    # layer_count 超出範圍，默認重新計算
+                    h = self.middle_block(h, emb=mid_time_emb, cond=mid_cond_emb)
+                    cached_data['middle_layer'] = h
+                layer_count += 1
+            else:
+                h = self.middle_block(h, emb=mid_time_emb, cond=mid_cond_emb)
         else:
             # no lateral connections
             # happens when training only the autonecoder
@@ -238,10 +294,28 @@ class BeatGANsAutoencModel(BeatGANsUNetModel):
                     lateral = None
                     # print(i, j, lateral)
 
-                h = self.output_blocks[k](h,
-                                          emb=dec_time_emb,
-                                          cond=dec_cond_emb,
-                                          lateral=lateral)
+                if activate_cache:
+                    if layer_count < len(cached_scheduler) and cached_scheduler[layer_count] == 1:
+                        h = self.output_blocks[k](h,
+                                                  emb=dec_time_emb,
+                                                  cond=dec_cond_emb,
+                                                  lateral=lateral)
+                        cached_data[f'decoder_layer_{k}'] = h
+                    elif layer_count < len(cached_scheduler) and cached_scheduler[layer_count] == 0:
+                        h = cached_data[f'decoder_layer_{k}']
+                    else:
+                        # layer_count 超出範圍，默認重新計算
+                        h = self.output_blocks[k](h,
+                                                  emb=dec_time_emb,
+                                                  cond=dec_cond_emb,
+                                                  lateral=lateral)
+                        cached_data[f'decoder_layer_{k}'] = h
+                    layer_count += 1
+                else:
+                    h = self.output_blocks[k](h,
+                                              emb=dec_time_emb,
+                                              cond=dec_cond_emb,
+                                              lateral=lateral)
                 k += 1
 
         pred = self.out(h)
