@@ -1,0 +1,19 @@
+project_root: /home/jimmy/diffae
+workdir: /home/jimmy/diffae/QATcode/quantize_ver2
+
+fixed:
+  train_script: quantize_diffae_step6_train.py
+  eval_mode: T100
+  allow_code_change: false
+  allow_loss_change: false
+  allow_backward_change: false
+  allow_optimizer_change: false
+
+search_space:
+  lora_factor: [2, 4, 8, 16]
+  weight_lr: [1.0e-6, 3.0e-6, 1.0e-5]
+  activation_lr: [1.0e-6, 3.0e-6, 1.0e-5]
+
+selection:
+  primary_metric_name: T100_metric
+  objective: minimize
