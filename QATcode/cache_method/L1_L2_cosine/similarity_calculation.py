@@ -780,8 +780,10 @@ class SimilarityCollector:
             # L1/L2 的 counts 累加的是樣本數，cosine 的 counts 累加的是 batch 數
             self.block_counts_cos[block_name] += torch.ones(cosine_matrix_avg.shape, dtype=torch.int64, device=self.device)
 
-            # 計算 step-change（t-1 -> t），使用 _step_counter 順序 (0→99)
-            # 從 t0→t1, t1→t2, ..., t98→t99
+            # 計算 step-change：outputs[s-1]→outputs[s]，s 為 _step_counter（0→99）。
+            # 寫入 l1_rate 的 index [s-1]；與 npz「l1_rate_step_mean」欄位一致。
+            # 語意（見 QATcode/docs/cache_time_axis_audit.md）：index j = analysis 上 interval j
+            # （axis j↔j+1），對應 DDIM t_ddim (99−j)→(98−j)；**不是**「DDIM 張量 t=j→j+1」。
             # 初始化當前 batch 的累加器（如果還沒有），使用 GPU tensor
             if block_name not in self.current_batch_accumulator:
                 self.current_batch_accumulator[block_name] = {
@@ -1663,7 +1665,7 @@ if __name__ == "__main__":
             
             try:
                 if args.mode == 'float':
-                    CONFIG.BEST_CKPT_PATH = "QATcode/diffae_step6_lora_best.pth" if CONFIG.NUM_DIFFUSION_STEPS == 100 else "QATcode/diffae_step6_lora_best_20steps.pth"
+                    CONFIG.BEST_CKPT_PATH = "QATcode/diffae_step6_lora_best_ori.pth" if CONFIG.NUM_DIFFUSION_STEPS == 100 else "QATcode/diffae_step6_lora_best_20steps.pth"
                     main_float_model()
                 elif args.mode == 'int':
                     CONFIG.BEST_CKPT_PATH = "QATcode/diffae_step6_lora_best_int.pth" if CONFIG.NUM_DIFFUSION_STEPS == 100 else "QATcode/diffae_step6_lora_best_int_20steps.pth"

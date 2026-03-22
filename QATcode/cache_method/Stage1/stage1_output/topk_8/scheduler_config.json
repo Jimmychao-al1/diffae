@@ -1,11 +1,15 @@
 {
   "version": "v_final_stage1",
   "T": 100,
-  "t_order": "0_to_99",
+  "t_order": "analysis_axis_0_to_99_inclusive",
+  "analysis_axis_order": "analysis_axis_0_to_99_inclusive",
+  "axis_convention": "analysis_axis",
+  "ddim_timestep_formula": "t_ddim = 99 - axis_idx",
   "params": {
-    "alpha": 0.2,
-    "beta": 0.7,
+    "alpha": 0.3,
+    "beta": 0.6,
     "gamma": 0.1,
+    "eta": 0.8,
     "k_min": 1,
     "k_max": 5,
     "smooth_window": 3,
@@ -17,41 +21,57 @@
   "zones": [
     {
       "id": 0,
+      "axis_start": 0,
+      "axis_end": 63,
       "t_start": 0,
       "t_end": 63
     },
     {
       "id": 1,
+      "axis_start": 64,
+      "axis_end": 66,
       "t_start": 64,
       "t_end": 66
     },
     {
       "id": 2,
+      "axis_start": 67,
+      "axis_end": 88,
       "t_start": 67,
       "t_end": 88
     },
     {
       "id": 3,
+      "axis_start": 89,
+      "axis_end": 91,
       "t_start": 89,
       "t_end": 91
     },
     {
       "id": 4,
+      "axis_start": 92,
+      "axis_end": 95,
       "t_start": 92,
       "t_end": 95
     },
     {
       "id": 5,
+      "axis_start": 96,
+      "axis_end": 96,
       "t_start": 96,
       "t_end": 96
     },
     {
       "id": 6,
+      "axis_start": 97,
+      "axis_end": 97,
       "t_start": 97,
       "t_end": 97
     },
     {
       "id": 7,
+      "axis_start": 98,
+      "axis_end": 99,
       "t_start": 98,
       "t_end": 99
     }
@@ -345,7 +365,7 @@
         5,
         5,
         5,
-        5,
+        4,
         4,
         4,
         3
@@ -375,8 +395,8 @@
         5,
         4,
         4,
-        3,
-        2
+        4,
+        3
       ]
     },
     {
@@ -474,7 +494,7 @@
         5,
         4,
         4,
-        4
+        3
       ]
     },
     {

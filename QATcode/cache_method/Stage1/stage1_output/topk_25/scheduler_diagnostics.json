@@ -1,4 +1,8 @@
 {
+  "axis_convention": "analysis_axis",
+  "ddim_timestep_formula": "t_ddim = 99 - axis_idx",
+  "analysis_axis_order": "analysis_axis_0_to_99_inclusive",
+  "note_D_global_length": "D_global/D_smooth/Delta length 99 = per-interval on analysis axis (interval j between axis j and j+1)",
   "D_global": [
     0.074729323387146,
     0.04484693706035614,
@@ -382,11 +386,24 @@
     4,
     4
   ],
+  "eta": 0.8,
+  "S_l1_stats": {
+    "mean": 0.8940623998641968,
+    "min": 0.0,
+    "max": 1.0,
+    "std": 0.07410869747400284
+  },
+  "S_cos_stats": {
+    "mean": 0.9854711294174194,
+    "min": 0.0,
+    "max": 1.0,
+    "std": 0.0438714474439621
+  },
   "A_stats": {
-    "mean": 0.9071092009544373,
-    "min": 0.07039154320955276,
-    "max": 0.9867976903915405,
-    "std": 0.10537868738174438
+    "mean": 0.9067286849021912,
+    "min": 0.07465144246816635,
+    "max": 0.9852300882339478,
+    "std": 0.10203766822814941
   },
   "k_raw_stats": {
     "mean": 4.769032258064516,
@@ -395,7 +412,7 @@
   },
   "k_final_stats": {
     "mean": 4.734193548387097,
-    "min": 2,
+    "min": 3,
     "max": 5
   }
 }

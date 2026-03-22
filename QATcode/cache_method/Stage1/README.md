@@ -3,8 +3,15 @@
 ## 目的
 
 從 Stage-0 的 tri-evidence（L1/SVD similarity + FID sensitivity）合成**靜態 cache scheduler**：
-- **Zones**: 將 timestep 0..99 分成若干個 zone（shared across all blocks）
-- **k[b,z]**: 每個 block 在每個 zone 的 cache frequency（每隔 k 步 recompute）
+- **Zones**: 將 **analysis axis** 上的點索引 **0..99** 分成若干個 zone（shared across all blocks）
+- **k[b,z]**: 每個 block 在每個 zone 的 cache frequency（每隔 k 個 **axis 索引** recompute）
+
+### 時間軸慣例（與 Stage 0、L1_L2_cosine .npz 一致）
+
+- **analysis axis** `axis_idx ∈ [0,99]`：與 similarity 收集的 step_counter、圖橫軸左→右一致。
+- **DDIM** 進模型的 timestep：**`t_ddim = 99 - axis_idx`**（採樣順序為 t_ddim 從 99→0）。
+- **Interval 陣列**長度 99：第 `j` 欄 = interval j（axis j 與 j+1 之間）⇔ DDIM **(99−j)→(98−j)**。
+- 詳細推導與 audit：**`QATcode/docs/cache_time_axis_audit.md`**
 
 ## 演算法流程
 
@@ -96,7 +103,8 @@ python3 QATcode/cache_method/Stage1/stage1_scheduler.py --self_test
 
 ### 1. `scheduler_config.json`
 主要配置檔，包含：
-- **zones**: 所有 zones 的定義（t_start, t_end）
+- **zones**: 所有 zones 的定義（**axis_start, axis_end**；舊檔可能僅有 t_start/t_end，語意相同）
+- **axis_convention / ddim_timestep_formula / analysis_axis_order**：與 Stage 0 對齊的元資料
 - **blocks**: 每個 block 的 k_per_zone 列表
 - **params**: 所有演算法參數
 
@@ -105,7 +113,10 @@ python3 QATcode/cache_method/Stage1/stage1_scheduler.py --self_test
 {
   "version": "v_final_stage1",
   "T": 100,
-  "t_order": "0_to_99",
+  "t_order": "analysis_axis_0_to_99_inclusive",
+  "analysis_axis_order": "analysis_axis_0_to_99_inclusive",
+  "axis_convention": "analysis_axis",
+  "ddim_timestep_formula": "t_ddim = 99 - axis_idx",
   "params": {
     "alpha": 0.333,
     "beta": 0.333,
@@ -118,8 +129,8 @@ python3 QATcode/cache_method/Stage1/stage1_scheduler.py --self_test
     "regularize": "delta1"
   },
   "zones": [
-    {"id": 0, "t_start": 0, "t_end": 62},
-    {"id": 1, "t_start": 63, "t_end": 67},
+    {"id": 0, "axis_start": 0, "axis_end": 62, "t_start": 0, "t_end": 62},
+    {"id": 1, "axis_start": 63, "axis_end": 67, "t_start": 63, "t_end": 67},
     ...
   ],
   "blocks": [

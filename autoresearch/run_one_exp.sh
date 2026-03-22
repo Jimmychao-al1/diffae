@@ -1,38 +1,43 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Usage:
-# bash autoresearch/run_one_exp.sh <run_id> <lora_factor> <weight_lr> <activation_lr>
+cd "$(dirname "$0")/.."
 
-if [ "$#" -ne 4 ]; then
-  echo "Usage: bash autoresearch/run_one_exp.sh <run_id> <lora_factor> <weight_lr> <activation_lr>"
-  exit 1
+# ===== fixed experiment flags =====
+BASE_CMD=(
+  python -m QATcode.quantize_ver2.quantize_diffae_step6_train_v2
+  --teacher-autocast-match
+  --debug-timestep-grad-conflict
+  --debug-timestep-grad-steps 0,80,99
+  --debug-timestep-grad-interval 8
+)
+
+# ===== optional hyperparameters =====
+# 注意：
+# 下面三個參數名稱請改成你程式真正 argparse 支援的名稱。
+# 如果目前程式還沒有這些 CLI 參數，先不要加進去。
+EXTRA_ARGS=()
+
+if [[ -n "${LORA_FACTOR:-}" ]]; then
+  EXTRA_ARGS+=(--lora-factor "${LORA_FACTOR}")
 fi
 
-RUN_ID="$1"
-LORA_FACTOR="$2"
-WEIGHT_LR="$3"
-ACTIVATION_LR="$4"
+if [[ -n "${WEIGHT_LR:-}" ]]; then
+  EXTRA_ARGS+=(--weight-lr "${WEIGHT_LR}")
+fi
 
-REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-WORKDIR="$REPO_ROOT/QATcode/quantize_ver2"
-OUTDIR="$REPO_ROOT/artifacts/autoresearch/$RUN_ID"
-mkdir -p "$OUTDIR"
+if [[ -n "${ACTIVATION_LR:-}" ]]; then
+  EXTRA_ARGS+=(--activation-lr "${ACTIVATION_LR}")
+fi
 
-cd "$WORKDIR"
+if [[ -n "${LOG_SUFFIX:-}" ]]; then
+  EXTRA_ARGS+=(--log-suffix "${LOG_SUFFIX}")
+else
+  EXTRA_ARGS+=(--log-suffix autoresearch_run)
+fi
 
-echo "[INFO] run_id=$RUN_ID" | tee "$OUTDIR/meta.txt"
-echo "[INFO] lora_factor=$LORA_FACTOR" | tee -a "$OUTDIR/meta.txt"
-echo "[INFO] weight_lr=$WEIGHT_LR" | tee -a "$OUTDIR/meta.txt"
-echo "[INFO] activation_lr=$ACTIVATION_LR" | tee -a "$OUTDIR/meta.txt"
+echo "Running command:"
+printf ' %q' "${BASE_CMD[@]}" "${EXTRA_ARGS[@]}"
+echo
 
-# Replace the command below with your real training command.
-# Keep the entrypoint fixed; only vary the allowed hyperparameters.
-python quantize_diffae_step6_train.py \
-  --lora_factor "$LORA_FACTOR" \
-  --weight_lr "$WEIGHT_LR" \
-  --activation_lr "$ACTIVATION_LR" \
-  2>&1 | tee "$OUTDIR/train.log"
-
-# Optional: append a row manually or via a parser after evaluation.
-echo "[INFO] Finished $RUN_ID"
+"${BASE_CMD[@]}" "${EXTRA_ARGS[@]}"

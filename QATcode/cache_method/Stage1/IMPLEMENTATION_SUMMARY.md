@@ -212,15 +212,17 @@ QATcode/cache_method/Stage1/stage1_output/
 ### scheduler_config.json 格式
 - **version**: "v_final_stage1"
 - **T**: 100
-- **zones**: List[{id, t_start, t_end}]
+- **t_order / analysis_axis_order**: 與 Stage 0 圖橫軸一致（analysis axis 0→99）
+- **axis_convention**, **ddim_timestep_formula**: 元資料（例如 `t_ddim = 99 - axis_idx`）
+- **zones**: List[{id, **axis_start**, **axis_end**, （可選舊鍵 t_start/t_end 同值）}]
 - **blocks**: List[{id, name, k_per_zone: List[int]}]
 - **params**: Dict（紀錄所有參數）
 
 ### Stage-2 使用方式
 1. 讀取 `scheduler_config.json`
-2. 對每個 block，建立 `recompute_mask[t]` using `zones` + `k_per_zone`
+2. 對每個 block，建立 **`recompute_mask[axis_idx]`**（索引為 **analysis axis**，長度 T=100）；若 API 要傳 DDIM 張量 timestep，用 **`t_ddim = 99 - axis_idx`**
 3. 在 forward pass 時：
-   - `if recompute_mask[t]`: full compute
+   - `if recompute_mask[axis_idx]`: full compute
    - `else`: use cache
 4. 記錄 FID / speed / memory
 

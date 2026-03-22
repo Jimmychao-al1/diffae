@@ -46,15 +46,15 @@ def load_interval_metrics(
     
     Returns:
         block_names: List[str]，block 名稱列表（依 npz 檔名排序）
-        L1_interval: np.ndarray, shape (B, T-1)，interval i = step i → i+1 的 L1rel_rate
-        CosDist_interval: np.ndarray, shape (B, T-1)，interval i 的 cosine distance (1 - cosine similarity)
-        SVD_interval: np.ndarray, shape (B, T-1)，interval i 的 SVD 子空間距離
+        L1_interval: np.ndarray, shape (B, T-1)，第 j 欄 = **analysis axis 上 interval j**（與 .npz 一致）
+        CosDist_interval: 同上
+        SVD_interval: 同上
     
-    Interval mapping 規則：
-    - interval i in [0..T-2] 代表 step i → i+1
-    - L1: l1_rate_step_mean[i]（原本就是 i → i+1）
-    - Cosine distance: 1.0 - cos_step_mean[i]（原本是 similarity）
-    - SVD: subspace_dist[i+1]（因為 subspace_dist[t] 測量 (t-1) → t，所以 i → i+1 要用 subspace_dist[i+1]）
+    Interval mapping（與 similarity_calculation / L1_L2_cosine .npz 一致）：
+    - 欄位索引 j ∈ [0..T-2]：**interval j** = 沿 **analysis axis** 在點 j 與 j+1 之間的變化
+    - 與 DDIM 進模型 timestep：**該區間對應 t_ddim 由 (99−j) 變到 (98−j)**（T=100）
+    - 勿將 j 誤解為「DDIM 張量上的 t=j→t=j+1」；兩者索引方向相反，見 cache_time_axis_audit.md
+    - L1: l1_rate_step_mean[j]；Cos: 1.0 - cos_step_mean[j]；SVD: subspace_dist[j+1]（見下方原始對應）
     """
     l1_cos_path = Path(l1_cos_dir)
     svd_path = Path(svd_dir)

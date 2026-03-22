@@ -4,10 +4,17 @@ Stage-1: Offline Scheduler Synthesis (T=100)
 從 Stage-0 的 tri-evidence（L1/Cosine/SVD similarity + FID sensitivity）
 合成靜態 cache scheduler：zones + k[b,z]
 
+時間軸（與 Stage 0、L1_L2_cosine .npz 一致）：
+- **analysis axis** 索引 axis_idx ∈ [0, 99]：與 similarity 收集時的 step_counter / 圖橫軸由左到右 0→99 一致。
+- **DDIM** 進模型的 timestep：**t_ddim = 99 - axis_idx**（採樣順序為 t_ddim 從 99→0）。
+- 長度 99 的 interval 陣列：第 j 欄 = analysis 上 interval j（axis j 與 j+1 之間）= t_ddim (99−j)→(98−j)。
+
+本模組內 **D_global / zones / recompute mask 的索引**皆為 **analysis axis**（或 interval 維），**不是**未加轉換的 DDIM t_ddim。
+
 演算法流程：
 1. 載入 Stage-0E 輸出
-2. 計算 FID-weighted global drift D_global[t]
-3. 平滑 + 找 change points → 分 zones
+2. 計算 FID-weighted global drift D_global（per-interval）
+3. 平滑 + 找 change points → 分 zones（axis 上 0..99 的點區間）
 4. 計算 zone-level tri-evidence score A[b,z]
 5. 映射到 k_raw[b,z]
 6. Zone-level risk ceiling
@@ -43,20 +50,25 @@ LOGGER = logging.getLogger("Stage1Scheduler")
 
 @dataclass
 class Zone:
-    """Zone 定義（shared across all blocks）"""
+    """Zone 定義（shared across all blocks）。
+
+    axis_start / axis_end：analysis axis 上的點索引 [0..99]，含端點；
+    與 similarity_calculation 的 step_counter、Stage 0 圖橫軸一致。
+    DDIM：t_ddim = 99 - axis_idx。
+    """
     id: int
-    t_start: int  # inclusive
-    t_end: int    # inclusive
+    axis_start: int  # inclusive, analysis axis index
+    axis_end: int    # inclusive, analysis axis index
     
     def __post_init__(self):
-        assert self.t_start <= self.t_end
-        assert self.t_start >= 0
+        assert self.axis_start <= self.axis_end
+        assert self.axis_start >= 0
     
     def length(self) -> int:
-        return self.t_end - self.t_start + 1
+        return self.axis_end - self.axis_start + 1
     
-    def timesteps(self) -> List[int]:
-        return list(range(self.t_start, self.t_end + 1))
+    def axis_indices(self) -> List[int]:
+        return list(range(self.axis_start, self.axis_end + 1))
 
 
 @dataclass
@@ -64,9 +76,12 @@ class SchedulerConfig:
     """Scheduler 配置（用於輸出 JSON）"""
     version: str
     T: int
-    t_order: str
+    t_order: str  # 與 analysis_axis_order 同值；歷史欄位名保留
+    analysis_axis_order: str
+    axis_convention: str
+    ddim_timestep_formula: str
     params: Dict[str, Any]
-    zones: List[Dict[str, int]]
+    zones: List[Dict[str, Any]]
     blocks: List[Dict[str, Any]]
 
 
@@ -76,23 +91,28 @@ class SchedulerConfig:
 
 def load_stage0e_outputs(
     input_dir: str,
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    eta: float = 1.0,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """
     從 Stage-0E 輸出目錄讀取正規化後的 interval-wise 指標。
     
     Args:
         input_dir: Stage-0E 的 .npy 輸出目錄
+        eta: L1 vs Cosine 穩定度加權，S_sim = eta*S_l1 + (1-eta)*S_cos，範圍 [0,1]；
+             eta=1 為僅 L1（與舊版行為一致），eta=0 為僅 Cosine。
     
     Returns:
         block_names: (B,) object array
-        S_sim: (B, T-1) 穩定性分數（越大越穩定）= 1 - L1_interval_norm
+        S_sim: (B, T-1) similarity 穩定性分數（越大越穩定）
         S_svd: (B, T-1) 穩定性分數（越大越穩定）= 1 - SVD_interval_norm
         d_norm: (B, T-1) drift（越大越不穩定）= SVD_interval_norm
         FID_sens: (B,) FID 敏感度（越大越敏感）
+        S_l1: (B, T-1) = 1 - l1_interval_norm
+        S_cos: (B, T-1) = 1 - cosdist_interval_norm
     
     語義轉換：
-    - Stage-0E 的 l1_interval_norm / cosdist / svd 是「變化量」（越大越不穩定）
-    - Stage-1 需要「穩定性分數」S（越大越可 cache）→ S = 1 - 變化量
+    - Stage-0E 的 l1 / cosdist / svd 是「變化量」（越大越不穩定）
+    - S_l1, S_cos = 1 - norm；S_sim 為兩者線性混合後 clip 至 [0,1]
     - d_norm 保留 drift 語義（直接用 svd_interval_norm）
     """
     p = Path(input_dir)
@@ -146,21 +166,27 @@ def load_stage0e_outputs(
     svd_norm = check_and_clip(svd_norm, "svd_interval_norm")
     fid_w = check_and_clip(fid_w, "fid_w")
     
-    # 語義轉換：變化量 → 穩定性分數
-    # L1/Cosine/SVD 的 norm 都是「越大越不穩定」
-    # 轉成穩定性：S = 1 - norm（越大越穩定/越可 cache）
-    S_sim = 1.0 - l1_norm  # 可用 L1 或 Cosine，這裡用 L1
+    if not (0.0 <= float(eta) <= 1.0):
+        raise ValueError(f"eta 必須在 [0, 1] 內，收到 {eta}")
+    eta_f = float(eta)
+    
+    # 語義轉換：變化量 → 穩定性分數；similarity 通道為 L1 / Cos 加權混合
+    S_l1 = 1.0 - l1_norm
+    S_cos = 1.0 - cos_norm
+    S_sim = eta_f * S_l1 + (1.0 - eta_f) * S_cos
+    S_sim = np.clip(S_sim, 0.0, 1.0)
     S_svd = 1.0 - svd_norm
     d_norm = svd_norm  # drift 保留原語義（越大越不穩定）
     FID_sens = fid_w
     
-    LOGGER.info(f"✅ 成功載入 Stage-0E 輸出：B={B}, T-1={T_minus_1}")
+    LOGGER.info(f"✅ 成功載入 Stage-0E 輸出：B={B}, T-1={T_minus_1}, eta={eta_f}")
+    LOGGER.info(f"   S_l1: [{S_l1.min():.4f}, {S_l1.max():.4f}], S_cos: [{S_cos.min():.4f}, {S_cos.max():.4f}]")
     LOGGER.info(f"   S_sim (stability): [{S_sim.min():.4f}, {S_sim.max():.4f}]")
     LOGGER.info(f"   S_svd (stability): [{S_svd.min():.4f}, {S_svd.max():.4f}]")
     LOGGER.info(f"   d_norm (drift): [{d_norm.min():.4f}, {d_norm.max():.4f}]")
     LOGGER.info(f"   FID_sens: [{FID_sens.min():.4f}, {FID_sens.max():.4f}], 非零數={np.sum(FID_sens > 0)}/{B}")
     
-    return block_names, S_sim, S_svd, d_norm, FID_sens
+    return block_names, S_sim, S_svd, d_norm, FID_sens, S_l1, S_cos
 
 
 # ============================================================
@@ -174,6 +200,9 @@ def compute_global_drift(
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
     計算 FID-weighted global drift + moving average 平滑。
+
+    **索引**：`d_norm[b, j]` 與 Stage 0 / .npz 一致，為 **analysis 上 interval j**（axis j 與 j+1 之間）。
+    `D_global[j]` 對應同一 interval j（長度 T-1=99）。
     
     Args:
         d_norm: (B, T-1) drift（越大越不穩定）
@@ -181,12 +210,12 @@ def compute_global_drift(
         smooth_window: moving average 視窗大小
     
     Returns:
-        D_global: (T-1,) raw global drift
+        D_global: (T-1,) raw global drift（per-interval on analysis axis）
         D_smooth: (T-1,) smoothed global drift
     
     公式：
-        D_global[t] = sum_b (w_b * d_norm[b,t]) / (sum_b w_b + eps)
-        D_smooth[t] = moving_avg(D_global, window)
+        D_global[j] = sum_b (w_b * d_norm[b,j]) / (sum_b w_b + eps)
+        D_smooth = moving_avg(D_global, window)
     """
     B, T_minus_1 = d_norm.shape
     eps = 1e-8
@@ -250,13 +279,13 @@ def find_zones(
         threshold_quantile: threshold 模式下，Δ >= quantile(q) 的點
     
     Returns:
-        zones: List[Zone]，覆蓋 timestep 0..99（因為 T-1=99 個 interval → 100 個 timestep）
+        zones: List[Zone]，覆蓋 **analysis axis 點** 0..99（T=100 個點；邊界由 interval 變化推得）
     
     演算法：
-    1. 計算 Δ[t] = |D_smooth[t] - D_smooth[t-1]|, t=1..T-2
-    2. 選 change points（timestep index）
+    1. 計算 Δ（沿 interval 軸）= |D_smooth[j] - D_smooth[j-1]|
+    2. 選 change points（映射為 axis 上的分界點）
     3. boundaries = [0] + sorted(change_points) + [T-1]
-    4. zones: [boundaries[i], boundaries[i+1]-1] for zone interior, last zone ends at T-1
+    4. zones 的 axis_start..axis_end 為 **analysis axis 索引**，**不是**未轉換的 DDIM t_ddim
     """
     T_minus_1 = len(D_smooth)
     T = T_minus_1 + 1  # 100 個 timestep: 0..99
@@ -296,7 +325,7 @@ def find_zones(
     else:
         raise ValueError(f"Unknown method: {method}")
     
-    LOGGER.info(f"Change points (timestep): {change_points}")
+    LOGGER.info(f"Change points (analysis axis index): {change_points}")
     
     # 3. 建立 zones
     boundaries = sorted(set([0] + change_points + [T - 1]))
@@ -305,8 +334,8 @@ def find_zones(
     for i in range(len(boundaries) - 1):
         z = Zone(
             id=i,
-            t_start=boundaries[i],
-            t_end=boundaries[i + 1] - 1 if i < len(boundaries) - 2 else T - 1,
+            axis_start=boundaries[i],
+            axis_end=boundaries[i + 1] - 1 if i < len(boundaries) - 2 else T - 1,
         )
         # 避免長度為 0 的 zone
         if z.length() < 1:
@@ -314,12 +343,12 @@ def find_zones(
         zones.append(z)
     
     # 最後一個 zone 應該結束在 T-1=99
-    if zones[-1].t_end != T - 1:
-        zones[-1].t_end = T - 1
+    if zones[-1].axis_end != T - 1:
+        zones[-1].axis_end = T - 1
     
     LOGGER.info(f"生成 {len(zones)} 個 zones:")
     for z in zones:
-        LOGGER.info(f"  Zone {z.id}: t={z.t_start}..{z.t_end} (len={z.length()})")
+        LOGGER.info(f"  Zone {z.id}: axis={z.axis_start}..{z.axis_end} (len={z.length()})")
     
     return zones, Delta
 
@@ -351,8 +380,8 @@ def compute_zone_evidence(
         A: (B, Z) tri-evidence score，A[b,z] in [0,1]
     
     公式：
-        對 zone z 的 timestep set T_z = [t_start..t_end]（包含 interval t_start..t_end-1）
-        S_sim[b,z] = mean_{interval i in zone z} S_sim[b,i]
+        對 zone z 的 axis 點區間 [axis_start..axis_end]，聚合其覆蓋的 **interval 欄位**（見程式內 slice）
+        S_sim[b,z] = mean_{interval i in zone z} S_sim[b,i]（S_sim 已含 eta·L1 + (1-eta)·Cos）
         S_svd[b,z] = mean_{interval i in zone z} S_svd[b,i]
         S_fid[b] = 1 - FID_sens[b]（FID-safe score）
         A[b,z] = α*S_sim[b,z] + β*S_svd[b,z] + γ*S_fid[b]
@@ -366,11 +395,10 @@ def compute_zone_evidence(
     A = np.zeros((B, Z), dtype=np.float32)
     
     for z_idx, zone in enumerate(zones):
-        # Zone 對應的 interval indices
-        # Zone t_start..t_end 包含 interval t_start..(t_end-1)
-        # 例如 zone 0..10 包含 interval 0,1,2,...,9（共 10 個 interval）
-        interval_start = zone.t_start
-        interval_end = min(zone.t_end, T_minus_1 - 1)  # 不能超過 T-2（最後一個 interval）
+        # Zone 對應的 interval indices（與 Stage 0 陣列欄位一致）
+        # axis 點區間 [axis_start..axis_end] 與 interval slice 的對應見 slice 邏輯（與舊註解可能差一欄，行為未改）
+        interval_start = zone.axis_start
+        interval_end = min(zone.axis_end, T_minus_1 - 1)  # 不能超過 T-2（最後一個 interval）
         
         if interval_end < interval_start:
             # Zone 只有 1 個 timestep，沒有 interval
@@ -457,8 +485,8 @@ def compute_zone_risk_ceiling(
     R_z = np.zeros(Z, dtype=np.float32)
     
     for z_idx, zone in enumerate(zones):
-        interval_start = zone.t_start
-        interval_end = min(zone.t_end, T_minus_1 - 1)
+        interval_start = zone.axis_start
+        interval_end = min(zone.axis_end, T_minus_1 - 1)
         
         if interval_end < interval_start:
             R_z[z_idx] = 0.0
@@ -562,25 +590,28 @@ def build_recompute_mask(
     k_per_zone: List[int],
 ) -> np.ndarray:
     """
-    從 zones + k 轉成 per-timestep recompute mask。
-    
+    從 zones + k 轉成 **analysis axis** 上的 recompute mask（長度 T=100）。
+
+    **索引語意**：mask[i]=True 表示在 **analysis axis_idx = i** 對應的 forward 步要 full compute。
+    接 DDIM 時：**t_ddim = 99 - i**（單張量 timestep 張量請用此映射）。
+
     Args:
-        T: 總 timestep 數（100）
-        zones: Zone 列表
+        T: 總步數（100），與 axis 0..99 對齊
+        zones: Zone 列表（axis_start/axis_end 為 analysis axis）
         k_per_zone: 長度 Z，每個 zone 的 k
-    
+
     Returns:
-        mask: (T,) bool，mask[t]=True 表示 timestep t 需要 full compute
-    
+        mask: (T,) bool
+
     規則：
     - Zone 起點一定 recompute
-    - 之後每隔 k 步 recompute：t_start, t_start+k, t_start+2k, ... <= t_end
+    - 之後每隔 k 步：axis_start, axis_start+k, ... <= axis_end
     """
     mask = np.zeros(T, dtype=bool)
     
     for zone, k in zip(zones, k_per_zone):
-        t = zone.t_start
-        while t <= zone.t_end:
+        t = zone.axis_start
+        while t <= zone.axis_end:
             if t < T:
                 mask[t] = True
             t += k
@@ -599,6 +630,7 @@ def run_stage1_synthesis(
     alpha: float = 1/3,
     beta: float = 1/3,
     gamma: float = 1/3,
+    eta: float = 1.0,
     # k range
     k_min: int = 1,
     k_max: int = 8,
@@ -618,6 +650,7 @@ def run_stage1_synthesis(
         stage0_dir: Stage-0E 輸出目錄
         output_dir: 輸出目錄
         alpha, beta, gamma: tri-evidence 權重
+        eta: similarity 證據中 L1 權重，S_sim = eta*S_l1 + (1-eta)*S_cos
         k_min, k_max: k 範圍
         smooth_window: D_global 平滑視窗
         cp_method: change point 方法（"topk" 或 "threshold"）
@@ -635,7 +668,9 @@ def run_stage1_synthesis(
     
     # === Step 1: Load Stage-0E outputs ===
     LOGGER.info("\n[Step 1] 載入 Stage-0E 輸出...")
-    block_names, S_sim, S_svd, d_norm, FID_sens = load_stage0e_outputs(stage0_dir)
+    block_names, S_sim, S_svd, d_norm, FID_sens, S_l1, S_cos = load_stage0e_outputs(
+        stage0_dir, eta=eta
+    )
     B, T_minus_1 = S_sim.shape
     T = T_minus_1 + 1  # 100
     
@@ -677,6 +712,7 @@ def run_stage1_synthesis(
         "alpha": float(alpha),
         "beta": float(beta),
         "gamma": float(gamma),
+        "eta": float(eta),
         "k_min": int(k_min),
         "k_max": int(k_max),
         "smooth_window": int(smooth_window),
@@ -686,7 +722,16 @@ def run_stage1_synthesis(
         "regularize": regularize,
     }
     
-    zones_dict = [{"id": z.id, "t_start": z.t_start, "t_end": z.t_end} for z in zones]
+    zones_dict = [
+        {
+            "id": z.id,
+            "axis_start": z.axis_start,
+            "axis_end": z.axis_end,
+            "t_start": z.axis_start,
+            "t_end": z.axis_end,
+        }
+        for z in zones
+    ]
     
     blocks_dict = []
     for b in range(B):
@@ -697,10 +742,14 @@ def run_stage1_synthesis(
         }
         blocks_dict.append(block_dict)
     
+    axis_order_str = "analysis_axis_0_to_99_inclusive"
     config = SchedulerConfig(
         version="v_final_stage1",
         T=T,
-        t_order="0_to_99",
+        t_order=axis_order_str,
+        analysis_axis_order=axis_order_str,
+        axis_convention="analysis_axis",
+        ddim_timestep_formula="t_ddim = 99 - axis_idx",
         params=params,
         zones=zones_dict,
         blocks=blocks_dict,
@@ -708,12 +757,29 @@ def run_stage1_synthesis(
     
     # === Diagnostics ===
     diagnostics = {
+        "axis_convention": "analysis_axis",
+        "ddim_timestep_formula": "t_ddim = 99 - axis_idx",
+        "analysis_axis_order": axis_order_str,
+        "note_D_global_length": "D_global/D_smooth/Delta length 99 = per-interval on analysis axis (interval j between axis j and j+1)",
         "D_global": D_global.tolist(),
         "D_smooth": D_smooth.tolist(),
         "Delta": Delta.tolist(),
-        "change_points": [z.t_start for z in zones[1:]],  # 不包含第一個 zone 的起點（=0）
+        "change_points": [z.axis_start for z in zones[1:]],  # 不包含第一個 zone 的起點 axis=0
         "R_z": R_z.tolist(),
         "k_max_z": k_max_z.tolist(),
+        "eta": float(eta),
+        "S_l1_stats": {
+            "mean": float(S_l1.mean()),
+            "min": float(S_l1.min()),
+            "max": float(S_l1.max()),
+            "std": float(S_l1.std()),
+        },
+        "S_cos_stats": {
+            "mean": float(S_cos.mean()),
+            "min": float(S_cos.min()),
+            "max": float(S_cos.max()),
+            "std": float(S_cos.std()),
+        },
         "A_stats": {
             "mean": float(A.mean()),
             "min": float(A.min()),
@@ -755,12 +821,12 @@ def run_stage1_synthesis(
     # 檢查 zones 覆蓋
     zone_coverage = set()
     for z in zones:
-        zone_coverage.update(range(z.t_start, z.t_end + 1))
+        zone_coverage.update(range(z.axis_start, z.axis_end + 1))
     expected_coverage = set(range(T))
     if zone_coverage != expected_coverage:
-        LOGGER.error(f"❌ Zone 覆蓋不完整！缺少 timestep: {expected_coverage - zone_coverage}")
+        LOGGER.error(f"❌ Zone 覆蓋不完整！缺少 analysis-axis index: {expected_coverage - zone_coverage}")
     else:
-        LOGGER.info(f"   ✅ Zones 完整覆蓋 t=0..{T-1}")
+        LOGGER.info(f"   ✅ Zones 完整覆蓋 analysis axis 0..{T-1}")
     
     # 檢查 k 範圍
     k_in_range = (k_final >= k_min).all() and (k_final <= k_max).all()
@@ -773,12 +839,12 @@ def run_stage1_synthesis(
     test_block_idx = 0
     mask = build_recompute_mask(T, zones, k_final[test_block_idx, :].tolist())
     recompute_count = mask.sum()
-    LOGGER.info(f"   ✅ Block[{test_block_idx}] recompute mask: {recompute_count}/{T} timesteps")
+    LOGGER.info(f"   ✅ Block[{test_block_idx}] recompute mask: {recompute_count}/{T} analysis-axis indices")
     
     # 檢查每個 zone 起點是否 True
     for z in zones:
-        if not mask[z.t_start]:
-            LOGGER.error(f"❌ Zone {z.id} 起點 t={z.t_start} 的 mask 不是 True！")
+        if not mask[z.axis_start]:
+            LOGGER.error(f"❌ Zone {z.id} 起點 axis={z.axis_start} 的 mask 不是 True！")
     
     LOGGER.info("\n" + "=" * 80)
     LOGGER.info("Stage-1 完成！")
@@ -823,6 +889,7 @@ def self_test():
         stage0_dir=str(tmp_dir),
         output_dir=str(tmp_dir / "output"),
         alpha=0.4, beta=0.4, gamma=0.2,
+        eta=0.5,
         k_min=1, k_max=6,
         smooth_window=3,
         cp_method="topk",
@@ -879,9 +946,15 @@ def main():
     )
     
     # Tri-evidence weights
-    parser.add_argument("--alpha", type=float, default=0.2, help="L1 similarity 權重")
-    parser.add_argument("--beta", type=float, default=0.7, help="SVD stability 權重")
+    parser.add_argument("--alpha", type=float, default=0.3, help="similarity 通道權重（對 S_sim）")
+    parser.add_argument("--beta", type=float, default=0.6, help="SVD stability 權重")
     parser.add_argument("--gamma", type=float, default=0.1, help="FID-safe 權重")
+    parser.add_argument(
+        "--eta",
+        type=float,
+        default=1.0,
+        help="S_sim = eta*S_l1 + (1-eta)*S_cos；1=僅 L1，0=僅 Cosine",
+    )
     
     # k range
     parser.add_argument("--k_min", type=int, default=1, help="最小 k")
@@ -931,6 +1004,7 @@ def main():
         alpha=args.alpha,
         beta=args.beta,
         gamma=args.gamma,
+        eta=args.eta,
         k_min=args.k_min,
         k_max=args.k_max,
         smooth_window=args.smooth_window,

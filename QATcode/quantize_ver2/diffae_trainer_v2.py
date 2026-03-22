@@ -9,7 +9,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from typing import Dict, Any, Optional, Tuple
+from typing import Dict, Any, Optional, Tuple, List
 import logging
 import random
 from copy import deepcopy
@@ -181,6 +181,13 @@ class SpacedDiffusionBeatGans_Trainer(SpacedDiffusionBeatGans):
         self.debug_timestep_grad_conflict = False
         self.debug_timestep_grad_steps = [0, 80, 99]
         self.debug_timestep_grad_interval = 0
+        # Step-2：rollout 結尾 tail-repair（預設關閉，不改主 loss 定義）
+        self.tail_repair_enable = False
+        self.tail_repair_steps = 1  # 外層重複次數（1 或 2）
+        self.tail_repair_t_range: List[int] = [0]
+        self.tail_repair_lr_scale = 0.25
+        self._last_tail_repair_stats: Optional[Dict[str, Any]] = None
+        self._tail_repair_xt_cache: Dict[int, torch.Tensor] = {}
         
         # 單步訓練相關參數
         self.lambda_distill = 0.8 # 知識蒸餾損失權重
@@ -238,6 +245,155 @@ class SpacedDiffusionBeatGans_Trainer(SpacedDiffusionBeatGans):
             parsed = sorted({int(s) for s in steps})
             self.debug_timestep_grad_steps = parsed
         self.debug_timestep_grad_interval = int(interval)
+
+    def set_tail_repair(
+        self,
+        enabled: bool,
+        steps: int = 1,
+        t_range: Optional[List[int]] = None,
+        lr_scale: float = 0.25,
+    ) -> None:
+        """
+        rollout 結尾額外小步更新（實驗用，預設關閉）。
+        - steps: 外層重複次數，僅允許 1 或 2
+        - t_range: 要補強的 timestep（如 [0] 或 [0,1,2,3,4]）
+        - lr_scale: 在 tail-repair block 內暫時將各 param_group 的 lr 乘上此係數，結束後還原
+        """
+        self.tail_repair_enable = bool(enabled)
+        if int(steps) not in (1, 2):
+            raise ValueError(f"tail_repair_steps must be 1 or 2, got {steps}")
+        self.tail_repair_steps = int(steps)
+        if t_range is None or len(t_range) == 0:
+            self.tail_repair_t_range = [0]
+        else:
+            self.tail_repair_t_range = sorted({int(x) for x in t_range})
+        self.tail_repair_lr_scale = float(lr_scale)
+
+    def _tail_repair_clip_grad_with_stats(self, max_norm: float = 0.5) -> Tuple[float, bool, float]:
+        """clip_grad_norm_ 回傳值為 clip 前 total norm；另計算 clip 後 total norm。"""
+        pre_norm = torch.nn.utils.clip_grad_norm_(
+            self.quant_model.parameters(), max_norm=max_norm
+        )
+        pre_norm = float(pre_norm)
+        hit_clip = bool(pre_norm > float(max_norm) + 1e-8)
+        post_sq = 0.0
+        for p in self.quant_model.parameters():
+            if p.grad is not None:
+                post_sq += float(p.grad.detach().float().pow(2).sum().item())
+        post_norm = float(post_sq ** 0.5)
+        return pre_norm, hit_clip, post_norm
+
+    def _run_tail_repair_after_rollout(
+        self,
+        cond: torch.Tensor,
+        batch_size: int,
+        device: torch.device,
+        epoch: int,
+    ) -> None:
+        """
+        在完整 DDIM rollout 結束後執行：使用 rollout 內快取之真實 x_t（見 ddim_sample_with_training），
+        與相同 cond，對尾段 timestep 做額外小步更新。
+        使用暫時縮放 param_group lr（tail_repair_lr_scale），結束後還原；不呼叫 lr_scheduler.step()。
+        """
+        if not self.tail_repair_enable:
+            self._last_tail_repair_stats = None
+            return
+
+        n_steps = int(self.num_timesteps)
+        t_list = [t for t in self.tail_repair_t_range if 0 <= t < n_steps]
+        if len(t_list) == 0:
+            LOGGER.warning("[TailRepair] no valid timesteps in t_range=%s (num_timesteps=%d)", self.tail_repair_t_range, n_steps)
+            self._last_tail_repair_stats = None
+            return
+
+        cache = getattr(self, "_tail_repair_xt_cache", {}) or {}
+        missing = [t for t in t_list if int(t) not in cache]
+        if len(missing) > 0:
+            LOGGER.warning(
+                "[TailRepair] missing cached x_t for timesteps %s (have keys %s); skip tail repair",
+                missing,
+                list(cache.keys()),
+            )
+            self._last_tail_repair_stats = None
+            return
+
+        LOGGER.info(
+            "[TailRepair] start epoch=%d | outer_repeats=%d | t_range=%s | lr_scale(param_groups)=%.6f | source=rollout_xt_cache",
+            epoch,
+            self.tail_repair_steps,
+            t_list,
+            self.tail_repair_lr_scale,
+        )
+
+        was_training = self.quant_model.training
+        self.quant_model.train()
+
+        _saved_lrs = [float(g.get("lr", 0.0)) for g in self.optimizer.param_groups]
+        try:
+            for g in self.optimizer.param_groups:
+                g["lr"] = float(g["lr"]) * float(self.tail_repair_lr_scale)
+
+            micro_step = 0
+            loss_vals: List[float] = []
+
+            for rep in range(self.tail_repair_steps):
+                for t_step in t_list:
+                    micro_step += 1
+                    self.optimizer.zero_grad(set_to_none=True)
+                    t = torch.full((batch_size,), int(t_step), device=device, dtype=torch.long)
+                    x_cached = cache[int(t_step)]
+                    x_t = x_cached.clone().requires_grad_(True)
+                    loss = self._compute_distill_loss_mean_for_debug(
+                        x=x_t,
+                        t=t,
+                        model_kwargs={"cond": cond},
+                    )
+                    loss.backward()
+                    pre_n, hit, post_n = self._tail_repair_clip_grad_with_stats(max_norm=0.5)
+                    self.optimizer.step()
+                    self.ema.update(self.quant_model)
+
+                    lv = float(loss.detach().item())
+                    loss_vals.append(lv)
+                    LOGGER.info(
+                        "[TailRepair] epoch=%d micro_step=%d outer=%d/%d t=%d loss=%.6f | "
+                        "grad_pre_clip=%.6e hit_clip=%s grad_post_clip=%.6e (lr scaled x%.6f)",
+                        epoch,
+                        micro_step,
+                        rep + 1,
+                        self.tail_repair_steps,
+                        int(t_step),
+                        lv,
+                        pre_n,
+                        hit,
+                        post_n,
+                        float(self.tail_repair_lr_scale),
+                    )
+        finally:
+            for g, old_lr in zip(self.optimizer.param_groups, _saved_lrs):
+                g["lr"] = old_lr
+
+        self.optimizer.zero_grad(set_to_none=True)
+        if not was_training:
+            self.quant_model.eval()
+
+        n_updates = len(loss_vals)
+        mean_loss = float(sum(loss_vals) / max(n_updates, 1))
+        self._last_tail_repair_stats = {
+            "n_updates": n_updates,
+            "mean_loss": mean_loss,
+            "t_range": list(t_list),
+            "outer_repeats": int(self.tail_repair_steps),
+            "lr_scale": float(self.tail_repair_lr_scale),
+            "lr_mode": "param_group_scale",
+            "input_source": "rollout_xt_cache",
+        }
+        LOGGER.info(
+            "[TailRepair] epoch=%d summary | n_updates=%d mean_loss=%.6f",
+            epoch,
+            n_updates,
+            mean_loss,
+        )
 
     def _iter_scale_list_params(self):
         for name, param in self.quant_model.named_parameters():
@@ -781,7 +937,8 @@ class SpacedDiffusionBeatGans_Trainer(SpacedDiffusionBeatGans):
                                  cond_fn: Optional[callable] = None,
                                  model_kwargs: Optional[Dict] = None,
                                  eta: float = 0.0,
-                                 progress: bool = False) -> torch.Tensor:
+                                 progress: bool = False,
+                                 epoch: Optional[int] = None) -> torch.Tensor:
         """
         在 DDIM 採樣過程中進行知識蒸餾訓練
         
@@ -817,7 +974,9 @@ class SpacedDiffusionBeatGans_Trainer(SpacedDiffusionBeatGans):
         from tqdm.auto import tqdm
         indices = tqdm(indices)
         self._rollout_step_records = []
-        
+        if self.tail_repair_enable:
+            self._tail_repair_xt_cache = {}
+
         # 逐步去噪，每一步都進行訓練
         for i in indices:
             t = torch.tensor([i] * batch_size, device=device)
@@ -826,7 +985,9 @@ class SpacedDiffusionBeatGans_Trainer(SpacedDiffusionBeatGans):
             self.optimizer.zero_grad()
 
             img = img.detach().requires_grad_(True)
-            
+            if self.tail_repair_enable and int(i) in self.tail_repair_t_range:
+                self._tail_repair_xt_cache[int(i)] = img.detach().clone()
+
             # 使用修改版的 p_mean_variance 進行知識蒸餾
             out = self.p_mean_variance_with_distillation(
                 model=self.quant_model,
@@ -838,7 +999,6 @@ class SpacedDiffusionBeatGans_Trainer(SpacedDiffusionBeatGans):
                 is_training=True  # 啟用訓練模式
             )
             if out.get("current_step_loss") is not None:
-            #if out.get("current_step_loss_eff") is not None:
                 self._rollout_step_records.append({
                     "global_step": int(self.global_optimizer_step),
                     "ddim_t": int(i),
@@ -883,6 +1043,21 @@ class SpacedDiffusionBeatGans_Trainer(SpacedDiffusionBeatGans):
                     #float(out["running_mean_ddim_loss_eff"]) if out.get("running_mean_ddim_loss_eff") is not None else float("nan"),
                 )
         
+        # Step-2：rollout 結尾 tail-repair（與主 DDIM 步分離；預設關閉）
+        if self.tail_repair_enable:
+            if epoch is None:
+                LOGGER.warning("[TailRepair] enabled but epoch is None; skipping tail repair")
+                self._last_tail_repair_stats = None
+            else:
+                self._run_tail_repair_after_rollout(
+                    cond=cond,
+                    batch_size=batch_size,
+                    device=device,
+                    epoch=int(epoch),
+                )
+        else:
+            self._last_tail_repair_stats = None
+
         return img
     
     def training_losses_with_inference_distillation(self, 
@@ -913,7 +1088,8 @@ class SpacedDiffusionBeatGans_Trainer(SpacedDiffusionBeatGans):
             shape=shape,
             device=device,
             clip_denoised=True,
-            progress=False
+            progress=False,
+            epoch=debug_epoch,
         )
 
         # Step-1 診斷（預設關閉）：timestep gradient conflict
@@ -946,6 +1122,7 @@ class SpacedDiffusionBeatGans_Trainer(SpacedDiffusionBeatGans):
             'generated_images': generated_images,
             'loss_chunk_summaries': self.pop_completed_loss_chunks(),
             'rollout_step_records': self.pop_rollout_step_records(),
+            'tail_repair': getattr(self, '_last_tail_repair_stats', None),
         }
     
     def training_step_ts(self, x_start: torch.Tensor) -> Dict[str, torch.Tensor]:

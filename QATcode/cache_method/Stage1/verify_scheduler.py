@@ -1,8 +1,11 @@
 """
-驗證 scheduler_config.json 的正確性
+驗證 scheduler_config.json 的正確性。
+
+索引語意：zones 與 recompute mask 使用 **analysis axis** 0..T-1（與 Stage 0 / Stage 1 圖一致）；
+DDIM timestep **t_ddim = 99 - axis_idx**（T=100）。新 JSON 使用 axis_start/axis_end；舊檔可僅有 t_start/t_end。
 
 檢查：
-1. Zones 是否完整覆蓋 0..T-1
+1. Zones 是否完整覆蓋 analysis axis 0..T-1
 2. K 是否在 [k_min, k_max]
 3. Recompute mask 的合理性
 4. 統計資訊
@@ -13,6 +16,15 @@ import numpy as np
 from pathlib import Path
 
 
+def zone_axis_range(z: dict):
+    """讀取 zone 的 analysis axis 範圍；支援新鍵 axis_* 或舊鍵 t_*。"""
+    a0 = z.get("axis_start", z.get("t_start"))
+    a1 = z.get("axis_end", z.get("t_end"))
+    if a0 is None or a1 is None:
+        raise KeyError(f"Zone 缺少 axis_start/axis_end（或舊版 t_start/t_end）: {z}")
+    return int(a0), int(a1)
+
+
 def load_config(config_path: str):
     """載入 config"""
     with open(config_path) as f:
@@ -20,27 +32,27 @@ def load_config(config_path: str):
 
 
 def check_zone_coverage(config):
-    """檢查 zones 是否完整覆蓋 0..T-1"""
+    """檢查 zones 是否完整覆蓋 analysis axis 0..T-1（與 Stage 0 圖橫軸一致；DDIM: t_ddim=99-axis_idx）"""
     T = config['T']
     zones = config['zones']
     
-    # 收集所有 timestep
     covered = set()
     for z in zones:
-        covered.update(range(z['t_start'], z['t_end'] + 1))
+        a0, a1 = zone_axis_range(z)
+        covered.update(range(a0, a1 + 1))
     
     expected = set(range(T))
     
     if covered == expected:
-        print(f"✅ Zones 完整覆蓋 t=0..{T-1}")
+        print(f"✅ Zones 完整覆蓋 analysis axis 0..{T-1}")
         return True
     else:
         missing = expected - covered
         overlap = covered - expected
         if missing:
-            print(f"❌ 缺少 timesteps: {sorted(missing)}")
+            print(f"❌ 缺少 axis indices: {sorted(missing)}")
         if overlap:
-            print(f"❌ 多餘 timesteps: {sorted(overlap)}")
+            print(f"❌ 多餘 axis indices: {sorted(overlap)}")
         return False
 
 
@@ -67,12 +79,13 @@ def check_k_range(config):
 
 
 def build_recompute_mask(T, zones, k_per_zone):
-    """從 zones + k 建立 recompute mask"""
+    """從 zones + k 建立 recompute mask（索引為 analysis axis；DDIM 對照 t_ddim=99-idx）"""
     mask = np.zeros(T, dtype=bool)
     
     for zone, k in zip(zones, k_per_zone):
-        t = zone['t_start']
-        while t <= zone['t_end']:
+        a0, a1 = zone_axis_range(zone)
+        t = a0
+        while t <= a1:
             if t < T:
                 mask[t] = True
             t += k
@@ -136,8 +149,9 @@ def check_zone_start_recompute(config):
     for block in blocks:
         mask = build_recompute_mask(T, zones, block['k_per_zone'])
         for z in zones:
-            if not mask[z['t_start']]:
-                print(f"❌ Block {block['id']} Zone {z['id']} 起點 t={z['t_start']} 未 recompute")
+            a0, _ = zone_axis_range(z)
+            if not mask[a0]:
+                print(f"❌ Block {block['id']} Zone {z['id']} 起點 axis={a0} 未 recompute")
                 all_ok = False
     
     if all_ok:

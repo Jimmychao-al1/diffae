@@ -172,6 +172,15 @@ def _get_cli_args():
                         help='要診斷的 timestep，逗號分隔，例如 0,80,99')
     parser.add_argument('--debug-timestep-grad-interval', type=int, default=0,
                         help='每隔多少個 epoch 觸發一次 grad conflict 診斷（<=0 關閉）')
+    # Step-2：rollout 結尾 tail-repair（預設關閉）
+    parser.add_argument('--tail-repair-enable', action='store_true', default=False,
+                        help='在每次 DDIM rollout 結束後做額外小步更新（實驗用，預設關閉）')
+    parser.add_argument('--tail-repair-steps', type=int, default=1, choices=[1, 2],
+                        help='tail-repair 外層重複次數（1 或 2）')
+    parser.add_argument('--tail-repair-t-range', type=str, default='0',
+                        help='要補強的 timestep，逗號分隔，例如 0 或 0,1,2,3,4')
+    parser.add_argument('--tail-repair-lr-scale', type=float, default=0.25,
+                        help='tail-repair 區塊內暫時將 optimizer 各 param_group 的 lr 乘上此係數（結束後還原）')
 
     try:
         args, _ = parser.parse_known_args()
@@ -198,6 +207,10 @@ def _get_cli_args():
             debug_timestep_grad_conflict = False
             debug_timestep_grad_steps = '0,80,99'
             debug_timestep_grad_interval = 0
+            tail_repair_enable = False
+            tail_repair_steps = 1
+            tail_repair_t_range = '0'
+            tail_repair_lr_scale = 0.25
 
         args = _Args()
     return args
@@ -980,6 +993,13 @@ def main():
         args.debug_timestep_grad_steps,
         args.debug_timestep_grad_interval,
     )
+    LOGGER.info(
+        "Tail repair: %s | outer_steps=%d | t_range=%s | lr_scale=%.6f",
+        args.tail_repair_enable,
+        args.tail_repair_steps,
+        args.tail_repair_t_range,
+        args.tail_repair_lr_scale,
+    )
     
     try:
         quant_diag_run_dir = None
@@ -1127,6 +1147,22 @@ def main():
                 steps=_grad_steps,
                 interval=args.debug_timestep_grad_interval,
             )
+        if hasattr(distill_trainer, 'set_tail_repair'):
+            _tr_range: List[int] = []
+            for _s in str(args.tail_repair_t_range).split(','):
+                _s = _s.strip()
+                if len(_s) == 0:
+                    continue
+                try:
+                    _tr_range.append(int(_s))
+                except ValueError:
+                    LOGGER.warning("忽略非法 tail-repair timestep: %s", _s)
+            distill_trainer.set_tail_repair(
+                enabled=args.tail_repair_enable,
+                steps=int(args.tail_repair_steps),
+                t_range=_tr_range,
+                lr_scale=float(args.tail_repair_lr_scale),
+            )
 
         # 驗證訓練器
         validation_sampler = base_model.sampler
@@ -1204,6 +1240,15 @@ def main():
             #LOGGER.info(f"  平均損失(目前等同蒸餾損失,eff): {avg_loss:.6f}")
             LOGGER.info(f"  時間: {epoch_time:.2f}秒")
 
+            _tail_rep = loss_dict.get("tail_repair")
+            if isinstance(_tail_rep, dict) and int(_tail_rep.get("n_updates", 0)) > 0:
+                LOGGER.info(
+                    "[TailRepair] epoch=%d summary | n_updates=%d mean_loss=%.6f",
+                    epoch + 1,
+                    int(_tail_rep["n_updates"]),
+                    float(_tail_rep["mean_loss"]),
+                )
+
             # TensorBoard scalar logging
             if tb_writer is not None:
                 _global_step = epoch + 1
@@ -1215,6 +1260,17 @@ def main():
                 # 取 optimizer 第一個 param group 的 LR 作代表
                 _cur_lr = optimizer.param_groups[0]["lr"]
                 tb_writer.add_scalar("train/lr", _cur_lr, _global_step)
+                if isinstance(_tail_rep, dict) and int(_tail_rep.get("n_updates", 0)) > 0:
+                    tb_writer.add_scalar(
+                        "train/tail_repair_mean_loss",
+                        float(_tail_rep.get("mean_loss", float("nan"))),
+                        _global_step,
+                    )
+                    tb_writer.add_scalar(
+                        "train/tail_repair_n_updates",
+                        int(_tail_rep.get("n_updates", 0)),
+                        _global_step,
+                    )
 
             # 單步 DDIM loss / 累積平均 DDIM loss（x 軸：global optimizer step）
             rollout_step_records = loss_dict.get('rollout_step_records', [])
@@ -1245,9 +1301,14 @@ def main():
                 for _t in range(CONFIG.NUM_DIFFUSION_STEPS):
                     if not np.isnan(per_timestep_mean_loss[_t]):
                         tb_writer.add_scalar(
+                            f"loss_timestep_mean/t_{_t:03d}",
+                            float(per_timestep_mean_loss[_t]),
+                            _epoch_step,
+                        )
+                        tb_writer.add_scalar(
                             f"loss_timestep/t_{_t:03d}",
                             float(per_timestep_mean_loss[_t]),
-                            _epoch_step
+                            _epoch_step,
                         )
 
             # 尾段主導指標（尾段定義：t=0..19，接近清晰圖）
@@ -1266,6 +1327,8 @@ def main():
                 tail_outlier_ratio = float(_tail_valid.max() / max(_tail_valid.mean(), 1e-12))
                 if tb_writer is not None:
                     _epoch_step = epoch + 1
+                    tb_writer.add_scalar("summary/tail_mean_ratio", tail_ratio, _epoch_step)
+                    tb_writer.add_scalar("summary/tail_max_ratio", tail_outlier_ratio, _epoch_step)
                     tb_writer.add_scalar("summary/tail_ratio", tail_ratio, _epoch_step)
                     tb_writer.add_scalar("summary/tail_outlier_ratio", tail_outlier_ratio, _epoch_step)
 

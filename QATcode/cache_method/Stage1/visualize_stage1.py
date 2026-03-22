@@ -14,6 +14,14 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 
 
+def _zone_axis(z: dict):
+    a0 = z.get("axis_start", z.get("t_start"))
+    a1 = z.get("axis_end", z.get("t_end"))
+    if a0 is None or a1 is None:
+        raise KeyError(f"zone 缺少 axis_start/axis_end 或舊版 t_start/t_end: {z}")
+    return int(a0), int(a1)
+
+
 def load_stage1_outputs(output_dir: str):
     """載入 Stage-1 輸出"""
     p = Path(output_dir)
@@ -48,11 +56,12 @@ def plot_drift_and_zones(config, diag, save_path):
     zones = config['zones']
     colors = plt.cm.tab10(np.linspace(0, 1, len(zones)))
     for z, color in zip(zones, colors):
-        ax1.axvspan(z['t_start'], z['t_end'], alpha=0.15, color=color, label=f"Zone {z['id']}")
+        a0, a1 = _zone_axis(z)
+        ax1.axvspan(a0, a1, alpha=0.15, color=color, label=f"Zone {z['id']}")
     
-    ax1.set_xlabel('Timestep t')
+    ax1.set_xlabel('Interval index j (length 99; analysis axis; DDIM: t_ddim=99-axis_idx at point indices)')
     ax1.set_ylabel('Global Drift')
-    ax1.set_title('FID-weighted Global Drift + Zone Segmentation')
+    ax1.set_title('FID-weighted Global Drift + Zone Segmentation (per-interval D)')
     ax1.legend(loc='upper left', fontsize=8, ncol=2)
     ax1.grid(alpha=0.3)
     
@@ -62,7 +71,7 @@ def plot_drift_and_zones(config, diag, save_path):
     for cp in diag['change_points']:
         ax2.axvline(cp, color='red', alpha=0.5, ls='--', lw=1)
     
-    ax2.set_xlabel('Timestep t')
+    ax2.set_xlabel('Same interval index j as D_smooth (analysis axis)')
     ax2.set_ylabel('Change Magnitude Δ')
     ax2.set_title('Delta (Change Magnitude)')
     ax2.legend()
@@ -95,7 +104,10 @@ def plot_k_heatmap(config, save_path):
     
     # X-axis: zones
     ax.set_xticks(range(Z))
-    ax.set_xticklabels([f"Z{z['id']}\n{z['t_start']}..{z['t_end']}" for z in config['zones']], fontsize=8)
+    ax.set_xticklabels(
+        [f"Z{z['id']}\n{_zone_axis(z)[0]}..{_zone_axis(z)[1]}" for z in config['zones']],
+        fontsize=8,
+    )
     ax.set_xlabel('Zones')
     
     # Y-axis: blocks
@@ -160,7 +172,7 @@ def plot_zone_risk(config, diag, save_path):
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8))
     
     zone_ids = [z['id'] for z in zones]
-    zone_labels = [f"Z{z['id']}\n{z['t_start']}..{z['t_end']}" for z in zones]
+    zone_labels = [f"Z{z['id']}\n{_zone_axis(z)[0]}..{_zone_axis(z)[1]}" for z in zones]
     
     # === Top: Zone risk R_z ===
     bars = ax1.bar(zone_ids, R_z, color='coral', edgecolor='black', alpha=0.7)

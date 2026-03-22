@@ -1,5 +1,7 @@
 # Stage-1 快速開始
 
+**時間軸**：Stage 0/1 的圖與 `scheduler_config` 使用 **analysis axis**（0..99）；接 DDIM 時 **`t_ddim = 99 - axis_idx`**。詳見 `QATcode/docs/cache_time_axis_audit.md`。
+
 ## 一鍵執行
 
 ```bash
@@ -32,8 +34,8 @@ QATcode/cache_method/Stage1/
 ## 關鍵結果（T=100）
 
 - **Zones**: 7 個
-  - Zone 0: t=0..62（大區塊，穩定期）
-  - Zone 1-6: t=63..99（小區塊，不穩定期）
+  - Zone 0: analysis axis 0..62（大區塊，穩定期）
+  - Zone 1-6: analysis axis 63..99（小區塊，不穩定期）
 
 - **K 統計**:
   - 範圍: [3, 8]
@@ -41,7 +43,7 @@ QATcode/cache_method/Stage1/
   - 中位數: 7
 
 - **Cache 節省**: 平均 **83.4%**
-  - 只需 recompute 16.6% 的 timesteps
+  - 只需 recompute 16.6% 的 analysis-axis indices（長度 T=100）
   - 每個 block 平均只需重算 16-22 次（out of 100）
 
 ## 調整策略

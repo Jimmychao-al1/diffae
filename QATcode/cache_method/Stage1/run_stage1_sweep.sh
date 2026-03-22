@@ -21,7 +21,7 @@ VERIFY="QATcode/cache_method/Stage1/verify_scheduler.py"
 if [ $# -gt 0 ]; then
     TOPK_LIST=("$@")
 else
-    TOPK_LIST=(4 6 8 10 15 20 25)
+    TOPK_LIST=(4 6 8 10 15 20 25 30 35 40 45 50)
 fi
 
 echo "================================================================"
@@ -45,7 +45,8 @@ for K in "${TOPK_LIST[@]}"; do
         --stage0_dir "${STAGE0_DIR}" \
         --output_dir "${OUT_DIR}" \
         --cp_method topk \
-        --cp_topk "${K}"
+        --cp_topk "${K}" \
+        --eta 0.8
 
     # 2) 驗證
     python3 "${VERIFY}" \

@@ -58,7 +58,7 @@ run_stage0e(
 | 檔案名稱 | Shape | 描述 |
 |---------|-------|------|
 | `block_names.npy` | (31,) | Block 名稱列表（object array） |
-| `l1_interval_norm.npy` | (31, 99) | 正規化的 L1rel_rate，interval i = step i→i+1 |
+| `l1_interval_norm.npy` | (31, 99) | 正規化的 L1rel_rate，**欄 j** = analysis 上 **interval j**（見下方） |
 | `cosdist_interval_norm.npy` | (31, 99) | 正規化的 cosine distance |
 | `svd_interval_norm.npy` | (31, 99) | 正規化的 SVD 子空間距離 |
 | `fid_w_qdiffae_clip.npy` | (31,) | FID weights (quantile-clipped) |
@@ -66,12 +66,14 @@ run_stage0e(
 
 ## Interval Mapping 規則
 
-**Interval index** `i ∈ [0, T-2]` 代表 **step i → step i+1** 的變化。
+**Interval index** `j ∈ [0, T-2]`：與 L1_L2_cosine `.npz` 的 `l1_rate_step_mean[j]` 同欄位語意。
 
-對於 timestep t=50 (step 50→51)，使用：
-- `l1_interval_norm[b, 50]`
-- `cosdist_interval_norm[b, 50]`
-- `svd_interval_norm[b, 50]`
+- 表 **analysis axis** 上 **點 j 與 j+1 之間**的變化（圖橫軸由左到右 j 遞增）。
+- 與 **DDIM** 進模型的 timestep：**該區間對應 t_ddim 由 (99−j) 變到 (98−j)**（T=100）。**不要**把 j 直接當成「DDIM 張量裡的 t=j」。
+
+範例 `j=50`：
+- `l1_interval_norm[b, 50]` 等三檔同欄
+- DDIM 上對應的是 **t_ddim：49→48** 這一步的特徵差（不是 t=50→51）
 
 ### 原始數據的索引對應
 
@@ -123,7 +125,7 @@ print(f"FID weights 非零數: {np.sum(w_clip > 0)}/{len(names)}")
 
 # 查看特定 block 在特定 interval 的指標
 block_idx = 0  # model.input_blocks.0
-interval_idx = 50  # step 50→51
+interval_idx = 50  # analysis interval j=50（DDIM: t_ddim 49→48）
 print(f"\nBlock {names[block_idx]}, interval {interval_idx}:")
 print(f"  L1: {l1[block_idx, interval_idx]:.4f}")
 print(f"  Cosine: {cos[block_idx, interval_idx]:.4f}")
