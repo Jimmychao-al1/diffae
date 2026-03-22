@@ -105,14 +105,14 @@ class TrainingConfig:
     
     # 文件路徑
     MODEL_PATH = "checkpoints/ffhq128_autoenc_latent/last.ckpt"
-    BEST_CKPT_PATH = "QATcode/diffae_step6_lora_best.pth" 
+    BEST_CKPT_PATH = "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth" 
 
-    CALIB_DATA_PATH = "QATcode/calibration_diffae.pth"
+    CALIB_DATA_PATH = "QATcode/quantize_ver2/calibration_diffae.pth"
 
     EVAL_SAMPLES = 50_000
     CALIB_SAMPLES = 1024
     
-    LOG_FILE = 'QATcode/quantize_ver2/log/sample.log'  # 預設 log 檔案路徑
+    LOG_FILE = 'QATcode/quantize_ver2/log/sample_lora_intmodel_v2.log'  # 預設 log 檔案路徑
 
     
     
@@ -432,7 +432,7 @@ def main_float_model():
 
         # 從LitModel獲取關鍵組件
         LOGGER.info(f'base_model.conf.train_mode: {base_model.conf.train_mode}')
-        diffusion_model = base_model.model
+        diffusion_model = base_model.ema_model
         #LOGGER.info(base_model)
         # 2. 創建量化模型與準備組件
         quant_model : QuantModel_DiffAE_LoRA = create_float_quantized_model(
@@ -470,15 +470,12 @@ def main_float_model():
         
 
         ckpt = torch.load(CONFIG.BEST_CKPT_PATH, map_location='cpu', weights_only=False)
-        #quant_model.load_state_dict(ckpt)
-        setattr(base_model, 'model', quant_model)
-        #LOGGER.info(base_model.model)
-        base_model.load_state_dict(ckpt)
-        if hasattr(base_model.model, 'set_runtime_mode'):
+        from QATcode.cache_method.L1_L2_cosine.similarity_calculation import _load_quant_and_ema_from_ckpt
+        _load_quant_and_ema_from_ckpt(base_model, quant_model, ckpt)
+        if hasattr(base_model.ema_model, 'set_runtime_mode'):
             # final sampling stage can reuse cached a_w
-            base_model.model.set_runtime_mode(mode='infer', use_cached_aw=True, clear_cached_aw=True)
-        base_model.ema_model = copy.deepcopy(quant_model)
-        #LOGGER.info(base_model.ema_model)
+            base_model.ema_model.set_runtime_mode(mode='infer', use_cached_aw=True, clear_cached_aw=True)
+
 
         
         # 在這邊對 base_model 做 EMA 同步並儲存，以及對 base_model 中的 model 做儲存，以方便未來做模型大小統計
@@ -628,7 +625,7 @@ if __name__ == "__main__":
     parser.add_argument('--analysis_num_samples', type=int, default=10,
                         help='生成時間測試的樣本數')
     parser.add_argument('--log_file','--lf', type=str, default=None,
-                        help='指定 log 檔案路徑（預設: QATcode/quantize_ver2/log/sample.log）')
+                        help='指定 log 檔案路徑（預設: QATcode/quantize_ver2/log/sample_lora_intmodel_v2.log）')
     args = parser.parse_args()
     CONFIG.NUM_DIFFUSION_STEPS = args.num_steps
     CONFIG.CACHE_ANALYSIS_SAMPLES = args.samples
@@ -667,11 +664,14 @@ if __name__ == "__main__":
     LOGGER.info(f"Quantitative analysis enabled: {CONFIG.ENABLE_QUANTITATIVE_ANALYSIS}, samples: {CONFIG.ANALYSIS_NUM_SAMPLES}")
     LOGGER.info(f"Log file: {CONFIG.LOG_FILE}")
     if args.mode == 'float':
-        CONFIG.BEST_CKPT_PATH = "QATcode/diffae_step6_lora_best.pth" if CONFIG.NUM_DIFFUSION_STEPS == 100 else "QATcode/diffae_step6_lora_best_20steps.pth"
+        CONFIG.BEST_CKPT_PATH = "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth" if CONFIG.NUM_DIFFUSION_STEPS == 100 else "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best_20steps.pth"
         main_float_model()
     elif args.mode == 'int':
-        CONFIG.BEST_CKPT_PATH = "QATcode/diffae_step6_lora_best_int.pth" if CONFIG.NUM_DIFFUSION_STEPS == 100 else "QATcode/diffae_step6_lora_best_int_20steps.pth"
+        CONFIG.BEST_CKPT_PATH = "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best_int.pth" if CONFIG.NUM_DIFFUSION_STEPS == 100 else "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best_int_20steps.pth"
         pass
+    elif args.mode == 'final':
+        CONFIG.BEST_CKPT_PATH = "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best_final.pth"
+        main_float_model()
     else:
         LOGGER.error(f"Invalid mode: {args.mode}")
         exit(1)

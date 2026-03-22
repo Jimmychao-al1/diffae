@@ -59,7 +59,7 @@ class TrainingConfig:
     SEED = 0
     
     # 訓練參數 - 按 EfficientDM 設定
-    BATCH_SIZE = 6     # 適中的 batch size
+    BATCH_SIZE = 8     # 適中的 batch size
     NUM_EPOCHS = 160   # 按原作 EfficientDM 設定
     LEARNING_RATE = 1e-4
     LORA_RANK = 32
@@ -181,6 +181,21 @@ def _get_cli_args():
                         help='要補強的 timestep，逗號分隔，例如 0 或 0,1,2,3,4')
     parser.add_argument('--tail-repair-lr-scale', type=float, default=0.25,
                         help='tail-repair 區塊內暫時將 optimizer 各 param_group 的 lr 乘上此係數（結束後還原）')
+    # LoRA / activation-quant LR（覆寫 get_adaptive_learning_rates 內建預設）
+    parser.add_argument(
+        '--lora-factor',
+        type=float,
+        default=None,
+        metavar='F',
+        help='LoRA 學習率除數：每層 lora_lr = avg_weight_scale / lora_factor。未指定則依 model_type 使用內建預設（diffae≈700、efficientdm≈2000）',
+    )
+    parser.add_argument(
+        '--act-quant-lr',
+        type=float,
+        default=None,
+        metavar='LR',
+        help='scale_list（激活量化）參數的 AdamW 學習率。未指定則依 model_type 使用內建預設',
+    )
 
     try:
         args, _ = parser.parse_known_args()
@@ -211,6 +226,8 @@ def _get_cli_args():
             tail_repair_steps = 1
             tail_repair_t_range = '0'
             tail_repair_lr_scale = 0.25
+            lora_factor = None
+            act_quant_lr = None
 
         args = _Args()
     return args
@@ -627,13 +644,20 @@ def load_calibration_data() -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
 
 
 
-def get_adaptive_learning_rates(base_model: LitModel, model_type: str = "diffae") -> Dict[str, float]:
+def get_adaptive_learning_rates(
+    base_model: LitModel,
+    model_type: str = "diffae",
+    lora_factor_override: Optional[float] = None,
+    act_quant_lr_override: Optional[float] = None,
+) -> Dict[str, float]:
     """
     根據量化分析數據確定自適應學習率
     
     Args:
         base_model: 基礎模型
         model_type: "diffae" 或 "efficientdm"
+        lora_factor_override: 若給定，覆寫內建的 lora_factor（LoRA lr = avg_weight_scale / lora_factor）
+        act_quant_lr_override: 若給定，覆寫內建的 act_quant_lr（scale_list 參數群組）
     
     Returns:
         包含三種學習率的字典
@@ -690,6 +714,16 @@ def get_adaptive_learning_rates(base_model: LitModel, model_type: str = "diffae"
         lora_factor = 2000  # 2500 -> 1500-2000
         weight_quant_lr = 1.5e-6 
         act_quant_lr = 6e-4 
+
+    if lora_factor_override is not None:
+        lora_factor = float(lora_factor_override)
+    if act_quant_lr_override is not None:
+        act_quant_lr = float(act_quant_lr_override)
+
+    if lora_factor <= 0:
+        raise ValueError(f"lora_factor 必須為正數，收到 {lora_factor}")
+    if act_quant_lr <= 0:
+        raise ValueError(f"act_quant_lr 必須為正數，收到 {act_quant_lr}")
     
     return {
         'lora_factor': lora_factor,
@@ -706,15 +740,26 @@ def get_adaptive_learning_rates(base_model: LitModel, model_type: str = "diffae"
 def setup_optimizer_with_dynamic_lr(
     base_model: LitModel,
     ddim_steps: int,
-    model_type: str = "diffae"
+    model_type: str = "diffae",
+    lora_factor: Optional[float] = None,
+    act_quant_lr: Optional[float] = None,
 ) -> Tuple[torch.optim.Optimizer, Any]:
     """
     基於量化分析數據的動態學習率設定
+    
+    Args:
+        lora_factor: 若給定，覆寫內建 lora_factor（與 CLI --lora-factor 對應）
+        act_quant_lr: 若給定，覆寫內建 act_quant_lr（與 CLI --act-quant-lr 對應）
     """
     from transformers import get_linear_schedule_with_warmup
     
     # 獲取自適應學習率
-    lr_config = get_adaptive_learning_rates(base_model, model_type)
+    lr_config = get_adaptive_learning_rates(
+        base_model,
+        model_type,
+        lora_factor_override=lora_factor,
+        act_quant_lr_override=act_quant_lr,
+    )
     
     lora_factor = lr_config['lora_factor']
     weight_quant_lr = lr_config['weight_quant_lr']
@@ -1093,7 +1138,18 @@ def main():
         # 4. 創建優化器 (按原作邏輯 + Layer-by-Layer 支援)
         ddim_steps = CONFIG.NUM_DIFFUSION_STEPS  # 對應原作
         
-        optimizer, lr_scheduler = setup_optimizer_with_dynamic_lr(base_model, ddim_steps)
+        optimizer, lr_scheduler = setup_optimizer_with_dynamic_lr(
+            base_model,
+            ddim_steps,
+            lora_factor=args.lora_factor,
+            act_quant_lr=args.act_quant_lr,
+        )
+        if args.lora_factor is not None or args.act_quant_lr is not None:
+            LOGGER.info(
+                "CLI 覆寫 LR: lora_factor=%s, act_quant_lr=%s",
+                args.lora_factor if args.lora_factor is not None else "(預設)",
+                args.act_quant_lr if args.act_quant_lr is not None else "(預設)",
+            )
         
         
         # 5. 準備基礎模型設定

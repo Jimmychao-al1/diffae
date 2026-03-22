@@ -19,6 +19,10 @@ def round_ste(x: torch.Tensor):
     """
     return (x.round() - x).detach() + x
 
+def differentiable_clamp(x, lower, upper):
+    x = x + F.relu(lower - x)
+    x = x - F.relu(x - upper)
+    return x
 
 def normalized_fake_quant(x: torch.Tensor, scale: torch.Tensor, eps: float = 1e-8):
     """
@@ -33,9 +37,9 @@ def normalized_fake_quant(x: torch.Tensor, scale: torch.Tensor, eps: float = 1e-
         x_q: fake-quantized tensor (still float, range approximately [-1, 1])
     """
     scale = torch.clamp(scale, min=eps)
-    x_norm = torch.clamp(x / scale, -1.0, 1.0)
+    x_norm = differentiable_clamp(x / scale, -1.0, 1.0)
     x_int = round_ste(x_norm * 127.0)
-    x_int = torch.clamp(x_int, -128.0, 127.0)
+    #x_int = torch.clamp(x_int, -128.0, 127.0)
     x_q = x_int / 127.0  # normalized output in [-1, 1]
     return x_q
 
