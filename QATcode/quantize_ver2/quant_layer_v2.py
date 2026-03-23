@@ -538,6 +538,24 @@ def _norm_to_int_code(x_norm: torch.Tensor, qmax: int = 127) -> torch.Tensor:
     return torch.round(torch.clamp(x_norm, -1.0, 1.0) * qmax).to(torch.int32)
 
 
+def _int_mm_safe(a_i8: torch.Tensor, b_i8: torch.Tensor) -> torch.Tensor:
+    """
+    Safe wrapper for torch._int_mm(int8, int8) -> int32.
+
+    Some CUDA kernels fail for small M (e.g., "self.size(0) needs to be greater than 16").
+    In that case, fall back to exact integer semantics via int64 matmul and cast to int32.
+    """
+    assert a_i8.dtype == torch.int8, f"a_i8 dtype must be int8, got {a_i8.dtype}"
+    assert b_i8.dtype == torch.int8, f"b_i8 dtype must be int8, got {b_i8.dtype}"
+    try:
+        return torch._int_mm(a_i8, b_i8)
+    except RuntimeError as e:
+        msg = str(e)
+        if "self.size(0) needs to be greater than 16" in msg:
+            return (a_i8.to(torch.int64) @ b_i8.to(torch.int64)).to(torch.int32)
+        raise
+
+
 def _int_linear_accum(x_int: torch.Tensor, w_int: torch.Tensor) -> torch.Tensor:
     """
     True int32 accumulation for linear:  y_int = x_int @ w_int.T
@@ -569,7 +587,7 @@ def _int_linear_accum(x_int: torch.Tensor, w_int: torch.Tensor) -> torch.Tensor:
     w_i8 = w_int.to(torch.int8).t().contiguous()        # int8, [Cin, Cout]
 
     # TRUE INT32 ACCUMULATION
-    y_flat = torch._int_mm(x_i8, w_i8)                  # int32, [N, Cout]
+    y_flat = _int_mm_safe(x_i8, w_i8)                   # int32, [N, Cout]
 
     assert y_flat.dtype == torch.int32
     return y_flat.reshape(orig_shape[:-1] + (w_int.shape[0],))
@@ -633,7 +651,7 @@ def _int_conv2d_accum(
         w_i8 = w_g_int32.reshape(Cout_g, -1).to(torch.int8).contiguous()  # int8 [Cout_g, K]
 
         # TRUE INT32 ACCUMULATION: int8 × int8 → int32
-        y_2d = torch._int_mm(w_i8, x_col_i8)           # int32 [Cout_g, N*HW]
+        y_2d = _int_mm_safe(w_i8, x_col_i8)            # int32 [Cout_g, N*HW]
         return y_2d.reshape(Cout_g, N, HW).permute(1, 0, 2)  # int32 [N, Cout_g, HW]
 
     if groups == 1:
