@@ -507,3 +507,146 @@ class SimpleDequantizer(nn.Module):
         #if len(x_int_pack8.shape) == 4:
         #  pass
         pass
+
+
+# ============================================================
+# INT-path helpers for INT_QuantModule_DiffAE_LoRA forward
+#
+# ACCUMULATION SEMANTICS:
+#   torch._int_mm(int8, int8) → int32   ← TRUE int32 accumulation
+#   verified: max_abs_diff vs int64 reference = 0 (PyTorch 2.4.1, CPU)
+#
+# DTYPE CHAIN (per function):
+#   _norm_to_int_code : float32  →  int32
+#   _int_linear_accum : int32 → int8 → _int_mm → int32
+#   _int_conv2d_accum : int32 → int8 → unfold(float tmp) + _int_mm → int32
+#
+# Note on unfold:
+#   F.unfold does not accept integer tensors; the col extraction is done
+#   in float32 (a shape rearrangement, no arithmetic), then immediately
+#   cast back to int8 before _int_mm.  The multiply-accumulate itself
+#   is int8 × int8 → int32 inside _int_mm.
+# ============================================================
+
+def _norm_to_int_code(x_norm: torch.Tensor, qmax: int = 127) -> torch.Tensor:
+    """
+    float32 normalized [-1,1]  →  int32 code in [-qmax, qmax].
+
+    input  dtype : float32
+    output dtype : int32
+    """
+    return torch.round(torch.clamp(x_norm, -1.0, 1.0) * qmax).to(torch.int32)
+
+
+def _int_linear_accum(x_int: torch.Tensor, w_int: torch.Tensor) -> torch.Tensor:
+    """
+    True int32 accumulation for linear:  y_int = x_int @ w_int.T
+
+    Dtype chain:
+      x_int  : int32,  values in [-127, 127]
+      w_int  : int32,  values in [-127, 127]
+      x_i8   : int8   (safe cast, no overflow)
+      w_i8   : int8   (safe cast, no overflow)
+      y_flat : int32  (torch._int_mm output)
+      return : int32
+
+    torch._int_mm(int8, int8) → int32 guarantees exact integer
+    accumulation (verified vs int64 reference, diff = 0).
+
+    x_int : [..., in_features]          int32
+    w_int : [out_features, in_features] int32
+    returns: [..., out_features]        int32
+    """
+    assert x_int.dtype == torch.int32, f"x_int dtype must be int32, got {x_int.dtype}"
+    assert w_int.dtype == torch.int32, f"w_int dtype must be int32, got {w_int.dtype}"
+
+    orig_shape = x_int.shape
+    # [N, Cin]
+    x_flat = x_int.reshape(-1, orig_shape[-1])
+
+    # int32 → int8 (values already in [-127,127], no clamp needed)
+    x_i8 = x_flat.to(torch.int8).contiguous()          # int8
+    w_i8 = w_int.to(torch.int8).t().contiguous()        # int8, [Cin, Cout]
+
+    # TRUE INT32 ACCUMULATION
+    y_flat = torch._int_mm(x_i8, w_i8)                  # int32, [N, Cout]
+
+    assert y_flat.dtype == torch.int32
+    return y_flat.reshape(orig_shape[:-1] + (w_int.shape[0],))
+
+
+def _int_conv2d_accum(
+    x_int: torch.Tensor,
+    w_int: torch.Tensor,
+    stride,
+    padding,
+    dilation,
+    groups: int,
+) -> torch.Tensor:
+    """
+    True int32 accumulation for conv2d via unfold + torch._int_mm.
+
+    Dtype chain (groups=1):
+      x_int     : int32  [N, Cin, H, W]
+      x_fp      : float32  (F.unfold requires float; shape rearrangement only, no multiply)
+      x_col     : float32  [N, K, HW]   where K = Cin*kH*kW
+      x_col_2d  : float32  [K, N*HW]
+      x_col_i8  : int8     [K, N*HW]   (safe cast back to int8)
+      w_flat    : int32    [Cout, K]
+      w_i8      : int8     [Cout, K]
+      y_2d      : int32    [Cout, N*HW]   ← TRUE INT32 ACCUMULATION
+      return    : int32    [N, Cout, Hout, Wout]
+
+    groups > 1: above applied per-group, results cat'd.
+
+    x_int : [N, Cin, H, W]              int32
+    w_int : [Cout, Cin//groups, kH, kW] int32
+    returns: [N, Cout, Hout, Wout]      int32
+    """
+    assert x_int.dtype == torch.int32, f"x_int dtype must be int32, got {x_int.dtype}"
+    assert w_int.dtype == torch.int32, f"w_int dtype must be int32, got {w_int.dtype}"
+
+    N, Cin, H, W = x_int.shape
+    Cout = w_int.shape[0]
+    kH, kW = w_int.shape[2], w_int.shape[3]
+
+    _stride = (stride, stride)   if isinstance(stride, int)  else tuple(stride)
+    _pad    = (padding, padding) if isinstance(padding, int) else tuple(padding)
+    _dil    = (dilation, dilation) if isinstance(dilation, int) else tuple(dilation)
+
+    Hout = (H + 2 * _pad[0] - _dil[0] * (kH - 1) - 1) // _stride[0] + 1
+    Wout = (W + 2 * _pad[1] - _dil[1] * (kW - 1) - 1) // _stride[1] + 1
+    HW   = Hout * Wout
+
+    def _group_int_mm(x_g_int32, w_g_int32, Cout_g):
+        """Per-group true int32 conv via unfold + _int_mm."""
+        # F.unfold requires float; this is shape rearrangement only (no multiply)
+        x_col = F.unfold(                                # float32 [N, K, HW]
+            x_g_int32.float(),
+            kernel_size=(kH, kW), dilation=_dil, padding=_pad, stride=_stride)
+        K = x_col.shape[1]                               # Cin_g * kH * kW
+
+        # [K, N*HW] float32 → int8   (back to int domain before multiply)
+        x_col_2d = x_col.permute(1, 0, 2).reshape(K, N * HW)  # float32
+        x_col_i8 = x_col_2d.to(torch.int8).contiguous()        # int8
+
+        w_i8 = w_g_int32.reshape(Cout_g, -1).to(torch.int8).contiguous()  # int8 [Cout_g, K]
+
+        # TRUE INT32 ACCUMULATION: int8 × int8 → int32
+        y_2d = torch._int_mm(w_i8, x_col_i8)           # int32 [Cout_g, N*HW]
+        return y_2d.reshape(Cout_g, N, HW).permute(1, 0, 2)  # int32 [N, Cout_g, HW]
+
+    if groups == 1:
+        y = _group_int_mm(x_int, w_int, Cout)           # int32 [N, Cout, HW]
+    else:
+        Cin_g  = Cin  // groups
+        Cout_g = Cout // groups
+        outs = []
+        for g in range(groups):
+            x_g = x_int[:, g * Cin_g:(g + 1) * Cin_g, :, :]
+            w_g = w_int[g * Cout_g:(g + 1) * Cout_g, :, :, :]
+            outs.append(_group_int_mm(x_g, w_g, Cout_g))
+        y = torch.cat(outs, dim=1)                      # int32 [N, Cout, HW]
+
+    assert y.dtype == torch.int32
+    return y.reshape(N, Cout, Hout, Wout)

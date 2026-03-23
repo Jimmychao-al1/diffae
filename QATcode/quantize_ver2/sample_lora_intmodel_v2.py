@@ -401,6 +401,101 @@ def remap_keys(sd, drop_prefix=None, add_prefix=None):
 #=============================================================================
 
 @time_operation
+def main_int_model():
+    """
+    INT 推論路徑 (TRUE-INT path).
+    使用 INT_QuantModel_DiffAE_LoRA 做推論，核心乘加走 int32 accumulation。
+    """
+    LOGGER.info("=" * 50)
+    LOGGER.info("current path = INT32_ACCUM (torch._int_mm, int8→int32)")
+    LOGGER.info("Diff-AE INT model evaluation")
+    LOGGER.info("=" * 50)
+
+    try:
+        base_model: LitModel = load_diffae_model()
+        LOGGER.info("✅ Diff-AE 模型載入成功")
+        diffusion_model = base_model.ema_model
+
+        # --- 建立 INT quant model ---
+        wq_params = {
+            'n_bits': CONFIG.N_BITS_W,
+            'channel_wise': True,
+            'scale_method': 'absmax',
+        }
+        aq_params = {
+            'n_bits': CONFIG.N_BITS_A,
+            'channel_wise': False,
+            'scale_method': 'absmax',
+            'leaf_param': True,
+        }
+        quant_model = INT_QuantModel_DiffAE_LoRA(
+            model=diffusion_model,
+            weight_quant_params=wq_params,
+            act_quant_params=aq_params,
+            num_steps=CONFIG.NUM_DIFFUSION_STEPS,
+            lora_rank=CONFIG.LORA_RANK,
+            mode='train',
+        )
+        quant_model.to(CONFIG.DEVICE)
+        quant_model.eval()
+
+        # --- warmup / calibration ---
+        cali_images, cali_t, cali_y = load_calibration_data()
+        quant_model.set_first_last_layer_to_8bit()
+        device = next(quant_model.parameters()).device
+
+        quant_model.set_quant_state(True, True)
+        quant_model.set_runtime_mode(mode='train', use_cached_aw=False, clear_cached_aw=True)
+
+        with torch.no_grad():
+            _ = quant_model(x=cali_images[:32].to(device),
+                            t=cali_t[:32].to(device),
+                            cond=cali_y[:32].to(device))
+
+        # --- load QAT checkpoint ---
+        ckpt = torch.load(CONFIG.BEST_CKPT_PATH, map_location='cpu', weights_only=False)
+        from QATcode.cache_method.L1_L2_cosine.similarity_calculation import _load_quant_and_ema_from_ckpt
+        _load_quant_and_ema_from_ckpt(base_model, quant_model, ckpt)
+        if hasattr(base_model.ema_model, 'set_runtime_mode'):
+            base_model.ema_model.set_runtime_mode(mode='infer', use_cached_aw=True, clear_cached_aw=True)
+        LOGGER.info("✅ INT 量化模型載入成功（current path = TRUE_INT）")
+
+        base_model.to(CONFIG.DEVICE)
+        base_model.eval()
+        base_model.setup()
+
+        T = CONFIG.NUM_DIFFUSION_STEPS
+        T_latent = CONFIG.NUM_DIFFUSION_STEPS
+        base_model.train_dataloader()
+        sampler = base_model.conf._make_diffusion_conf(T=T).make_sampler()
+        latent_sampler = base_model.conf._make_latent_diffusion_conf(T=T_latent).make_sampler()
+        conf = base_model.conf.clone()
+        conf.eval_num_images = CONFIG.EVAL_SAMPLES
+
+        score = evaluate_fid(
+            sampler,
+            base_model.ema_model,
+            conf,
+            device=CONFIG.DEVICE,
+            train_data=base_model.train_data,
+            val_data=base_model.val_data,
+            latent_sampler=latent_sampler,
+            conds_mean=base_model.conds_mean,
+            conds_std=base_model.conds_std,
+            remove_cache=False,
+            clip_latent_noise=False,
+            T=T,
+            output_dir=f'{conf.generate_dir}_INT_T{T}',
+        )
+        LOGGER.info(f'[INT32_ACCUM] FID@{CONFIG.EVAL_SAMPLES} T={T} score: {score}')
+        LOGGER.info('=' * 50)
+
+    except Exception as e:
+        LOGGER.error(f"INT model error: {e}")
+        raise
+
+
+@time_operation
 def main_float_model():
     """
     Diff-AE EfficientDM Step 6 訓練主流程
@@ -667,8 +762,8 @@ if __name__ == "__main__":
         CONFIG.BEST_CKPT_PATH = "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth" if CONFIG.NUM_DIFFUSION_STEPS == 100 else "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best_20steps.pth"
         main_float_model()
     elif args.mode == 'int':
-        CONFIG.BEST_CKPT_PATH = "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best_int.pth" if CONFIG.NUM_DIFFUSION_STEPS == 100 else "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best_int_20steps.pth"
-        pass
+        CONFIG.BEST_CKPT_PATH = "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth" if CONFIG.NUM_DIFFUSION_STEPS == 100 else "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best_20steps.pth"
+        main_int_model()
     elif args.mode == 'final':
         CONFIG.BEST_CKPT_PATH = "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best_final.pth"
         main_float_model()
