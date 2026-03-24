@@ -197,14 +197,14 @@ def evaluate_fid(
         cache_dir = f'{conf.fid_cache}_{conf.eval_num_images}'
         if (os.path.exists(cache_dir)
                 and len(os.listdir(cache_dir)) < conf.eval_num_images):
-            #shutil.rmtree(cache_dir)
+            shutil.rmtree(cache_dir)
             pass
 
         if not os.path.exists(cache_dir):
             # write files to the cache
             # the images are normalized, hence need to denormalize first
             loader_to_path(val_loader, cache_dir, denormalize=True)
-
+            pass
         # create the generate dir
         #out_put_dir = f'{conf.generate_dir}_l2TF_cache_analysis_T{T}' #if output_dir is None else output_dir
         out_put_dir = f'{conf.generate_dir}_T{T}' if output_dir is None else output_dir
@@ -218,13 +218,14 @@ def evaluate_fid(
     world_size = get_world_size()
     rank = get_rank()
     batch_size = chunk_size(conf.batch_size_eval, rank, world_size)
+    print(f"batch_size: {batch_size}")
 
     def filename(idx):
         return world_size * idx + rank
 
     model.eval()
     seed = conf.seed
-
+    
     with torch.no_grad():
         if conf.model_type.can_sample():
             eval_num_images = chunk_size(conf.eval_num_images, rank,
@@ -338,23 +339,24 @@ def evaluate_fid(
                     i += len(imgs)
         else:
             raise NotImplementedError()
-    fid = 0
-    '''
+    
+    #fid = 0
+    
     model.train()
 
     barrier()
-    
+
     if get_rank() == 0:
         fid = fid_score.calculate_fid_given_paths(
             [cache_dir, out_put_dir],
             batch_size,
             device=device,
             dims=2048)
-
+            #dims=192) # for FID sensitivity experiment
         # remove the cache
         if remove_cache and os.path.exists(conf.generate_dir):
             shutil.rmtree(conf.generate_dir)
-
+            pass
     barrier()
 
     if get_rank() == 0:
@@ -366,7 +368,7 @@ def evaluate_fid(
         broadcast(fid, 0)
     fid = fid.item()
     print(f'fid ({get_rank()}):', fid)
-    '''
+    
     return fid
 
 
