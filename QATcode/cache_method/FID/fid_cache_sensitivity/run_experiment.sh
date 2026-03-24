@@ -4,8 +4,8 @@
 
 set -e
 
-SCRIPT="QATcode/fid_cache_sensitivity/fid_cache_sensitivity.py"
-LOG_DIR="QATcode/fid_cache_sensitivity"
+SCRIPT="QATcode/cache_method/FID/fid_cache_sensitivity/fid_cache_sensitivity.py"
+LOG_DIR="QATcode/cache_method/FID/fid_cache_sensitivity"
 
 echo "=========================================="
 echo "FID Cache Sensitivity - 完整實驗"

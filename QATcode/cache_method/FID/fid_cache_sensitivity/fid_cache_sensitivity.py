@@ -27,11 +27,11 @@ from torch.utils.data import DataLoader
 sys.path.append(".")
 sys.path.append("./model")
 
-from QATcode.quant_model_lora import QuantModel_DiffAE_LoRA
-from QATcode.quant_model_lora import QuantModule_DiffAE_LoRA, INT_QuantModel_DiffAE_LoRA, INT_QuantModule_DiffAE_LoRA
-from QATcode.quant_layer import QuantModule, SimpleDequantizer
-from QATcode.quant_dataset import DiffusionInputDataset
-from QATcode.diffae_trainer import *
+from QATcode.quantize_ver2.quant_model_lora_v2 import QuantModel_DiffAE_LoRA
+from QATcode.quantize_ver2.quant_model_lora_v2 import QuantModule_DiffAE_LoRA, INT_QuantModel_DiffAE_LoRA, INT_QuantModule_DiffAE_LoRA
+from QATcode.quantize_ver2.quant_layer_v2 import QuantModule, SimpleDequantizer
+from QATcode.quantize_ver2.quant_dataset_v2 import DiffusionInputDataset
+#rom QATcode.quantize_ver2.diffae_trainer_v2 import *
 from diffusion.diffusion import _WrappedModel
 from model.unet_autoenc import BeatGANsAutoencModel
 from experiment import *
@@ -52,6 +52,9 @@ from model.nn import timestep_embedding
 import json
 from datetime import datetime
 
+# matrix calculation
+#torch.set_float32_matmul_precision('highest')
+#torch.backends.cudnn.benchmark = True
 #=============================================================================
 # 配置與常量
 #=============================================================================
@@ -77,14 +80,14 @@ class ExperimentConfig:
     
     # 文件路徑
     MODEL_PATH = "checkpoints/ffhq128_autoenc_latent/last.ckpt"
-    BEST_CKPT_PATH = "QATcode/diffae_step6_lora_best.pth"
-    CALIB_DATA_PATH = "QATcode/calibration_diffae.pth"
+    BEST_CKPT_PATH = "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth"
+    CALIB_DATA_PATH = "QATcode/quantize_ver2/calibration_diffae.pth"
     CALIB_SAMPLES = 1024
     
     # 輸出路徑
-    OUTPUT_DIR = "QATcode/fid_cache_sensitivity"
+    OUTPUT_DIR = "QATcode/cache_method/FID/fid_cache_sensitivity"
     RESULTS_JSON = "fid_sensitivity_results.json"
-    LOG_FILE = 'QATcode/fid_cache_sensitivity/fid_sensitivity.log'
+    LOG_FILE = 'QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity.log'
 
     
     
@@ -519,6 +522,10 @@ def evaluate_fid_with_cache(
     
     # 設定評估樣本數
     conf.eval_num_images = CONFIG.EVAL_SAMPLES
+    #conf.eval_num_images = 128
+
+    # 設定 batch_size_eval
+    #conf.batch_size_eval = 64
     
     # 創建 sampler
     sampler = conf._make_diffusion_conf(T=num_steps).make_sampler()
@@ -599,7 +606,7 @@ def main_float_model(
         base_model: LitModel = load_diffae_model()
         LOGGER.info("✅ Diff-AE 模型載入成功")
         
-        diffusion_model = base_model.model
+        diffusion_model = base_model.ema_model
         
         # 2. 創建量化模型
         quant_model: QuantModel_DiffAE_LoRA = create_float_quantized_model(
@@ -611,19 +618,7 @@ def main_float_model(
         quant_model.to(CONFIG.DEVICE)
         quant_model.eval()
         
-        # 3. 設定量化組件
-        for name, module in quant_model.named_modules():
-            if isinstance(module, QuantModule_DiffAE_LoRA) and module.ignore_reconstruction is False:
-                module.intn_dequantizer = SimpleDequantizer(
-                    uaq=module.weight_quantizer, 
-                    weight=module.weight
-                ).to(CONFIG.DEVICE)
-                module.intn_dequantizer.delta.data.copy_(
-                    module.weight_quantizer.delta.to(CONFIG.DEVICE)
-                )
-                module.intn_dequantizer.zero_point.data.copy_(
-                    module.weight_quantizer.zero_point.to(CONFIG.DEVICE)
-                )
+        
         
         # 4. 載入校準資料並初始化
         cali_images, cali_t, cali_y = load_calibration_data()
@@ -649,9 +644,8 @@ def main_float_model(
         
         # 5. 載入訓練好的 checkpoint
         ckpt = torch.load(CONFIG.BEST_CKPT_PATH, map_location='cpu', weights_only=False)
-        setattr(base_model, 'model', quant_model)
-        base_model.load_state_dict(ckpt)
-        base_model.ema_model = copy.deepcopy(quant_model)
+        from QATcode.cache_method.L1_L2_cosine.similarity_calculation import _load_quant_and_ema_from_ckpt
+        _load_quant_and_ema_from_ckpt(base_model, quant_model, ckpt)
         
         base_model.to(CONFIG.DEVICE)
         base_model.eval()
@@ -780,7 +774,7 @@ if __name__ == "__main__":
     # 基本參數
     parser.add_argument('--num_steps', '--n', type=int, default=20,
                         help='Diffusion steps (20 or 100)')
-    parser.add_argument('--eval_samples', '--es', type=int, default=5000,
+    parser.add_argument('--eval_samples', '--es', type=int, default=1000,
                         help='Number of samples for FID evaluation')
     
     # 實驗控制
@@ -811,12 +805,12 @@ if __name__ == "__main__":
     
     # 設定 checkpoint 路徑
     if CONFIG.NUM_DIFFUSION_STEPS == 100:
-        CONFIG.BEST_CKPT_PATH = "QATcode/diffae_step6_lora_best.pth"
+        CONFIG.BEST_CKPT_PATH = "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth"
     elif CONFIG.NUM_DIFFUSION_STEPS == 20:
-        CONFIG.BEST_CKPT_PATH = "QATcode/diffae_step6_lora_best_20steps.pth"
+        CONFIG.BEST_CKPT_PATH = "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best_20steps.pth"
     else:
         print(f"警告: 不支援的 num_steps={CONFIG.NUM_DIFFUSION_STEPS}，使用預設 checkpoint")
-        CONFIG.BEST_CKPT_PATH = "QATcode/diffae_step6_lora_best.pth"
+        CONFIG.BEST_CKPT_PATH = "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth"
     
     # 設置環境
     os.makedirs(CONFIG.OUTPUT_DIR, exist_ok=True)
