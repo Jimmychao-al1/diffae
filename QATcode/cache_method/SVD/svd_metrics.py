@@ -115,7 +115,7 @@ def compute_subspace_distance(U_t: torch.Tensor, U_prev: torch.Tensor, r: int) -
         r: rank（取前 r 個 eigenvectors）
     
     Returns:
-        distance: d(t, t-1) = 1 - ( || U_t^{(r)T} U_{t-1}^{(r)} ||_F^2 / r )
+        distance: d(t, t-1) = 1 - ( || U_t^{(r)T} U_{t-1}^{(r)} ||^2 / r )
     """
     # 取前 r 個 eigenvectors
     U_t_r = U_t[:, :r]  # (C, r)
