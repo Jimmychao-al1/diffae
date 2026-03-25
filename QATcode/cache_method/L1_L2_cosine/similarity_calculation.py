@@ -27,11 +27,11 @@ from torch.utils.data import DataLoader
 sys.path.append(".")
 sys.path.append("./model")
 
-from QATcode.quant_model_lora import QuantModel_DiffAE_LoRA
-from QATcode.quant_model_lora import QuantModule_DiffAE_LoRA, INT_QuantModel_DiffAE_LoRA, INT_QuantModule_DiffAE_LoRA
-from QATcode.quant_layer import QuantModule, SimpleDequantizer
-from QATcode.quant_dataset import DiffusionInputDataset
-from QATcode.diffae_trainer import *
+from QATcode.quantize_ver2.quant_model_lora_v2 import QuantModel_DiffAE_LoRA
+from QATcode.quantize_ver2.quant_model_lora_v2 import QuantModule_DiffAE_LoRA, INT_QuantModel_DiffAE_LoRA, INT_QuantModule_DiffAE_LoRA
+from QATcode.quantize_ver2.quant_layer_v2 import QuantModule, SimpleDequantizer
+from QATcode.quantize_ver2.quant_dataset_v2 import DiffusionInputDataset
+from QATcode.quantize_ver2.diffae_trainer_v2 import *
 from diffusion.diffusion import _WrappedModel
 from model.unet_autoenc import BeatGANsAutoencModel
 from experiment import *
@@ -115,14 +115,14 @@ class TrainingConfig:
     
     # 文件路徑
     MODEL_PATH = "checkpoints/ffhq128_autoenc_latent/last.ckpt"
-    BEST_CKPT_PATH = "QATcode/diffae_step6_lora_best.pth" 
+    BEST_CKPT_PATH = "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth" 
 
-    CALIB_DATA_PATH = "QATcode/calibration_diffae.pth"
+    CALIB_DATA_PATH = "QATcode/quantize_ver2/calibration_diffae.pth"
 
     EVAL_SAMPLES = 50_000
     CALIB_SAMPLES = 1024
     
-    LOG_FILE = 'QATcode/sample_lora_intmodel.log'  # 預設 log 檔案路徑
+    LOG_FILE = 'QATcode/cache_method/L1_L2_cosine/log/similarity_calculation.log'  # 預設 log 檔案路徑
 
     
     
@@ -255,12 +255,12 @@ def create_float_quantized_model(
     wq_params = {
         'n_bits': CONFIG.N_BITS_W, 
         'channel_wise': True, 
-        'scale_method': 'mse' 
+        'scale_method': 'absmax' 
     }
     aq_params = {
         'n_bits': CONFIG.N_BITS_A, 
         'channel_wise': False, 
-        'scale_method': 'max',  
+        'scale_method': 'absmax',  
         'leaf_param': True
     }
     
@@ -1354,10 +1354,10 @@ def main_float_model():
                 module.intn_dequantizer = SimpleDequantizer(uaq=module.weight_quantizer, weight=module.weight).to(CONFIG.DEVICE)
 
         # 若你之後覆寫 buffer，請用 copy_ 並對齊裝置
-        for name, module in quant_model.named_modules():
-            if isinstance(module, QuantModule_DiffAE_LoRA) and module.ignore_reconstruction is False:
-                module.intn_dequantizer.delta.data.copy_(module.weight_quantizer.delta.to(CONFIG.DEVICE))
-                module.intn_dequantizer.zero_point.data.copy_(module.weight_quantizer.zero_point.to(CONFIG.DEVICE))
+        #for name, module in quant_model.named_modules():
+        #    if isinstance(module, QuantModule_DiffAE_LoRA) and module.ignore_reconstruction is False:
+        #        module.intn_dequantizer.delta.data.copy_(module.weight_quantizer.delta.to(CONFIG.DEVICE))
+        #        module.intn_dequantizer.zero_point.data.copy_(module.weight_quantizer.zero_point.to(CONFIG.DEVICE))
 
         # 載入校準資料
         cali_images, cali_t, cali_y = load_calibration_data()
@@ -1370,18 +1370,18 @@ def main_float_model():
         quant_model.set_quant_state(True, True)
 
 
-        for name, module in quant_model.named_modules():
-            if isinstance(module, QuantModule_DiffAE_LoRA) and module.ignore_reconstruction is False:
-                module.intn_dequantizer = SimpleDequantizer(uaq=module.weight_quantizer, weight=module.weight)
+        #for name, module in quant_model.named_modules():
+        #    if isinstance(module, QuantModule_DiffAE_LoRA) and module.ignore_reconstruction is False:
+        #        module.intn_dequantizer = SimpleDequantizer(uaq=module.weight_quantizer, weight=module.weight)
 
-        for name, module in quant_model.named_modules():
-            if isinstance(module, QuantModule_DiffAE_LoRA) and module.ignore_reconstruction is False:
-                # 強制在 CPU 上轉換權重，避免 sm_120 不支援的 CUDA kernel
-                device = module.weight.data.device
-                with torch.no_grad():
-                    weight_cpu = module.weight.data.detach().cpu()
-                    weight_uint8 = weight_cpu.to(torch.uint8)
-                    module.weight.data = weight_uint8.to(device)
+        #for name, module in quant_model.named_modules():
+        #    if isinstance(module, QuantModule_DiffAE_LoRA) and module.ignore_reconstruction is False:
+        #        # 強制在 CPU 上轉換權重，避免 sm_120 不支援的 CUDA kernel
+        #        device = module.weight.data.device
+        #        with torch.no_grad():
+        #            weight_cpu = module.weight.data.detach().cpu()
+        #            weight_uint8 = weight_cpu.to(torch.uint8)
+        #            module.weight.data = weight_uint8.to(device)
         
         #print('First run to init the model') ## need run to init emporal act quantizer
         with torch.no_grad():
@@ -1545,7 +1545,7 @@ if __name__ == "__main__":
                         choices=["first", "random", "uniform"],
                         help='樣本採樣策略: first=取前N個(最快), random=隨機選擇(增加多樣性), uniform=均勻分佈')
     parser.add_argument('--log_file','--lf', type=str, default=None,
-                        help='指定 log 檔案路徑（預設: QATcode/sample_lora_intmodel.log）')
+                        help='指定 log 檔案路徑（預設: QATcode/cache_method/L1_L2_cosine/log/similarity_calculation.log）')
     parser.add_argument('--run_all_blocks', action='store_true',
                         help='自動運行所有 31 個 block 的實驗（類似 run_similarity_experiments.sh）')
     args = parser.parse_args()
@@ -1665,10 +1665,10 @@ if __name__ == "__main__":
             
             try:
                 if args.mode == 'float':
-                    CONFIG.BEST_CKPT_PATH = "QATcode/diffae_step6_lora_best_ori.pth" if CONFIG.NUM_DIFFUSION_STEPS == 100 else "QATcode/diffae_step6_lora_best_20steps.pth"
+                    CONFIG.BEST_CKPT_PATH = "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth" if CONFIG.NUM_DIFFUSION_STEPS == 100 else "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best_20steps.pth"
                     main_float_model()
                 elif args.mode == 'int':
-                    CONFIG.BEST_CKPT_PATH = "QATcode/diffae_step6_lora_best_int.pth" if CONFIG.NUM_DIFFUSION_STEPS == 100 else "QATcode/diffae_step6_lora_best_int_20steps.pth"
+                    CONFIG.BEST_CKPT_PATH = "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth" if CONFIG.NUM_DIFFUSION_STEPS == 100 else "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best_20steps.pth"
                     #main_int_model()
                     pass
                 else:
@@ -1693,10 +1693,10 @@ if __name__ == "__main__":
     else:
         # 單個 block 模式（原有邏輯）
         if args.mode == 'float':
-            CONFIG.BEST_CKPT_PATH = "QATcode/diffae_step6_lora_best.pth" if CONFIG.NUM_DIFFUSION_STEPS == 100 else "QATcode/diffae_step6_lora_best_20steps.pth"
+            CONFIG.BEST_CKPT_PATH = "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth" if CONFIG.NUM_DIFFUSION_STEPS == 100 else "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best_20steps.pth"
             main_float_model()
         elif args.mode == 'int':
-            CONFIG.BEST_CKPT_PATH = "QATcode/diffae_step6_lora_best_int.pth" if CONFIG.NUM_DIFFUSION_STEPS == 100 else "QATcode/diffae_step6_lora_best_int_20steps.pth"
+            CONFIG.BEST_CKPT_PATH = "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth" if CONFIG.NUM_DIFFUSION_STEPS == 100 else "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best_20steps.pth"
             #main_int_model()
             pass
         else:
