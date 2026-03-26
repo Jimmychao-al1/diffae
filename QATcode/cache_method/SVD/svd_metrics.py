@@ -61,7 +61,7 @@ def compute_covariance_eigen(X: torch.Tensor) -> Tuple[torch.Tensor, torch.Tenso
     
     Returns:
         eigenvalues: shape (C,)，遞減排序
-        eigenvectors: shape (C, C)，每列對應一個 eigenvalue
+        eigenvectors: shape (C, C)，每欄對應一個 eigenvalue
     """
     N, C, H, W = X.shape
     M = N * H * W
@@ -69,7 +69,7 @@ def compute_covariance_eigen(X: torch.Tensor) -> Tuple[torch.Tensor, torch.Tenso
     # Reshape: (C, M)
     X_reshaped = X.permute(1, 0, 2, 3).reshape(C, M).double()
     
-    # Covariance: Σ = (X @ X^T) / M
+    # Uncentered Second Moment Covariance Matrix: Σ = (X @ X^T) / M
     Sigma = (X_reshaped @ X_reshaped.T) / M
     
     # Eigen decomposition（對稱矩陣，用 eigh）

@@ -1,222 +1,0 @@
-/home/jimmy/anaconda3/envs/diffae_bw/lib/python3.10/site-packages/lightning_fabric/__init__.py:41: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
-使用自動混合精度: torch.bfloat16
-2026-02-03 00:49:13 [INFO] [SVD_Feature_Collector] [設定] Log 檔案: QATcode/cache_method/SVD/logs/svd_feature_model_input_blocks_4.log
-2026-02-03 00:49:13 [INFO] [SVD_Feature_Collector] [設定] Log 檔案: QATcode/cache_method/SVD/logs/svd_feature_model_input_blocks_4.log
-2026-02-03 00:49:13 [INFO] [SVD_Feature_Collector] ================================================================================
-2026-02-03 00:49:13 [INFO] [SVD_Feature_Collector] ================================================================================
-2026-02-03 00:49:13 [INFO] [SVD_Feature_Collector] SVD Feature 收集開始
-2026-02-03 00:49:13 [INFO] [SVD_Feature_Collector] SVD Feature 收集開始
-2026-02-03 00:49:13 [INFO] [SVD_Feature_Collector] ================================================================================
-2026-02-03 00:49:13 [INFO] [SVD_Feature_Collector] ================================================================================
-Seed set to 0
-Model params: 174.19 M
-loading pretrain ... 130M
-step: 1019986
-loading latent stats ...
-2026-02-03 00:49:15 [INFO] [SVD_Feature_Collector] ✅ Diff-AE 模型載入成功
-2026-02-03 00:49:15 [INFO] [SVD_Feature_Collector] ✅ Diff-AE 模型載入成功
-2026-02-03 00:49:16 [INFO] [SVD_Feature_Collector] ✅ 量化模型載入成功
-2026-02-03 00:49:16 [INFO] [SVD_Feature_Collector] ✅ 量化模型載入成功
-local seed: 0
-train data: 70001
-val data: 70001
-2026-02-03 00:49:16 [INFO] [SVD_Feature_Collector] ✅ 基礎模型設定完成
-2026-02-03 00:49:16 [INFO] [SVD_Feature_Collector] ✅ 基礎模型設定完成
-on train dataloader start ...
-mean: tensor(-0.0606, device='cuda:0') std: tensor(0.0755, device='cuda:0')
-2026-02-03 00:49:16 [INFO] [SVD_Feature_Collector] ==================================================
-2026-02-03 00:49:16 [INFO] [SVD_Feature_Collector] ==================================================
-2026-02-03 00:49:16 [INFO] [SVD_Feature_Collector] 啟用 SVD Feature 收集
-2026-02-03 00:49:16 [INFO] [SVD_Feature_Collector] 啟用 SVD Feature 收集
-2026-02-03 00:49:16 [INFO] [SVD_Feature_Collector] 目標 Block: model.input_blocks.4
-2026-02-03 00:49:16 [INFO] [SVD_Feature_Collector] 目標 Block: model.input_blocks.4
-2026-02-03 00:49:16 [INFO] [SVD_Feature_Collector] Target N: 32
-2026-02-03 00:49:16 [INFO] [SVD_Feature_Collector] Target N: 32
-2026-02-03 00:49:16 [INFO] [SVD_Feature_Collector] 擴散步數: 100
-2026-02-03 00:49:16 [INFO] [SVD_Feature_Collector] 擴散步數: 100
-2026-02-03 00:49:16 [INFO] [SVD_Feature_Collector] ==================================================
-2026-02-03 00:49:16 [INFO] [SVD_Feature_Collector] ==================================================
-2026-02-03 00:49:16 [INFO] [SVD_Feature_Collector] [SVD] 初始化 SvdFeatureCollector: block=model.input_blocks.4, target_N=32, T=100
-2026-02-03 00:49:16 [INFO] [SVD_Feature_Collector] [SVD] 初始化 SvdFeatureCollector: block=model.input_blocks.4, target_N=32, T=100
-2026-02-03 00:49:16 [INFO] [SVD_Feature_Collector] [SVD] 註冊 block hook: model.input_blocks.4
-2026-02-03 00:49:16 [INFO] [SVD_Feature_Collector] [SVD] 註冊 block hook: model.input_blocks.4
-2026-02-03 00:49:16 [INFO] [SVD_Feature_Collector] [SVD] 註冊 model step hook 完成
-2026-02-03 00:49:16 [INFO] [SVD_Feature_Collector] [SVD] 註冊 model step hook 完成
-2026-02-03 00:49:16 [INFO] [SVD_Feature_Collector] [SVD] eval_num_images 設為 32（1 batches）
-2026-02-03 00:49:16 [INFO] [SVD_Feature_Collector] [SVD] eval_num_images 設為 32（1 batches）
-2026-02-03 00:49:16 [INFO] [SVD_Feature_Collector] [SVD] 開始生成與收集...
-2026-02-03 00:49:16 [INFO] [SVD_Feature_Collector] [SVD] 開始生成與收集...
-generating images:   0%|          | 0/1 [00:00<?, ?it/s]/home/jimmy/diffae/diffusion/base.py:329: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
-  with autocast(self.conf.fp16):
-2026-02-03 00:49:17 [INFO] [SVD_Feature_Collector] [SVD] Feature shape: C=128, H=64, W=64
-2026-02-03 00:49:17 [INFO] [SVD_Feature_Collector] [SVD] Feature shape: C=128, H=64, W=64
-generating images: 100%|██████████| 1/1 [00:15<00:00, 15.87s/it]generating images: 100%|██████████| 1/1 [00:15<00:00, 15.87s/it]
-2026-02-03 00:49:32 [INFO] [SVD_Feature_Collector] [SVD] FID@32 100 steps score: 0
-2026-02-03 00:49:32 [INFO] [SVD_Feature_Collector] [SVD] FID@32 100 steps score: 0
-2026-02-03 00:49:32 [INFO] [SVD_Feature_Collector] [SVD] Hook 已移除
-2026-02-03 00:49:32 [INFO] [SVD_Feature_Collector] [SVD] Hook 已移除
-2026-02-03 00:49:32 [INFO] [SVD_Feature_Collector] [SVD] 開始 finalize，目標目錄: QATcode/cache_method/SVD/svd_features/model_input_blocks_4
-2026-02-03 00:49:32 [INFO] [SVD_Feature_Collector] [SVD] 開始 finalize，目標目錄: QATcode/cache_method/SVD/svd_features/model_input_blocks_4
-Writing features:   0%|          | 0/100 [00:00<?, ?it/s]Writing features:   5%|▌         | 5/100 [00:00<00:02, 47.29it/s]Writing features:  11%|█         | 11/100 [00:00<00:01, 50.21it/s]Writing features:  17%|█▋        | 17/100 [00:00<00:01, 51.90it/s]Writing features:  23%|██▎       | 23/100 [00:00<00:01, 53.19it/s]Writing features:  29%|██▉       | 29/100 [00:00<00:01, 53.79it/s]Writing features:  35%|███▌      | 35/100 [00:00<00:01, 54.33it/s]Writing features:  41%|████      | 41/100 [00:00<00:01, 54.58it/s]Writing features:  47%|████▋     | 47/100 [00:00<00:01, 49.91it/s]Writing features:  53%|█████▎    | 53/100 [00:01<00:00, 51.19it/s]Writing features:  59%|█████▉    | 59/100 [00:01<00:00, 52.61it/s]Writing features:  65%|██████▌   | 65/100 [00:01<00:00, 53.24it/s]Writing features:  71%|███████   | 71/100 [00:01<00:00, 53.70it/s]Writing features:  77%|███████▋  | 77/100 [00:01<00:00, 54.10it/s]Writing features:  83%|████████▎ | 83/100 [00:01<00:00, 54.13it/s]Writing features:  89%|████████▉ | 89/100 [00:01<00:00, 54.15it/s]Writing features:  95%|█████████▌| 95/100 [00:01<00:00, 49.11it/s]Writing features: 100%|██████████| 100/100 [00:01<00:00, 52.14it/s]
-2026-02-03 00:49:34 [INFO] [SVD_Feature_Collector] [SVD] Finalize 完成：N=32, T=100, C=128, H=64, W=64
-2026-02-03 00:49:34 [INFO] [SVD_Feature_Collector] [SVD] Finalize 完成：N=32, T=100, C=128, H=64, W=64
-2026-02-03 00:49:34 [INFO] [SVD_Feature_Collector] [SVD] 輸出目錄: QATcode/cache_method/SVD/svd_features/model_input_blocks_4
-2026-02-03 00:49:34 [INFO] [SVD_Feature_Collector] [SVD] 輸出目錄: QATcode/cache_method/SVD/svd_features/model_input_blocks_4
-2026-02-03 00:49:34 [INFO] [SVD_Feature_Collector] ✅ SVD Feature 收集完成
-2026-02-03 00:49:34 [INFO] [SVD_Feature_Collector] ✅ SVD Feature 收集完成
-/home/jimmy/anaconda3/envs/diffae_bw/lib/python3.10/site-packages/lightning_fabric/__init__.py:41: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
-使用自動混合精度: torch.bfloat16
-2026-02-03 10:52:41 [INFO] [SVD_Feature_Collector] [設定] Log 檔案: QATcode/cache_method/SVD/logs/svd_feature_model_input_blocks_4.log
-2026-02-03 10:52:41 [INFO] [SVD_Feature_Collector] [設定] Log 檔案: QATcode/cache_method/SVD/logs/svd_feature_model_input_blocks_4.log
-2026-02-03 10:52:41 [INFO] [SVD_Feature_Collector] ================================================================================
-2026-02-03 10:52:41 [INFO] [SVD_Feature_Collector] ================================================================================
-2026-02-03 10:52:41 [INFO] [SVD_Feature_Collector] SVD Feature 收集開始
-2026-02-03 10:52:41 [INFO] [SVD_Feature_Collector] SVD Feature 收集開始
-2026-02-03 10:52:41 [INFO] [SVD_Feature_Collector] ================================================================================
-2026-02-03 10:52:41 [INFO] [SVD_Feature_Collector] ================================================================================
-Seed set to 0
-Model params: 174.19 M
-loading pretrain ... 130M
-step: 1019986
-loading latent stats ...
-2026-02-03 10:52:43 [INFO] [SVD_Feature_Collector] ✅ Diff-AE 模型載入成功
-2026-02-03 10:52:43 [INFO] [SVD_Feature_Collector] ✅ Diff-AE 模型載入成功
-2026-02-03 10:52:45 [INFO] [SVD_Feature_Collector] ✅ 量化模型載入成功
-2026-02-03 10:52:45 [INFO] [SVD_Feature_Collector] ✅ 量化模型載入成功
-local seed: 0
-train data: 70001
-val data: 70001
-2026-02-03 10:52:45 [INFO] [SVD_Feature_Collector] ✅ 基礎模型設定完成
-2026-02-03 10:52:45 [INFO] [SVD_Feature_Collector] ✅ 基礎模型設定完成
-on train dataloader start ...
-mean: tensor(-0.0606, device='cuda:0') std: tensor(0.0755, device='cuda:0')
-2026-02-03 10:52:45 [INFO] [SVD_Feature_Collector] ==================================================
-2026-02-03 10:52:45 [INFO] [SVD_Feature_Collector] ==================================================
-2026-02-03 10:52:45 [INFO] [SVD_Feature_Collector] 啟用 SVD Feature 收集
-2026-02-03 10:52:45 [INFO] [SVD_Feature_Collector] 啟用 SVD Feature 收集
-2026-02-03 10:52:45 [INFO] [SVD_Feature_Collector] 目標 Block: model.input_blocks.4
-2026-02-03 10:52:45 [INFO] [SVD_Feature_Collector] 目標 Block: model.input_blocks.4
-2026-02-03 10:52:45 [INFO] [SVD_Feature_Collector] Target N: 32
-2026-02-03 10:52:45 [INFO] [SVD_Feature_Collector] Target N: 32
-2026-02-03 10:52:45 [INFO] [SVD_Feature_Collector] 擴散步數: 100
-2026-02-03 10:52:45 [INFO] [SVD_Feature_Collector] 擴散步數: 100
-2026-02-03 10:52:45 [INFO] [SVD_Feature_Collector] ==================================================
-2026-02-03 10:52:45 [INFO] [SVD_Feature_Collector] ==================================================
-2026-02-03 10:52:45 [INFO] [SVD_Feature_Collector] [SVD] 初始化 SvdFeatureCollector: block=model.input_blocks.4, target_N=32, T=100
-2026-02-03 10:52:45 [INFO] [SVD_Feature_Collector] [SVD] 初始化 SvdFeatureCollector: block=model.input_blocks.4, target_N=32, T=100
-2026-02-03 10:52:45 [INFO] [SVD_Feature_Collector] [SVD] 註冊 block hook: model.input_blocks.4
-2026-02-03 10:52:45 [INFO] [SVD_Feature_Collector] [SVD] 註冊 block hook: model.input_blocks.4
-2026-02-03 10:52:45 [INFO] [SVD_Feature_Collector] [SVD] 註冊 model step hook 完成
-2026-02-03 10:52:45 [INFO] [SVD_Feature_Collector] [SVD] 註冊 model step hook 完成
-2026-02-03 10:52:45 [INFO] [SVD_Feature_Collector] [SVD] eval_num_images 設為 32（1 batches）
-2026-02-03 10:52:45 [INFO] [SVD_Feature_Collector] [SVD] eval_num_images 設為 32（1 batches）
-2026-02-03 10:52:45 [INFO] [SVD_Feature_Collector] [SVD] 開始生成與收集...
-2026-02-03 10:52:45 [INFO] [SVD_Feature_Collector] [SVD] 開始生成與收集...
-generating images:   0%|          | 0/1 [00:00<?, ?it/s]/home/jimmy/diffae/diffusion/base.py:329: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
-  with autocast(self.conf.fp16):
-2026-02-03 10:52:45 [INFO] [SVD_Feature_Collector] [SVD] Feature shape: C=128, H=64, W=64
-2026-02-03 10:52:45 [INFO] [SVD_Feature_Collector] [SVD] Feature shape: C=128, H=64, W=64
-generating images: 100%|██████████| 1/1 [00:15<00:00, 15.84s/it]generating images: 100%|██████████| 1/1 [00:15<00:00, 15.84s/it]
-2026-02-03 10:53:01 [INFO] [SVD_Feature_Collector] [SVD] FID@32 100 steps score: 0
-2026-02-03 10:53:01 [INFO] [SVD_Feature_Collector] [SVD] FID@32 100 steps score: 0
-2026-02-03 10:53:01 [INFO] [SVD_Feature_Collector] [SVD] Hook 已移除
-2026-02-03 10:53:01 [INFO] [SVD_Feature_Collector] [SVD] Hook 已移除
-2026-02-03 10:53:01 [INFO] [SVD_Feature_Collector] [SVD] 開始 finalize，目標目錄: QATcode/cache_method/SVD/svd_features/model_input_blocks_4
-2026-02-03 10:53:01 [INFO] [SVD_Feature_Collector] [SVD] 開始 finalize，目標目錄: QATcode/cache_method/SVD/svd_features/model_input_blocks_4
-Writing features:   0%|          | 0/100 [00:00<?, ?it/s]Writing features:   5%|▌         | 5/100 [00:00<00:01, 47.66it/s]Writing features:  11%|█         | 11/100 [00:00<00:01, 51.26it/s]Writing features:  17%|█▋        | 17/100 [00:00<00:01, 53.20it/s]Writing features:  23%|██▎       | 23/100 [00:00<00:01, 54.39it/s]Writing features:  29%|██▉       | 29/100 [00:00<00:01, 54.60it/s]Writing features:  35%|███▌      | 35/100 [00:00<00:01, 54.57it/s]Writing features:  41%|████      | 41/100 [00:00<00:01, 54.90it/s]Writing features:  47%|████▋     | 47/100 [00:00<00:01, 51.24it/s]Writing features:  53%|█████▎    | 53/100 [00:01<00:00, 52.21it/s]Writing features:  59%|█████▉    | 59/100 [00:01<00:00, 53.40it/s]Writing features:  65%|██████▌   | 65/100 [00:01<00:00, 54.27it/s]Writing features:  71%|███████   | 71/100 [00:01<00:00, 54.14it/s]Writing features:  77%|███████▋  | 77/100 [00:01<00:00, 53.82it/s]Writing features:  83%|████████▎ | 83/100 [00:01<00:00, 54.24it/s]Writing features:  89%|████████▉ | 89/100 [00:01<00:00, 54.76it/s]Writing features:  95%|█████████▌| 95/100 [00:01<00:00, 51.16it/s]Writing features: 100%|██████████| 100/100 [00:01<00:00, 53.02it/s]
-2026-02-03 10:53:02 [INFO] [SVD_Feature_Collector] [SVD] Finalize 完成：N=32, T=100, C=128, H=64, W=64
-2026-02-03 10:53:02 [INFO] [SVD_Feature_Collector] [SVD] Finalize 完成：N=32, T=100, C=128, H=64, W=64
-2026-02-03 10:53:02 [INFO] [SVD_Feature_Collector] [SVD] 輸出目錄: QATcode/cache_method/SVD/svd_features/model_input_blocks_4
-2026-02-03 10:53:02 [INFO] [SVD_Feature_Collector] [SVD] 輸出目錄: QATcode/cache_method/SVD/svd_features/model_input_blocks_4
-2026-02-03 10:53:02 [INFO] [SVD_Feature_Collector] ✅ SVD Feature 收集完成
-2026-02-03 10:53:02 [INFO] [SVD_Feature_Collector] ✅ SVD Feature 收集完成
-/home/jimmy/anaconda3/envs/diffae_bw/lib/python3.10/site-packages/lightning_fabric/__init__.py:41: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
-使用自動混合精度: torch.bfloat16
-2026-02-09 11:29:41 [INFO] [SVD_Feature_Collector] [設定] Log 檔案: QATcode/cache_method/SVD/logs/svd_feature_model_input_blocks_4.log
-2026-02-09 11:29:41 [INFO] [SVD_Feature_Collector] [設定] Log 檔案: QATcode/cache_method/SVD/logs/svd_feature_model_input_blocks_4.log
-2026-02-09 11:29:41 [INFO] [SVD_Feature_Collector] ================================================================================
-2026-02-09 11:29:41 [INFO] [SVD_Feature_Collector] ================================================================================
-2026-02-09 11:29:41 [INFO] [SVD_Feature_Collector] SVD Feature 收集開始
-2026-02-09 11:29:41 [INFO] [SVD_Feature_Collector] SVD Feature 收集開始
-2026-02-09 11:29:41 [INFO] [SVD_Feature_Collector] ================================================================================
-2026-02-09 11:29:41 [INFO] [SVD_Feature_Collector] ================================================================================
-Seed set to 0
-Model params: 174.19 M
-loading pretrain ... 130M
-step: 1019986
-loading latent stats ...
-2026-02-09 11:29:42 [INFO] [SVD_Feature_Collector] ✅ Diff-AE 模型載入成功
-2026-02-09 11:29:42 [INFO] [SVD_Feature_Collector] ✅ Diff-AE 模型載入成功
-2026-02-09 11:29:44 [INFO] [SVD_Feature_Collector] ✅ 量化模型載入成功
-2026-02-09 11:29:44 [INFO] [SVD_Feature_Collector] ✅ 量化模型載入成功
-local seed: 0
-train data: 70001
-val data: 70001
-2026-02-09 11:29:44 [INFO] [SVD_Feature_Collector] ✅ 基礎模型設定完成
-2026-02-09 11:29:44 [INFO] [SVD_Feature_Collector] ✅ 基礎模型設定完成
-on train dataloader start ...
-mean: tensor(-0.0606, device='cuda:0') std: tensor(0.0755, device='cuda:0')
-2026-02-09 11:29:44 [INFO] [SVD_Feature_Collector] ==================================================
-2026-02-09 11:29:44 [INFO] [SVD_Feature_Collector] ==================================================
-2026-02-09 11:29:44 [INFO] [SVD_Feature_Collector] 啟用 SVD Feature 收集
-2026-02-09 11:29:44 [INFO] [SVD_Feature_Collector] 啟用 SVD Feature 收集
-2026-02-09 11:29:44 [INFO] [SVD_Feature_Collector] 目標 Block: model.input_blocks.4
-2026-02-09 11:29:44 [INFO] [SVD_Feature_Collector] 目標 Block: model.input_blocks.4
-2026-02-09 11:29:44 [INFO] [SVD_Feature_Collector] Target N: 32
-2026-02-09 11:29:44 [INFO] [SVD_Feature_Collector] Target N: 32
-2026-02-09 11:29:44 [INFO] [SVD_Feature_Collector] 擴散步數: 100
-2026-02-09 11:29:44 [INFO] [SVD_Feature_Collector] 擴散步數: 100
-2026-02-09 11:29:44 [INFO] [SVD_Feature_Collector] ==================================================
-2026-02-09 11:29:44 [INFO] [SVD_Feature_Collector] ==================================================
-2026-02-09 11:29:44 [INFO] [SVD_Feature_Collector] [SVD] 初始化 SvdFeatureCollector: block=model.input_blocks.4, target_N=32, T=100
-2026-02-09 11:29:44 [INFO] [SVD_Feature_Collector] [SVD] 初始化 SvdFeatureCollector: block=model.input_blocks.4, target_N=32, T=100
-2026-02-09 11:29:44 [INFO] [SVD_Feature_Collector] [SVD] 註冊 block hook: model.input_blocks.4
-2026-02-09 11:29:44 [INFO] [SVD_Feature_Collector] [SVD] 註冊 block hook: model.input_blocks.4
-2026-02-09 11:29:44 [INFO] [SVD_Feature_Collector] [SVD] 註冊 model step hook 完成
-2026-02-09 11:29:44 [INFO] [SVD_Feature_Collector] [SVD] 註冊 model step hook 完成
-2026-02-09 11:29:44 [INFO] [SVD_Feature_Collector] [SVD] eval_num_images 設為 32（1 batches）
-2026-02-09 11:29:44 [INFO] [SVD_Feature_Collector] [SVD] eval_num_images 設為 32（1 batches）
-2026-02-09 11:29:44 [INFO] [SVD_Feature_Collector] [SVD] 開始生成與收集...
-2026-02-09 11:29:44 [INFO] [SVD_Feature_Collector] [SVD] 開始生成與收集...
-generating images:   0%|          | 0/1 [00:00<?, ?it/s]/home/jimmy/diffae/diffusion/base.py:329: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
-  with autocast(self.conf.fp16):
-2026-02-09 11:29:44 [INFO] [SVD_Feature_Collector] [SVD] Feature shape: C=128, H=64, W=64
-2026-02-09 11:29:44 [INFO] [SVD_Feature_Collector] [SVD] Feature shape: C=128, H=64, W=64
-generating images: 100%|██████████| 1/1 [00:15<00:00, 15.84s/it]generating images: 100%|██████████| 1/1 [00:15<00:00, 15.84s/it]
-2026-02-09 11:30:00 [INFO] [SVD_Feature_Collector] [SVD] FID@32 100 steps score: 0
-2026-02-09 11:30:00 [INFO] [SVD_Feature_Collector] [SVD] FID@32 100 steps score: 0
-2026-02-09 11:30:00 [INFO] [SVD_Feature_Collector] [SVD] Hook 已移除
-2026-02-09 11:30:00 [INFO] [SVD_Feature_Collector] [SVD] Hook 已移除
-2026-02-09 11:30:00 [INFO] [SVD_Feature_Collector] [SVD] 開始 finalize，目標目錄: QATcode/cache_method/SVD/svd_features/model_input_blocks_4
-2026-02-09 11:30:00 [INFO] [SVD_Feature_Collector] [SVD] 開始 finalize，目標目錄: QATcode/cache_method/SVD/svd_features/model_input_blocks_4
-Writing features:   0%|          | 0/100 [00:00<?, ?it/s]Writing features:   2%|▏         | 2/100 [00:00<00:05, 17.97it/s]Writing features:   4%|▍         | 4/100 [00:00<00:05, 19.10it/s]Writing features:   6%|▌         | 6/100 [00:00<00:04, 19.40it/s]Writing features:   9%|▉         | 9/100 [00:00<00:04, 20.30it/s]Writing features:  13%|█▎        | 13/100 [00:00<00:03, 25.94it/s]Writing features:  18%|█▊        | 18/100 [00:00<00:02, 30.92it/s]Writing features:  22%|██▏       | 22/100 [00:00<00:02, 33.36it/s]Writing features:  27%|██▋       | 27/100 [00:00<00:02, 35.82it/s]Writing features:  31%|███       | 31/100 [00:01<00:01, 36.64it/s]Writing features:  36%|███▌      | 36/100 [00:01<00:01, 37.65it/s]Writing features:  41%|████      | 41/100 [00:01<00:01, 38.27it/s]Writing features:  45%|████▌     | 45/100 [00:01<00:01, 35.55it/s]Writing features:  50%|█████     | 50/100 [00:01<00:01, 36.70it/s]Writing features:  54%|█████▍    | 54/100 [00:01<00:01, 36.96it/s]Writing features:  59%|█████▉    | 59/100 [00:01<00:01, 38.32it/s]Writing features:  64%|██████▍   | 64/100 [00:01<00:00, 39.47it/s]Writing features:  69%|██████▉   | 69/100 [00:01<00:00, 39.81it/s]Writing features:  73%|███████▎  | 73/100 [00:02<00:00, 38.83it/s]Writing features:  77%|███████▋  | 77/100 [00:02<00:00, 38.68it/s]Writing features:  81%|████████  | 81/100 [00:02<00:00, 38.09it/s]Writing features:  86%|████████▌ | 86/100 [00:02<00:00, 39.26it/s]Writing features:  90%|█████████ | 90/100 [00:02<00:00, 38.83it/s]Writing features:  94%|█████████▍| 94/100 [00:02<00:00, 29.35it/s]Writing features:  98%|█████████▊| 98/100 [00:02<00:00, 26.77it/s]Writing features: 100%|██████████| 100/100 [00:03<00:00, 32.84it/s]
-2026-02-09 11:30:03 [INFO] [SVD_Feature_Collector] [SVD] Finalize 完成：N=32, T=100, C=128, H=64, W=64
-2026-02-09 11:30:03 [INFO] [SVD_Feature_Collector] [SVD] Finalize 完成：N=32, T=100, C=128, H=64, W=64
-2026-02-09 11:30:03 [INFO] [SVD_Feature_Collector] [SVD] 輸出目錄: QATcode/cache_method/SVD/svd_features/model_input_blocks_4
-2026-02-09 11:30:03 [INFO] [SVD_Feature_Collector] [SVD] 輸出目錄: QATcode/cache_method/SVD/svd_features/model_input_blocks_4
-2026-02-09 11:30:03 [INFO] [SVD_Feature_Collector] ✅ SVD Feature 收集完成
-2026-02-09 11:30:03 [INFO] [SVD_Feature_Collector] ✅ SVD Feature 收集完成
-2026-03-20 20:15:25 [INFO] [SVD_Feature_Collector] [設定] Log 檔案: QATcode/cache_method/SVD/logs/svd_feature_model_input_blocks_4.log
-2026-03-20 20:15:25 [INFO] [SVD_Feature_Collector] ================================================================================
-2026-03-20 20:15:25 [INFO] [SVD_Feature_Collector] SVD Feature 收集開始
-2026-03-20 20:15:25 [INFO] [SVD_Feature_Collector] ================================================================================
-2026-03-20 20:15:27 [INFO] [SVD_Feature_Collector] ✅ Diff-AE 模型載入成功
-2026-03-20 20:15:28 [INFO] [SVD_Feature_Collector] ✅ 量化模型載入成功
-2026-03-20 20:15:28 [INFO] [SVD_Feature_Collector] ✅ 基礎模型設定完成
-2026-03-20 20:15:29 [INFO] [SVD_Feature_Collector] ==================================================
-2026-03-20 20:15:29 [INFO] [SVD_Feature_Collector] 啟用 SVD Feature 收集
-2026-03-20 20:15:29 [INFO] [SVD_Feature_Collector] 目標 Block: model.input_blocks.4
-2026-03-20 20:15:29 [INFO] [SVD_Feature_Collector] Target N: 32
-2026-03-20 20:15:29 [INFO] [SVD_Feature_Collector] 擴散步數: 100
-2026-03-20 20:15:29 [INFO] [SVD_Feature_Collector] ==================================================
-2026-03-20 20:15:29 [INFO] [SVD_Feature_Collector] [SVD] 初始化 SvdFeatureCollector: block=model.input_blocks.4, target_N=32, T=100
-2026-03-20 20:15:29 [INFO] [SVD_Feature_Collector] [SVD] 註冊 block hook: model.input_blocks.4
-2026-03-20 20:15:29 [INFO] [SVD_Feature_Collector] [SVD] 註冊 model step hook 完成
-2026-03-20 20:15:29 [INFO] [SVD_Feature_Collector] [SVD] eval_num_images 設為 32（1 batches）
-2026-03-20 20:15:29 [INFO] [SVD_Feature_Collector] [SVD] 開始生成與收集...
-2026-03-20 20:15:29 [INFO] [SVD_Feature_Collector] [SVD] Feature shape: C=128, H=64, W=64
-2026-03-20 20:15:45 [INFO] [SVD_Feature_Collector] [SVD] FID@32 100 steps score: 0
-2026-03-20 20:15:45 [INFO] [SVD_Feature_Collector] [SVD] Hook 已移除
-2026-03-20 20:15:45 [INFO] [SVD_Feature_Collector] [SVD] 啟用 in-memory pipeline：略過 t_{t}.pt 寫檔，直接計算 B/C
-2026-03-20 20:15:47 [INFO] [SVD_Feature_Collector] [SVD] 階段 B 完成（in-memory）
-2026-03-20 20:15:48 [INFO] [SVD_Feature_Collector] [SVD] 階段 C 完成（in-memory）

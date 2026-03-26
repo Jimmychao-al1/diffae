@@ -118,9 +118,9 @@ def plot_alignment(
     畫對齊曲線圖
     
     Args:
-        svd_dist: SVD 子空間距離，長度 T
-        l1: L1rel step mean，長度 T
-        cos_dist: 1 - Cosine，長度 T
+        svd_dist: SVD interval distance 序列，長度 L（通常 T-1，但可能因對齊截斷而更短）
+        l1: L1 或 L1rel_rate 的 step 序列，長度 L (L1)
+        cos_dist: 1 - cos_step_mean 的 step 序列，長度 L
         block_slug: Block 名稱
         output_path: 輸出路徑
     """

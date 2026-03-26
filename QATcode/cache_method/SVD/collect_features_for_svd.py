@@ -8,7 +8,7 @@ SVD Feature 收集腳本
   - 預設模式：svd_features/<block_slug>/t_{0..99}.pt + meta.json
   - in-memory pipeline：不寫 t_{t}.pt，直接串接 svd_metrics / correlate_svd_similarity
 
-參考：similarity_calculation.py 的 hook 架構與 evaluate_fid 呼叫方式
+參考：similarity_calculation.py 的 hook 架構與 evaluate_fid 呼叫方式 (非 similarity_calculation_baseline.py)
 """
 
 import os
