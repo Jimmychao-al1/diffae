@@ -113,6 +113,12 @@ def plot_alignment(
     fig, axes = plt.subplots(2, 1, figsize=(14, 8))
     T = len(svd_dist)
     x = np.arange(T)
+    # point-wise:
+    # analysis index left->right is 0..T-1 (noise->clear), display label should be t=T-1..0
+    xticks = list(range(0, T, 10))
+    if (T - 1) not in xticks:
+        xticks.append(T - 1)
+    xticklabels = [str((T - 1) - i) for i in xticks]
     
     # 上圖：L1 vs SVD
     ax1 = axes[0]
@@ -121,7 +127,7 @@ def plot_alignment(
     ax1.plot(x, l1, 'b-', linewidth=2, label='L1rel', alpha=0.8)
     ax1_twin.plot(x, svd_dist, 'r--', linewidth=2, label='SVD Subspace Dist', alpha=0.8)
     
-    ax1.set_xlabel('Timestep')
+    ax1.set_xlabel('t (DDIM timestep): noise end (T-1) -> clear end (0)')
     ax1.set_ylabel('L1rel', color='b')
     ax1_twin.set_ylabel('SVD Subspace Distance', color='r')
     ax1.tick_params(axis='y', labelcolor='b')
@@ -130,6 +136,8 @@ def plot_alignment(
     ax1.grid(True, alpha=0.3)
     ax1.legend(loc='upper left')
     ax1_twin.legend(loc='upper right')
+    ax1.set_xticks(xticks)
+    ax1.set_xticklabels(xticklabels)
     
     # 下圖：CosDist vs SVD
     ax2 = axes[1]
@@ -138,7 +146,7 @@ def plot_alignment(
     ax2.plot(x, cos_dist, 'g-', linewidth=2, label='Cosine Distance (1-CosSim)', alpha=0.8)
     ax2_twin.plot(x, svd_dist, 'r--', linewidth=2, label='SVD Subspace Dist', alpha=0.8)
     
-    ax2.set_xlabel('Timestep')
+    ax2.set_xlabel('t (DDIM timestep): noise end (T-1) -> clear end (0)')
     ax2.set_ylabel('Cosine Distance', color='g')
     ax2_twin.set_ylabel('SVD Subspace Distance', color='r')
     ax2.tick_params(axis='y', labelcolor='g')
@@ -147,6 +155,8 @@ def plot_alignment(
     ax2.grid(True, alpha=0.3)
     ax2.legend(loc='upper left')
     ax2_twin.legend(loc='upper right')
+    ax2.set_xticks(xticks)
+    ax2.set_xticklabels(xticklabels)
     
     plt.tight_layout()
     plt.savefig(output_path, dpi=150, bbox_inches='tight')

@@ -488,7 +488,9 @@ def plot_pred_xstart_quantile_overlay(*, npz_baseline: Path, npz_v2: Path, out_p
 
     plt.ylim(-1.0, 1.0)
     plt.xlim(0, len(t) - 1)
-    plt.xlabel("t_idx (out['t'] index, ascending 0..T-1)")
+    # 依照你統一約定：左邊最雜端 t=T-1，右邊最清晰端 t=0
+    plt.gca().invert_xaxis()
+    plt.xlabel("t (DDIM timestep): noise end (T-1) -> clear end (0)")
     plt.ylabel("pred_xstart value")
     plt.grid(True, alpha=0.25)
     plt.legend(loc="best")
@@ -598,7 +600,9 @@ def main_pred_xstart_quantile_analysis(
             "hist_range_max": np.array(hist_range_max, dtype=np.float64),
             "hist_bins": np.array(hist_bins, dtype=np.int32),
             "q_list": PRED_XSTART_Q_LIST,
-            "x_axis_def": np.array("out[t] (timestep index), ascending via stats[t_idx]"),
+            "x_axis_def": np.array(
+                "point-wise: `t` stores out['t'] index (0..T-1); plot inverts x-axis so left=T-1 noise, right=0 clear"
+            ),
             "t_total": np.array(T, dtype=np.int32),
             "model_tag": np.array(tag),
             "ckpt_path": np.array(ckpt_path),

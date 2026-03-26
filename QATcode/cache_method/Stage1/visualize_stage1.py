@@ -59,11 +59,19 @@ def plot_drift_and_zones(config, diag, save_path):
         a0, a1 = _zone_axis(z)
         ax1.axvspan(a0, a1, alpha=0.15, color=color, label=f"Zone {z['id']}")
     
-    ax1.set_xlabel('Interval index j (length 99; analysis axis; DDIM: t_ddim=99-axis_idx at point indices)')
+    ax1.set_xlabel('t_curr (interval x_{t+1} -> x_t), left=T-2 noise -> right=0 clear')
     ax1.set_ylabel('Global Drift')
     ax1.set_title('FID-weighted Global Drift + Zone Segmentation (per-interval D)')
     ax1.legend(loc='upper left', fontsize=8, ncol=2)
     ax1.grid(alpha=0.3)
+
+    # x 軸 tick labels 用 t_curr，不改資料順序
+    j_len = len(D_global)  # expected 99
+    xticks = list(range(0, j_len, 10))
+    if (j_len - 1) not in xticks:
+        xticks.append(j_len - 1)
+    ax1.set_xticks(xticks)
+    ax1.set_xticklabels([str((j_len - 1) - j) for j in xticks])
     
     # === Bottom: Delta ===
     ax2.plot(Delta, label='Δ[t] = |D_smooth[t] - D_smooth[t-1]|', color='purple')
@@ -71,11 +79,18 @@ def plot_drift_and_zones(config, diag, save_path):
     for cp in diag['change_points']:
         ax2.axvline(cp, color='red', alpha=0.5, ls='--', lw=1)
     
-    ax2.set_xlabel('Same interval index j as D_smooth (analysis axis)')
+    ax2.set_xlabel('t_curr (same interval index j as D_smooth), left=T-2 noise -> right=0 clear')
     ax2.set_ylabel('Change Magnitude Δ')
     ax2.set_title('Delta (Change Magnitude)')
     ax2.legend()
     ax2.grid(alpha=0.3)
+
+    j2_len = len(Delta)
+    xticks2 = list(range(0, j2_len, 10))
+    if (j2_len - 1) not in xticks2:
+        xticks2.append(j2_len - 1)
+    ax2.set_xticks(xticks2)
+    ax2.set_xticklabels([str((j2_len - 1) - j) for j in xticks2])
     
     plt.tight_layout()
     plt.savefig(save_path, dpi=150, bbox_inches='tight')

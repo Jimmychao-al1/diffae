@@ -543,6 +543,22 @@ def run_stage0e(
     np.save(output_path / "svd_interval_norm.npy", SVD_interval_norm)
     np.save(output_path / "fid_w_qdiffae_clip.npy", w_clip)
     np.save(output_path / "fid_w_qdiffae_rank.npy", w_rank)
+
+    # ------------------------------------------------------------
+    # 輸出層：時間軸對齊資訊（不改變既有數值陣列）
+    # interval j (analysis axis, 0..T-2) -> 顯示 t_curr = (T-2) - j
+    # 若此處 interval_len = T-1，則 t_curr = (interval_len-1) - j
+    # ------------------------------------------------------------
+    interval_len = int(L1_interval_norm.shape[1])  # expected 99 when T=100
+    t_curr_interval = (interval_len - 1) - np.arange(interval_len, dtype=np.int32)
+    np.save(output_path / "t_curr_interval.npy", t_curr_interval)
+    np.save(
+        output_path / "axis_interval_def.npy",
+        np.array(
+            "interval-wise: analysis interval index j (0..T-2) keeps internal order; display label is t_curr=(T-2)-j",
+            dtype=object,
+        ),
+    )
     
     LOGGER.info(f"✅ 所有檔案已儲存至: {output_path}")
     LOGGER.info("\n輸出檔案列表：")

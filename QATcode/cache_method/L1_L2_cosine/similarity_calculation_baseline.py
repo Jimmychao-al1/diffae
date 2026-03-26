@@ -863,26 +863,26 @@ class SimilarityCollector:
         return mean, std
 
     def _plot_step_curve(self, mean: np.ndarray, std: np.ndarray, out_path: Path, title: str):
-        # X 軸：從 t0→t1, t1→t2, ..., t98→t99，對應 step_counter 0→99
-        # x[i] 表示從 step_counter=i 到 step_counter=i+1 的變化
+        # interval-wise:
+        # analysis axis index j (0..T-2) 對應顯示標籤 t_curr=(T-2)-j
         x = np.arange(len(mean))
         plt.figure(figsize=(8, 4))
         plt.plot(x, mean, color="blue", linewidth=2)
         plt.fill_between(x, mean - std, mean + std, color="blue", alpha=0.2)
         plt.title(title)
-        plt.xlabel("Denoising steps")
+        plt.xlabel("t_curr (interval x_{t+1} -> x_t), left=T-2 noise -> right=0 clear")
         plt.ylabel("Relative metric")
-        # X 軸標籤：0, 10, 20, 30, ..., 100
-        # 生成 0, 10, 20, ..., 100 的標籤位置（每 10 個 timestep）
+        # x 軸 tick labels 顯示 t_curr，不改變資料內部順序
+        t_curr_left_to_right = (len(mean) - 1) - np.arange(len(mean))
         tick_positions = []
         tick_labels = []
         for i in range(0, len(mean), 10):
             tick_positions.append(i)
-            tick_labels.append(str(i))
+            tick_labels.append(str(int(t_curr_left_to_right[i])))
         # 添加最後一個點（如果不在列表中）
         if len(mean) - 1 not in tick_positions:
             tick_positions.append(len(mean) - 1)
-            tick_labels.append(str(len(mean) - 1))
+            tick_labels.append(str(int(t_curr_left_to_right[len(mean) - 1])))
         plt.xticks(tick_positions, tick_labels)
         plt.tight_layout()
         plt.savefig(out_path, dpi=200)
@@ -920,18 +920,19 @@ class SimilarityCollector:
             plt.fill_between(x, mean - std, mean + std, color=fill_color, alpha=0.15)
         
         plt.title(title)
-        plt.xlabel("Denoising steps")
+        plt.xlabel("t_curr (interval x_{t+1} -> x_t), left=T-2 noise -> right=0 clear")
         plt.ylabel("Relative metric")
-        
-        # X 軸標籤：0, 10, 20, 30, ..., 100
+
+        # x 軸 tick labels 顯示 t_curr，不改變資料內部順序
         tick_positions = []
         tick_labels = []
+        t_curr_left_to_right = (len(means_list[0]) - 1) - np.arange(len(means_list[0]))
         for i in range(0, len(means_list[0]), 10):
             tick_positions.append(i)
-            tick_labels.append(str(i))
+            tick_labels.append(str(int(t_curr_left_to_right[i])))
         if len(means_list[0]) - 1 not in tick_positions:
             tick_positions.append(len(means_list[0]) - 1)
-            tick_labels.append(str(len(means_list[0]) - 1))
+            tick_labels.append(str(int(t_curr_left_to_right[len(means_list[0]) - 1])))
         plt.xticks(tick_positions, tick_labels)
         
         # 添加圖例說明有多少組數據
@@ -1002,11 +1003,14 @@ class SimilarityCollector:
             tick_interval = 2
         
         tick_positions = list(range(0, m.shape[0], tick_interval))
-        tick_labels = [str(i) for i in tick_positions]
+        # point-wise:
+        # analysis axis index i (0..T-1) 對應顯示 t=(T-1)-i
+        T = m.shape[0]
+        tick_labels = [str(int((T - 1) - i)) for i in tick_positions]
         # 添加最後一個點
         if m.shape[0] - 1 not in tick_positions:
             tick_positions.append(m.shape[0] - 1)
-            tick_labels.append(str(m.shape[0] - 1))
+            tick_labels.append(str(int((T - 1) - (m.shape[0] - 1))))
         
         # 使用 seaborn heatmap，但不直接設定 ticklabels（會導致擠在一起）
         # 先繪製 heatmap，然後手動設定 ticks
@@ -1029,14 +1033,15 @@ class SimilarityCollector:
         ax.set_yticklabels(tick_labels, rotation=0, fontsize=9)
         
         plt.title(title, fontsize=12)
-        plt.xlabel("Denoising steps (step_counter)", fontsize=10)
-        plt.ylabel("Denoising steps (step_counter)", fontsize=10)
+        plt.xlabel("t (point-wise DDIM timestep), left=T-1 noise -> right=0 clear", fontsize=10)
+        plt.ylabel("t (point-wise DDIM timestep), left=T-1 noise -> right=0 clear", fontsize=10)
         plt.tight_layout()
         plt.savefig(out_path, dpi=300, bbox_inches="tight")
         plt.close()
 
     def _save_matrix_csv(self, matrix: np.ndarray, out_path: Path):
-        labels = [f"t_{t}" for t in self.step_idx_list]
+        T = len(self.step_idx_list)
+        labels = [f"t_{(T - 1) - t}" for t in self.step_idx_list]
         df = pd.DataFrame(matrix, index=labels, columns=labels)
         df.to_csv(out_path)
 

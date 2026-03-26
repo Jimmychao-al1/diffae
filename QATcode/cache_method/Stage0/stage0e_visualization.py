@@ -69,7 +69,7 @@ def plot_block_curves(
         save_path: 輸出 PNG 路徑
     """
     T_minus_1 = len(l1)
-    x = np.arange(T_minus_1)  # interval index 0..T-2
+    x = np.arange(T_minus_1)  # interval index j (analysis axis): 0..T-2
 
     fig, ax = plt.subplots(figsize=(14, 4))
 
@@ -77,7 +77,8 @@ def plot_block_curves(
     ax.plot(x, cos, label="CosDist (norm)", color="#ff7f0e", linewidth=1.2, alpha=0.9)
     ax.plot(x, svd, label="SVD drift (norm)", color="#2ca02c", linewidth=1.2, alpha=0.9)
 
-    ax.set_xlabel("Interval index j (analysis axis; DDIM: t_ddim (99-j)→(98-j))", fontsize=10)
+    # 依照統一約定：輸出顯示 t_curr，j=0 -> t_curr=T-2，j=T-2 -> t_curr=0
+    ax.set_xlabel("t_curr (interval x_{t+1} -> x_t), left=T-2 noise -> right=0 clear", fontsize=10)
     ax.set_ylabel("Normalized value  [0, 1]", fontsize=10)
     ax.set_title(
         f"{block_name}    (FID weight = {fid_w:.4f})",
@@ -87,6 +88,14 @@ def plot_block_curves(
     ax.set_ylim(-0.02, min(1.05, max(l1.max(), cos.max(), svd.max()) * 1.15 + 0.02))
     ax.legend(loc="upper left", fontsize=9)
     ax.grid(True, alpha=0.3)
+
+    # x 軸 tick labels 用 t_curr，而不改變資料內部順序
+    xticks = list(range(0, T_minus_1, 10))
+    if (T_minus_1 - 1) not in xticks:
+        xticks.append(T_minus_1 - 1)
+    xticklabels = [str((T_minus_1 - 1) - j) for j in xticks]
+    ax.set_xticks(xticks)
+    ax.set_xticklabels(xticklabels)
 
     fig.tight_layout()
     fig.savefig(save_path, dpi=150, bbox_inches="tight")
@@ -200,16 +209,16 @@ def plot_heatmap(
     fig, ax = plt.subplots(figsize=(16, 8))
     im = ax.imshow(data, aspect="auto", cmap=cmap, vmin=0, vmax=1, interpolation="nearest")
 
-    ax.set_xlabel("Interval index j (analysis axis; DDIM: t_ddim (99-j)→(98-j))", fontsize=10)
+    ax.set_xlabel("t_curr (interval x_{t+1} -> x_t), left=T-2 noise -> right=0 clear", fontsize=10)
     ax.set_ylabel("Block", fontsize=10)
     ax.set_title(title, fontsize=12, fontweight="bold")
     ax.set_yticks(range(B))
     ax.set_yticklabels(short_names, fontsize=6)
 
-    # X 軸每 10 個 tick
+    # X 軸每 10 個 tick：tick index=j -> 顯示 t_curr=(T-1)-j (此處 T=data.shape[1]=T-1)
     xticks = list(range(0, T, 10))
     ax.set_xticks(xticks)
-    ax.set_xticklabels(xticks, fontsize=8)
+    ax.set_xticklabels([(T - 1) - j for j in xticks], fontsize=8)
 
     cbar = fig.colorbar(im, ax=ax, shrink=0.8, pad=0.02)
     cbar.set_label("Normalized value [0, 1]", fontsize=9)
@@ -251,13 +260,19 @@ def plot_combined_overview(
     ax_top.plot(x, l1, label="L1rel_rate", color="#1f77b4", linewidth=1.3)
     ax_top.plot(x, cos, label="CosDist", color="#ff7f0e", linewidth=1.3)
     ax_top.plot(x, svd, label="SVD drift", color="#2ca02c", linewidth=1.3)
-    ax_top.set_xlabel("Interval index j (analysis axis)", fontsize=10)
+    ax_top.set_xlabel("t_curr (interval x_{t+1} -> x_t), left=T-2 noise -> right=0 clear", fontsize=10)
     ax_top.set_ylabel("Normalized [0, 1]", fontsize=10)
     ax_top.set_title(
         f"Stage-0E: {block_name}  (w_b = {fid_w_all[block_idx]:.4f})",
         fontsize=13, fontweight="bold",
     )
     ax_top.set_xlim(0, T_minus_1 - 1)
+    # tick labels 用 t_curr
+    xticks = list(range(0, T_minus_1, 10))
+    if (T_minus_1 - 1) not in xticks:
+        xticks.append(T_minus_1 - 1)
+    ax_top.set_xticks(xticks)
+    ax_top.set_xticklabels([(T_minus_1 - 1) - j for j in xticks])
     y_max = max(l1.max(), cos.max(), svd.max())
     ax_top.set_ylim(-0.02, min(1.05, y_max * 1.15 + 0.02))
     ax_top.legend(fontsize=9)

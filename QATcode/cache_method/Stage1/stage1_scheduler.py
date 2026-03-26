@@ -759,6 +759,8 @@ def run_stage1_synthesis(
     diagnostics = {
         "axis_convention": "analysis_axis",
         "ddim_timestep_formula": "t_ddim = 99 - axis_idx",
+        "pointwise_display_formula": "t_display = (T-1) - axis_idx (left noise T-1 -> right clear 0)",
+        "interval_t_curr_display_formula": "t_curr = (T-2) - j for interval j (j=0 -> t_curr=T-2, j=T-2 -> t_curr=0)",
         "analysis_axis_order": axis_order_str,
         "note_D_global_length": "D_global/D_smooth/Delta length 99 = per-interval on analysis axis (interval j between axis j and j+1)",
         "D_global": D_global.tolist(),
