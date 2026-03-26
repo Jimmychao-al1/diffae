@@ -39,15 +39,15 @@ from QATcode.cache_method.L1_L2_cosine.similarity_calculation import (
     create_float_quantized_model,
     load_calibration_data,
     SimpleDequantizer,
-    QuantModule_DiffAE_LoRA
 )
+from QATcode.quantize_ver2.quant_model_lora_v2 import QuantModule_DiffAE_LoRA
 
 # ==================== 設定 ====================
 class Config:
     """全局配置（與 similarity_calculation.py 一致，否則 load_state_dict 會 size mismatch）"""
     # 模型路徑（先載入 last.ckpt，再 overlay .pth）
     MODEL_PATH = 'checkpoints/ffhq128_autoenc_latent/last.ckpt'
-    BEST_CKPT_PATH = 'QATcode/diffae_step6_lora_best.pth'
+    BEST_CKPT_PATH = 'QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth'
     
     # 基本設定
     DEVICE = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
@@ -319,10 +319,10 @@ def main():
             if isinstance(module, QuantModule_DiffAE_LoRA) and module.ignore_reconstruction is False:
                 module.intn_dequantizer = SimpleDequantizer(uaq=module.weight_quantizer, weight=module.weight).to(CONFIG.DEVICE)
         
-        for name, module in quant_model.named_modules():
-            if isinstance(module, QuantModule_DiffAE_LoRA) and module.ignore_reconstruction is False:
-                module.intn_dequantizer.delta.data.copy_(module.weight_quantizer.delta.to(CONFIG.DEVICE))
-                module.intn_dequantizer.zero_point.data.copy_(module.weight_quantizer.zero_point.to(CONFIG.DEVICE))
+        #for name, module in quant_model.named_modules():
+        #    if isinstance(module, QuantModule_DiffAE_LoRA) and module.ignore_reconstruction is False:
+        #        module.intn_dequantizer.delta.data.copy_(module.weight_quantizer.delta.to(CONFIG.DEVICE))
+        #        module.intn_dequantizer.zero_point.data.copy_(module.weight_quantizer.zero_point.to(CONFIG.DEVICE))
         
         # 載入校準資料
         cali_images, cali_t, cali_y = load_calibration_data()
@@ -332,17 +332,10 @@ def main():
         device = CONFIG.DEVICE
         quant_model.set_quant_state(True, True)
         
-        for name, module in quant_model.named_modules():
-            if isinstance(module, QuantModule_DiffAE_LoRA) and module.ignore_reconstruction is False:
-                module.intn_dequantizer = SimpleDequantizer(uaq=module.weight_quantizer, weight=module.weight)
+        #for name, module in quant_model.named_modules():
+        #    if isinstance(module, QuantModule_DiffAE_LoRA) and module.ignore_reconstruction is False:
+        #        module.intn_dequantizer = SimpleDequantizer(uaq=module.weight_quantizer, weight=module.weight)
         
-        for name, module in quant_model.named_modules():
-            if isinstance(module, QuantModule_DiffAE_LoRA) and module.ignore_reconstruction is False:
-                device_m = module.weight.data.device
-                with torch.no_grad():
-                    weight_cpu = module.weight.data.detach().cpu()
-                    weight_uint8 = weight_cpu.to(torch.uint8)
-                    module.weight.data = weight_uint8.to(device_m)
         
         # First run to init
         with torch.no_grad():

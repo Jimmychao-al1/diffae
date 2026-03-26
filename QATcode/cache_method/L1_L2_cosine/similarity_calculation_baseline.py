@@ -27,11 +27,11 @@ from torch.utils.data import DataLoader
 sys.path.append(".")
 sys.path.append("./model")
 
-from QATcode.quantize_ver2.quant_model_lora_v2 import QuantModel_DiffAE_LoRA
-from QATcode.quantize_ver2.quant_model_lora_v2 import QuantModule_DiffAE_LoRA, INT_QuantModel_DiffAE_LoRA, INT_QuantModule_DiffAE_LoRA
-from QATcode.quantize_ver2.quant_layer_v2 import QuantModule, SimpleDequantizer
-from QATcode.quantize_ver2.quant_dataset_v2 import DiffusionInputDataset
-from QATcode.quantize_ver2.diffae_trainer_v2 import *
+from QATcode.quant_model_lora import QuantModel_DiffAE_LoRA
+from QATcode.quant_model_lora import QuantModule_DiffAE_LoRA, INT_QuantModel_DiffAE_LoRA, INT_QuantModule_DiffAE_LoRA
+from QATcode.quant_layer import QuantModule, SimpleDequantizer
+from QATcode.quant_dataset import DiffusionInputDataset
+from QATcode.diffae_trainer import *
 from diffusion.diffusion import _WrappedModel
 from model.unet_autoenc import BeatGANsAutoencModel
 from experiment import *
@@ -115,9 +115,9 @@ class TrainingConfig:
     
     # 文件路徑
     MODEL_PATH = "checkpoints/ffhq128_autoenc_latent/last.ckpt"
-    BEST_CKPT_PATH = "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth" 
+    BEST_CKPT_PATH = "QATcode/diffae_step6_lora_best.pth" 
 
-    CALIB_DATA_PATH = "QATcode/quantize_ver2/calibration_diffae.pth"
+    CALIB_DATA_PATH = "QATcode/calibration_diffae.pth"
 
     EVAL_SAMPLES = 50_000
     CALIB_SAMPLES = 1024
@@ -231,154 +231,7 @@ def load_diffae_model(model_path: str = CONFIG.MODEL_PATH) -> LitModel:
     
     return model
 
-@time_operation
-def create_float_quantized_model(
-    diffusion_model: BeatGANsAutoencModel,
-    num_steps: int = CONFIG.NUM_DIFFUSION_STEPS, 
-    lora_rank: int = CONFIG.LORA_RANK,
-    mode: str = 'train'
-) -> QuantModel_DiffAE_LoRA:
-    """
-    創建量化模型並載入 Step 5 的整數權重
-    
-    Args:
-        diffusion_model: 基礎擴散模型
-        num_steps: 時間步數量，用於 TALSQ
-        lora_rank: LoRA 低秩適應的秩
-        
-    Returns:
-        QuantModel_DiffAE_LoRA: 量化後的模型
-    """
-    LOGGER.info("=== 創建 LoRA 量化模型 ===")
-    
-    # 量化參數設定
-    wq_params = {
-        'n_bits': CONFIG.N_BITS_W, 
-        'channel_wise': True, 
-        'scale_method': 'absmax' 
-    }
-    aq_params = {
-        'n_bits': CONFIG.N_BITS_A, 
-        'channel_wise': False, 
-        'scale_method': 'absmax',  
-        'leaf_param': True
-    }
-    
-    # 創建量化模型
-    quant_model = QuantModel_DiffAE_LoRA(
-        model=diffusion_model,
-        weight_quant_params=wq_params,
-        act_quant_params=aq_params,
-        num_steps=num_steps,
-        lora_rank=lora_rank,
-        mode=mode
-    )
 
-    quant_model.eval()
-    
-    return quant_model
-
-def create_int_quantized_model(
-    diffusion_model: BeatGANsAutoencModel,
-    num_steps: int = CONFIG.NUM_DIFFUSION_STEPS, 
-    lora_rank: int = CONFIG.LORA_RANK,
-    mode: str = 'train'
-) -> INT_QuantModel_DiffAE_LoRA:
-    """
-    創建量化模型並載入 Step 5 的整數權重
-    
-    Args:
-        diffusion_model: 基礎擴散模型
-        num_steps: 時間步數量，用於 TALSQ
-        lora_rank: LoRA 低秩適應的秩
-        
-    Returns:
-        QuantModel_DiffAE_LoRA: 量化後的模型
-    """
-    LOGGER.info("=== 創建 LoRA 量化模型 ===")
-    
-    # 量化參數設定
-    wq_params = {
-        'n_bits': CONFIG.N_BITS_W, 
-        'channel_wise': True, 
-        'scale_method': 'mse' 
-    }
-    aq_params = {
-        'n_bits': CONFIG.N_BITS_A, 
-        'channel_wise': False, 
-        'scale_method': 'max',  
-        'leaf_param': True
-    }
-    
-    # 創建量化模型
-    quant_model = INT_QuantModel_DiffAE_LoRA(
-        model=diffusion_model,
-        weight_quant_params=wq_params,
-        act_quant_params=aq_params,
-        num_steps=num_steps,
-    )
-
-    quant_model.eval()
-    
-    return quant_model
-
-#=============================================================================
-# 資料處理函數
-#=============================================================================
-
-def get_train_samples(
-    train_loader: DataLoader, 
-    num_samples: int
-) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-    """
-    從資料載入器中獲取指定數量樣本
-    
-    Args:
-        train_loader: 資料載入器
-        num_samples: 需要獲取的樣本數量
-        
-    Returns:
-        (image_tensor, t_tensor, y_tensor): 批次資料，時間步，條件標籤
-    """
-    image_data, t_data, y_data = [], [], []
-    for (image, t, y) in train_loader:
-        image_data.append(image)
-        t_data.append(t)
-        y_data.append(y)
-        if len(image_data) >= num_samples:
-            break
-    
-    return (
-        torch.cat(image_data, dim=0)[:num_samples], 
-        torch.cat(t_data, dim=0)[:num_samples], 
-        torch.cat(y_data, dim=0)[:num_samples]
-    )
-
-def load_calibration_data() -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-    """
-    載入或生成校準資料
-    
-    Returns:
-        (images, timesteps, conditions): 校準資料張量
-    """
-    LOGGER.info(f"載入校準資料...")
-    
-    try:
-        dataset = DiffusionInputDataset(CONFIG.CALIB_DATA_PATH)
-        data_loader = DataLoader(dataset=dataset, batch_size=32, shuffle=True)
-        cali_images, cali_t, cali_y = get_train_samples(
-            data_loader, 
-            num_samples=CONFIG.CALIB_SAMPLES
-        )
-        LOGGER.info("✅ 載入真實校準資料成功")
-    except Exception as e:
-        LOGGER.warning(f"⚠️ 載入校準資料失敗: {e}")
-        LOGGER.info("使用合成校準資料")
-        cali_images = torch.randn(CONFIG.CALIB_SAMPLES, 3, 128, 128)
-        cali_t = torch.randint(0, CONFIG.NUM_DIFFUSION_STEPS, (CONFIG.CALIB_SAMPLES,))
-        cali_y = torch.randint(0, 1000, (CONFIG.CALIB_SAMPLES,))
-    
-    return cali_images, cali_t, cali_y
 
 @torch.no_grad()
 def sync_ema_once(base_model: LitModel):
@@ -445,13 +298,13 @@ class SimilarityCollector:
         self.sample_strategy = sample_strategy
         self._sample_indices_cache = {}  # 緩存採樣索引，確保同一 batch 內所有 timestep 使用相同的索引
 
-        self.result_npz_dir = self.save_root / "result_npz"
         self.l1_dir = self.save_root / "L1"
         self.l1_change_dir = self.save_root / "L1_change"
         self.l2_dir = self.save_root / "L2"
         self.cos_dir = self.save_root / "cosine"
         self.tier_plot_dir = self.save_root / "tier_plots"
-        for d in [self.result_npz_dir, self.l1_dir, self.cos_dir]:
+        # v1 後續實驗不需要 result_npz，只保留 L1 與 cosine
+        for d in [self.l1_dir, self.cos_dir]:
             d.mkdir(parents=True, exist_ok=True)
 
         self.hooks = []
@@ -913,7 +766,7 @@ class SimilarityCollector:
         return l1_vals, l1_rate_vals, l2_vals, cos_vals
 
     def finalize(self):
-        """只輸出：result_npz / L1 / cosine"""
+        """只輸出：L1 / cosine"""
         for block_name in self.block_sums.keys():
             # 在 GPU 上計算 mean，然後轉移到 CPU
             l1_mean_tensor = self._safe_div(self.block_sums[block_name]["l1"], self.block_counts[block_name])
@@ -938,24 +791,6 @@ class SimilarityCollector:
 
             l1_step_mean, l1_step_std = self._step_mean_std(block_name, "l1")
             cos_step_mean, cos_step_std = self._step_mean_std(block_name, "cos")
-
-            npz_path = self.result_npz_dir / f"{block_name.replace('.', '_')}.npz"
-            mapped_t = (
-                np.array(self.mapped_t_list, dtype=np.int32)
-                if self.mapped_t_list is not None
-                else np.array([-1] * len(self.step_idx_list), dtype=np.int32)
-            )
-            np.savez_compressed(
-                npz_path,
-                l1rel=l1_mean.astype(self.save_dtype),
-                cosine=cos_mean.astype(self.save_dtype),
-                step_idx=np.array(self.step_idx_list, dtype=np.int32),
-                mapped_t=mapped_t,
-                l1_step_mean=l1_step_mean.astype(self.save_dtype),
-                l1_step_std=l1_step_std.astype(self.save_dtype),
-                cos_step_mean=cos_step_mean.astype(self.save_dtype),
-                cos_step_std=cos_step_std.astype(self.save_dtype),
-            )
 
             block_slug = block_name.replace(".", "_")
             l1_block_dir = self.l1_dir / block_slug
@@ -1221,59 +1056,7 @@ class SimilarityCollector:
             out[mask] = num[mask] / denom[mask]
             return out
 
-def _collect_prefixed_state_dict(
-    ckpt: Dict[str, Any],
-    prefix: str,
-    add_prefix: str = "",
-) -> Dict[str, torch.Tensor]:
-    """從扁平 checkpoint 中抓取指定 prefix 的權重，移除 prefix 後可選擇補新前綴。"""
-    out: Dict[str, torch.Tensor] = {}
-    for k, v in ckpt.items():
-        if isinstance(k, str) and k.startswith(prefix) and torch.is_tensor(v):
-            new_k = k[len(prefix):]
-            if add_prefix:
-                new_k = add_prefix + new_k
-            out[new_k] = v
-    return out
 
-def _load_quant_and_ema_from_ckpt(base_model: LitModel, quant_model: nn.Module, ckpt: Dict[str, Any]) -> None:
-    """
-    載入策略（嚴格符合需求）:
-    1) base_model.ema_model 架構 = deepcopy(quant_model)
-    2) base_model.ema_model 權重只吃 `ema_model.model.*`
-    3) base_model.model 權重吃 `model.model.*`（若存在）
-    """
-    setattr(base_model, 'model', quant_model)
-    base_model.ema_model = deepcopy(quant_model)
-
-    # base_model.ema_model(=quant_model) 的 state_dict key 以 `model.` 開頭
-    # ckpt 來源是 `ema_model.model.*`，移除後需補回 `model.` 才能正確對位
-    ema_sd = _collect_prefixed_state_dict(ckpt, "ema_model.model.", add_prefix="model.")
-    if len(ema_sd) == 0:
-        raise KeyError(
-            "Checkpoint 不包含 `ema_model.model.*` 權重；無法依指定規則載入 EMA 生成模型。"
-        )
-    ema_msg = base_model.ema_model.load_state_dict(ema_sd, strict=False)
-    ema_effective_loaded = len(ema_sd) - len(ema_msg.unexpected_keys)
-    LOGGER.info(
-        "EMA(load from ema_model.model.*): provided=%d effective_loaded=%d missing=%d unexpected=%d",
-        len(ema_sd), ema_effective_loaded, len(ema_msg.missing_keys), len(ema_msg.unexpected_keys)
-    )
-    if len(ema_msg.missing_keys) > 0:
-        LOGGER.warning("EMA missing keys (前10): %s", ema_msg.missing_keys[:10])
-    if len(ema_msg.unexpected_keys) > 0:
-        LOGGER.warning("EMA unexpected keys (前10): %s", ema_msg.unexpected_keys[:10])
-
-    model_sd = _collect_prefixed_state_dict(ckpt, "model.model.", add_prefix="model.")
-    if len(model_sd) > 0:
-        model_msg = base_model.model.load_state_dict(model_sd, strict=False)
-        model_effective_loaded = len(model_sd) - len(model_msg.unexpected_keys)
-        LOGGER.info(
-            "MODEL(load from model.model.*): provided=%d effective_loaded=%d missing=%d unexpected=%d",
-            len(model_sd), model_effective_loaded, len(model_msg.missing_keys), len(model_msg.unexpected_keys)
-        )
-    else:
-        LOGGER.warning("Checkpoint 未找到 `model.model.*`，base_model.model 保持目前權重。")
 
 #=============================================================================
 # 主生成流程
@@ -1311,74 +1094,7 @@ def main_float_model():
 
         # 從LitModel獲取關鍵組件
         LOGGER.info(f'base_model.conf.train_mode: {base_model.conf.train_mode}')
-        diffusion_model = base_model.ema_model
         
-        # 2. 創建量化模型與準備組件
-        quant_model : QuantModel_DiffAE_LoRA = create_float_quantized_model(
-            diffusion_model, 
-            num_steps=CONFIG.NUM_DIFFUSION_STEPS,
-            lora_rank=CONFIG.LORA_RANK,
-            mode=CONFIG.MODE
-        )
-        #
-        ## 創建後立刻搬到 GPU
-        quant_model.to(CONFIG.DEVICE)
-        quant_model.eval()
-
-        # 動態掛上子模組時，要記得 .to(device)
-        for name, module in quant_model.named_modules():
-            if isinstance(module, QuantModule_DiffAE_LoRA) and module.ignore_reconstruction is False:
-                module.intn_dequantizer = SimpleDequantizer(uaq=module.weight_quantizer, weight=module.weight).to(CONFIG.DEVICE)
-
-        # 若你之後覆寫 buffer，請用 copy_ 並對齊裝置
-        #for name, module in quant_model.named_modules():
-        #    if isinstance(module, QuantModule_DiffAE_LoRA) and module.ignore_reconstruction is False:
-        #        module.intn_dequantizer.delta.data.copy_(module.weight_quantizer.delta.to(CONFIG.DEVICE))
-        #        module.intn_dequantizer.zero_point.data.copy_(module.weight_quantizer.zero_point.to(CONFIG.DEVICE))
-
-        # 載入校準資料
-        cali_images, cali_t, cali_y = load_calibration_data()
-        
-        # 設定量化組件
-        quant_model.set_first_last_layer_to_8bit()
-        device = next(quant_model.parameters()).device
-
-        LOGGER.info("✅ 量化模型創建成功")
-        quant_model.set_quant_state(True, True)
-
-
-        #for name, module in quant_model.named_modules():
-        #    if isinstance(module, QuantModule_DiffAE_LoRA) and module.ignore_reconstruction is False:
-        #        module.intn_dequantizer = SimpleDequantizer(uaq=module.weight_quantizer, weight=module.weight)
-
-        #for name, module in quant_model.named_modules():
-        #    if isinstance(module, QuantModule_DiffAE_LoRA) and module.ignore_reconstruction is False:
-        #        # 強制在 CPU 上轉換權重，避免 sm_120 不支援的 CUDA kernel
-        #        device = module.weight.data.device
-        #        with torch.no_grad():
-        #            weight_cpu = module.weight.data.detach().cpu()
-        #            weight_uint8 = weight_cpu.to(torch.uint8)
-        #            module.weight.data = weight_uint8.to(device)
-        
-        #print('First run to init the model') ## need run to init emporal act quantizer
-        with torch.no_grad():
-            _ = quant_model(x=cali_images[:4].to(device), t=cali_t[:4].to(device), cond=cali_y[:4].to(device))
-
-        #quant_model.set_quant_state(False, False)
-        
-
-        ckpt = torch.load(CONFIG.BEST_CKPT_PATH, map_location='cpu', weights_only=False)
-        _load_quant_and_ema_from_ckpt(base_model, quant_model, ckpt)
-
-        
-        # 在這邊對 base_model 做 EMA 同步並儲存，以及對 base_model 中的 model 做儲存，以方便未來做模型大小統計
-        LOGGER.info("✅ 量化模型載入成功")
-
-        # 初始化新功能模組
-        LOGGER.info("=== 初始化新功能模組 ===")
-        
-        # 4. 創建優化器 (按原作邏輯 + Layer-by-Layer 支援)
-        ddim_steps = CONFIG.NUM_DIFFUSION_STEPS  # 對應原作
         
         
         
@@ -1409,7 +1125,7 @@ def main_float_model():
             LOGGER.info(f"擴散步數: {T}")
             LOGGER.info("=" * 50)
 
-            similarity_root = f"{CONFIG.SIMILARITY_OUTPUT_ROOT}/T_{T}/v2_latest"
+            similarity_root = f"{CONFIG.SIMILARITY_OUTPUT_ROOT}/T_{T}/v1"
             # 計算總共要收集的樣本數：每個 batch 收集 similarity_collect_samples 個
             # 如果 similarity_samples = 128, batch_size = 32，會有 4 個 batch
             # 每個 batch 收集 15 個，總共收集 60 個（但實際上會收集 4 組數據，每組 15 個）
@@ -1493,15 +1209,6 @@ if __name__ == "__main__":
     parser.add_argument('--samples', '--s', type=int, default=5)
     parser.add_argument('--eval_samples', '--es', type=int, default=50000)
     parser.add_argument('--mode', '--m', type=str, default='float')
-    parser.add_argument('--enable_cache', action='store_true', help='啟用 cache scheduler')
-    parser.add_argument('--cache_method', type=str, default='Res', choices=['Res', 'Att'], 
-                        help='Cache 方法：Res (TimestepEmbedSequential) 或 Att (AttentionBlock)')
-    parser.add_argument('--cache_threshold', type=float, default=0.1, 
-                        help='Cache scheduler 的 L1rel 閾值')
-    parser.add_argument('--enable_quantitative_analysis', action='store_true',
-                        help='啟用定量分析')
-    parser.add_argument('--analysis_num_samples', type=int, default=10,
-                        help='生成時間測試的樣本數')
     parser.add_argument('--enable_similarity', action='store_true',
                         help='啟用 Similarity Analysis (L1/L2/Cosine)')
     parser.add_argument('--similarity_samples', type=int, default=64,
@@ -1642,10 +1349,10 @@ if __name__ == "__main__":
             
             try:
                 if args.mode == 'float':
-                    CONFIG.BEST_CKPT_PATH = "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth" if CONFIG.NUM_DIFFUSION_STEPS == 100 else "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best_20steps.pth"
+                    CONFIG.BEST_CKPT_PATH = "QATcode/diffae_step6_lora_best.pth" if CONFIG.NUM_DIFFUSION_STEPS == 100 else "QATcode/diffae_step6_lora_best_20steps.pth"
                     main_float_model()
                 elif args.mode == 'int':
-                    CONFIG.BEST_CKPT_PATH = "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth" if CONFIG.NUM_DIFFUSION_STEPS == 100 else "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best_20steps.pth"
+                    CONFIG.BEST_CKPT_PATH = "QATcode/checkpoints/diffae_step6_lora_best.pth" if CONFIG.NUM_DIFFUSION_STEPS == 100 else "QATcode/checkpoints/diffae_step6_lora_best_20steps.pth"
                     #main_int_model()
                     pass
                 else:
@@ -1670,10 +1377,10 @@ if __name__ == "__main__":
     else:
         # 單個 block 模式（原有邏輯）
         if args.mode == 'float':
-            CONFIG.BEST_CKPT_PATH = "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth" if CONFIG.NUM_DIFFUSION_STEPS == 100 else "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best_20steps.pth"
+            CONFIG.BEST_CKPT_PATH = "QATcode/diffae_step6_lora_best.pth" if CONFIG.NUM_DIFFUSION_STEPS == 100 else "QATcode/diffae_step6_lora_best_20steps.pth"
             main_float_model()
         elif args.mode == 'int':
-            CONFIG.BEST_CKPT_PATH = "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth" if CONFIG.NUM_DIFFUSION_STEPS == 100 else "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best_20steps.pth"
+            CONFIG.BEST_CKPT_PATH = "QATcode/checkpoints/diffae_step6_lora_best.pth" if CONFIG.NUM_DIFFUSION_STEPS == 100 else "QATcode/checkpoints/diffae_step6_lora_best_20steps.pth"
             #main_int_model()
             pass
         else:

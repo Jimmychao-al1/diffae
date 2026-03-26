@@ -24,6 +24,10 @@ import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
+import sys
+
+sys.path.append(".")
+sys.path.append("./model")
 
 from QATcode.quantize_ver2.quant_dataset_v2 import DiffusionInputDataset
 from QATcode.quantize_ver2.quant_model_lora_v2 import (

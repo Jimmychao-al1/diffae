@@ -946,8 +946,8 @@ def main():
     )
     
     # Tri-evidence weights
-    parser.add_argument("--alpha", type=float, default=0.3, help="similarity 通道權重（對 S_sim）")
-    parser.add_argument("--beta", type=float, default=0.6, help="SVD stability 權重")
+    parser.add_argument("--alpha", type=float, default=0.4, help="similarity 通道權重（對 S_sim）")
+    parser.add_argument("--beta", type=float, default=0.5, help="SVD stability 權重")
     parser.add_argument("--gamma", type=float, default=0.1, help="FID-safe 權重")
     parser.add_argument(
         "--eta",
@@ -958,7 +958,7 @@ def main():
     
     # k range
     parser.add_argument("--k_min", type=int, default=1, help="最小 k")
-    parser.add_argument("--k_max", type=int, default=5, help="最大 k")
+    parser.add_argument("--k_max", type=int, default=4, help="最大 k")
     
     # Smoothing
     parser.add_argument("--smooth_window", type=int, default=3, help="D_global 平滑視窗")
