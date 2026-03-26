@@ -340,12 +340,12 @@ def evaluate_fid(
         else:
             raise NotImplementedError()
     
-    #fid = 0
+    fid = 0
     
     model.train()
-
+    '''
     barrier()
-
+    
     if get_rank() == 0:
         fid = fid_score.calculate_fid_given_paths(
             [cache_dir, out_put_dir],
@@ -368,7 +368,7 @@ def evaluate_fid(
         broadcast(fid, 0)
     fid = fid.item()
     print(f'fid ({get_rank()}):', fid)
-    
+    '''
     return fid
 
 

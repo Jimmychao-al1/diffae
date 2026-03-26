@@ -487,6 +487,9 @@ def main_float_model():
         # 從LitModel獲取關鍵組件
         LOGGER.info(f'base_model.conf.train_mode: {base_model.conf.train_mode}')
         diffusion_model = base_model.ema_model
+
+        #fp_ema_for_eval = deepcopy(base_model.ema_model).to(CONFIG.DEVICE)
+        #fp_ema_for_eval.eval()
         #LOGGER.info(base_model)
         # 2. 創建量化模型與準備組件
         quant_model : QuantModel_DiffAE_LoRA = create_float_quantized_model(
@@ -544,7 +547,7 @@ def main_float_model():
         
 
         ckpt = torch.load(CONFIG.BEST_CKPT_PATH, map_location='cpu', weights_only=False)
-        _load_quant_and_ema_from_ckpt(base_model, quant_model, ckpt)
+        #_load_quant_and_ema_from_ckpt(base_model, quant_model, ckpt)
         
         #LOGGER.info(base_model.ema_model)
 
@@ -620,6 +623,7 @@ def main_float_model():
             score = evaluate_fid(
                 sampler,
                 base_model.ema_model,
+                #fp_ema_for_eval,
                 conf,
                 device=CONFIG.DEVICE,
                 train_data=base_model.train_data,

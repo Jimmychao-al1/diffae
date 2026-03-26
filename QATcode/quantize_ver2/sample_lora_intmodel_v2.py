@@ -512,7 +512,7 @@ def main_float_model():
     
     # 設置運行環境（已在參數解析後設置，此處不再重複調用）
     # CONFIG.setup_environment()
-    #_seed_all(CONFIG.SEED)
+    _seed_all(CONFIG.SEED)
 
     LOGGER.info(f"使用設備: {CONFIG.DEVICE}")
     
