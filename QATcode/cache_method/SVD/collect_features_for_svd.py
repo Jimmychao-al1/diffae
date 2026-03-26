@@ -4,7 +4,9 @@ SVD Feature 收集腳本
 功能：
 - 對單一 block 在 T=100 個 timestep 收集 feature
 - 每個 timestep 累積 target_N 個樣本的 (N, C, H, W) tensor
-- 輸出：svd_features/<block_slug>/t_{0..99}.pt + meta.json
+- 輸出：
+  - 預設模式：svd_features/<block_slug>/t_{0..99}.pt + meta.json
+  - in-memory pipeline：不寫 t_{t}.pt，直接串接 svd_metrics / correlate_svd_similarity
 
 參考：similarity_calculation.py 的 hook 架構與 evaluate_fid 呼叫方式
 """
@@ -226,7 +228,7 @@ class SvdFeatureCollector:
     
     def finalize(self):
         """
-        完成收集，寫出 t_{t}.pt 與 meta.json
+        完成收集並落地寫出 t_{t}.pt 與 meta.json（僅非 in-memory 流程使用）
         
         與 similarity 的 finalize 完全不同：
         - 不計算 L1/L2/cosine

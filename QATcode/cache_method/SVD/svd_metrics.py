@@ -5,7 +5,7 @@ SVD 指標計算腳本
 - 讀取 svd_features/<block_slug>/ 下的 t_{0..99}.pt
 - 對每個 timestep 計算 channel covariance matrix 的 eigenvalues/eigenvectors
 - 用代表 timestep 的 cumulative energy 定 rank r
-- 計算 t→t-1 的子空間距離
+- 計算相鄰 timestep 的子空間距離（實作為 t-1 -> t）
 - 可選：計算 energy ratio 曲線
 - 輸出：svd_metrics/<block_slug>.json
 """

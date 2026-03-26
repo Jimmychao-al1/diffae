@@ -3,7 +3,6 @@ set -e
 
 PYTHON=python3
 SCRIPT_V2="QATcode/cache_method/L1_L2_cosine/similarity_calculation.py"
-SCRIPT_V1="QATcode/cache_method/L1_L2_cosine/similarity_calculation_v1.py"
 
 # 基本設定
 NUM_STEPS=100          # T=100
@@ -12,8 +11,7 @@ COLLECT_SAMPLES=20    # 實際收集用於相似度計算的樣本數 (每個bat
 SAMPLE_STRATEGY="random"  # 採樣策略: first=取前N個(最快), random=隨機選擇(增加多樣性), uniform=均勻分佈
 LOG_ROOT="QATcode/cache_method/L1_L2_cosine/logs"
 LOG_DIR_V2="$LOG_ROOT/v2"
-LOG_DIR_V1="$LOG_ROOT/v1"
-mkdir -p "$LOG_DIR_V2" "$LOG_DIR_V1"
+mkdir -p "$LOG_DIR_V2"
 
 # 31 個 block 名稱（與 model.named_modules() 一致）
 BLOCKS=(
@@ -53,7 +51,6 @@ BLOCKS=(
 for BLOCK in "${BLOCKS[@]}"; do
   SAFE_NAME=$(echo "$BLOCK" | tr '.' '_')
   LOG_FILE_V2="$LOG_DIR_V2/similarity_${SAFE_NAME}.log"
-  LOG_FILE_V1="$LOG_DIR_V1/similarity_${SAFE_NAME}.log"
 
   echo "=============================="
   echo "Running v2 similarity for block: $BLOCK"
@@ -73,23 +70,7 @@ for BLOCK in "${BLOCKS[@]}"; do
     --log_file "$LOG_FILE_V2" \
     2>&1 | tee -a "$LOG_FILE_V2"
 
-  #echo "=============================="
-  #echo "Running v1 similarity for block: $BLOCK"
-  #echo "Log: $LOG_FILE_V1"
-  #echo "=============================="
-#
-  #$PYTHON "$SCRIPT_V1" \
-  #  --mode float \
-  #  --num_steps "$NUM_STEPS" \
-  #  --enable_similarity \
-  #  --similarity_samples "$SAMPLES" \
-  #  --similarity_collect_samples "$COLLECT_SAMPLES" \
-  #  --similarity_sample_strategy "$SAMPLE_STRATEGY" \
-  #  --similarity_target_block "$BLOCK" \
-  #  --similarity_output_root "QATcode/cache_method/L1_L2_cosine" \
-  #  --similarity_dtype float16 \
-  #  --log_file "$LOG_FILE_V1" \
-  #  2>&1 | tee -a "$LOG_FILE_V1"
+  
 done
 
 echo "All similarity experiments finished."

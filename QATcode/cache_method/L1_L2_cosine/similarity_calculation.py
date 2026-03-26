@@ -731,21 +731,19 @@ class SimilarityCollector:
                 _, _, h, w = outputs[0].shape
                 self.block_shapes[block_name] = (h, w)
 
-            # 計算 L1/L2 矩陣（per-sample 累加）
+            # 計算 L1/L1_rel 矩陣（per-sample 累加；不輸出 L2）
             for i in range(T):
                 t1 = outputs[i]
                 for j in range(i, T):
                     t2 = outputs[j]
-                    l1_vals, l1_rate_vals, l2_vals, _ = self._calc_metrics_batch(t1, t2)
+                    l1_vals, l1_rate_vals, _, _ = self._calc_metrics_batch(t1, t2)
                     self.block_sums[block_name]["l1"][i, j] += l1_vals.sum()
                     self.block_sums[block_name]["l1_rate"][i, j] += l1_rate_vals.sum()
-                    self.block_sums[block_name]["l2"][i, j] += l2_vals.sum()
                     self.block_counts[block_name][i, j] += l1_vals.numel()
                     if i != j:
                         self.block_sums[block_name]["l1"][j, i] += l1_vals.sum()
                         # l1_rate 使用對稱值：以 t1 為參考計算 ||t1-t2||/||t1||，[t2][t1] 填入相同值
                         self.block_sums[block_name]["l1_rate"][j, i] += l1_rate_vals.sum()
-                        self.block_sums[block_name]["l2"][j, i] += l2_vals.sum()
                         self.block_counts[block_name][j, i] += l1_vals.numel()
             
             # 計算 Cosine 相似度矩陣（使用矩陣運算，參考 metrics.py）
@@ -781,7 +779,7 @@ class SimilarityCollector:
             self.block_counts_cos[block_name] += torch.ones(cosine_matrix_avg.shape, dtype=torch.int64, device=self.device)
 
             # 計算 step-change：outputs[s-1]→outputs[s]，s 為 _step_counter（0→99）。
-            # 寫入 l1_rate 的 index [s-1]；與 npz「l1_rate_step_mean」欄位一致。
+            # 只累加 L1 / L1_rel / cosine；與 npz 的 l1_step_mean / l1_rate_step_mean / cos_step_mean 一致。
             # 語意（見 QATcode/docs/cache_time_axis_audit.md）：index j = analysis 上 interval j
             # （axis j↔j+1），對應 DDIM t_ddim (99−j)→(98−j)；**不是**「DDIM 張量 t=j→j+1」。
             # 初始化當前 batch 的累加器（如果還沒有），使用 GPU tensor
@@ -798,16 +796,14 @@ class SimilarityCollector:
             for s in range(1, T):
                 t_prev = outputs[s - 1]  # _step_counter = s-1
                 t_curr = outputs[s]      # _step_counter = s
-                l1_vals, l1_rate_vals, l2_vals, cos_vals = self._calc_metrics_batch(t_prev, t_curr)
+                l1_vals, l1_rate_vals, _, cos_vals = self._calc_metrics_batch(t_prev, t_curr)
                 
                 # 累加到全局累加器
                 self.block_step_sums[block_name]["l1"][s - 1] += l1_vals.sum()
                 self.block_step_sums[block_name]["l1_rate"][s - 1] += l1_rate_vals.sum()
-                self.block_step_sums[block_name]["l2"][s - 1] += l2_vals.sum()
                 self.block_step_sums[block_name]["cos"][s - 1] += cos_vals.sum()
                 self.block_step_sumsq[block_name]["l1"][s - 1] += (l1_vals ** 2).sum()
                 self.block_step_sumsq[block_name]["l1_rate"][s - 1] += (l1_rate_vals ** 2).sum()
-                self.block_step_sumsq[block_name]["l2"][s - 1] += (l2_vals ** 2).sum()
                 self.block_step_sumsq[block_name]["cos"][s - 1] += (cos_vals ** 2).sum()
                 self.block_step_counts[block_name][s - 1] += l1_vals.numel()
                 
@@ -819,9 +815,6 @@ class SimilarityCollector:
                     self.current_batch_accumulator[block_name]["l1_rate"]["sums"][s - 1] += l1_rate_vals.sum()
                     self.current_batch_accumulator[block_name]["l1_rate"]["sumsq"][s - 1] += (l1_rate_vals ** 2).sum()
                     self.current_batch_accumulator[block_name]["l1_rate"]["counts"][s - 1] += l1_rate_vals.numel()
-                    self.current_batch_accumulator[block_name]["l2"]["sums"][s - 1] += l2_vals.sum()
-                    self.current_batch_accumulator[block_name]["l2"]["sumsq"][s - 1] += (l2_vals ** 2).sum()
-                    self.current_batch_accumulator[block_name]["l2"]["counts"][s - 1] += l2_vals.numel()
                     self.current_batch_accumulator[block_name]["cos"]["sums"][s - 1] += cos_vals.sum()
                     self.current_batch_accumulator[block_name]["cos"]["sumsq"][s - 1] += (cos_vals ** 2).sum()
                     self.current_batch_accumulator[block_name]["cos"]["counts"][s - 1] += cos_vals.numel()
@@ -913,19 +906,17 @@ class SimilarityCollector:
         return l1_vals, l1_rate_vals, l2_vals, cos_vals
 
     def finalize(self):
-        """只輸出：result_npz / L1 / cosine"""
+        """輸出：result_npz / L1 / L1_rel / cosine（不輸出 L2）。"""
         for block_name in self.block_sums.keys():
             # 在 GPU 上計算 mean，然後轉移到 CPU
             l1_mean_tensor = self._safe_div(self.block_sums[block_name]["l1"], self.block_counts[block_name])
             l1_rate_mean_tensor = self._safe_div(self.block_sums[block_name]["l1_rate"], self.block_counts[block_name])
-            l2_mean_tensor = self._safe_div(self.block_sums[block_name]["l2"], self.block_counts[block_name])
             # cosine 使用獨立的 counts，因為累加方式不同（batch 數 vs 樣本數）
             cos_mean_tensor = self._safe_div(self.block_sums[block_name]["cos"], self.block_counts_cos[block_name])
             
             # 轉移到 CPU 並轉換為 numpy
             l1_mean = l1_mean_tensor.cpu().numpy() if isinstance(l1_mean_tensor, torch.Tensor) else l1_mean_tensor
             l1_rate_mean = l1_rate_mean_tensor.cpu().numpy() if isinstance(l1_rate_mean_tensor, torch.Tensor) else l1_rate_mean_tensor
-            l2_mean = l2_mean_tensor.cpu().numpy() if isinstance(l2_mean_tensor, torch.Tensor) else l2_mean_tensor
             cos_mean = cos_mean_tensor.cpu().numpy() if isinstance(cos_mean_tensor, torch.Tensor) else cos_mean_tensor
             
             # 調試信息：檢查 cosine 矩陣的統計信息
@@ -937,6 +928,7 @@ class SimilarityCollector:
                        f"off_diag_std={cos_off_diag.std():.6f}")
 
             l1_step_mean, l1_step_std = self._step_mean_std(block_name, "l1")
+            l1_rate_step_mean, l1_rate_step_std = self._step_mean_std(block_name, "l1_rate")
             cos_step_mean, cos_step_std = self._step_mean_std(block_name, "cos")
 
             npz_path = self.result_npz_dir / f"{block_name.replace('.', '_')}.npz"
@@ -953,6 +945,7 @@ class SimilarityCollector:
             np.savez_compressed(
                 npz_path,
                 l1rel=l1_mean.astype(self.save_dtype),
+                l1rel_rate=l1_rate_mean.astype(self.save_dtype),
                 cosine=cos_mean.astype(self.save_dtype),
                 step_idx=step_idx_arr,
                 mapped_t=mapped_t,
@@ -964,6 +957,8 @@ class SimilarityCollector:
                 t_curr_interval=t_curr_interval_arr,
                 l1_step_mean=l1_step_mean.astype(self.save_dtype),
                 l1_step_std=l1_step_std.astype(self.save_dtype),
+                l1_rate_step_mean=l1_rate_step_mean.astype(self.save_dtype),
+                l1_rate_step_std=l1_rate_step_std.astype(self.save_dtype),
                 cos_step_mean=cos_step_mean.astype(self.save_dtype),
                 cos_step_std=cos_step_std.astype(self.save_dtype),
             )

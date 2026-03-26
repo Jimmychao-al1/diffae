@@ -3,8 +3,8 @@ SVD vs Similarity 相關性分析
 
 功能：
 - 讀取 svd_metrics/<block_slug>.json（SVD 子空間距離）
-- 讀取 L1_L2_cosine/T_100/Res/<block_slug>.npz（similarity step 曲線）
-- 計算 Pearson / Spearman 相關性（L1 vs SVDdist、CosDist vs SVDdist）
+- 讀取 L1_L2_cosine/T_100/*/result_npz/<block_slug>.npz（similarity step 曲線）
+- 計算 Pearson / Spearman 相關性（L1 vs SVDdist、L1rel_rate vs SVDdist、CosDist vs SVDdist）
 - 可選：畫對齊曲線圖與散點圖
 - 輸出：correlation/<block_slug>.json
 """
@@ -40,18 +40,32 @@ def load_similarity_npz(npz_path: Path) -> Dict:
     載入 similarity NPZ
     
     Returns:
-        dict: 包含 l1_step_mean, l2_step_mean, cos_step_mean, step_idx
+        dict: 包含 l1_step_mean, l1_rate_step_mean, cos_step_mean, step_idx
     """
     if not npz_path.exists():
         raise FileNotFoundError(f"Similarity NPZ 不存在: {npz_path}")
     
-    data = np.load(npz_path)
-    
+    data = np.load(npz_path, allow_pickle=True)
+    keys = set(data.files)
+
+    if 'l1_step_mean' not in keys:
+        raise KeyError(f"{npz_path} 缺少必要欄位: l1_step_mean")
+    if 'cos_step_mean' not in keys:
+        raise KeyError(f"{npz_path} 缺少必要欄位: cos_step_mean")
+
+    # 目前 similarity_calculation.py 已輸出 l1_rate_step_mean；舊檔可能不存在，做相容降級。
+    if 'l1_rate_step_mean' in keys:
+        l1_rate_step_mean = data['l1_rate_step_mean']
+    else:
+        l1_rate_step_mean = data['l1_step_mean']
+
+    step_idx = data['step_idx'] if 'step_idx' in keys else None
+
     return {
         'l1_step_mean': data['l1_step_mean'],
-        'l2_step_mean': data['l2_step_mean'],
+        'l1_rate_step_mean': l1_rate_step_mean,
         'cos_step_mean': data['cos_step_mean'],
-        'step_idx': data.get('step_idx', None)
+        'step_idx': step_idx,
     }
 
 
@@ -241,41 +255,51 @@ def process_single_correlation(
     print(f"{'='*60}")
     print(f"T={T}, rank_r={svd_data['rank_r']}")
     
-    # 2. 載入 similarity
+    # 2. 載入 similarity（interval-wise: 長度通常為 T-1）
     sim_data = load_similarity_npz(similarity_npz_path)
-    l1_step_mean = sim_data['l1_step_mean']  # 長度 T
-    l2_step_mean = sim_data['l2_step_mean']
+    l1_step_mean = sim_data['l1_step_mean']
+    l1_rate_step_mean = sim_data['l1_rate_step_mean']
     cos_step_mean = sim_data['cos_step_mean']
     
     # 3. 檢查長度
-    if len(l1_step_mean) != T or len(cos_step_mean) != T:
-        print(f"警告：長度不一致 - SVD T={T}, L1 len={len(l1_step_mean)}, Cos len={len(cos_step_mean)}")
-        # 取最小長度
-        T_min = min(T, len(l1_step_mean), len(cos_step_mean))
-        svd_dist = svd_dist[:T_min]
-        l1_step_mean = l1_step_mean[:T_min]
-        cos_step_mean = cos_step_mean[:T_min]
-        T = T_min
-    
-    # 4. 建構序列（t=1..T-1，跳過 t=0 因為 SVD dist[0]=0）
-    svd_dist_seq = svd_dist[1:]
-    l1_seq = l1_step_mean[1:]
-    l2_seq = l2_step_mean[1:]
-    cos_dist_seq = 1.0 - cos_step_mean[1:]  # Cosine distance = 1 - CosSim
+    interval_len = len(l1_step_mean)
+    if len(l1_rate_step_mean) != interval_len or len(cos_step_mean) != interval_len:
+        print(
+            "警告：similarity 各序列長度不一致，將取最小長度對齊 "
+            f"(l1={len(l1_step_mean)}, l1_rate={len(l1_rate_step_mean)}, cos={len(cos_step_mean)})"
+        )
+    min_interval_len = min(len(l1_step_mean), len(l1_rate_step_mean), len(cos_step_mean))
+    if min_interval_len <= 0:
+        raise ValueError("Similarity step 序列長度為 0，無法計算相關性")
+
+    # subspace_dist[t]（t>=1）對應 interval index j=t-1，所以取 svd_dist[1:1+L]
+    if len(svd_dist) - 1 < min_interval_len:
+        print(
+            f"警告：SVD interval 長度不足，SVD 可用={len(svd_dist)-1}, similarity={min_interval_len}，"
+            "將以較短長度對齊"
+        )
+    L = min(min_interval_len, max(len(svd_dist) - 1, 0))
+    if L <= 1:
+        raise ValueError(f"對齊後有效序列太短 (L={L})，無法計算穩定相關性")
+
+    svd_dist_seq = svd_dist[1:1 + L]
+    l1_seq = l1_step_mean[:L]
+    l1_rate_seq = l1_rate_step_mean[:L]
+    cos_dist_seq = 1.0 - cos_step_mean[:L]  # Cosine distance = 1 - CosSim
     
     # 5. 計算相關性
     print("\n計算相關性...")
     l1_vs_svd = compute_correlations(l1_seq, svd_dist_seq)
-    l2_vs_svd = compute_correlations(l2_seq, svd_dist_seq)
+    l1_rate_vs_svd = compute_correlations(l1_rate_seq, svd_dist_seq)
     cos_vs_svd = compute_correlations(cos_dist_seq, svd_dist_seq)
     
     print(f"L1 vs SVD:")
     print(f"  Pearson: {l1_vs_svd['pearson']:.4f} (p={l1_vs_svd['pearson_pvalue']:.4e})")
     print(f"  Spearman: {l1_vs_svd['spearman']:.4f} (p={l1_vs_svd['spearman_pvalue']:.4e})")
     
-    print(f"L2 vs SVD:")
-    print(f"  Pearson: {l2_vs_svd['pearson']:.4f} (p={l2_vs_svd['pearson_pvalue']:.4e})")
-    print(f"  Spearman: {l2_vs_svd['spearman']:.4f} (p={l2_vs_svd['spearman_pvalue']:.4e})")
+    print(f"L1rel_rate vs SVD:")
+    print(f"  Pearson: {l1_rate_vs_svd['pearson']:.4f} (p={l1_rate_vs_svd['pearson_pvalue']:.4e})")
+    print(f"  Spearman: {l1_rate_vs_svd['spearman']:.4f} (p={l1_rate_vs_svd['spearman_pvalue']:.4e})")
     
     print(f"Cosine Distance vs SVD:")
     print(f"  Pearson: {cos_vs_svd['pearson']:.4f} (p={cos_vs_svd['pearson_pvalue']:.4e})")
@@ -287,11 +311,12 @@ def process_single_correlation(
     
     result = {
         "block": block_slug,
-        "T": T,
+        "T_svd": int(T),
+        "interval_length_used": int(L),
         "rank_r": svd_data['rank_r'],
         "correlation": {
             "L1_vs_SVD": l1_vs_svd,
-            "L2_vs_SVD": l2_vs_svd,
+            "L1relRate_vs_SVD": l1_rate_vs_svd,
             "CosDist_vs_SVD": cos_vs_svd
         }
     }
@@ -308,7 +333,7 @@ def process_single_correlation(
         
         # 對齊曲線圖
         alignment_path = figures_dir / f"{block_slug}_alignment.png"
-        plot_alignment(svd_dist, l1_step_mean, 1.0 - cos_step_mean, block_slug, alignment_path)
+        plot_alignment(svd_dist_seq, l1_rate_seq, cos_dist_seq, block_slug, alignment_path)
         
         # 散點圖
         scatter_path = figures_dir / f"{block_slug}_scatter.png"

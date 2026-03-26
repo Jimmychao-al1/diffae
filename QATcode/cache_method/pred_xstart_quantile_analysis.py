@@ -718,4 +718,3 @@ if __name__ == "__main__":
     LOGGER.info("baseline npz: %s", npz_baseline)
     LOGGER.info("v2 npz: %s", npz_v2)
 
-
