@@ -78,7 +78,7 @@ def plot_block_curves(
     ax.plot(x, svd, label="SVD drift (norm)", color="#2ca02c", linewidth=1.2, alpha=0.9)
 
     # 依照統一約定：輸出顯示 t_curr，j=0 -> t_curr=T-2，j=T-2 -> t_curr=0
-    ax.set_xlabel("t_curr (interval x_{t+1} -> x_t), left=T-2 noise -> right=0 clear", fontsize=10)
+    ax.set_xlabel("Current timestep t in transition x_{t+1} → x_t", fontsize=10)
     ax.set_ylabel("Normalized value  [0, 1]", fontsize=10)
     ax.set_title(
         f"{block_name}    (FID weight = {fid_w:.4f})",
@@ -209,7 +209,7 @@ def plot_heatmap(
     fig, ax = plt.subplots(figsize=(16, 8))
     im = ax.imshow(data, aspect="auto", cmap=cmap, vmin=0, vmax=1, interpolation="nearest")
 
-    ax.set_xlabel("t_curr (interval x_{t+1} -> x_t), left=T-2 noise -> right=0 clear", fontsize=10)
+    ax.set_xlabel("Current timestep t in transition x_{t+1} → x_t", fontsize=10)
     ax.set_ylabel("Block", fontsize=10)
     ax.set_title(title, fontsize=12, fontweight="bold")
     ax.set_yticks(range(B))
@@ -260,7 +260,7 @@ def plot_combined_overview(
     ax_top.plot(x, l1, label="L1rel_rate", color="#1f77b4", linewidth=1.3)
     ax_top.plot(x, cos, label="CosDist", color="#ff7f0e", linewidth=1.3)
     ax_top.plot(x, svd, label="SVD drift", color="#2ca02c", linewidth=1.3)
-    ax_top.set_xlabel("t_curr (interval x_{t+1} -> x_t), left=T-2 noise -> right=0 clear", fontsize=10)
+    ax_top.set_xlabel("Current timestep t in transition x_{t+1} → x_t", fontsize=10)
     ax_top.set_ylabel("Normalized [0, 1]", fontsize=10)
     ax_top.set_title(
         f"Stage-0E: {block_name}  (w_b = {fid_w_all[block_idx]:.4f})",
@@ -296,7 +296,7 @@ def plot_combined_overview(
     ax_bot.set_yticks(range(B))
     ax_bot.set_yticklabels(names_sorted, fontsize=6)
     ax_bot.invert_yaxis()
-    ax_bot.set_xlabel("FID weight w_b", fontsize=10)
+    ax_bot.set_xlabel("FID sensitivity weight w_b", fontsize=10)
     ax_bot.set_title("FID Sensitivity (red = selected block)", fontsize=11)
     ax_bot.set_xlim(0, 1.08)
     ax_bot.grid(axis="x", alpha=0.3)

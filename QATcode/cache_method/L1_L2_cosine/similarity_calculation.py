@@ -1046,8 +1046,8 @@ class SimilarityCollector:
         plt.plot(x, mean, color="blue", linewidth=2)
         plt.fill_between(x, mean - std, mean + std, color="blue", alpha=0.2)
         plt.title(title)
-        plt.xlabel("t_curr (interval x_{t+1} -> x_t), left=T-2 noise -> right=0 clear")
-        plt.ylabel("Relative metric")
+        plt.xlabel("DDIM timestep t") # noise (T-1) -> clear (0) 放在論文圖中說明
+        plt.ylabel("L1 relative change")
         # x 軸 tick labels 顯示 t_curr，不改變資料內部順序
         t_curr_left_to_right = (len(mean) - 1) - np.arange(len(mean))
         tick_positions = []
@@ -1096,8 +1096,8 @@ class SimilarityCollector:
             plt.fill_between(x, mean - std, mean + std, color=fill_color, alpha=0.15)
         
         plt.title(title)
-        plt.xlabel("t_curr (interval x_{t+1} -> x_t), left=T-2 noise -> right=0 clear")
-        plt.ylabel("Relative metric")
+        plt.xlabel("DDIM timestep t") # noise (T-1) -> clear (0) 放在論文圖中說明
+        plt.ylabel("L1 relative change")
         
         # x 軸 tick labels 顯示 t_curr，不改變資料內部順序
         tick_positions = []
@@ -1208,8 +1208,8 @@ class SimilarityCollector:
         ax.set_yticklabels(tick_labels, rotation=0, fontsize=9)
         
         plt.title(title, fontsize=12)
-        plt.xlabel("t (point-wise DDIM timestep), left=T-1 noise -> right=0 clear", fontsize=10)
-        plt.ylabel("t (point-wise DDIM timestep), left=T-1 noise -> right=0 clear", fontsize=10)
+        plt.xlabel("DDIM timestep t", fontsize=10) # noise (T-1) -> clear (0) 放在論文圖中說明
+        plt.ylabel("DDIM timestep t", fontsize=10) # noise (T-1) -> clear (0) 放在論文圖中說明
         plt.tight_layout()
         plt.savefig(out_path, dpi=300, bbox_inches="tight")
         plt.close()

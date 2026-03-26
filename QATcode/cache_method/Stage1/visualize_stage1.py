@@ -59,7 +59,7 @@ def plot_drift_and_zones(config, diag, save_path):
         a0, a1 = _zone_axis(z)
         ax1.axvspan(a0, a1, alpha=0.15, color=color, label=f"Zone {z['id']}")
     
-    ax1.set_xlabel('t_curr (interval x_{t+1} -> x_t), left=T-2 noise -> right=0 clear')
+    ax1.set_xlabel('DDIM timestep t') # noise (T-1) -> clear (0) 放在論文圖中說明
     ax1.set_ylabel('Global Drift')
     ax1.set_title('FID-weighted Global Drift + Zone Segmentation (per-interval D)')
     ax1.legend(loc='upper left', fontsize=8, ncol=2)
@@ -79,7 +79,7 @@ def plot_drift_and_zones(config, diag, save_path):
     for cp in diag['change_points']:
         ax2.axvline(cp, color='red', alpha=0.5, ls='--', lw=1)
     
-    ax2.set_xlabel('t_curr (same interval index j as D_smooth), left=T-2 noise -> right=0 clear')
+    ax2.set_xlabel('DDIM timestep t') # noise (T-1) -> clear (0) 放在論文圖中說明
     ax2.set_ylabel('Change Magnitude Δ')
     ax2.set_title('Delta (Change Magnitude)')
     ax2.legend()
@@ -159,7 +159,7 @@ def plot_k_histogram(config, save_path):
     bins = np.arange(0.5, 9.5, 1)
     ax.hist(all_k, bins=bins, edgecolor='black', alpha=0.7, color='steelblue')
     
-    ax.set_xlabel('k (cache frequency)')
+    ax.set_xlabel('Cache period k')
     ax.set_ylabel('Count')
     ax.set_title(f'K Distribution Histogram (Total: {len(all_k)} entries)')
     ax.set_xticks(range(1, 9))
@@ -191,7 +191,7 @@ def plot_zone_risk(config, diag, save_path):
     
     # === Top: Zone risk R_z ===
     bars = ax1.bar(zone_ids, R_z, color='coral', edgecolor='black', alpha=0.7)
-    ax1.set_xlabel('Zone')
+    ax1.set_xlabel('Zone z')
     ax1.set_ylabel('Risk R_z')
     ax1.set_title('Zone Risk R_z (higher = more risky)')
     ax1.set_xticks(zone_ids)
@@ -206,9 +206,9 @@ def plot_zone_risk(config, diag, save_path):
     
     # === Bottom: k_max ceiling ===
     bars = ax2.bar(zone_ids, k_max_z, color='steelblue', edgecolor='black', alpha=0.7)
-    ax2.set_xlabel('Zone')
+    ax2.set_xlabel('Zone z')
     ax2.set_ylabel('k_max ceiling')
-    ax2.set_title('Zone-level K Ceiling')
+    ax2.set_title('Zone z K Ceiling')
     ax2.set_xticks(zone_ids)
     ax2.set_xticklabels(zone_labels)
     ax2.set_ylim([0, 9])

@@ -586,7 +586,7 @@ if __name__ == "__main__":
     project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.."))
     
     run_stage0e(
-        l1_cos_dir=os.path.join(project_root, "QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz"),
+        l1_cos_dir=os.path.join(project_root, "QATcode/cache_method/L1_L2_cosine/T_100/v2_latest/result_npz"),
         svd_dir=os.path.join(project_root, "QATcode/cache_method/SVD/svd_metrics"),
         fid_json_path=os.path.join(project_root, "QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json"),
         output_dir=os.path.join(project_root, "QATcode/cache_method/Stage0/stage0e_output"),

@@ -18,7 +18,7 @@ BLOCK="$1"
 TARGET_N="${2:-32}"
 SAFE_NAME=$(echo "$BLOCK" | tr '.' '_')
 LOG_DIR="QATcode/cache_method/SVD/logs"
-SIM_NPZ="QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/${SAFE_NAME}.npz"
+SIM_NPZ="QATcode/cache_method/L1_L2_cosine/T_100/v2_latest/result_npz/${SAFE_NAME}.npz"
 mkdir -p "$LOG_DIR"
 
 echo "=============================="

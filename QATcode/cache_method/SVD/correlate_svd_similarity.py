@@ -124,15 +124,15 @@ def plot_alignment(
     ax1 = axes[0]
     ax1_twin = ax1.twinx()
     
-    ax1.plot(x, l1, 'b-', linewidth=2, label='L1rel', alpha=0.8)
+    ax1.plot(x, l1, 'b-', linewidth=2, label='L1 relative change', alpha=0.8)
     ax1_twin.plot(x, svd_dist, 'r--', linewidth=2, label='SVD Subspace Dist', alpha=0.8)
     
-    ax1.set_xlabel('t (DDIM timestep): noise end (T-1) -> clear end (0)')
-    ax1.set_ylabel('L1rel', color='b')
+    ax1.set_xlabel('DDIM timestep t') # noise (T-1) -> clear (0) 放在論文圖中說明
+    ax1.set_ylabel('L1 relative change', color='b')
     ax1_twin.set_ylabel('SVD Subspace Distance', color='r')
     ax1.tick_params(axis='y', labelcolor='b')
     ax1_twin.tick_params(axis='y', labelcolor='r')
-    ax1.set_title(f'{block_slug} - L1rel vs SVD Subspace Distance', fontweight='bold')
+    ax1.set_title(f'{block_slug} - L1 relative change vs SVD Subspace Distance', fontweight='bold')
     ax1.grid(True, alpha=0.3)
     ax1.legend(loc='upper left')
     ax1_twin.legend(loc='upper right')
@@ -143,15 +143,15 @@ def plot_alignment(
     ax2 = axes[1]
     ax2_twin = ax2.twinx()
     
-    ax2.plot(x, cos_dist, 'g-', linewidth=2, label='Cosine Distance (1-CosSim)', alpha=0.8)
+    ax2.plot(x, cos_dist, 'g-', linewidth=2, label='Cosine distance (1 − cosine similarity)', alpha=0.8)
     ax2_twin.plot(x, svd_dist, 'r--', linewidth=2, label='SVD Subspace Dist', alpha=0.8)
     
-    ax2.set_xlabel('t (DDIM timestep): noise end (T-1) -> clear end (0)')
-    ax2.set_ylabel('Cosine Distance', color='g')
+    ax2.set_xlabel('DDIM timestep t') # noise (T-1) -> clear (0) 放在論文圖中說明
+    ax2.set_ylabel('Cosine distance (1 − cosine similarity)', color='g')
     ax2_twin.set_ylabel('SVD Subspace Distance', color='r')
     ax2.tick_params(axis='y', labelcolor='g')
     ax2_twin.tick_params(axis='y', labelcolor='r')
-    ax2.set_title(f'{block_slug} - Cosine Distance vs SVD Subspace Distance', fontweight='bold')
+    ax2.set_title(f'{block_slug} - Cosine distance (1 − cosine similarity) vs SVD Subspace Distance', fontweight='bold')
     ax2.grid(True, alpha=0.3)
     ax2.legend(loc='upper left')
     ax2_twin.legend(loc='upper right')
@@ -191,16 +191,16 @@ def plot_scatter(
     # 左圖：L1 vs SVD
     ax1 = axes[0]
     ax1.scatter(l1, svd_dist, alpha=0.6, s=30, c='blue')
-    ax1.set_xlabel('L1rel')
+    ax1.set_xlabel('L1 relative change')
     ax1.set_ylabel('SVD Subspace Distance')
-    ax1.set_title(f'{block_slug} - L1rel vs SVD\nPearson: {l1_corr["pearson"]:.4f}, Spearman: {l1_corr["spearman"]:.4f}',
+    ax1.set_title(f'{block_slug} - L1 relative change vs SVD\nPearson: {l1_corr["pearson"]:.4f}, Spearman: {l1_corr["spearman"]:.4f}',
                   fontweight='bold')
     ax1.grid(True, alpha=0.3)
     
     # 右圖：CosDist vs SVD
     ax2 = axes[1]
     ax2.scatter(cos_dist, svd_dist, alpha=0.6, s=30, c='green')
-    ax2.set_xlabel('Cosine Distance (1-CosSim)')
+    ax2.set_xlabel('Cosine distance (1 − cosine similarity)')
     ax2.set_ylabel('SVD Subspace Distance')
     ax2.set_title(f'{block_slug} - Cosine Distance vs SVD\nPearson: {cos_corr["pearson"]:.4f}, Spearman: {cos_corr["spearman"]:.4f}',
                   fontweight='bold')
@@ -325,7 +325,7 @@ def main():
     parser.add_argument('--similarity_npz', type=str, help='Similarity NPZ 路徑（單一 block）')
     parser.add_argument('--svd_metrics_dir', type=str, default='QATcode/cache_method/SVD/svd_metrics',
                         help='SVD 指標目錄（批次處理）')
-    parser.add_argument('--similarity_npz_dir', type=str, default='QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz',
+    parser.add_argument('--similarity_npz_dir', type=str, default='QATcode/cache_method/L1_L2_cosine/T_100/v2_latest/result_npz',
                         help='Similarity NPZ 目錄（批次處理）')
     parser.add_argument('--output_root', type=str, default='QATcode/cache_method/SVD/correlation',
                         help='輸出根目錄')

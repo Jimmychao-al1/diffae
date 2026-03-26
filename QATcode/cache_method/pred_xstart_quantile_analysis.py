@@ -490,8 +490,8 @@ def plot_pred_xstart_quantile_overlay(*, npz_baseline: Path, npz_v2: Path, out_p
     plt.xlim(0, len(t) - 1)
     # 依照你統一約定：左邊最雜端 t=T-1，右邊最清晰端 t=0
     plt.gca().invert_xaxis()
-    plt.xlabel("t (DDIM timestep): noise end (T-1) -> clear end (0)")
-    plt.ylabel("pred_xstart value")
+    plt.xlabel("DDIM timestep t") # noise (T-1) -> clear (0) 放在論文圖中說明
+    plt.ylabel("Predicted x_start value")
     plt.grid(True, alpha=0.25)
     plt.legend(loc="best")
 
