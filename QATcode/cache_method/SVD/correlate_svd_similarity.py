@@ -40,7 +40,7 @@ def load_similarity_npz(npz_path: Path) -> Dict:
     載入 similarity NPZ
     
     Returns:
-        dict: 包含 l1_step_mean, l1_rate_step_mean, cos_step_mean, step_idx
+        dict: 包含 l1_step_mean, cos_step_mean, step_idx, t_curr_interval
     """
     if not npz_path.exists():
         raise FileNotFoundError(f"Similarity NPZ 不存在: {npz_path}")
@@ -53,19 +53,13 @@ def load_similarity_npz(npz_path: Path) -> Dict:
     if 'cos_step_mean' not in keys:
         raise KeyError(f"{npz_path} 缺少必要欄位: cos_step_mean")
 
-    # 目前 similarity_calculation.py 已輸出 l1_rate_step_mean；舊檔可能不存在，做相容降級。
-    if 'l1_rate_step_mean' in keys:
-        l1_rate_step_mean = data['l1_rate_step_mean']
-    else:
-        l1_rate_step_mean = data['l1_step_mean']
-
     step_idx = data['step_idx'] if 'step_idx' in keys else None
-
+    t_curr_interval = data['t_curr_interval'] if 't_curr_interval' in keys else None
     return {
         'l1_step_mean': data['l1_step_mean'],
-        'l1_rate_step_mean': l1_rate_step_mean,
         'cos_step_mean': data['cos_step_mean'],
         'step_idx': step_idx,
+        't_curr_interval': t_curr_interval,
     }
 
 
@@ -119,7 +113,7 @@ def plot_alignment(
     
     Args:
         svd_dist: SVD interval distance 序列，長度 L（通常 T-1，但可能因對齊截斷而更短）
-        l1: L1 或 L1rel_rate 的 step 序列，長度 L (L1)
+        l1: L1 relative change 序列，長度 L (L1 step mean)
         cos_dist: 1 - cos_step_mean 的 step 序列，長度 L
         block_slug: Block 名稱
         output_path: 輸出路徑
@@ -193,7 +187,7 @@ def plot_scatter(
     
     Args:
         svd_dist: SVD 子空間距離，長度 T
-        l1: L1rel step mean，長度 T
+        l1: L1 relative change，長度 T (L1 step mean)
         cos_dist: 1 - Cosine，長度 T
         block_slug: Block 名稱
         output_path: 輸出路徑
@@ -258,17 +252,16 @@ def process_single_correlation(
     # 2. 載入 similarity（interval-wise: 長度通常為 T-1）
     sim_data = load_similarity_npz(similarity_npz_path)
     l1_step_mean = sim_data['l1_step_mean']
-    l1_rate_step_mean = sim_data['l1_rate_step_mean']
     cos_step_mean = sim_data['cos_step_mean']
     
     # 3. 檢查長度
     interval_len = len(l1_step_mean)
-    if len(l1_rate_step_mean) != interval_len or len(cos_step_mean) != interval_len:
+    if len(cos_step_mean) != interval_len:
         print(
             "警告：similarity 各序列長度不一致，將取最小長度對齊 "
-            f"(l1={len(l1_step_mean)}, l1_rate={len(l1_rate_step_mean)}, cos={len(cos_step_mean)})"
+            f"(l1={len(l1_step_mean)}, cos={len(cos_step_mean)})"
         )
-    min_interval_len = min(len(l1_step_mean), len(l1_rate_step_mean), len(cos_step_mean))
+    min_interval_len = min(len(l1_step_mean), len(cos_step_mean))
     if min_interval_len <= 0:
         raise ValueError("Similarity step 序列長度為 0，無法計算相關性")
 
@@ -284,22 +277,16 @@ def process_single_correlation(
 
     svd_dist_seq = svd_dist[1:1 + L]
     l1_seq = l1_step_mean[:L]
-    l1_rate_seq = l1_rate_step_mean[:L]
     cos_dist_seq = 1.0 - cos_step_mean[:L]  # Cosine distance = 1 - CosSim
     
     # 5. 計算相關性
     print("\n計算相關性...")
     l1_vs_svd = compute_correlations(l1_seq, svd_dist_seq)
-    l1_rate_vs_svd = compute_correlations(l1_rate_seq, svd_dist_seq)
     cos_vs_svd = compute_correlations(cos_dist_seq, svd_dist_seq)
     
     print(f"L1 vs SVD:")
     print(f"  Pearson: {l1_vs_svd['pearson']:.4f} (p={l1_vs_svd['pearson_pvalue']:.4e})")
     print(f"  Spearman: {l1_vs_svd['spearman']:.4f} (p={l1_vs_svd['spearman_pvalue']:.4e})")
-    
-    print(f"L1rel_rate vs SVD:")
-    print(f"  Pearson: {l1_rate_vs_svd['pearson']:.4f} (p={l1_rate_vs_svd['pearson_pvalue']:.4e})")
-    print(f"  Spearman: {l1_rate_vs_svd['spearman']:.4f} (p={l1_rate_vs_svd['spearman_pvalue']:.4e})")
     
     print(f"Cosine Distance vs SVD:")
     print(f"  Pearson: {cos_vs_svd['pearson']:.4f} (p={cos_vs_svd['pearson_pvalue']:.4e})")
@@ -316,7 +303,6 @@ def process_single_correlation(
         "rank_r": svd_data['rank_r'],
         "correlation": {
             "L1_vs_SVD": l1_vs_svd,
-            "L1relRate_vs_SVD": l1_rate_vs_svd,
             "CosDist_vs_SVD": cos_vs_svd
         }
     }
@@ -333,7 +319,7 @@ def process_single_correlation(
         
         # 對齊曲線圖
         alignment_path = figures_dir / f"{block_slug}_alignment.png"
-        plot_alignment(svd_dist_seq, l1_rate_seq, cos_dist_seq, block_slug, alignment_path)
+        plot_alignment(svd_dist_seq, l1_seq, cos_dist_seq, block_slug, alignment_path)
         
         # 散點圖
         scatter_path = figures_dir / f"{block_slug}_scatter.png"
