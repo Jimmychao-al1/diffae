@@ -2545,3 +2545,1914 @@ Epoch 240/240 完成:
 2026-03-15 03:53:52,529 [INFO] 
 🎉 Step 6 量化感知微調完成！
 2026-03-15 03:53:58,896 [INFO] 執行 'main' 完成，耗時: 7588.67 秒
+2026-03-27 16:33:15,518 [INFO] 使用設備: cuda
+2026-03-27 16:33:15,518 [INFO] === 新功能狀態 ===
+2026-03-27 16:33:15,518 [INFO] Layer-by-Layer 訓練: 關閉
+2026-03-27 16:33:15,518 [INFO] 代理指標驗證: 關閉
+2026-03-27 16:33:15,518 [INFO] 實驗目錄: runs/default
+2026-03-27 16:33:15,518 [INFO] 載入 Diff-AE 模型: checkpoints/ffhq128_autoenc_latent/last.ckpt
+2026-03-27 16:33:17,499 [INFO] Diff-AE 模型載入完成
+2026-03-27 16:33:17,565 [INFO] 執行 'load_diffae_model' 完成，耗時: 2.05 秒
+2026-03-27 16:33:17,565 [INFO] ✅ Diff-AE 模型載入成功
+2026-03-27 16:33:17,777 [INFO] ✅ FP Diff-AE 模型載入成功
+2026-03-27 16:33:17,777 [INFO] base_model.conf.train_mode: TrainMode.latent_diffusion
+2026-03-27 16:33:17,853 [INFO] === 創建 LoRA 量化模型 ===
+2026-03-27 16:33:17,853 [INFO] === 開始 UNet LoRA 量化改造 ===
+2026-03-27 16:33:17,853 [INFO] 改造模組: time_embed
+2026-03-27 16:33:17,853 [INFO]   跳過量化特殊模組: 0
+2026-03-27 16:33:17,853 [INFO]   跳過量化特殊模組: 2
+2026-03-27 16:33:17,854 [INFO] 改造模組: input_blocks
+2026-03-27 16:33:17,854 [INFO]   跳過量化特殊模組: 0
+2026-03-27 16:33:17,854 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,855 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,855 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,855 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,856 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,857 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,857 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,858 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,858 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,859 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,860 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,860 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,861 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,861 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,862 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,862 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,863 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,864 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,864 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,865 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,865 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,866 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,866 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,867 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,867 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,868 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,869 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,870 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,871 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:33:17,871 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,873 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,873 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,874 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,876 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,877 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,878 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,878 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,880 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,883 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,884 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,885 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,888 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:33:17,888 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,892 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,893 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,893 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,897 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,900 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,902 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,902 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,905 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,910 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,911 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,912 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,918 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:33:17,918 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,923 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,924 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,925 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,931 [INFO] 改造模組: middle_block
+2026-03-27 16:33:17,931 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,936 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,937 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,938 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,944 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,949 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,950 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,951 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,956 [INFO] 改造模組: output_blocks
+2026-03-27 16:33:17,956 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,967 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,969 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,970 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,975 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:33:17,975 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,986 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,987 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,988 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:17,993 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:33:17,993 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,003 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,004 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,005 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,010 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:33:18,010 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,016 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,017 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,018 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,023 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,031 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,032 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,032 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,036 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:33:18,036 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,042 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,043 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,043 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,047 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:33:18,047 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,052 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,053 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,054 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,057 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:33:18,057 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,060 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,061 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,062 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,065 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,069 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,070 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,070 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,072 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:33:18,072 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,075 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,076 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,076 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,078 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:33:18,078 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,080 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,081 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,081 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,083 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:33:18,083 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,085 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,085 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,086 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,088 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,089 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,090 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,090 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,091 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:33:18,091 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,092 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,092 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,092 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,094 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:33:18,094 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,095 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,095 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,096 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,096 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:33:18,096 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,097 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,097 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,098 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,098 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,099 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,100 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,100 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,101 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:33:18,101 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,102 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,102 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,103 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,103 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:33:18,103 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,104 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,105 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,105 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:33:18,106 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:33:18,106 [INFO] 改造模組: out
+2026-03-27 16:33:18,106 [INFO]   跳過量化特殊模組: 2
+2026-03-27 16:33:18,153 [INFO] 執行 'create_quantized_model' 完成，耗時: 0.30 秒
+2026-03-27 16:33:18,160 [INFO] 載入校準資料...
+2026-03-27 16:33:18,422 [INFO] ✅ 載入真實校準資料成功
+2026-03-27 16:33:18,424 [INFO] ==================================================
+2026-03-27 16:33:18,425 [INFO] 5. Setting first and last layers to 8-bit...
+2026-03-27 16:33:18,426 [INFO] 找到 144 個量化模組
+2026-03-27 16:33:18,426 [INFO] ✅ 首尾層 8-bit 設定完成
+2026-03-27 16:33:18,426 [INFO] ✅ 量化模型創建成功
+2026-03-27 16:33:18,426 [INFO] set quant state to True, True for layer 1
+2026-03-27 16:33:18,426 [INFO] set quant state to True, True for layer 2
+2026-03-27 16:33:18,426 [INFO] set quant state to True, False for layer 3
+2026-03-27 16:33:18,428 [INFO] set quant state to True, True for layer 144
+2026-03-27 16:33:18,940 [INFO] ✅ 量化模型載入成功
+2026-03-27 16:33:18,940 [INFO] === 初始化新功能模組 ===
+2026-03-27 16:33:18,944 [INFO] 
+=== 模型參數統計 ===
+2026-03-27 16:33:18,947 [INFO] 可訓練參數: 9,869,939 || 總參數: 96,485,129 || 可訓練比例: 10.23%
+2026-03-27 16:33:19,510 [INFO] ✅ 基礎模型設定完成
+2026-03-27 16:33:19,510 [INFO] === 創建整合訓練器 ===
+2026-03-27 16:33:19,530 [INFO] DDIM 時間步序列長度: 100
+2026-03-27 16:33:19,530 [INFO] EMA 初始化完成
+2026-03-27 16:33:19,530 [INFO] SpacedDiffusionBeatGans_Trainer 初始化完成
+2026-03-27 16:33:19,531 [INFO] ✅ Diff-AE + EfficientDM 整合訓練器創建成功
+2026-03-27 16:33:19,537 [INFO] DDIM 時間步序列長度: 100
+2026-03-27 16:33:19,537 [INFO] EMA 初始化完成
+2026-03-27 16:33:19,537 [INFO] SpacedDiffusionBeatGans_Trainer 初始化完成
+2026-03-27 16:33:19,537 [INFO] ✅ Diff-AE + EfficientDM 整合訓練器創建成功
+2026-03-27 16:33:19,537 [INFO] 
+=== 開始 EfficientDM 風格訓練 (共 240 epoch) ===
+2026-03-27 16:33:19,542 [INFO] 
+--- Epoch 1/240 ---
+2026-03-27 16:33:51,427 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000598
+2026-03-27 16:33:51,430 [INFO] 
+Epoch 1/240 完成:
+2026-03-27 16:33:51,431 [INFO]   總損失: 0.000598
+2026-03-27 16:33:51,432 [INFO]   蒸餾損失: 0.000598
+2026-03-27 16:33:51,432 [INFO]   時間: 31.89秒
+2026-03-27 16:33:52,621 [INFO] 模型已保存: QATcode/diffae_step6_lora_best.pth (base=5469 keys, raw=1822 keys, ema=1822 keys)
+2026-03-27 16:33:52,623 [INFO]   ✅ 新的最佳模型已保存 (Loss: 0.000598)
+2026-03-27 16:33:52,624 [INFO] 
+=== Epoch 1 驗證生成 (使用 EMA 模型) ===
+2026-03-27 16:33:52,850 [INFO] EMA 權重應用完成，共應用 848 個參數
+2026-03-27 16:33:52,850 [INFO] set quant state to True, True for layer 1
+2026-03-27 16:33:52,850 [INFO] set quant state to True, True for layer 2
+2026-03-27 16:33:52,850 [INFO] set quant state to True, False for layer 3
+2026-03-27 16:33:52,851 [INFO] set quant state to True, True for layer 144
+2026-03-27 16:33:52,854 [INFO] set quant state to True, True for layer 1
+2026-03-27 16:33:52,854 [INFO] set quant state to True, True for layer 2
+2026-03-27 16:33:52,854 [INFO] set quant state to True, False for layer 3
+2026-03-27 16:33:52,855 [INFO] set quant state to True, True for layer 144
+2026-03-27 16:34:00,022 [INFO] 生成圖像數值範圍: [-1.0000, 1.0000]
+2026-03-27 16:34:00,023 [INFO] 生成圖像均值: -0.0360
+2026-03-27 16:34:00,023 [INFO] 生成圖像標準差: 0.5117
+2026-03-27 16:34:00,024 [INFO] 正規化後數值範圍: [0.0000, 1.0000]
+2026-03-27 16:34:00,031 [ERROR] ❌ 訓練過程錯誤: [Errno 2] No such file or directory: 'QATcode/training_samples/epoch_0_grid.png'
+2026-03-27 16:34:00,032 [ERROR] Traceback (most recent call last):
+  File "/home/jimmy/diffae/QATcode/quantize_diffae_step6_train.py", line 1067, in main
+    torchvision.utils.save_image(
+  File "/home/jimmy/anaconda3/envs/diffae_bw/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 120, in decorate_context
+    return func(*args, **kwargs)
+  File "/home/jimmy/anaconda3/envs/diffae_bw/lib/python3.10/site-packages/torchvision/utils.py", line 281, in save_image
+    im.save(fp, format=format)
+  File "/home/jimmy/anaconda3/envs/diffae_bw/lib/python3.10/site-packages/PIL/Image.py", line 2566, in save
+    fp = builtins.open(filename, "w+b")
+FileNotFoundError: [Errno 2] No such file or directory: 'QATcode/training_samples/epoch_0_grid.png'
+
+2026-03-27 16:34:00,032 [INFO] 
+🎉 Step 6 量化感知微調完成！
+2026-03-27 16:34:00,099 [INFO] 執行 'main' 完成，耗時: 44.58 秒
+2026-03-27 16:35:04,644 [INFO] 使用設備: cuda
+2026-03-27 16:35:04,644 [INFO] === 新功能狀態 ===
+2026-03-27 16:35:04,644 [INFO] Layer-by-Layer 訓練: 關閉
+2026-03-27 16:35:04,644 [INFO] 代理指標驗證: 關閉
+2026-03-27 16:35:04,644 [INFO] 實驗目錄: runs/default
+2026-03-27 16:35:04,644 [INFO] 載入 Diff-AE 模型: checkpoints/ffhq128_autoenc_latent/last.ckpt
+2026-03-27 16:35:06,461 [INFO] Diff-AE 模型載入完成
+2026-03-27 16:35:06,492 [INFO] 執行 'load_diffae_model' 完成，耗時: 1.85 秒
+2026-03-27 16:35:06,492 [INFO] ✅ Diff-AE 模型載入成功
+2026-03-27 16:35:06,695 [INFO] ✅ FP Diff-AE 模型載入成功
+2026-03-27 16:35:06,695 [INFO] base_model.conf.train_mode: TrainMode.latent_diffusion
+2026-03-27 16:35:06,762 [INFO] === 創建 LoRA 量化模型 ===
+2026-03-27 16:35:06,763 [INFO] === 開始 UNet LoRA 量化改造 ===
+2026-03-27 16:35:06,763 [INFO] 改造模組: time_embed
+2026-03-27 16:35:06,763 [INFO]   跳過量化特殊模組: 0
+2026-03-27 16:35:06,763 [INFO]   跳過量化特殊模組: 2
+2026-03-27 16:35:06,763 [INFO] 改造模組: input_blocks
+2026-03-27 16:35:06,763 [INFO]   跳過量化特殊模組: 0
+2026-03-27 16:35:06,763 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,764 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,765 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,765 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,766 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,766 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,767 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,767 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,768 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,769 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,769 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,769 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,770 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,771 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,771 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,771 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,772 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,773 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,773 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,774 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,774 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,775 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,775 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,776 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,776 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,777 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,778 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,778 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,780 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:35:06,780 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,782 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,782 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,783 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,785 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,786 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,787 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,788 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,789 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,791 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,793 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,794 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,797 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:35:06,797 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,800 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,801 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,802 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,805 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,809 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,811 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,811 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,814 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,819 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,820 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,821 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,826 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:35:06,826 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,832 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,833 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,834 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,839 [INFO] 改造模組: middle_block
+2026-03-27 16:35:06,839 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,845 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,846 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,847 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,853 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,859 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,860 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,861 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,866 [INFO] 改造模組: output_blocks
+2026-03-27 16:35:06,866 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,877 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,879 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,880 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,886 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:35:06,886 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,897 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,898 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,899 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,905 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:35:06,905 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,914 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,916 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,917 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,922 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:35:06,922 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,928 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,929 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,930 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,936 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,943 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,944 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,945 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,948 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:35:06,949 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,955 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,956 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,957 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,960 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:35:06,960 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,965 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,966 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,967 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,970 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:35:06,970 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,973 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,974 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,975 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,978 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,982 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,983 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,983 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,985 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:35:06,985 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,988 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,989 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,990 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,991 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:35:06,991 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,994 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,995 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,995 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,997 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:35:06,997 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,998 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:06,999 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:07,000 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:07,002 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:07,004 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:07,004 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:07,005 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:07,005 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:35:07,005 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:07,006 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:07,007 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:07,007 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:07,009 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:35:07,009 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:07,010 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:07,011 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:07,012 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:07,013 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:35:07,013 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:07,013 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:07,014 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:07,014 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:07,015 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:07,016 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:07,017 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:07,017 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:07,018 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:35:07,018 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:07,019 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:07,020 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:07,020 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:07,021 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:35:07,021 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:07,022 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:07,022 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:07,023 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:07,023 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:35:07,023 [INFO] 改造模組: out
+2026-03-27 16:35:07,024 [INFO]   跳過量化特殊模組: 2
+2026-03-27 16:35:07,071 [INFO] 執行 'create_quantized_model' 完成，耗時: 0.31 秒
+2026-03-27 16:35:07,079 [INFO] 載入校準資料...
+2026-03-27 16:35:07,341 [INFO] ✅ 載入真實校準資料成功
+2026-03-27 16:35:07,343 [INFO] ==================================================
+2026-03-27 16:35:07,343 [INFO] 5. Setting first and last layers to 8-bit...
+2026-03-27 16:35:07,344 [INFO] 找到 144 個量化模組
+2026-03-27 16:35:07,345 [INFO] ✅ 首尾層 8-bit 設定完成
+2026-03-27 16:35:07,345 [INFO] ✅ 量化模型創建成功
+2026-03-27 16:35:07,345 [INFO] set quant state to True, True for layer 1
+2026-03-27 16:35:07,345 [INFO] set quant state to True, True for layer 2
+2026-03-27 16:35:07,345 [INFO] set quant state to True, False for layer 3
+2026-03-27 16:35:07,346 [INFO] set quant state to True, True for layer 144
+2026-03-27 16:35:07,841 [INFO] ✅ 量化模型載入成功
+2026-03-27 16:35:07,842 [INFO] === 初始化新功能模組 ===
+2026-03-27 16:35:07,846 [INFO] 
+=== 模型參數統計 ===
+2026-03-27 16:35:07,848 [INFO] 可訓練參數: 9,869,939 || 總參數: 96,485,129 || 可訓練比例: 10.23%
+2026-03-27 16:35:08,089 [INFO] ✅ 基礎模型設定完成
+2026-03-27 16:35:08,089 [INFO] === 創建整合訓練器 ===
+2026-03-27 16:35:08,102 [INFO] DDIM 時間步序列長度: 100
+2026-03-27 16:35:08,102 [INFO] EMA 初始化完成
+2026-03-27 16:35:08,102 [INFO] SpacedDiffusionBeatGans_Trainer 初始化完成
+2026-03-27 16:35:08,102 [INFO] ✅ Diff-AE + EfficientDM 整合訓練器創建成功
+2026-03-27 16:35:08,108 [INFO] DDIM 時間步序列長度: 100
+2026-03-27 16:35:08,108 [INFO] EMA 初始化完成
+2026-03-27 16:35:08,108 [INFO] SpacedDiffusionBeatGans_Trainer 初始化完成
+2026-03-27 16:35:08,108 [INFO] ✅ Diff-AE + EfficientDM 整合訓練器創建成功
+2026-03-27 16:35:08,108 [INFO] 
+=== 開始 EfficientDM 風格訓練 (共 240 epoch) ===
+2026-03-27 16:35:08,113 [INFO] 
+--- Epoch 1/240 ---
+2026-03-27 16:35:35,894 [INFO] 使用設備: cuda
+2026-03-27 16:35:35,894 [INFO] === 新功能狀態 ===
+2026-03-27 16:35:35,894 [INFO] Layer-by-Layer 訓練: 關閉
+2026-03-27 16:35:35,894 [INFO] 代理指標驗證: 關閉
+2026-03-27 16:35:35,894 [INFO] 實驗目錄: runs/default
+2026-03-27 16:35:35,894 [INFO] 載入 Diff-AE 模型: checkpoints/ffhq128_autoenc_latent/last.ckpt
+2026-03-27 16:35:37,852 [INFO] Diff-AE 模型載入完成
+2026-03-27 16:35:37,879 [INFO] 執行 'load_diffae_model' 完成，耗時: 1.98 秒
+2026-03-27 16:35:37,880 [INFO] ✅ Diff-AE 模型載入成功
+2026-03-27 16:35:38,091 [INFO] ✅ FP Diff-AE 模型載入成功
+2026-03-27 16:35:38,091 [INFO] base_model.conf.train_mode: TrainMode.latent_diffusion
+2026-03-27 16:35:38,172 [INFO] === 創建 LoRA 量化模型 ===
+2026-03-27 16:35:38,172 [INFO] === 開始 UNet LoRA 量化改造 ===
+2026-03-27 16:35:38,172 [INFO] 改造模組: time_embed
+2026-03-27 16:35:38,172 [INFO]   跳過量化特殊模組: 0
+2026-03-27 16:35:38,173 [INFO]   跳過量化特殊模組: 2
+2026-03-27 16:35:38,173 [INFO] 改造模組: input_blocks
+2026-03-27 16:35:38,173 [INFO]   跳過量化特殊模組: 0
+2026-03-27 16:35:38,174 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,174 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,175 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,175 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,176 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,177 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,178 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,178 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,179 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,179 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,180 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,180 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,181 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,182 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,182 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,183 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,183 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,184 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,184 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,185 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,185 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,186 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,187 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,187 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,188 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,190 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,191 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,192 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,195 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:35:38,195 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,197 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,198 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,199 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,201 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,202 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,203 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,204 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,206 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,208 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,210 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,211 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,214 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:35:38,214 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,218 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,219 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,220 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,223 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,227 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,228 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,229 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,232 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,237 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,239 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,240 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,245 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:35:38,245 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,251 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,252 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,254 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,260 [INFO] 改造模組: middle_block
+2026-03-27 16:35:38,260 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,265 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,267 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,268 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,274 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,279 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,281 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,282 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,288 [INFO] 改造模組: output_blocks
+2026-03-27 16:35:38,288 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,299 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,301 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,302 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,308 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:35:38,308 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,320 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,321 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,322 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,328 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:35:38,328 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,338 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,340 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,341 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,346 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:35:38,346 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,352 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,354 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,355 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,360 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,368 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,369 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,370 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,373 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:35:38,373 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,380 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,381 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,382 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,385 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:35:38,385 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,391 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,392 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,393 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,396 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:35:38,397 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,400 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,401 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,402 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,406 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,410 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,410 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,411 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,413 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:35:38,413 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,416 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,417 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,418 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,419 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:35:38,419 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,422 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,423 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,423 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,425 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:35:38,425 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,427 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,427 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,428 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,430 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,431 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,432 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,432 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,433 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:35:38,433 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,434 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,434 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,435 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,437 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:35:38,437 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,438 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,438 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,439 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,439 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:35:38,439 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,440 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,441 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,441 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,442 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,443 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,444 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,444 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,445 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:35:38,445 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,446 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,446 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,447 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,447 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:35:38,447 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,448 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,449 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,449 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-27 16:35:38,450 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-27 16:35:38,451 [INFO] 改造模組: out
+2026-03-27 16:35:38,451 [INFO]   跳過量化特殊模組: 2
+2026-03-27 16:35:38,507 [INFO] 執行 'create_quantized_model' 完成，耗時: 0.33 秒
+2026-03-27 16:35:38,517 [INFO] 載入校準資料...
+2026-03-27 16:35:38,757 [INFO] ✅ 載入真實校準資料成功
+2026-03-27 16:35:38,759 [INFO] ==================================================
+2026-03-27 16:35:38,759 [INFO] 5. Setting first and last layers to 8-bit...
+2026-03-27 16:35:38,760 [INFO] 找到 144 個量化模組
+2026-03-27 16:35:38,761 [INFO] ✅ 首尾層 8-bit 設定完成
+2026-03-27 16:35:38,761 [INFO] ✅ 量化模型創建成功
+2026-03-27 16:35:38,761 [INFO] set quant state to True, True for layer 1
+2026-03-27 16:35:38,761 [INFO] set quant state to True, True for layer 2
+2026-03-27 16:35:38,761 [INFO] set quant state to True, False for layer 3
+2026-03-27 16:35:38,762 [INFO] set quant state to True, True for layer 144
+2026-03-27 16:35:39,307 [INFO] ✅ 量化模型載入成功
+2026-03-27 16:35:39,308 [INFO] === 初始化新功能模組 ===
+2026-03-27 16:35:39,312 [INFO] 
+=== 模型參數統計 ===
+2026-03-27 16:35:39,314 [INFO] 可訓練參數: 9,869,939 || 總參數: 96,485,129 || 可訓練比例: 10.23%
+2026-03-27 16:35:39,561 [INFO] ✅ 基礎模型設定完成
+2026-03-27 16:35:39,561 [INFO] === 創建整合訓練器 ===
+2026-03-27 16:35:39,574 [INFO] DDIM 時間步序列長度: 100
+2026-03-27 16:35:39,574 [INFO] EMA 初始化完成
+2026-03-27 16:35:39,574 [INFO] SpacedDiffusionBeatGans_Trainer 初始化完成
+2026-03-27 16:35:39,574 [INFO] ✅ Diff-AE + EfficientDM 整合訓練器創建成功
+2026-03-27 16:35:39,580 [INFO] DDIM 時間步序列長度: 100
+2026-03-27 16:35:39,580 [INFO] EMA 初始化完成
+2026-03-27 16:35:39,580 [INFO] SpacedDiffusionBeatGans_Trainer 初始化完成
+2026-03-27 16:35:39,580 [INFO] ✅ Diff-AE + EfficientDM 整合訓練器創建成功
+2026-03-27 16:35:39,581 [INFO] 
+=== 開始 EfficientDM 風格訓練 (共 160 epoch) ===
+2026-03-27 16:35:39,585 [INFO] 
+--- Epoch 1/160 ---
+2026-03-27 16:35:58,944 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000567
+2026-03-27 16:35:58,947 [INFO] 
+Epoch 1/160 完成:
+2026-03-27 16:35:58,948 [INFO]   總損失: 0.000567
+2026-03-27 16:35:58,948 [INFO]   蒸餾損失: 0.000567
+2026-03-27 16:35:58,948 [INFO]   時間: 19.36秒
+2026-03-27 16:36:00,722 [INFO] 模型已保存: QATcode/diffae_step6_lora_best.pth (base=5469 keys, raw=1822 keys, ema=1822 keys)
+2026-03-27 16:36:00,726 [INFO]   ✅ 新的最佳模型已保存 (Loss: 0.000567)
+2026-03-27 16:36:00,728 [INFO] 
+=== Epoch 1 驗證生成 (使用 EMA 模型) ===
+2026-03-27 16:36:00,971 [INFO] EMA 權重應用完成，共應用 848 個參數
+2026-03-27 16:36:00,971 [INFO] set quant state to True, True for layer 1
+2026-03-27 16:36:00,971 [INFO] set quant state to True, True for layer 2
+2026-03-27 16:36:00,971 [INFO] set quant state to True, False for layer 3
+2026-03-27 16:36:00,972 [INFO] set quant state to True, True for layer 144
+2026-03-27 16:36:00,975 [INFO] set quant state to True, True for layer 1
+2026-03-27 16:36:00,975 [INFO] set quant state to True, True for layer 2
+2026-03-27 16:36:00,975 [INFO] set quant state to True, False for layer 3
+2026-03-27 16:36:00,976 [INFO] set quant state to True, True for layer 144
+2026-03-27 16:36:08,134 [INFO] 生成圖像數值範圍: [-1.0000, 1.0000]
+2026-03-27 16:36:08,134 [INFO] 生成圖像均值: -0.0360
+2026-03-27 16:36:08,134 [INFO] 生成圖像標準差: 0.5117
+2026-03-27 16:36:08,134 [INFO] 正規化後數值範圍: [0.0000, 1.0000]
+2026-03-27 16:36:08,193 [INFO] ✅ Epoch 1 EMA 模型驗證生成完成:
+2026-03-27 16:36:08,194 [INFO]   生成時間: 7.40秒
+2026-03-27 16:36:08,194 [INFO]   圖像範圍: [-1.000, 1.000]
+2026-03-27 16:36:08,194 [INFO]   保存路徑: QATcode/training_samples/
+2026-03-27 16:36:08,194 [INFO] 驗證後量化器 current_step: 99
+2026-03-27 16:36:08,223 [INFO] 
+--- Epoch 2/160 ---
+2026-03-27 16:36:30,266 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000636
+2026-03-27 16:36:30,270 [INFO] 
+Epoch 2/160 完成:
+2026-03-27 16:36:30,273 [INFO]   總損失: 0.000636
+2026-03-27 16:36:30,273 [INFO]   蒸餾損失: 0.000636
+2026-03-27 16:36:30,273 [INFO]   時間: 22.05秒
+2026-03-27 16:36:30,277 [INFO] 
+--- Epoch 3/160 ---
+2026-03-27 16:36:50,353 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000597
+2026-03-27 16:36:50,357 [INFO] 
+Epoch 3/160 完成:
+2026-03-27 16:36:50,358 [INFO]   總損失: 0.000597
+2026-03-27 16:36:50,358 [INFO]   蒸餾損失: 0.000597
+2026-03-27 16:36:50,358 [INFO]   時間: 20.08秒
+2026-03-27 16:36:50,362 [INFO] 
+--- Epoch 4/160 ---
+2026-03-27 16:37:09,522 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000531
+2026-03-27 16:37:09,525 [INFO] 
+Epoch 4/160 完成:
+2026-03-27 16:37:09,526 [INFO]   總損失: 0.000531
+2026-03-27 16:37:09,526 [INFO]   蒸餾損失: 0.000531
+2026-03-27 16:37:09,526 [INFO]   時間: 19.17秒
+2026-03-27 16:37:11,432 [INFO] 模型已保存: QATcode/diffae_step6_lora_best.pth (base=5469 keys, raw=1822 keys, ema=1822 keys)
+2026-03-27 16:37:11,435 [INFO]   ✅ 新的最佳模型已保存 (Loss: 0.000531)
+2026-03-27 16:37:11,439 [INFO] 
+--- Epoch 5/160 ---
+2026-03-27 16:37:31,072 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000604
+2026-03-27 16:37:31,076 [INFO] 
+Epoch 5/160 完成:
+2026-03-27 16:37:31,077 [INFO]   總損失: 0.000604
+2026-03-27 16:37:31,077 [INFO]   蒸餾損失: 0.000604
+2026-03-27 16:37:31,077 [INFO]   時間: 19.64秒
+2026-03-27 16:37:31,081 [INFO] 
+--- Epoch 6/160 ---
+2026-03-27 16:37:50,550 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000565
+2026-03-27 16:37:50,553 [INFO] 
+Epoch 6/160 完成:
+2026-03-27 16:37:50,554 [INFO]   總損失: 0.000565
+2026-03-27 16:37:50,554 [INFO]   蒸餾損失: 0.000565
+2026-03-27 16:37:50,554 [INFO]   時間: 19.48秒
+2026-03-27 16:37:50,558 [INFO] 
+--- Epoch 7/160 ---
+2026-03-27 16:38:09,900 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000558
+2026-03-27 16:38:09,904 [INFO] 
+Epoch 7/160 完成:
+2026-03-27 16:38:09,907 [INFO]   總損失: 0.000558
+2026-03-27 16:38:09,907 [INFO]   蒸餾損失: 0.000558
+2026-03-27 16:38:09,907 [INFO]   時間: 19.35秒
+2026-03-27 16:38:09,910 [INFO] 
+--- Epoch 8/160 ---
+2026-03-27 16:38:30,609 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000505
+2026-03-27 16:38:30,612 [INFO] 
+Epoch 8/160 完成:
+2026-03-27 16:38:30,614 [INFO]   總損失: 0.000505
+2026-03-27 16:38:30,614 [INFO]   蒸餾損失: 0.000505
+2026-03-27 16:38:30,614 [INFO]   時間: 20.70秒
+2026-03-27 16:38:32,899 [INFO] 模型已保存: QATcode/diffae_step6_lora_best.pth (base=5469 keys, raw=1822 keys, ema=1822 keys)
+2026-03-27 16:38:32,903 [INFO]   ✅ 新的最佳模型已保存 (Loss: 0.000505)
+2026-03-27 16:38:32,908 [INFO] 
+--- Epoch 9/160 ---
+2026-03-27 16:38:52,742 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000618
+2026-03-27 16:38:52,746 [INFO] 
+Epoch 9/160 完成:
+2026-03-27 16:38:52,747 [INFO]   總損失: 0.000618
+2026-03-27 16:38:52,747 [INFO]   蒸餾損失: 0.000618
+2026-03-27 16:38:52,747 [INFO]   時間: 19.84秒
+2026-03-27 16:38:52,747 [INFO] 
+=== Epoch 9 驗證生成 (使用 EMA 模型) ===
+2026-03-27 16:38:52,820 [INFO] EMA 權重應用完成，共應用 848 個參數
+2026-03-27 16:38:52,820 [INFO] set quant state to True, True for layer 1
+2026-03-27 16:38:52,820 [INFO] set quant state to True, True for layer 2
+2026-03-27 16:38:52,820 [INFO] set quant state to True, False for layer 3
+2026-03-27 16:38:52,822 [INFO] set quant state to True, True for layer 144
+2026-03-27 16:38:52,828 [INFO] set quant state to True, True for layer 1
+2026-03-27 16:38:52,829 [INFO] set quant state to True, True for layer 2
+2026-03-27 16:38:52,829 [INFO] set quant state to True, False for layer 3
+2026-03-27 16:38:52,830 [INFO] set quant state to True, True for layer 144
+2026-03-27 16:38:59,996 [INFO] 生成圖像數值範圍: [-1.0000, 1.0000]
+2026-03-27 16:38:59,996 [INFO] 生成圖像均值: -0.0436
+2026-03-27 16:38:59,996 [INFO] 生成圖像標準差: 0.5131
+2026-03-27 16:38:59,996 [INFO] 正規化後數值範圍: [0.0000, 1.0000]
+2026-03-27 16:39:00,056 [INFO] ✅ Epoch 9 EMA 模型驗證生成完成:
+2026-03-27 16:39:00,056 [INFO]   生成時間: 7.25秒
+2026-03-27 16:39:00,056 [INFO]   圖像範圍: [-1.000, 1.000]
+2026-03-27 16:39:00,056 [INFO]   保存路徑: QATcode/training_samples/
+2026-03-27 16:39:00,056 [INFO] 驗證後量化器 current_step: 99
+2026-03-27 16:39:00,088 [INFO] 
+--- Epoch 10/160 ---
+2026-03-27 16:39:29,866 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000590
+2026-03-27 16:39:29,875 [INFO] 
+Epoch 10/160 完成:
+2026-03-27 16:39:29,883 [INFO]   總損失: 0.000590
+2026-03-27 16:39:29,886 [INFO]   蒸餾損失: 0.000590
+2026-03-27 16:39:29,887 [INFO]   時間: 29.79秒
+2026-03-27 16:39:29,895 [INFO] 
+--- Epoch 11/160 ---
+2026-03-27 16:40:01,322 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000574
+2026-03-27 16:40:01,327 [INFO] 
+Epoch 11/160 完成:
+2026-03-27 16:40:01,329 [INFO]   總損失: 0.000574
+2026-03-27 16:40:01,329 [INFO]   蒸餾損失: 0.000574
+2026-03-27 16:40:01,329 [INFO]   時間: 31.44秒
+2026-03-27 16:40:01,333 [INFO] 
+--- Epoch 12/160 ---
+2026-03-27 16:40:21,644 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000572
+2026-03-27 16:40:21,648 [INFO] 
+Epoch 12/160 完成:
+2026-03-27 16:40:21,650 [INFO]   總損失: 0.000572
+2026-03-27 16:40:21,650 [INFO]   蒸餾損失: 0.000572
+2026-03-27 16:40:21,650 [INFO]   時間: 20.32秒
+2026-03-27 16:40:21,654 [INFO] 
+--- Epoch 13/160 ---
+2026-03-27 16:40:41,314 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000551
+2026-03-27 16:40:41,318 [INFO] 
+Epoch 13/160 完成:
+2026-03-27 16:40:41,320 [INFO]   總損失: 0.000551
+2026-03-27 16:40:41,320 [INFO]   蒸餾損失: 0.000551
+2026-03-27 16:40:41,320 [INFO]   時間: 19.67秒
+2026-03-27 16:40:41,324 [INFO] 
+--- Epoch 14/160 ---
+2026-03-27 16:41:00,986 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000532
+2026-03-27 16:41:00,989 [INFO] 
+Epoch 14/160 完成:
+2026-03-27 16:41:00,991 [INFO]   總損失: 0.000532
+2026-03-27 16:41:00,991 [INFO]   蒸餾損失: 0.000532
+2026-03-27 16:41:00,991 [INFO]   時間: 19.67秒
+2026-03-27 16:41:00,995 [INFO] 
+--- Epoch 15/160 ---
+2026-03-27 16:41:20,474 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000563
+2026-03-27 16:41:20,477 [INFO] 
+Epoch 15/160 完成:
+2026-03-27 16:41:20,479 [INFO]   總損失: 0.000563
+2026-03-27 16:41:20,479 [INFO]   蒸餾損失: 0.000563
+2026-03-27 16:41:20,479 [INFO]   時間: 19.49秒
+2026-03-27 16:41:20,483 [INFO] 
+--- Epoch 16/160 ---
+2026-03-27 16:41:40,012 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000591
+2026-03-27 16:41:40,016 [INFO] 
+Epoch 16/160 完成:
+2026-03-27 16:41:40,017 [INFO]   總損失: 0.000591
+2026-03-27 16:41:40,017 [INFO]   蒸餾損失: 0.000591
+2026-03-27 16:41:40,017 [INFO]   時間: 19.54秒
+2026-03-27 16:41:40,021 [INFO] 
+--- Epoch 17/160 ---
+2026-03-27 16:41:59,363 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000583
+2026-03-27 16:41:59,366 [INFO] 
+Epoch 17/160 完成:
+2026-03-27 16:41:59,368 [INFO]   總損失: 0.000583
+2026-03-27 16:41:59,368 [INFO]   蒸餾損失: 0.000583
+2026-03-27 16:41:59,368 [INFO]   時間: 19.35秒
+2026-03-27 16:41:59,368 [INFO] 
+=== Epoch 17 驗證生成 (使用 EMA 模型) ===
+2026-03-27 16:41:59,584 [INFO] EMA 權重應用完成，共應用 848 個參數
+2026-03-27 16:41:59,584 [INFO] set quant state to True, True for layer 1
+2026-03-27 16:41:59,584 [INFO] set quant state to True, True for layer 2
+2026-03-27 16:41:59,584 [INFO] set quant state to True, False for layer 3
+2026-03-27 16:41:59,585 [INFO] set quant state to True, True for layer 144
+2026-03-27 16:41:59,592 [INFO] set quant state to True, True for layer 1
+2026-03-27 16:41:59,593 [INFO] set quant state to True, True for layer 2
+2026-03-27 16:41:59,593 [INFO] set quant state to True, False for layer 3
+2026-03-27 16:41:59,594 [INFO] set quant state to True, True for layer 144
+2026-03-27 16:42:06,680 [INFO] 生成圖像數值範圍: [-1.0000, 1.0000]
+2026-03-27 16:42:06,680 [INFO] 生成圖像均值: -0.0308
+2026-03-27 16:42:06,680 [INFO] 生成圖像標準差: 0.5122
+2026-03-27 16:42:06,680 [INFO] 正規化後數值範圍: [0.0000, 1.0000]
+2026-03-27 16:42:06,739 [INFO] ✅ Epoch 17 EMA 模型驗證生成完成:
+2026-03-27 16:42:06,739 [INFO]   生成時間: 7.31秒
+2026-03-27 16:42:06,739 [INFO]   圖像範圍: [-1.000, 1.000]
+2026-03-27 16:42:06,739 [INFO]   保存路徑: QATcode/training_samples/
+2026-03-27 16:42:06,739 [INFO] 驗證後量化器 current_step: 99
+2026-03-27 16:42:06,770 [INFO] 
+--- Epoch 18/160 ---
+2026-03-27 16:42:28,259 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000567
+2026-03-27 16:42:28,263 [INFO] 
+Epoch 18/160 完成:
+2026-03-27 16:42:28,267 [INFO]   總損失: 0.000567
+2026-03-27 16:42:28,267 [INFO]   蒸餾損失: 0.000567
+2026-03-27 16:42:28,267 [INFO]   時間: 21.50秒
+2026-03-27 16:42:28,271 [INFO] 
+--- Epoch 19/160 ---
+2026-03-27 16:42:49,469 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000536
+2026-03-27 16:42:49,472 [INFO] 
+Epoch 19/160 完成:
+2026-03-27 16:42:49,474 [INFO]   總損失: 0.000536
+2026-03-27 16:42:49,474 [INFO]   蒸餾損失: 0.000536
+2026-03-27 16:42:49,474 [INFO]   時間: 21.20秒
+2026-03-27 16:42:49,477 [INFO] 
+--- Epoch 20/160 ---
+2026-03-27 16:43:08,907 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000519
+2026-03-27 16:43:08,910 [INFO] 
+Epoch 20/160 完成:
+2026-03-27 16:43:08,912 [INFO]   總損失: 0.000519
+2026-03-27 16:43:08,912 [INFO]   蒸餾損失: 0.000519
+2026-03-27 16:43:08,912 [INFO]   時間: 19.44秒
+2026-03-27 16:43:08,916 [INFO] 
+--- Epoch 21/160 ---
+2026-03-27 16:43:28,403 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000539
+2026-03-27 16:43:28,407 [INFO] 
+Epoch 21/160 完成:
+2026-03-27 16:43:28,408 [INFO]   總損失: 0.000539
+2026-03-27 16:43:28,408 [INFO]   蒸餾損失: 0.000539
+2026-03-27 16:43:28,408 [INFO]   時間: 19.49秒
+2026-03-27 16:43:28,411 [INFO] 
+--- Epoch 22/160 ---
+2026-03-27 16:43:48,426 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000481
+2026-03-27 16:43:48,430 [INFO] 
+Epoch 22/160 完成:
+2026-03-27 16:43:48,432 [INFO]   總損失: 0.000481
+2026-03-27 16:43:48,432 [INFO]   蒸餾損失: 0.000481
+2026-03-27 16:43:48,432 [INFO]   時間: 20.02秒
+2026-03-27 16:43:50,113 [INFO] 模型已保存: QATcode/diffae_step6_lora_best.pth (base=5469 keys, raw=1822 keys, ema=1822 keys)
+2026-03-27 16:43:50,118 [INFO]   ✅ 新的最佳模型已保存 (Loss: 0.000481)
+2026-03-27 16:43:50,122 [INFO] 
+--- Epoch 23/160 ---
+2026-03-27 16:44:09,927 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000530
+2026-03-27 16:44:09,933 [INFO] 
+Epoch 23/160 完成:
+2026-03-27 16:44:09,934 [INFO]   總損失: 0.000530
+2026-03-27 16:44:09,934 [INFO]   蒸餾損失: 0.000530
+2026-03-27 16:44:09,934 [INFO]   時間: 19.81秒
+2026-03-27 16:44:09,938 [INFO] 
+--- Epoch 24/160 ---
+2026-03-27 16:44:29,524 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000546
+2026-03-27 16:44:29,527 [INFO] 
+Epoch 24/160 完成:
+2026-03-27 16:44:29,529 [INFO]   總損失: 0.000546
+2026-03-27 16:44:29,529 [INFO]   蒸餾損失: 0.000546
+2026-03-27 16:44:29,529 [INFO]   時間: 19.59秒
+2026-03-27 16:44:29,532 [INFO] 
+--- Epoch 25/160 ---
+2026-03-27 16:44:49,121 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000581
+2026-03-27 16:44:49,125 [INFO] 
+Epoch 25/160 完成:
+2026-03-27 16:44:49,126 [INFO]   總損失: 0.000581
+2026-03-27 16:44:49,127 [INFO]   蒸餾損失: 0.000581
+2026-03-27 16:44:49,127 [INFO]   時間: 19.60秒
+2026-03-27 16:44:49,127 [INFO] 
+=== Epoch 25 驗證生成 (使用 EMA 模型) ===
+2026-03-27 16:44:49,201 [INFO] EMA 權重應用完成，共應用 848 個參數
+2026-03-27 16:44:49,202 [INFO] set quant state to True, True for layer 1
+2026-03-27 16:44:49,202 [INFO] set quant state to True, True for layer 2
+2026-03-27 16:44:49,202 [INFO] set quant state to True, False for layer 3
+2026-03-27 16:44:49,203 [INFO] set quant state to True, True for layer 144
+2026-03-27 16:44:49,210 [INFO] set quant state to True, True for layer 1
+2026-03-27 16:44:49,210 [INFO] set quant state to True, True for layer 2
+2026-03-27 16:44:49,210 [INFO] set quant state to True, False for layer 3
+2026-03-27 16:44:49,211 [INFO] set quant state to True, True for layer 144
+2026-03-27 16:44:56,296 [INFO] 生成圖像數值範圍: [-1.0000, 1.0000]
+2026-03-27 16:44:56,296 [INFO] 生成圖像均值: -0.0360
+2026-03-27 16:44:56,296 [INFO] 生成圖像標準差: 0.5108
+2026-03-27 16:44:56,296 [INFO] 正規化後數值範圍: [0.0000, 1.0000]
+2026-03-27 16:44:56,355 [INFO] ✅ Epoch 25 EMA 模型驗證生成完成:
+2026-03-27 16:44:56,355 [INFO]   生成時間: 7.17秒
+2026-03-27 16:44:56,355 [INFO]   圖像範圍: [-1.000, 1.000]
+2026-03-27 16:44:56,355 [INFO]   保存路徑: QATcode/training_samples/
+2026-03-27 16:44:56,355 [INFO] 驗證後量化器 current_step: 99
+2026-03-27 16:44:56,387 [INFO] 
+--- Epoch 26/160 ---
+2026-03-27 16:45:15,853 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000615
+2026-03-27 16:45:15,857 [INFO] 
+Epoch 26/160 完成:
+2026-03-27 16:45:15,858 [INFO]   總損失: 0.000615
+2026-03-27 16:45:15,858 [INFO]   蒸餾損失: 0.000615
+2026-03-27 16:45:15,858 [INFO]   時間: 19.47秒
+2026-03-27 16:45:15,862 [INFO] 
+--- Epoch 27/160 ---
+2026-03-27 16:45:35,442 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000535
+2026-03-27 16:45:35,445 [INFO] 
+Epoch 27/160 完成:
+2026-03-27 16:45:35,448 [INFO]   總損失: 0.000535
+2026-03-27 16:45:35,448 [INFO]   蒸餾損失: 0.000535
+2026-03-27 16:45:35,448 [INFO]   時間: 19.59秒
+2026-03-27 16:45:35,452 [INFO] 
+--- Epoch 28/160 ---
+2026-03-27 16:45:55,104 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000543
+2026-03-27 16:45:55,108 [INFO] 
+Epoch 28/160 完成:
+2026-03-27 16:45:55,109 [INFO]   總損失: 0.000543
+2026-03-27 16:45:55,109 [INFO]   蒸餾損失: 0.000543
+2026-03-27 16:45:55,109 [INFO]   時間: 19.66秒
+2026-03-27 16:45:55,113 [INFO] 
+--- Epoch 29/160 ---
+2026-03-27 16:46:14,621 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000501
+2026-03-27 16:46:14,625 [INFO] 
+Epoch 29/160 完成:
+2026-03-27 16:46:14,626 [INFO]   總損失: 0.000501
+2026-03-27 16:46:14,626 [INFO]   蒸餾損失: 0.000501
+2026-03-27 16:46:14,626 [INFO]   時間: 19.52秒
+2026-03-27 16:46:14,630 [INFO] 
+--- Epoch 30/160 ---
+2026-03-27 16:46:34,141 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000540
+2026-03-27 16:46:34,145 [INFO] 
+Epoch 30/160 完成:
+2026-03-27 16:46:34,147 [INFO]   總損失: 0.000540
+2026-03-27 16:46:34,147 [INFO]   蒸餾損失: 0.000540
+2026-03-27 16:46:34,147 [INFO]   時間: 19.52秒
+2026-03-27 16:46:34,151 [INFO] 
+--- Epoch 31/160 ---
+2026-03-27 16:46:53,758 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000562
+2026-03-27 16:46:53,762 [INFO] 
+Epoch 31/160 完成:
+2026-03-27 16:46:53,764 [INFO]   總損失: 0.000562
+2026-03-27 16:46:53,764 [INFO]   蒸餾損失: 0.000562
+2026-03-27 16:46:53,764 [INFO]   時間: 19.62秒
+2026-03-27 16:46:53,767 [INFO] 
+--- Epoch 32/160 ---
+2026-03-27 16:47:13,394 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000537
+2026-03-27 16:47:13,398 [INFO] 
+Epoch 32/160 完成:
+2026-03-27 16:47:13,400 [INFO]   總損失: 0.000537
+2026-03-27 16:47:13,400 [INFO]   蒸餾損失: 0.000537
+2026-03-27 16:47:13,400 [INFO]   時間: 19.63秒
+2026-03-27 16:47:13,404 [INFO] 
+--- Epoch 33/160 ---
+2026-03-27 16:47:32,922 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000511
+2026-03-27 16:47:32,926 [INFO] 
+Epoch 33/160 完成:
+2026-03-27 16:47:32,928 [INFO]   總損失: 0.000511
+2026-03-27 16:47:32,928 [INFO]   蒸餾損失: 0.000511
+2026-03-27 16:47:32,928 [INFO]   時間: 19.53秒
+2026-03-27 16:47:32,928 [INFO] 
+=== Epoch 33 驗證生成 (使用 EMA 模型) ===
+2026-03-27 16:47:33,003 [INFO] EMA 權重應用完成，共應用 848 個參數
+2026-03-27 16:47:33,003 [INFO] set quant state to True, True for layer 1
+2026-03-27 16:47:33,003 [INFO] set quant state to True, True for layer 2
+2026-03-27 16:47:33,003 [INFO] set quant state to True, False for layer 3
+2026-03-27 16:47:33,004 [INFO] set quant state to True, True for layer 144
+2026-03-27 16:47:33,011 [INFO] set quant state to True, True for layer 1
+2026-03-27 16:47:33,012 [INFO] set quant state to True, True for layer 2
+2026-03-27 16:47:33,012 [INFO] set quant state to True, False for layer 3
+2026-03-27 16:47:33,013 [INFO] set quant state to True, True for layer 144
+2026-03-27 16:47:40,099 [INFO] 生成圖像數值範圍: [-1.0000, 1.0000]
+2026-03-27 16:47:40,099 [INFO] 生成圖像均值: -0.0424
+2026-03-27 16:47:40,099 [INFO] 生成圖像標準差: 0.5121
+2026-03-27 16:47:40,099 [INFO] 正規化後數值範圍: [0.0000, 1.0000]
+2026-03-27 16:47:40,157 [INFO] ✅ Epoch 33 EMA 模型驗證生成完成:
+2026-03-27 16:47:40,157 [INFO]   生成時間: 7.17秒
+2026-03-27 16:47:40,157 [INFO]   圖像範圍: [-1.000, 1.000]
+2026-03-27 16:47:40,157 [INFO]   保存路徑: QATcode/training_samples/
+2026-03-27 16:47:40,157 [INFO] 驗證後量化器 current_step: 99
+2026-03-27 16:47:40,189 [INFO] 
+--- Epoch 34/160 ---
+2026-03-27 16:47:59,907 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000536
+2026-03-27 16:47:59,911 [INFO] 
+Epoch 34/160 完成:
+2026-03-27 16:47:59,912 [INFO]   總損失: 0.000536
+2026-03-27 16:47:59,912 [INFO]   蒸餾損失: 0.000536
+2026-03-27 16:47:59,912 [INFO]   時間: 19.73秒
+2026-03-27 16:47:59,916 [INFO] 
+--- Epoch 35/160 ---
+2026-03-27 16:48:19,364 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000558
+2026-03-27 16:48:19,368 [INFO] 
+Epoch 35/160 完成:
+2026-03-27 16:48:19,369 [INFO]   總損失: 0.000558
+2026-03-27 16:48:19,370 [INFO]   蒸餾損失: 0.000558
+2026-03-27 16:48:19,370 [INFO]   時間: 19.45秒
+2026-03-27 16:48:19,373 [INFO] 
+--- Epoch 36/160 ---
+2026-03-27 16:48:39,056 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000516
+2026-03-27 16:48:39,059 [INFO] 
+Epoch 36/160 完成:
+2026-03-27 16:48:39,061 [INFO]   總損失: 0.000516
+2026-03-27 16:48:39,061 [INFO]   蒸餾損失: 0.000516
+2026-03-27 16:48:39,061 [INFO]   時間: 19.69秒
+2026-03-27 16:48:39,064 [INFO] 
+--- Epoch 37/160 ---
+2026-03-27 16:48:58,878 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000490
+2026-03-27 16:48:58,882 [INFO] 
+Epoch 37/160 完成:
+2026-03-27 16:48:58,885 [INFO]   總損失: 0.000490
+2026-03-27 16:48:58,885 [INFO]   蒸餾損失: 0.000490
+2026-03-27 16:48:58,885 [INFO]   時間: 19.82秒
+2026-03-27 16:48:58,889 [INFO] 
+--- Epoch 38/160 ---
+2026-03-27 16:49:18,493 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000553
+2026-03-27 16:49:18,497 [INFO] 
+Epoch 38/160 完成:
+2026-03-27 16:49:18,498 [INFO]   總損失: 0.000553
+2026-03-27 16:49:18,498 [INFO]   蒸餾損失: 0.000553
+2026-03-27 16:49:18,498 [INFO]   時間: 19.61秒
+2026-03-27 16:49:18,502 [INFO] 
+--- Epoch 39/160 ---
+2026-03-27 16:49:38,053 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000554
+2026-03-27 16:49:38,057 [INFO] 
+Epoch 39/160 完成:
+2026-03-27 16:49:38,058 [INFO]   總損失: 0.000554
+2026-03-27 16:49:38,059 [INFO]   蒸餾損失: 0.000554
+2026-03-27 16:49:38,059 [INFO]   時間: 19.56秒
+2026-03-27 16:49:38,062 [INFO] 
+--- Epoch 40/160 ---
+2026-03-27 16:49:57,725 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000505
+2026-03-27 16:49:57,729 [INFO] 
+Epoch 40/160 完成:
+2026-03-27 16:49:57,731 [INFO]   總損失: 0.000505
+2026-03-27 16:49:57,731 [INFO]   蒸餾損失: 0.000505
+2026-03-27 16:49:57,731 [INFO]   時間: 19.67秒
+2026-03-27 16:49:57,735 [INFO] 
+--- Epoch 41/160 ---
+2026-03-27 16:50:17,421 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000515
+2026-03-27 16:50:17,424 [INFO] 
+Epoch 41/160 完成:
+2026-03-27 16:50:17,426 [INFO]   總損失: 0.000515
+2026-03-27 16:50:17,426 [INFO]   蒸餾損失: 0.000515
+2026-03-27 16:50:17,426 [INFO]   時間: 19.69秒
+2026-03-27 16:50:17,426 [INFO] 
+=== Epoch 41 驗證生成 (使用 EMA 模型) ===
+2026-03-27 16:50:17,499 [INFO] EMA 權重應用完成，共應用 848 個參數
+2026-03-27 16:50:17,499 [INFO] set quant state to True, True for layer 1
+2026-03-27 16:50:17,499 [INFO] set quant state to True, True for layer 2
+2026-03-27 16:50:17,499 [INFO] set quant state to True, False for layer 3
+2026-03-27 16:50:17,500 [INFO] set quant state to True, True for layer 144
+2026-03-27 16:50:17,507 [INFO] set quant state to True, True for layer 1
+2026-03-27 16:50:17,509 [INFO] set quant state to True, True for layer 2
+2026-03-27 16:50:17,509 [INFO] set quant state to True, False for layer 3
+2026-03-27 16:50:17,510 [INFO] set quant state to True, True for layer 144
+2026-03-27 16:50:24,620 [INFO] 生成圖像數值範圍: [-1.0000, 1.0000]
+2026-03-27 16:50:24,621 [INFO] 生成圖像均值: -0.0374
+2026-03-27 16:50:24,621 [INFO] 生成圖像標準差: 0.5153
+2026-03-27 16:50:24,621 [INFO] 正規化後數值範圍: [0.0000, 1.0000]
+2026-03-27 16:50:24,680 [INFO] ✅ Epoch 41 EMA 模型驗證生成完成:
+2026-03-27 16:50:24,680 [INFO]   生成時間: 7.19秒
+2026-03-27 16:50:24,680 [INFO]   圖像範圍: [-1.000, 1.000]
+2026-03-27 16:50:24,680 [INFO]   保存路徑: QATcode/training_samples/
+2026-03-27 16:50:24,680 [INFO] 驗證後量化器 current_step: 99
+2026-03-27 16:50:24,712 [INFO] 
+--- Epoch 42/160 ---
+2026-03-27 16:51:06,776 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000510
+2026-03-27 16:51:06,786 [INFO] 
+Epoch 42/160 完成:
+2026-03-27 16:51:06,790 [INFO]   總損失: 0.000510
+2026-03-27 16:51:06,791 [INFO]   蒸餾損失: 0.000510
+2026-03-27 16:51:06,791 [INFO]   時間: 42.08秒
+2026-03-27 16:51:06,794 [INFO] 
+--- Epoch 43/160 ---
+2026-03-27 16:51:52,875 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000513
+2026-03-27 16:51:52,884 [INFO] 
+Epoch 43/160 完成:
+2026-03-27 16:51:52,888 [INFO]   總損失: 0.000513
+2026-03-27 16:51:52,889 [INFO]   蒸餾損失: 0.000513
+2026-03-27 16:51:52,889 [INFO]   時間: 46.09秒
+2026-03-27 16:51:52,892 [INFO] 
+--- Epoch 44/160 ---
+2026-03-27 16:52:41,334 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000550
+2026-03-27 16:52:41,339 [INFO] 
+Epoch 44/160 完成:
+2026-03-27 16:52:41,341 [INFO]   總損失: 0.000550
+2026-03-27 16:52:41,341 [INFO]   蒸餾損失: 0.000550
+2026-03-27 16:52:41,341 [INFO]   時間: 48.45秒
+2026-03-27 16:52:41,345 [INFO] 
+--- Epoch 45/160 ---
+2026-03-27 16:53:32,315 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000492
+2026-03-27 16:53:32,325 [INFO] 
+Epoch 45/160 完成:
+2026-03-27 16:53:32,329 [INFO]   總損失: 0.000492
+2026-03-27 16:53:32,329 [INFO]   蒸餾損失: 0.000492
+2026-03-27 16:53:32,329 [INFO]   時間: 50.98秒
+2026-03-27 16:53:32,333 [INFO] 
+--- Epoch 46/160 ---
+2026-03-27 16:54:22,374 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000503
+2026-03-27 16:54:22,383 [INFO] 
+Epoch 46/160 完成:
+2026-03-27 16:54:22,386 [INFO]   總損失: 0.000503
+2026-03-27 16:54:22,386 [INFO]   蒸餾損失: 0.000503
+2026-03-27 16:54:22,386 [INFO]   時間: 50.05秒
+2026-03-27 16:54:22,390 [INFO] 
+--- Epoch 47/160 ---
+2026-03-27 16:55:12,897 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000491
+2026-03-27 16:55:12,906 [INFO] 
+Epoch 47/160 完成:
+2026-03-27 16:55:12,910 [INFO]   總損失: 0.000491
+2026-03-27 16:55:12,910 [INFO]   蒸餾損失: 0.000491
+2026-03-27 16:55:12,910 [INFO]   時間: 50.52秒
+2026-03-27 16:55:12,913 [INFO] 
+--- Epoch 48/160 ---
+2026-03-27 16:56:05,820 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000451
+2026-03-27 16:56:05,824 [INFO] 
+Epoch 48/160 完成:
+2026-03-27 16:56:05,826 [INFO]   總損失: 0.000451
+2026-03-27 16:56:05,827 [INFO]   蒸餾損失: 0.000451
+2026-03-27 16:56:05,827 [INFO]   時間: 52.91秒
+2026-03-27 16:56:07,417 [INFO] 模型已保存: QATcode/diffae_step6_lora_best.pth (base=5469 keys, raw=1822 keys, ema=1822 keys)
+2026-03-27 16:56:07,421 [INFO]   ✅ 新的最佳模型已保存 (Loss: 0.000451)
+2026-03-27 16:56:07,426 [INFO] 
+--- Epoch 49/160 ---
+2026-03-27 16:57:00,569 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000517
+2026-03-27 16:57:00,579 [INFO] 
+Epoch 49/160 完成:
+2026-03-27 16:57:00,581 [INFO]   總損失: 0.000517
+2026-03-27 16:57:00,581 [INFO]   蒸餾損失: 0.000517
+2026-03-27 16:57:00,581 [INFO]   時間: 53.16秒
+2026-03-27 16:57:00,581 [INFO] 
+=== Epoch 49 驗證生成 (使用 EMA 模型) ===
+2026-03-27 16:57:00,659 [INFO] EMA 權重應用完成，共應用 848 個參數
+2026-03-27 16:57:00,659 [INFO] set quant state to True, True for layer 1
+2026-03-27 16:57:00,659 [INFO] set quant state to True, True for layer 2
+2026-03-27 16:57:00,659 [INFO] set quant state to True, False for layer 3
+2026-03-27 16:57:00,661 [INFO] set quant state to True, True for layer 144
+2026-03-27 16:57:00,670 [INFO] set quant state to True, True for layer 1
+2026-03-27 16:57:00,671 [INFO] set quant state to True, True for layer 2
+2026-03-27 16:57:00,671 [INFO] set quant state to True, False for layer 3
+2026-03-27 16:57:00,673 [INFO] set quant state to True, True for layer 144
+2026-03-27 16:57:17,400 [INFO] 生成圖像數值範圍: [-1.0000, 1.0000]
+2026-03-27 16:57:17,400 [INFO] 生成圖像均值: -0.0411
+2026-03-27 16:57:17,400 [INFO] 生成圖像標準差: 0.5147
+2026-03-27 16:57:17,401 [INFO] 正規化後數值範圍: [0.0000, 1.0000]
+2026-03-27 16:57:17,459 [INFO] ✅ Epoch 49 EMA 模型驗證生成完成:
+2026-03-27 16:57:17,459 [INFO]   生成時間: 16.82秒
+2026-03-27 16:57:17,459 [INFO]   圖像範圍: [-1.000, 1.000]
+2026-03-27 16:57:17,459 [INFO]   保存路徑: QATcode/training_samples/
+2026-03-27 16:57:17,459 [INFO] 驗證後量化器 current_step: 99
+2026-03-27 16:57:17,493 [INFO] 
+--- Epoch 50/160 ---
+2026-03-27 16:58:11,112 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000480
+2026-03-27 16:58:11,116 [INFO] 
+Epoch 50/160 完成:
+2026-03-27 16:58:11,118 [INFO]   總損失: 0.000480
+2026-03-27 16:58:11,118 [INFO]   蒸餾損失: 0.000480
+2026-03-27 16:58:11,118 [INFO]   時間: 53.63秒
+2026-03-27 16:58:11,121 [INFO] 
+--- Epoch 51/160 ---
+2026-03-27 16:59:05,154 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000517
+2026-03-27 16:59:05,158 [INFO] 
+Epoch 51/160 完成:
+2026-03-27 16:59:05,160 [INFO]   總損失: 0.000517
+2026-03-27 16:59:05,160 [INFO]   蒸餾損失: 0.000517
+2026-03-27 16:59:05,160 [INFO]   時間: 54.04秒
+2026-03-27 16:59:05,164 [INFO] 
+--- Epoch 52/160 ---
+2026-03-27 16:59:58,415 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000573
+2026-03-27 16:59:58,425 [INFO] 
+Epoch 52/160 完成:
+2026-03-27 16:59:58,428 [INFO]   總損失: 0.000573
+2026-03-27 16:59:58,428 [INFO]   蒸餾損失: 0.000573
+2026-03-27 16:59:58,428 [INFO]   時間: 53.26秒
+2026-03-27 16:59:58,432 [INFO] 
+--- Epoch 53/160 ---
+2026-03-27 17:00:47,578 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000501
+2026-03-27 17:00:47,588 [INFO] 
+Epoch 53/160 完成:
+2026-03-27 17:00:47,593 [INFO]   總損失: 0.000501
+2026-03-27 17:00:47,593 [INFO]   蒸餾損失: 0.000501
+2026-03-27 17:00:47,593 [INFO]   時間: 49.16秒
+2026-03-27 17:00:47,597 [INFO] 
+--- Epoch 54/160 ---
+2026-03-27 17:01:38,029 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000556
+2026-03-27 17:01:38,039 [INFO] 
+Epoch 54/160 完成:
+2026-03-27 17:01:38,042 [INFO]   總損失: 0.000556
+2026-03-27 17:01:38,042 [INFO]   蒸餾損失: 0.000556
+2026-03-27 17:01:38,042 [INFO]   時間: 50.45秒
+2026-03-27 17:01:38,046 [INFO] 
+--- Epoch 55/160 ---
+2026-03-27 17:02:31,554 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000564
+2026-03-27 17:02:31,564 [INFO] 
+Epoch 55/160 完成:
+2026-03-27 17:02:31,569 [INFO]   總損失: 0.000564
+2026-03-27 17:02:31,569 [INFO]   蒸餾損失: 0.000564
+2026-03-27 17:02:31,569 [INFO]   時間: 53.52秒
+2026-03-27 17:02:31,573 [INFO] 
+--- Epoch 56/160 ---
+2026-03-27 17:03:25,078 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000503
+2026-03-27 17:03:25,082 [INFO] 
+Epoch 56/160 完成:
+2026-03-27 17:03:25,086 [INFO]   總損失: 0.000503
+2026-03-27 17:03:25,086 [INFO]   蒸餾損失: 0.000503
+2026-03-27 17:03:25,086 [INFO]   時間: 53.51秒
+2026-03-27 17:03:25,090 [INFO] 
+--- Epoch 57/160 ---
+2026-03-27 17:04:18,457 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000552
+2026-03-27 17:04:18,466 [INFO] 
+Epoch 57/160 完成:
+2026-03-27 17:04:18,469 [INFO]   總損失: 0.000552
+2026-03-27 17:04:18,470 [INFO]   蒸餾損失: 0.000552
+2026-03-27 17:04:18,470 [INFO]   時間: 53.38秒
+2026-03-27 17:04:18,470 [INFO] 
+=== Epoch 57 驗證生成 (使用 EMA 模型) ===
+2026-03-27 17:04:18,547 [INFO] EMA 權重應用完成，共應用 848 個參數
+2026-03-27 17:04:18,547 [INFO] set quant state to True, True for layer 1
+2026-03-27 17:04:18,547 [INFO] set quant state to True, True for layer 2
+2026-03-27 17:04:18,547 [INFO] set quant state to True, False for layer 3
+2026-03-27 17:04:18,548 [INFO] set quant state to True, True for layer 144
+2026-03-27 17:04:18,555 [INFO] set quant state to True, True for layer 1
+2026-03-27 17:04:18,556 [INFO] set quant state to True, True for layer 2
+2026-03-27 17:04:18,556 [INFO] set quant state to True, False for layer 3
+2026-03-27 17:04:18,558 [INFO] set quant state to True, True for layer 144
+2026-03-27 17:04:35,453 [INFO] 生成圖像數值範圍: [-1.0000, 1.0000]
+2026-03-27 17:04:35,454 [INFO] 生成圖像均值: -0.0421
+2026-03-27 17:04:35,454 [INFO] 生成圖像標準差: 0.5146
+2026-03-27 17:04:35,454 [INFO] 正規化後數值範圍: [0.0000, 1.0000]
+2026-03-27 17:04:35,513 [INFO] ✅ Epoch 57 EMA 模型驗證生成完成:
+2026-03-27 17:04:35,513 [INFO]   生成時間: 16.98秒
+2026-03-27 17:04:35,514 [INFO]   圖像範圍: [-1.000, 1.000]
+2026-03-27 17:04:35,514 [INFO]   保存路徑: QATcode/training_samples/
+2026-03-27 17:04:35,514 [INFO] 驗證後量化器 current_step: 99
+2026-03-27 17:04:35,559 [INFO] 
+--- Epoch 58/160 ---
+2026-03-27 17:05:29,402 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000543
+2026-03-27 17:05:29,411 [INFO] 
+Epoch 58/160 完成:
+2026-03-27 17:05:29,415 [INFO]   總損失: 0.000543
+2026-03-27 17:05:29,415 [INFO]   蒸餾損失: 0.000543
+2026-03-27 17:05:29,415 [INFO]   時間: 53.86秒
+2026-03-27 17:05:29,419 [INFO] 
+--- Epoch 59/160 ---
+2026-03-27 17:06:22,356 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000554
+2026-03-27 17:06:22,366 [INFO] 
+Epoch 59/160 完成:
+2026-03-27 17:06:22,369 [INFO]   總損失: 0.000554
+2026-03-27 17:06:22,370 [INFO]   蒸餾損失: 0.000554
+2026-03-27 17:06:22,370 [INFO]   時間: 52.95秒
+2026-03-27 17:06:22,373 [INFO] 
+--- Epoch 60/160 ---
+2026-03-27 17:07:15,817 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000514
+2026-03-27 17:07:15,828 [INFO] 
+Epoch 60/160 完成:
+2026-03-27 17:07:15,831 [INFO]   總損失: 0.000514
+2026-03-27 17:07:15,831 [INFO]   蒸餾損失: 0.000514
+2026-03-27 17:07:15,831 [INFO]   時間: 53.46秒
+2026-03-27 17:07:15,834 [INFO] 
+--- Epoch 61/160 ---
+2026-03-27 17:08:09,547 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000482
+2026-03-27 17:08:09,551 [INFO] 
+Epoch 61/160 完成:
+2026-03-27 17:08:09,553 [INFO]   總損失: 0.000482
+2026-03-27 17:08:09,553 [INFO]   蒸餾損失: 0.000482
+2026-03-27 17:08:09,553 [INFO]   時間: 53.72秒
+2026-03-27 17:08:09,557 [INFO] 
+--- Epoch 62/160 ---
+2026-03-27 17:08:59,622 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000508
+2026-03-27 17:08:59,631 [INFO] 
+Epoch 62/160 完成:
+2026-03-27 17:08:59,634 [INFO]   總損失: 0.000508
+2026-03-27 17:08:59,634 [INFO]   蒸餾損失: 0.000508
+2026-03-27 17:08:59,635 [INFO]   時間: 50.08秒
+2026-03-27 17:08:59,638 [INFO] 
+--- Epoch 63/160 ---
+2026-03-27 17:09:53,221 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000524
+2026-03-27 17:09:53,231 [INFO] 
+Epoch 63/160 完成:
+2026-03-27 17:09:53,232 [INFO]   總損失: 0.000524
+2026-03-27 17:09:53,232 [INFO]   蒸餾損失: 0.000524
+2026-03-27 17:09:53,232 [INFO]   時間: 53.60秒
+2026-03-27 17:09:53,236 [INFO] 
+--- Epoch 64/160 ---
+2026-03-27 17:10:45,919 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000556
+2026-03-27 17:10:45,928 [INFO] 
+Epoch 64/160 完成:
+2026-03-27 17:10:45,932 [INFO]   總損失: 0.000556
+2026-03-27 17:10:45,932 [INFO]   蒸餾損失: 0.000556
+2026-03-27 17:10:45,932 [INFO]   時間: 52.70秒
+2026-03-27 17:10:45,935 [INFO] 
+--- Epoch 65/160 ---
+2026-03-27 17:11:39,380 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000524
+2026-03-27 17:11:39,391 [INFO] 
+Epoch 65/160 完成:
+2026-03-27 17:11:39,394 [INFO]   總損失: 0.000524
+2026-03-27 17:11:39,394 [INFO]   蒸餾損失: 0.000524
+2026-03-27 17:11:39,394 [INFO]   時間: 53.46秒
+2026-03-27 17:11:39,394 [INFO] 
+=== Epoch 65 驗證生成 (使用 EMA 模型) ===
+2026-03-27 17:11:39,469 [INFO] EMA 權重應用完成，共應用 848 個參數
+2026-03-27 17:11:39,469 [INFO] set quant state to True, True for layer 1
+2026-03-27 17:11:39,469 [INFO] set quant state to True, True for layer 2
+2026-03-27 17:11:39,469 [INFO] set quant state to True, False for layer 3
+2026-03-27 17:11:39,471 [INFO] set quant state to True, True for layer 144
+2026-03-27 17:11:39,479 [INFO] set quant state to True, True for layer 1
+2026-03-27 17:11:39,479 [INFO] set quant state to True, True for layer 2
+2026-03-27 17:11:39,479 [INFO] set quant state to True, False for layer 3
+2026-03-27 17:11:39,481 [INFO] set quant state to True, True for layer 144
+2026-03-27 17:11:58,810 [INFO] 生成圖像數值範圍: [-1.0000, 1.0000]
+2026-03-27 17:11:58,810 [INFO] 生成圖像均值: -0.0431
+2026-03-27 17:11:58,810 [INFO] 生成圖像標準差: 0.5153
+2026-03-27 17:11:58,810 [INFO] 正規化後數值範圍: [0.0000, 1.0000]
+2026-03-27 17:11:58,869 [INFO] ✅ Epoch 65 EMA 模型驗證生成完成:
+2026-03-27 17:11:58,869 [INFO]   生成時間: 19.41秒
+2026-03-27 17:11:58,869 [INFO]   圖像範圍: [-1.000, 1.000]
+2026-03-27 17:11:58,869 [INFO]   保存路徑: QATcode/training_samples/
+2026-03-27 17:11:58,869 [INFO] 驗證後量化器 current_step: 99
+2026-03-27 17:11:58,907 [INFO] 
+--- Epoch 66/160 ---
+2026-03-27 17:12:52,575 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000490
+2026-03-27 17:12:52,585 [INFO] 
+Epoch 66/160 完成:
+2026-03-27 17:12:52,588 [INFO]   總損失: 0.000490
+2026-03-27 17:12:52,588 [INFO]   蒸餾損失: 0.000490
+2026-03-27 17:12:52,588 [INFO]   時間: 53.68秒
+2026-03-27 17:12:52,592 [INFO] 
+--- Epoch 67/160 ---
+2026-03-27 17:13:46,009 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000535
+2026-03-27 17:13:46,019 [INFO] 
+Epoch 67/160 完成:
+2026-03-27 17:13:46,022 [INFO]   總損失: 0.000535
+2026-03-27 17:13:46,022 [INFO]   蒸餾損失: 0.000535
+2026-03-27 17:13:46,022 [INFO]   時間: 53.43秒
+2026-03-27 17:13:46,026 [INFO] 
+--- Epoch 68/160 ---
+2026-03-27 17:14:34,270 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000521
+2026-03-27 17:14:34,280 [INFO] 
+Epoch 68/160 完成:
+2026-03-27 17:14:34,284 [INFO]   總損失: 0.000521
+2026-03-27 17:14:34,284 [INFO]   蒸餾損失: 0.000521
+2026-03-27 17:14:34,284 [INFO]   時間: 48.26秒
+2026-03-27 17:14:34,287 [INFO] 
+--- Epoch 69/160 ---
+2026-03-27 17:15:27,754 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000555
+2026-03-27 17:15:27,763 [INFO] 
+Epoch 69/160 完成:
+2026-03-27 17:15:27,766 [INFO]   總損失: 0.000555
+2026-03-27 17:15:27,766 [INFO]   蒸餾損失: 0.000555
+2026-03-27 17:15:27,766 [INFO]   時間: 53.48秒
+2026-03-27 17:15:27,770 [INFO] 
+--- Epoch 70/160 ---
+2026-03-27 17:16:21,226 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000569
+2026-03-27 17:16:21,235 [INFO] 
+Epoch 70/160 完成:
+2026-03-27 17:16:21,239 [INFO]   總損失: 0.000569
+2026-03-27 17:16:21,239 [INFO]   蒸餾損失: 0.000569
+2026-03-27 17:16:21,239 [INFO]   時間: 53.47秒
+2026-03-27 17:16:21,242 [INFO] 
+--- Epoch 71/160 ---
+2026-03-27 17:17:14,618 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000524
+2026-03-27 17:17:14,622 [INFO] 
+Epoch 71/160 完成:
+2026-03-27 17:17:14,625 [INFO]   總損失: 0.000524
+2026-03-27 17:17:14,625 [INFO]   蒸餾損失: 0.000524
+2026-03-27 17:17:14,625 [INFO]   時間: 53.38秒
+2026-03-27 17:17:14,628 [INFO] 
+--- Epoch 72/160 ---
+2026-03-27 17:18:08,320 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000508
+2026-03-27 17:18:08,330 [INFO] 
+Epoch 72/160 完成:
+2026-03-27 17:18:08,333 [INFO]   總損失: 0.000508
+2026-03-27 17:18:08,334 [INFO]   蒸餾損失: 0.000508
+2026-03-27 17:18:08,334 [INFO]   時間: 53.70秒
+2026-03-27 17:18:08,337 [INFO] 
+--- Epoch 73/160 ---
+2026-03-27 17:19:00,358 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000501
+2026-03-27 17:19:00,367 [INFO] 
+Epoch 73/160 完成:
+2026-03-27 17:19:00,372 [INFO]   總損失: 0.000501
+2026-03-27 17:19:00,372 [INFO]   蒸餾損失: 0.000501
+2026-03-27 17:19:00,372 [INFO]   時間: 52.03秒
+2026-03-27 17:19:00,372 [INFO] 
+=== Epoch 73 驗證生成 (使用 EMA 模型) ===
+2026-03-27 17:19:00,617 [INFO] EMA 權重應用完成，共應用 848 個參數
+2026-03-27 17:19:00,617 [INFO] set quant state to True, True for layer 1
+2026-03-27 17:19:00,617 [INFO] set quant state to True, True for layer 2
+2026-03-27 17:19:00,617 [INFO] set quant state to True, False for layer 3
+2026-03-27 17:19:00,619 [INFO] set quant state to True, True for layer 144
+2026-03-27 17:19:00,627 [INFO] set quant state to True, True for layer 1
+2026-03-27 17:19:00,627 [INFO] set quant state to True, True for layer 2
+2026-03-27 17:19:00,627 [INFO] set quant state to True, False for layer 3
+2026-03-27 17:19:00,629 [INFO] set quant state to True, True for layer 144
+2026-03-27 17:19:17,959 [INFO] 生成圖像數值範圍: [-1.0000, 1.0000]
+2026-03-27 17:19:17,959 [INFO] 生成圖像均值: -0.0414
+2026-03-27 17:19:17,959 [INFO] 生成圖像標準差: 0.5145
+2026-03-27 17:19:17,960 [INFO] 正規化後數值範圍: [0.0000, 1.0000]
+2026-03-27 17:19:18,017 [INFO] ✅ Epoch 73 EMA 模型驗證生成完成:
+2026-03-27 17:19:18,017 [INFO]   生成時間: 17.58秒
+2026-03-27 17:19:18,018 [INFO]   圖像範圍: [-1.000, 1.000]
+2026-03-27 17:19:18,018 [INFO]   保存路徑: QATcode/training_samples/
+2026-03-27 17:19:18,018 [INFO] 驗證後量化器 current_step: 99
+2026-03-27 17:19:18,065 [INFO] 
+--- Epoch 74/160 ---
+2026-03-27 17:20:11,697 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000488
+2026-03-27 17:20:11,702 [INFO] 
+Epoch 74/160 完成:
+2026-03-27 17:20:11,705 [INFO]   總損失: 0.000488
+2026-03-27 17:20:11,705 [INFO]   蒸餾損失: 0.000488
+2026-03-27 17:20:11,705 [INFO]   時間: 53.64秒
+2026-03-27 17:20:11,708 [INFO] 
+--- Epoch 75/160 ---
+2026-03-27 17:21:05,090 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000478
+2026-03-27 17:21:05,100 [INFO] 
+Epoch 75/160 完成:
+2026-03-27 17:21:05,104 [INFO]   總損失: 0.000478
+2026-03-27 17:21:05,104 [INFO]   蒸餾損失: 0.000478
+2026-03-27 17:21:05,104 [INFO]   時間: 53.39秒
+2026-03-27 17:21:05,108 [INFO] 
+--- Epoch 76/160 ---
+2026-03-27 17:21:57,892 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000511
+2026-03-27 17:21:57,901 [INFO] 
+Epoch 76/160 完成:
+2026-03-27 17:21:57,905 [INFO]   總損失: 0.000511
+2026-03-27 17:21:57,905 [INFO]   蒸餾損失: 0.000511
+2026-03-27 17:21:57,905 [INFO]   時間: 52.80秒
+2026-03-27 17:21:57,909 [INFO] 
+--- Epoch 77/160 ---
+2026-03-27 17:22:51,412 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000547
+2026-03-27 17:22:51,421 [INFO] 
+Epoch 77/160 完成:
+2026-03-27 17:22:51,424 [INFO]   總損失: 0.000547
+2026-03-27 17:22:51,424 [INFO]   蒸餾損失: 0.000547
+2026-03-27 17:22:51,424 [INFO]   時間: 53.52秒
+2026-03-27 17:22:51,427 [INFO] 
+--- Epoch 78/160 ---
+2026-03-27 17:23:44,652 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000495
+2026-03-27 17:23:44,662 [INFO] 
+Epoch 78/160 完成:
+2026-03-27 17:23:44,666 [INFO]   總損失: 0.000495
+2026-03-27 17:23:44,667 [INFO]   蒸餾損失: 0.000495
+2026-03-27 17:23:44,667 [INFO]   時間: 53.24秒
+2026-03-27 17:23:44,670 [INFO] 
+--- Epoch 79/160 ---
+2026-03-27 17:24:38,089 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000540
+2026-03-27 17:24:38,099 [INFO] 
+Epoch 79/160 完成:
+2026-03-27 17:24:38,104 [INFO]   總損失: 0.000540
+2026-03-27 17:24:38,104 [INFO]   蒸餾損失: 0.000540
+2026-03-27 17:24:38,104 [INFO]   時間: 53.43秒
+2026-03-27 17:24:38,108 [INFO] 
+--- Epoch 80/160 ---
+2026-03-27 17:25:31,644 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000499
+2026-03-27 17:25:31,654 [INFO] 
+Epoch 80/160 完成:
+2026-03-27 17:25:31,656 [INFO]   總損失: 0.000499
+2026-03-27 17:25:31,656 [INFO]   蒸餾損失: 0.000499
+2026-03-27 17:25:31,656 [INFO]   時間: 53.55秒
+2026-03-27 17:25:31,660 [INFO] 
+--- Epoch 81/160 ---
+2026-03-27 17:26:25,572 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000538
+2026-03-27 17:26:25,582 [INFO] 
+Epoch 81/160 完成:
+2026-03-27 17:26:25,586 [INFO]   總損失: 0.000538
+2026-03-27 17:26:25,586 [INFO]   蒸餾損失: 0.000538
+2026-03-27 17:26:25,586 [INFO]   時間: 53.93秒
+2026-03-27 17:26:25,586 [INFO] 
+=== Epoch 81 驗證生成 (使用 EMA 模型) ===
+2026-03-27 17:26:25,662 [INFO] EMA 權重應用完成，共應用 848 個參數
+2026-03-27 17:26:25,662 [INFO] set quant state to True, True for layer 1
+2026-03-27 17:26:25,662 [INFO] set quant state to True, True for layer 2
+2026-03-27 17:26:25,662 [INFO] set quant state to True, False for layer 3
+2026-03-27 17:26:25,663 [INFO] set quant state to True, True for layer 144
+2026-03-27 17:26:25,670 [INFO] set quant state to True, True for layer 1
+2026-03-27 17:26:25,671 [INFO] set quant state to True, True for layer 2
+2026-03-27 17:26:25,671 [INFO] set quant state to True, False for layer 3
+2026-03-27 17:26:25,673 [INFO] set quant state to True, True for layer 144
+2026-03-27 17:26:43,135 [INFO] 生成圖像數值範圍: [-1.0000, 1.0000]
+2026-03-27 17:26:43,135 [INFO] 生成圖像均值: -0.0418
+2026-03-27 17:26:43,135 [INFO] 生成圖像標準差: 0.5152
+2026-03-27 17:26:43,136 [INFO] 正規化後數值範圍: [0.0000, 1.0000]
+2026-03-27 17:26:43,195 [INFO] ✅ Epoch 81 EMA 模型驗證生成完成:
+2026-03-27 17:26:43,196 [INFO]   生成時間: 17.55秒
+2026-03-27 17:26:43,196 [INFO]   圖像範圍: [-1.000, 1.000]
+2026-03-27 17:26:43,196 [INFO]   保存路徑: QATcode/training_samples/
+2026-03-27 17:26:43,196 [INFO] 驗證後量化器 current_step: 99
+2026-03-27 17:26:43,233 [INFO] 
+--- Epoch 82/160 ---
+2026-03-27 17:27:36,795 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000485
+2026-03-27 17:27:36,805 [INFO] 
+Epoch 82/160 完成:
+2026-03-27 17:27:36,809 [INFO]   總損失: 0.000485
+2026-03-27 17:27:36,809 [INFO]   蒸餾損失: 0.000485
+2026-03-27 17:27:36,809 [INFO]   時間: 53.58秒
+2026-03-27 17:27:36,813 [INFO] 
+--- Epoch 83/160 ---
+2026-03-27 17:28:30,486 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000500
+2026-03-27 17:28:30,496 [INFO] 
+Epoch 83/160 完成:
+2026-03-27 17:28:30,500 [INFO]   總損失: 0.000500
+2026-03-27 17:28:30,500 [INFO]   蒸餾損失: 0.000500
+2026-03-27 17:28:30,500 [INFO]   時間: 53.69秒
+2026-03-27 17:28:30,504 [INFO] 
+--- Epoch 84/160 ---
+2026-03-27 17:29:23,807 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000502
+2026-03-27 17:29:23,817 [INFO] 
+Epoch 84/160 完成:
+2026-03-27 17:29:23,821 [INFO]   總損失: 0.000502
+2026-03-27 17:29:23,822 [INFO]   蒸餾損失: 0.000502
+2026-03-27 17:29:23,822 [INFO]   時間: 53.32秒
+2026-03-27 17:29:23,826 [INFO] 
+--- Epoch 85/160 ---
+2026-03-27 17:30:17,555 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000565
+2026-03-27 17:30:17,559 [INFO] 
+Epoch 85/160 完成:
+2026-03-27 17:30:17,561 [INFO]   總損失: 0.000565
+2026-03-27 17:30:17,562 [INFO]   蒸餾損失: 0.000565
+2026-03-27 17:30:17,562 [INFO]   時間: 53.74秒
+2026-03-27 17:30:17,565 [INFO] 
+--- Epoch 86/160 ---
+2026-03-27 17:31:10,957 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000481
+2026-03-27 17:31:10,966 [INFO] 
+Epoch 86/160 完成:
+2026-03-27 17:31:10,969 [INFO]   總損失: 0.000481
+2026-03-27 17:31:10,969 [INFO]   蒸餾損失: 0.000481
+2026-03-27 17:31:10,969 [INFO]   時間: 53.40秒
+2026-03-27 17:31:10,973 [INFO] 
+--- Epoch 87/160 ---
+2026-03-27 17:32:03,978 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000518
+2026-03-27 17:32:03,984 [INFO] 
+Epoch 87/160 完成:
+2026-03-27 17:32:03,987 [INFO]   總損失: 0.000518
+2026-03-27 17:32:03,987 [INFO]   蒸餾損失: 0.000518
+2026-03-27 17:32:03,987 [INFO]   時間: 53.01秒
+2026-03-27 17:32:03,991 [INFO] 
+--- Epoch 88/160 ---
+2026-03-27 17:32:57,405 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000481
+2026-03-27 17:32:57,414 [INFO] 
+Epoch 88/160 完成:
+2026-03-27 17:32:57,416 [INFO]   總損失: 0.000481
+2026-03-27 17:32:57,416 [INFO]   蒸餾損失: 0.000481
+2026-03-27 17:32:57,416 [INFO]   時間: 53.43秒
+2026-03-27 17:32:57,420 [INFO] 
+--- Epoch 89/160 ---
+2026-03-27 17:33:50,060 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000514
+2026-03-27 17:33:50,070 [INFO] 
+Epoch 89/160 完成:
+2026-03-27 17:33:50,074 [INFO]   總損失: 0.000514
+2026-03-27 17:33:50,074 [INFO]   蒸餾損失: 0.000514
+2026-03-27 17:33:50,074 [INFO]   時間: 52.65秒
+2026-03-27 17:33:50,074 [INFO] 
+=== Epoch 89 驗證生成 (使用 EMA 模型) ===
+2026-03-27 17:33:50,308 [INFO] EMA 權重應用完成，共應用 848 個參數
+2026-03-27 17:33:50,308 [INFO] set quant state to True, True for layer 1
+2026-03-27 17:33:50,308 [INFO] set quant state to True, True for layer 2
+2026-03-27 17:33:50,308 [INFO] set quant state to True, False for layer 3
+2026-03-27 17:33:50,309 [INFO] set quant state to True, True for layer 144
+2026-03-27 17:33:50,317 [INFO] set quant state to True, True for layer 1
+2026-03-27 17:33:50,318 [INFO] set quant state to True, True for layer 2
+2026-03-27 17:33:50,318 [INFO] set quant state to True, False for layer 3
+2026-03-27 17:33:50,320 [INFO] set quant state to True, True for layer 144
+2026-03-27 17:34:08,237 [INFO] 生成圖像數值範圍: [-1.0000, 1.0000]
+2026-03-27 17:34:08,237 [INFO] 生成圖像均值: -0.0422
+2026-03-27 17:34:08,237 [INFO] 生成圖像標準差: 0.5150
+2026-03-27 17:34:08,237 [INFO] 正規化後數值範圍: [0.0000, 1.0000]
+2026-03-27 17:34:08,297 [INFO] ✅ Epoch 89 EMA 模型驗證生成完成:
+2026-03-27 17:34:08,297 [INFO]   生成時間: 18.16秒
+2026-03-27 17:34:08,297 [INFO]   圖像範圍: [-1.000, 1.000]
+2026-03-27 17:34:08,297 [INFO]   保存路徑: QATcode/training_samples/
+2026-03-27 17:34:08,297 [INFO] 驗證後量化器 current_step: 99
+2026-03-27 17:34:08,329 [INFO] 
+--- Epoch 90/160 ---
+2026-03-27 17:34:58,571 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000458
+2026-03-27 17:34:58,582 [INFO] 
+Epoch 90/160 完成:
+2026-03-27 17:34:58,585 [INFO]   總損失: 0.000458
+2026-03-27 17:34:58,586 [INFO]   蒸餾損失: 0.000458
+2026-03-27 17:34:58,586 [INFO]   時間: 50.26秒
+2026-03-27 17:34:58,589 [INFO] 
+--- Epoch 91/160 ---
+2026-03-27 17:35:52,118 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000491
+2026-03-27 17:35:52,128 [INFO] 
+Epoch 91/160 完成:
+2026-03-27 17:35:52,132 [INFO]   總損失: 0.000491
+2026-03-27 17:35:52,132 [INFO]   蒸餾損失: 0.000491
+2026-03-27 17:35:52,132 [INFO]   時間: 53.54秒
+2026-03-27 17:35:52,137 [INFO] 
+--- Epoch 92/160 ---
+2026-03-27 17:36:45,540 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000493
+2026-03-27 17:36:45,549 [INFO] 
+Epoch 92/160 完成:
+2026-03-27 17:36:45,553 [INFO]   總損失: 0.000493
+2026-03-27 17:36:45,553 [INFO]   蒸餾損失: 0.000493
+2026-03-27 17:36:45,553 [INFO]   時間: 53.42秒
+2026-03-27 17:36:45,557 [INFO] 
+--- Epoch 93/160 ---
+2026-03-27 17:37:38,554 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000519
+2026-03-27 17:37:38,564 [INFO] 
+Epoch 93/160 完成:
+2026-03-27 17:37:38,567 [INFO]   總損失: 0.000519
+2026-03-27 17:37:38,567 [INFO]   蒸餾損失: 0.000519
+2026-03-27 17:37:38,567 [INFO]   時間: 53.01秒
+2026-03-27 17:37:38,571 [INFO] 
+--- Epoch 94/160 ---
+2026-03-27 17:38:37,039 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000478
+2026-03-27 17:38:37,050 [INFO] 
+Epoch 94/160 完成:
+2026-03-27 17:38:37,055 [INFO]   總損失: 0.000478
+2026-03-27 17:38:37,055 [INFO]   蒸餾損失: 0.000478
+2026-03-27 17:38:37,055 [INFO]   時間: 58.48秒
+2026-03-27 17:38:37,059 [INFO] 
+--- Epoch 95/160 ---
+2026-03-27 17:39:31,614 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000482
+2026-03-27 17:39:31,624 [INFO] 
+Epoch 95/160 完成:
+2026-03-27 17:39:31,629 [INFO]   總損失: 0.000482
+2026-03-27 17:39:31,629 [INFO]   蒸餾損失: 0.000482
+2026-03-27 17:39:31,629 [INFO]   時間: 54.57秒
+2026-03-27 17:39:31,633 [INFO] 
+--- Epoch 96/160 ---
+2026-03-27 17:40:24,879 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000523
+2026-03-27 17:40:24,888 [INFO] 
+Epoch 96/160 完成:
+2026-03-27 17:40:24,891 [INFO]   總損失: 0.000523
+2026-03-27 17:40:24,891 [INFO]   蒸餾損失: 0.000523
+2026-03-27 17:40:24,891 [INFO]   時間: 53.26秒
+2026-03-27 17:40:24,895 [INFO] 
+--- Epoch 97/160 ---
+2026-03-27 17:41:17,970 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000543
+2026-03-27 17:41:17,980 [INFO] 
+Epoch 97/160 完成:
+2026-03-27 17:41:17,984 [INFO]   總損失: 0.000543
+2026-03-27 17:41:17,984 [INFO]   蒸餾損失: 0.000543
+2026-03-27 17:41:17,984 [INFO]   時間: 53.09秒
+2026-03-27 17:41:17,985 [INFO] 
+=== Epoch 97 驗證生成 (使用 EMA 模型) ===
+2026-03-27 17:41:18,060 [INFO] EMA 權重應用完成，共應用 848 個參數
+2026-03-27 17:41:18,061 [INFO] set quant state to True, True for layer 1
+2026-03-27 17:41:18,061 [INFO] set quant state to True, True for layer 2
+2026-03-27 17:41:18,061 [INFO] set quant state to True, False for layer 3
+2026-03-27 17:41:18,062 [INFO] set quant state to True, True for layer 144
+2026-03-27 17:41:18,069 [INFO] set quant state to True, True for layer 1
+2026-03-27 17:41:18,071 [INFO] set quant state to True, True for layer 2
+2026-03-27 17:41:18,071 [INFO] set quant state to True, False for layer 3
+2026-03-27 17:41:18,072 [INFO] set quant state to True, True for layer 144
+2026-03-27 17:41:34,721 [INFO] 生成圖像數值範圍: [-1.0000, 1.0000]
+2026-03-27 17:41:34,721 [INFO] 生成圖像均值: -0.0432
+2026-03-27 17:41:34,721 [INFO] 生成圖像標準差: 0.5136
+2026-03-27 17:41:34,721 [INFO] 正規化後數值範圍: [0.0000, 1.0000]
+2026-03-27 17:41:34,781 [INFO] ✅ Epoch 97 EMA 模型驗證生成完成:
+2026-03-27 17:41:34,781 [INFO]   生成時間: 16.73秒
+2026-03-27 17:41:34,781 [INFO]   圖像範圍: [-1.000, 1.000]
+2026-03-27 17:41:34,781 [INFO]   保存路徑: QATcode/training_samples/
+2026-03-27 17:41:34,781 [INFO] 驗證後量化器 current_step: 99
+2026-03-27 17:41:34,814 [INFO] 
+--- Epoch 98/160 ---
+2026-03-27 17:42:28,353 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000456
+2026-03-27 17:42:28,363 [INFO] 
+Epoch 98/160 完成:
+2026-03-27 17:42:28,366 [INFO]   總損失: 0.000456
+2026-03-27 17:42:28,366 [INFO]   蒸餾損失: 0.000456
+2026-03-27 17:42:28,366 [INFO]   時間: 53.55秒
+2026-03-27 17:42:28,370 [INFO] 
+--- Epoch 99/160 ---
+2026-03-27 17:43:23,511 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000502
+2026-03-27 17:43:23,520 [INFO] 
+Epoch 99/160 完成:
+2026-03-27 17:43:23,521 [INFO]   總損失: 0.000502
+2026-03-27 17:43:23,521 [INFO]   蒸餾損失: 0.000502
+2026-03-27 17:43:23,521 [INFO]   時間: 55.15秒
+2026-03-27 17:43:23,524 [INFO] 
+--- Epoch 100/160 ---
+2026-03-27 17:44:20,264 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000511
+2026-03-27 17:44:20,273 [INFO] 
+Epoch 100/160 完成:
+2026-03-27 17:44:20,275 [INFO]   總損失: 0.000511
+2026-03-27 17:44:20,275 [INFO]   蒸餾損失: 0.000511
+2026-03-27 17:44:20,275 [INFO]   時間: 56.75秒
+2026-03-27 17:44:20,278 [INFO] 
+--- Epoch 101/160 ---
+2026-03-27 17:45:17,514 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000563
+2026-03-27 17:45:17,518 [INFO] 
+Epoch 101/160 完成:
+2026-03-27 17:45:17,520 [INFO]   總損失: 0.000563
+2026-03-27 17:45:17,520 [INFO]   蒸餾損失: 0.000563
+2026-03-27 17:45:17,520 [INFO]   時間: 57.24秒
+2026-03-27 17:45:17,523 [INFO] 
+--- Epoch 102/160 ---
+2026-03-27 17:46:13,919 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000507
+2026-03-27 17:46:13,928 [INFO] 
+Epoch 102/160 完成:
+2026-03-27 17:46:13,930 [INFO]   總損失: 0.000507
+2026-03-27 17:46:13,930 [INFO]   蒸餾損失: 0.000507
+2026-03-27 17:46:13,930 [INFO]   時間: 56.41秒
+2026-03-27 17:46:13,933 [INFO] 
+--- Epoch 103/160 ---
+2026-03-27 17:47:12,859 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000519
+2026-03-27 17:47:12,868 [INFO] 
+Epoch 103/160 完成:
+2026-03-27 17:47:12,870 [INFO]   總損失: 0.000519
+2026-03-27 17:47:12,870 [INFO]   蒸餾損失: 0.000519
+2026-03-27 17:47:12,870 [INFO]   時間: 58.94秒
+2026-03-27 17:47:12,873 [INFO] 
+--- Epoch 104/160 ---
+2026-03-27 17:48:11,739 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000525
+2026-03-27 17:48:11,750 [INFO] 
+Epoch 104/160 完成:
+2026-03-27 17:48:11,751 [INFO]   總損失: 0.000525
+2026-03-27 17:48:11,751 [INFO]   蒸餾損失: 0.000525
+2026-03-27 17:48:11,751 [INFO]   時間: 58.88秒
+2026-03-27 17:48:11,754 [INFO] 
+--- Epoch 105/160 ---
+2026-03-27 17:49:06,539 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000483
+2026-03-27 17:49:06,547 [INFO] 
+Epoch 105/160 完成:
+2026-03-27 17:49:06,550 [INFO]   總損失: 0.000483
+2026-03-27 17:49:06,550 [INFO]   蒸餾損失: 0.000483
+2026-03-27 17:49:06,550 [INFO]   時間: 54.80秒
+2026-03-27 17:49:06,550 [INFO] 
+=== Epoch 105 驗證生成 (使用 EMA 模型) ===
+2026-03-27 17:49:06,775 [INFO] EMA 權重應用完成，共應用 848 個參數
+2026-03-27 17:49:06,775 [INFO] set quant state to True, True for layer 1
+2026-03-27 17:49:06,775 [INFO] set quant state to True, True for layer 2
+2026-03-27 17:49:06,775 [INFO] set quant state to True, False for layer 3
+2026-03-27 17:49:06,776 [INFO] set quant state to True, True for layer 144
+2026-03-27 17:49:06,785 [INFO] set quant state to True, True for layer 1
+2026-03-27 17:49:06,785 [INFO] set quant state to True, True for layer 2
+2026-03-27 17:49:06,785 [INFO] set quant state to True, False for layer 3
+2026-03-27 17:49:06,787 [INFO] set quant state to True, True for layer 144
+2026-03-27 17:49:26,307 [INFO] 生成圖像數值範圍: [-1.0000, 1.0000]
+2026-03-27 17:49:26,307 [INFO] 生成圖像均值: -0.0423
+2026-03-27 17:49:26,307 [INFO] 生成圖像標準差: 0.5142
+2026-03-27 17:49:26,307 [INFO] 正規化後數值範圍: [0.0000, 1.0000]
+2026-03-27 17:49:26,366 [INFO] ✅ Epoch 105 EMA 模型驗證生成完成:
+2026-03-27 17:49:26,366 [INFO]   生成時間: 19.75秒
+2026-03-27 17:49:26,366 [INFO]   圖像範圍: [-1.000, 1.000]
+2026-03-27 17:49:26,366 [INFO]   保存路徑: QATcode/training_samples/
+2026-03-27 17:49:26,366 [INFO] 驗證後量化器 current_step: 99
+2026-03-27 17:49:26,407 [INFO] 
+--- Epoch 106/160 ---
+2026-03-27 17:50:22,612 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000480
+2026-03-27 17:50:22,622 [INFO] 
+Epoch 106/160 完成:
+2026-03-27 17:50:22,625 [INFO]   總損失: 0.000480
+2026-03-27 17:50:22,625 [INFO]   蒸餾損失: 0.000480
+2026-03-27 17:50:22,626 [INFO]   時間: 56.22秒
+2026-03-27 17:50:22,629 [INFO] 
+--- Epoch 107/160 ---
+2026-03-27 17:51:20,426 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000484
+2026-03-27 17:51:20,436 [INFO] 
+Epoch 107/160 完成:
+2026-03-27 17:51:20,437 [INFO]   總損失: 0.000484
+2026-03-27 17:51:20,437 [INFO]   蒸餾損失: 0.000484
+2026-03-27 17:51:20,437 [INFO]   時間: 57.81秒
+2026-03-27 17:51:20,441 [INFO] 
+--- Epoch 108/160 ---
+2026-03-27 17:52:18,153 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000549
+2026-03-27 17:52:18,163 [INFO] 
+Epoch 108/160 完成:
+2026-03-27 17:52:18,164 [INFO]   總損失: 0.000549
+2026-03-27 17:52:18,165 [INFO]   蒸餾損失: 0.000549
+2026-03-27 17:52:18,165 [INFO]   時間: 57.73秒
+2026-03-27 17:52:18,168 [INFO] 
+--- Epoch 109/160 ---
+2026-03-27 17:53:13,936 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000578
+2026-03-27 17:53:13,945 [INFO] 
+Epoch 109/160 完成:
+2026-03-27 17:53:13,947 [INFO]   總損失: 0.000578
+2026-03-27 17:53:13,947 [INFO]   蒸餾損失: 0.000578
+2026-03-27 17:53:13,947 [INFO]   時間: 55.78秒
+2026-03-27 17:53:13,951 [INFO] 
+--- Epoch 110/160 ---
+2026-03-27 17:54:11,404 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000504
+2026-03-27 17:54:11,414 [INFO] 
+Epoch 110/160 完成:
+2026-03-27 17:54:11,416 [INFO]   總損失: 0.000504
+2026-03-27 17:54:11,416 [INFO]   蒸餾損失: 0.000504
+2026-03-27 17:54:11,416 [INFO]   時間: 57.47秒
+2026-03-27 17:54:11,419 [INFO] 
+--- Epoch 111/160 ---
+2026-03-27 17:55:09,427 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000476
+2026-03-27 17:55:09,436 [INFO] 
+Epoch 111/160 完成:
+2026-03-27 17:55:09,438 [INFO]   總損失: 0.000476
+2026-03-27 17:55:09,438 [INFO]   蒸餾損失: 0.000476
+2026-03-27 17:55:09,438 [INFO]   時間: 58.02秒
+2026-03-27 17:55:09,442 [INFO] 
+--- Epoch 112/160 ---
+2026-03-27 17:56:06,978 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000488
+2026-03-27 17:56:06,987 [INFO] 
+Epoch 112/160 完成:
+2026-03-27 17:56:06,989 [INFO]   總損失: 0.000488
+2026-03-27 17:56:06,989 [INFO]   蒸餾損失: 0.000488
+2026-03-27 17:56:06,989 [INFO]   時間: 57.55秒
+2026-03-27 17:56:06,992 [INFO] 
+--- Epoch 113/160 ---
+2026-03-27 17:57:03,999 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000494
+2026-03-27 17:57:04,008 [INFO] 
+Epoch 113/160 完成:
+2026-03-27 17:57:04,010 [INFO]   總損失: 0.000494
+2026-03-27 17:57:04,010 [INFO]   蒸餾損失: 0.000494
+2026-03-27 17:57:04,010 [INFO]   時間: 57.02秒
+2026-03-27 17:57:04,010 [INFO] 
+=== Epoch 113 驗證生成 (使用 EMA 模型) ===
+2026-03-27 17:57:04,079 [INFO] EMA 權重應用完成，共應用 848 個參數
+2026-03-27 17:57:04,079 [INFO] set quant state to True, True for layer 1
+2026-03-27 17:57:04,079 [INFO] set quant state to True, True for layer 2
+2026-03-27 17:57:04,079 [INFO] set quant state to True, False for layer 3
+2026-03-27 17:57:04,080 [INFO] set quant state to True, True for layer 144
+2026-03-27 17:57:04,086 [INFO] set quant state to True, True for layer 1
+2026-03-27 17:57:04,087 [INFO] set quant state to True, True for layer 2
+2026-03-27 17:57:04,087 [INFO] set quant state to True, False for layer 3
+2026-03-27 17:57:04,088 [INFO] set quant state to True, True for layer 144
+2026-03-27 17:57:22,181 [INFO] 生成圖像數值範圍: [-1.0000, 1.0000]
+2026-03-27 17:57:22,181 [INFO] 生成圖像均值: -0.0409
+2026-03-27 17:57:22,181 [INFO] 生成圖像標準差: 0.5143
+2026-03-27 17:57:22,181 [INFO] 正規化後數值範圍: [0.0000, 1.0000]
+2026-03-27 17:57:22,239 [INFO] ✅ Epoch 113 EMA 模型驗證生成完成:
+2026-03-27 17:57:22,239 [INFO]   生成時間: 18.17秒
+2026-03-27 17:57:22,239 [INFO]   圖像範圍: [-1.000, 1.000]
+2026-03-27 17:57:22,239 [INFO]   保存路徑: QATcode/training_samples/
+2026-03-27 17:57:22,239 [INFO] 驗證後量化器 current_step: 99
+2026-03-27 17:57:22,284 [INFO] 
+--- Epoch 114/160 ---
+2026-03-27 17:58:20,600 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000450
+2026-03-27 17:58:20,608 [INFO] 
+Epoch 114/160 完成:
+2026-03-27 17:58:20,611 [INFO]   總損失: 0.000450
+2026-03-27 17:58:20,611 [INFO]   蒸餾損失: 0.000450
+2026-03-27 17:58:20,611 [INFO]   時間: 58.33秒
+2026-03-27 17:58:22,115 [INFO] 模型已保存: QATcode/diffae_step6_lora_best.pth (base=5469 keys, raw=1822 keys, ema=1822 keys)
+2026-03-27 17:58:22,119 [INFO]   ✅ 新的最佳模型已保存 (Loss: 0.000450)
+2026-03-27 17:58:22,123 [INFO] 
+--- Epoch 115/160 ---
+2026-03-27 17:59:17,672 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000494
+2026-03-27 17:59:17,680 [INFO] 
+Epoch 115/160 完成:
+2026-03-27 17:59:17,682 [INFO]   總損失: 0.000494
+2026-03-27 17:59:17,682 [INFO]   蒸餾損失: 0.000494
+2026-03-27 17:59:17,682 [INFO]   時間: 55.56秒
+2026-03-27 17:59:17,685 [INFO] 
+--- Epoch 116/160 ---
+2026-03-27 18:00:12,233 [INFO] Step 100 - DDIM step 0: Distill loss: 0.000487
+2026-03-27 18:00:12,242 [INFO] 
+Epoch 116/160 完成:
+2026-03-27 18:00:12,243 [INFO]   總損失: 0.000487
+2026-03-27 18:00:12,243 [INFO]   蒸餾損失: 0.000487
+2026-03-27 18:00:12,243 [INFO]   時間: 54.56秒
+2026-03-27 18:00:12,246 [INFO] 
+--- Epoch 117/160 ---

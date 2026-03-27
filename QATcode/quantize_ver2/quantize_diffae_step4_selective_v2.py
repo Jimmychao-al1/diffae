@@ -642,7 +642,7 @@ def save_quantized_model(qnn, total_quant):
     print("="*100)
     print("9. Saving quantized model...")
     
-    output_dir = "QATcode"
+    output_dir = "QATcode/quantize_ver2"
     os.makedirs(output_dir, exist_ok=True)
     
     # 保存模型

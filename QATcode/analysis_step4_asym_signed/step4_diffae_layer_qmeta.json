@@ -1,2738 +1,866 @@
 {
   "model.time_embed.time_embed.0": {
-    "act_delta": 0.007843134924769402,
-    "act_zero_point": 127.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0006911422242410481,
-    "weight_delta_q2": 0.0007249686168506742,
-    "weight_delta_q3": 0.0007839963072910905,
-    "weight_delta_quantiles": {
-      "0.5": 0.0007249686168506742,
-      "0.99": 0.0016440763138234615,
-      "0.999": 0.0018268558196723461
-    },
-    "weight_delta_mean": 0.0007826309883967042,
-    "weight_delta_std": 0.00018524892220739275,
-    "weight_delta_min": 0.0006000676075927913,
-    "weight_delta_max": 0.0018749439623206854,
-    "weight_delta_count": 512
+    "act_per_channel": false
   },
   "model.time_embed.time_embed.2": {
-    "act_delta": 0.010161158628761768,
-    "act_zero_point": 27.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0004004617512691766,
-    "weight_delta_q2": 0.00045559072168543935,
-    "weight_delta_q3": 0.0005369084537960589,
-    "weight_delta_quantiles": {
-      "0.5": 0.00045559072168543935,
-      "0.99": 0.0013383370824158192,
-      "0.999": 0.002314900513738394
-    },
-    "weight_delta_mean": 0.0005090334452688694,
-    "weight_delta_std": 0.00021273561287671328,
-    "weight_delta_min": 0.0002950041671283543,
-    "weight_delta_max": 0.0025403143372386694,
-    "weight_delta_count": 512
+    "act_per_channel": false
   },
   "model.input_blocks.0.0": {
-    "act_delta": 0.03150095045566559,
-    "act_zero_point": 131.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.002489304170012474,
-    "weight_delta_q2": 0.003137525636702776,
-    "weight_delta_q3": 0.003793527605012059,
-    "weight_delta_quantiles": {
-      "0.5": 0.003137525636702776,
-      "0.99": 0.005973107647150755,
-      "0.999": 0.007266859989613295
-    },
-    "weight_delta_mean": 0.0032641540747135878,
-    "weight_delta_std": 0.0010301737347617745,
-    "weight_delta_min": 0.0014402783708646894,
-    "weight_delta_max": 0.007446476258337498,
-    "weight_delta_count": 128
+    "act_per_channel": false
   },
   "model.input_blocks.1.0.in_layers.2": {
-    "act_delta": 0.04363581910729408,
-    "act_zero_point": 6.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0023717002477496862,
-    "weight_delta_q2": 0.002764930948615074,
-    "weight_delta_q3": 0.003521545324474573,
-    "weight_delta_quantiles": {
-      "0.5": 0.002764930948615074,
-      "0.99": 0.006361420266330242,
-      "0.999": 0.00696555757895112
-    },
-    "weight_delta_mean": 0.003044553566724062,
-    "weight_delta_std": 0.0010567636927589774,
-    "weight_delta_min": 0.0009663748205639422,
-    "weight_delta_max": 0.0070527284406125546,
-    "weight_delta_count": 128
+    "act_per_channel": false
   },
   "model.input_blocks.1.0.emb_layers.1": {
-    "act_delta": 0.010149265639483929,
-    "act_zero_point": 27.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0007223249413073063,
-    "weight_delta_q2": 0.0010591689497232437,
-    "weight_delta_q3": 0.0014395976904779673,
-    "weight_delta_quantiles": {
-      "0.5": 0.0010591689497232437,
-      "0.99": 0.0031497108284384012,
-      "0.999": 0.0034404469188302755
-    },
-    "weight_delta_mean": 0.0011592033552005887,
-    "weight_delta_std": 0.0005694642895832658,
-    "weight_delta_min": 0.0004038445185869932,
-    "weight_delta_max": 0.003479420207440853,
-    "weight_delta_count": 256
+    "act_per_channel": false
   },
   "model.input_blocks.1.0.cond_emb_layers.1": {
-    "act_delta": 0.002145506674423814,
-    "act_zero_point": 130.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0014606602489948273,
-    "weight_delta_q2": 0.0019318857230246067,
-    "weight_delta_q3": 0.002603938803076744,
-    "weight_delta_quantiles": {
-      "0.5": 0.0019318857230246067,
-      "0.99": 0.005466617178171873,
-      "0.999": 0.00617603724822402
-    },
-    "weight_delta_mean": 0.0020976741798222065,
-    "weight_delta_std": 0.0009346821461804211,
-    "weight_delta_min": 0.000656428630463779,
-    "weight_delta_max": 0.006228277925401926,
-    "weight_delta_count": 128
+    "act_per_channel": false
   },
   "model.input_blocks.1.0.out_layers.3": {
-    "act_delta": 0.023788336664438248,
-    "act_zero_point": 11.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0022195212077349424,
-    "weight_delta_q2": 0.0031963344663381577,
-    "weight_delta_q3": 0.004228632897138596,
-    "weight_delta_quantiles": {
-      "0.5": 0.0031963344663381577,
-      "0.99": 0.007711044512689114,
-      "0.999": 0.00924330297857523
-    },
-    "weight_delta_mean": 0.003407485317438841,
-    "weight_delta_std": 0.0015668582636862993,
-    "weight_delta_min": 0.0010282653383910656,
-    "weight_delta_max": 0.009453118778765202,
-    "weight_delta_count": 128
+    "act_per_channel": false
   },
   "model.input_blocks.2.0.in_layers.2": {
-    "act_delta": 0.03811502829194069,
-    "act_zero_point": 7.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0030651050619781017,
-    "weight_delta_q2": 0.0034453386906534433,
-    "weight_delta_q3": 0.004261070396751165,
-    "weight_delta_quantiles": {
-      "0.5": 0.0034453386906534433,
-      "0.99": 0.006686357781291008,
-      "0.999": 0.006824262905865908
-    },
-    "weight_delta_mean": 0.0037141116335988045,
-    "weight_delta_std": 0.0008891225443221629,
-    "weight_delta_min": 0.0023440031800419092,
-    "weight_delta_max": 0.006836706306785345,
-    "weight_delta_count": 128
+    "act_per_channel": false
   },
   "model.input_blocks.2.0.emb_layers.1": {
-    "act_delta": 0.010149265639483929,
-    "act_zero_point": 27.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0009186584502458572,
-    "weight_delta_q2": 0.0011872253380715847,
-    "weight_delta_q3": 0.0014866916462779045,
-    "weight_delta_quantiles": {
-      "0.5": 0.0011872253380715847,
-      "0.99": 0.0023650715593248606,
-      "0.999": 0.003278895979747176
-    },
-    "weight_delta_mean": 0.0012354247737675905,
-    "weight_delta_std": 0.00044546049321070313,
-    "weight_delta_min": 0.0004806378565263003,
-    "weight_delta_max": 0.0034092182759195566,
-    "weight_delta_count": 256
+    "act_per_channel": false
   },
   "model.input_blocks.2.0.cond_emb_layers.1": {
-    "act_delta": 0.002145506674423814,
-    "act_zero_point": 130.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0018448710907250643,
-    "weight_delta_q2": 0.0021591288968920708,
-    "weight_delta_q3": 0.002560910303145647,
-    "weight_delta_quantiles": {
-      "0.5": 0.0021591288968920708,
-      "0.99": 0.0037371020298451185,
-      "0.999": 0.003926812671124935
-    },
-    "weight_delta_mean": 0.002180151641368866,
-    "weight_delta_std": 0.0005218749865889549,
-    "weight_delta_min": 0.0011704165954142809,
-    "weight_delta_max": 0.0039449105970561504,
-    "weight_delta_count": 128
+    "act_per_channel": false
   },
   "model.input_blocks.2.0.out_layers.3": {
-    "act_delta": 0.02165313996374607,
-    "act_zero_point": 12.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0024200966581702232,
-    "weight_delta_q2": 0.002780215349048376,
-    "weight_delta_q3": 0.003509057918563485,
-    "weight_delta_quantiles": {
-      "0.5": 0.002780215349048376,
-      "0.99": 0.00465019978582859,
-      "0.999": 0.005260923411697149
-    },
-    "weight_delta_mean": 0.0029174024239182472,
-    "weight_delta_std": 0.0007644986035302281,
-    "weight_delta_min": 0.0012788913445547223,
-    "weight_delta_max": 0.005345295183360577,
-    "weight_delta_count": 128
+    "act_per_channel": false
   },
   "model.input_blocks.3.0.in_layers.2": {
-    "act_delta": 0.017702827230095863,
-    "act_zero_point": 15.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0027294661849737167,
-    "weight_delta_q2": 0.0031506307423114777,
-    "weight_delta_q3": 0.0040128109976649284,
-    "weight_delta_quantiles": {
-      "0.5": 0.0031506307423114777,
-      "0.99": 0.0066029769368469715,
-      "0.999": 0.007166999392211437
-    },
-    "weight_delta_mean": 0.0035237420815974474,
-    "weight_delta_std": 0.001056007924489677,
-    "weight_delta_min": 0.0019727665930986404,
-    "weight_delta_max": 0.0072227660566568375,
-    "weight_delta_count": 128
+    "act_per_channel": false
   },
   "model.input_blocks.3.0.emb_layers.1": {
-    "act_delta": 0.010149265639483929,
-    "act_zero_point": 27.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0008706247317604721,
-    "weight_delta_q2": 0.0010902935173362494,
-    "weight_delta_q3": 0.0014014323242008686,
-    "weight_delta_quantiles": {
-      "0.5": 0.0010902935173362494,
-      "0.99": 0.0028338164556771517,
-      "0.999": 0.0036311112344264984
-    },
-    "weight_delta_mean": 0.0011948951287195086,
-    "weight_delta_std": 0.0004728209460154176,
-    "weight_delta_min": 0.000452075939392671,
-    "weight_delta_max": 0.0037730198819190264,
-    "weight_delta_count": 256
+    "act_per_channel": false
   },
   "model.input_blocks.3.0.cond_emb_layers.1": {
-    "act_delta": 0.002145506674423814,
-    "act_zero_point": 130.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0014943185960873961,
-    "weight_delta_q2": 0.0018623833311721683,
-    "weight_delta_q3": 0.0024996590800583363,
-    "weight_delta_quantiles": {
-      "0.5": 0.0018623833311721683,
-      "0.99": 0.004021849483251572,
-      "0.999": 0.004266155418008566
-    },
-    "weight_delta_mean": 0.002025001449510455,
-    "weight_delta_std": 0.0006811826024204493,
-    "weight_delta_min": 0.001006955630145967,
-    "weight_delta_max": 0.0042932722717523575,
-    "weight_delta_count": 128
+    "act_per_channel": false
   },
   "model.input_blocks.3.0.out_layers.3": {
-    "act_delta": 0.025693587958812714,
-    "act_zero_point": 10.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0025649939198046923,
-    "weight_delta_q2": 0.003040313022211194,
-    "weight_delta_q3": 0.003695712424814701,
-    "weight_delta_quantiles": {
-      "0.5": 0.003040313022211194,
-      "0.99": 0.0062044416554272175,
-      "0.999": 0.0064886221662163734
-    },
-    "weight_delta_mean": 0.00314889894798398,
-    "weight_delta_std": 0.0010345957707613707,
-    "weight_delta_min": 0.001177932252176106,
-    "weight_delta_max": 0.006515682674944401,
-    "weight_delta_count": 128
+    "act_per_channel": false
   },
   "model.input_blocks.4.0.in_layers.2": {
-    "act_delta": 0.020962264388799667,
-    "act_zero_point": 13.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0030595632269978523,
-    "weight_delta_q2": 0.0035484605468809605,
-    "weight_delta_q3": 0.004114903509616852,
-    "weight_delta_quantiles": {
-      "0.5": 0.0035484605468809605,
-      "0.99": 0.0061788130551576614,
-      "0.999": 0.007464948110282421
-    },
-    "weight_delta_mean": 0.0036564776673913,
-    "weight_delta_std": 0.0008599960128776729,
-    "weight_delta_min": 0.002041239757090807,
-    "weight_delta_max": 0.007626196835190058,
-    "weight_delta_count": 128
+    "act_per_channel": false
   },
   "model.input_blocks.4.0.emb_layers.1": {
-    "act_delta": 0.010149265639483929,
-    "act_zero_point": 27.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0009158364846371114,
-    "weight_delta_q2": 0.0011387093691155314,
-    "weight_delta_q3": 0.0014219640288501978,
-    "weight_delta_quantiles": {
-      "0.5": 0.0011387093691155314,
-      "0.99": 0.0023261394817382097,
-      "0.999": 0.00240890309214592
-    },
-    "weight_delta_mean": 0.0012000731658190489,
-    "weight_delta_std": 0.0003871071385219693,
-    "weight_delta_min": 0.0005631351377815008,
-    "weight_delta_max": 0.0024116968270391226,
-    "weight_delta_count": 256
+    "act_per_channel": false
   },
   "model.input_blocks.4.0.cond_emb_layers.1": {
-    "act_delta": 0.002145506674423814,
-    "act_zero_point": 130.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0016968164127320051,
-    "weight_delta_q2": 0.0019746616017073393,
-    "weight_delta_q3": 0.00231259036809206,
-    "weight_delta_quantiles": {
-      "0.5": 0.0019746616017073393,
-      "0.99": 0.004106931854039431,
-      "0.999": 0.004462990909814835
-    },
-    "weight_delta_mean": 0.00208741775713861,
-    "weight_delta_std": 0.0005712672136723995,
-    "weight_delta_min": 0.0012106061913073063,
-    "weight_delta_max": 0.004514442291110754,
-    "weight_delta_count": 128
+    "act_per_channel": false
   },
   "model.input_blocks.4.0.out_layers.3": {
-    "act_delta": 0.026634465903043747,
-    "act_zero_point": 10.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.002152463188394904,
-    "weight_delta_q2": 0.0025985781103372574,
-    "weight_delta_q3": 0.003127989126369357,
-    "weight_delta_quantiles": {
-      "0.5": 0.0025985781103372574,
-      "0.99": 0.004763086326420307,
-      "0.999": 0.004995716270059347
-    },
-    "weight_delta_mean": 0.0026595122180879116,
-    "weight_delta_std": 0.0007858944591134787,
-    "weight_delta_min": 0.0008968319743871689,
-    "weight_delta_max": 0.005017626564949751,
-    "weight_delta_count": 128
+    "act_per_channel": false
   },
   "model.input_blocks.5.0.in_layers.2": {
-    "act_delta": 0.01834997721016407,
-    "act_zero_point": 15.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.003292527748271823,
-    "weight_delta_q2": 0.0037457123398780823,
-    "weight_delta_q3": 0.004260669928044081,
-    "weight_delta_quantiles": {
-      "0.5": 0.0037457123398780823,
-      "0.99": 0.006666239351034164,
-      "0.999": 0.006954546552151442
-    },
-    "weight_delta_mean": 0.003837017109617591,
-    "weight_delta_std": 0.0008494033827446401,
-    "weight_delta_min": 0.002056570490822196,
-    "weight_delta_max": 0.0069952975027263165,
-    "weight_delta_count": 128
+    "act_per_channel": false
   },
   "model.input_blocks.5.0.emb_layers.1": {
-    "act_delta": 0.010149265639483929,
-    "act_zero_point": 27.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0009159419569186866,
-    "weight_delta_q2": 0.0010829211678355932,
-    "weight_delta_q3": 0.0013911843998357654,
-    "weight_delta_quantiles": {
-      "0.5": 0.0010829211678355932,
-      "0.99": 0.0020795445889234543,
-      "0.999": 0.0023681202437728643
-    },
-    "weight_delta_mean": 0.001157935243099928,
-    "weight_delta_std": 0.00034067107480950654,
-    "weight_delta_min": 0.0005855427007190883,
-    "weight_delta_max": 0.0024480808060616255,
-    "weight_delta_count": 256
+    "act_per_channel": false
   },
   "model.input_blocks.5.0.cond_emb_layers.1": {
-    "act_delta": 0.002145506674423814,
-    "act_zero_point": 130.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0018530732486397028,
-    "weight_delta_q2": 0.002064493950456381,
-    "weight_delta_q3": 0.0022774816025048494,
-    "weight_delta_quantiles": {
-      "0.5": 0.002064493950456381,
-      "0.99": 0.0043740589171648026,
-      "0.999": 0.005043653305619955
-    },
-    "weight_delta_mean": 0.002169160172343254,
-    "weight_delta_std": 0.0005436495994217694,
-    "weight_delta_min": 0.001341109978966415,
-    "weight_delta_max": 0.0051364051178097725,
-    "weight_delta_count": 128
+    "act_per_channel": false
   },
   "model.input_blocks.5.0.out_layers.3": {
-    "act_delta": 0.0226628128439188,
-    "act_zero_point": 12.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0020071654580533504,
-    "weight_delta_q2": 0.002337103243917227,
-    "weight_delta_q3": 0.0027729461435228586,
-    "weight_delta_quantiles": {
-      "0.5": 0.002337103243917227,
-      "0.99": 0.003904157318174839,
-      "0.999": 0.003996567334979773
-    },
-    "weight_delta_mean": 0.00237883348017931,
-    "weight_delta_std": 0.0006332864286378026,
-    "weight_delta_min": 0.0005305567756295204,
-    "weight_delta_max": 0.004007818177342415,
-    "weight_delta_count": 128
+    "act_per_channel": false
   },
   "model.input_blocks.6.0.in_layers.2": {
-    "act_delta": 0.01905953139066696,
-    "act_zero_point": 14.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0024384711869060993,
-    "weight_delta_q2": 0.0028710076585412025,
-    "weight_delta_q3": 0.003442023880779743,
-    "weight_delta_quantiles": {
-      "0.5": 0.0028710076585412025,
-      "0.99": 0.005567492451518774,
-      "0.999": 0.00657251663506031
-    },
-    "weight_delta_mean": 0.0030137887224555016,
-    "weight_delta_std": 0.0008972526411525905,
-    "weight_delta_min": 0.0008366727270185947,
-    "weight_delta_max": 0.0067032938823103905,
-    "weight_delta_count": 128
+    "act_per_channel": false
   },
   "model.input_blocks.6.0.emb_layers.1": {
-    "act_delta": 0.010149265639483929,
-    "act_zero_point": 27.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0009287208085879683,
-    "weight_delta_q2": 0.0011235079728066921,
-    "weight_delta_q3": 0.0013856773730367422,
-    "weight_delta_quantiles": {
-      "0.5": 0.0011235079728066921,
-      "0.99": 0.0024423878639936447,
-      "0.999": 0.0025338982231914997
-    },
-    "weight_delta_mean": 0.001181518891826272,
-    "weight_delta_std": 0.00038882537046447396,
-    "weight_delta_min": 0.00045069685438647866,
-    "weight_delta_max": 0.002536027692258358,
-    "weight_delta_count": 256
+    "act_per_channel": false
   },
   "model.input_blocks.6.0.cond_emb_layers.1": {
-    "act_delta": 0.002145506674423814,
-    "act_zero_point": 130.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0019571634475141764,
-    "weight_delta_q2": 0.002350865863263607,
-    "weight_delta_q3": 0.002857485320419073,
-    "weight_delta_quantiles": {
-      "0.5": 0.002350865863263607,
-      "0.99": 0.00389233510941267,
-      "0.999": 0.004175269976258278
-    },
-    "weight_delta_mean": 0.0024191029369831085,
-    "weight_delta_std": 0.0005934287328273058,
-    "weight_delta_min": 0.0014539429685100913,
-    "weight_delta_max": 0.004212195053696632,
-    "weight_delta_count": 128
+    "act_per_channel": false
   },
   "model.input_blocks.6.0.out_layers.3": {
-    "act_delta": 0.02062118798494339,
-    "act_zero_point": 13.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0023688606452196836,
-    "weight_delta_q2": 0.0027620792388916016,
-    "weight_delta_q3": 0.0033483838196843863,
-    "weight_delta_quantiles": {
-      "0.5": 0.0027620792388916016,
-      "0.99": 0.005762395914644003,
-      "0.999": 0.0063903131522238255
-    },
-    "weight_delta_mean": 0.0028976937755942345,
-    "weight_delta_std": 0.0009348124149255455,
-    "weight_delta_min": 0.0008276639273390174,
-    "weight_delta_max": 0.0064345551654696465,
-    "weight_delta_count": 128
+    "act_per_channel": false
   },
   "model.input_blocks.7.0.in_layers.2": {
-    "act_delta": 0.030130842700600624,
-    "act_zero_point": 9.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0026973187923431396,
-    "weight_delta_q2": 0.0030796057544648647,
-    "weight_delta_q3": 0.0036657159216701984,
-    "weight_delta_quantiles": {
-      "0.5": 0.0030796057544648647,
-      "0.99": 0.005042016040533781,
-      "0.999": 0.007417120039463043
-    },
-    "weight_delta_mean": 0.003214599099010229,
-    "weight_delta_std": 0.0007861023768782616,
-    "weight_delta_min": 0.0013504184316843748,
-    "weight_delta_max": 0.008065472356975079,
-    "weight_delta_count": 256
+    "act_per_channel": false
   },
   "model.input_blocks.7.0.emb_layers.1": {
-    "act_delta": 0.010149265639483929,
-    "act_zero_point": 27.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0008744409424252808,
-    "weight_delta_q2": 0.0010600427631288767,
-    "weight_delta_q3": 0.0012831322383135557,
-    "weight_delta_quantiles": {
-      "0.5": 0.0010600427631288767,
-      "0.99": 0.0023704522754997015,
-      "0.999": 0.0031922156922519207
-    },
-    "weight_delta_mean": 0.0011118324473500252,
-    "weight_delta_std": 0.0003489127557259053,
-    "weight_delta_min": 0.0005328007391653955,
-    "weight_delta_max": 0.0035141026601195335,
-    "weight_delta_count": 512
+    "act_per_channel": false
   },
   "model.input_blocks.7.0.cond_emb_layers.1": {
-    "act_delta": 0.002145506674423814,
-    "act_zero_point": 130.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0019286572933197021,
-    "weight_delta_q2": 0.0022026710212230682,
-    "weight_delta_q3": 0.0025853272527456284,
-    "weight_delta_quantiles": {
-      "0.5": 0.0022026710212230682,
-      "0.99": 0.0038694909308105707,
-      "0.999": 0.005050611216574907
-    },
-    "weight_delta_mean": 0.0023008803837001324,
-    "weight_delta_std": 0.000513566832523793,
-    "weight_delta_min": 0.0013244402362033725,
-    "weight_delta_max": 0.005284949671477079,
-    "weight_delta_count": 256
+    "act_per_channel": false
   },
   "model.input_blocks.7.0.out_layers.3": {
-    "act_delta": 0.026864800602197647,
-    "act_zero_point": 10.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0023064108099788427,
-    "weight_delta_q2": 0.0025970626156777143,
-    "weight_delta_q3": 0.00289764441549778,
-    "weight_delta_quantiles": {
-      "0.5": 0.0025970626156777143,
-      "0.99": 0.005737937521189451,
-      "0.999": 0.006401578430086374
-    },
-    "weight_delta_mean": 0.0027215327136218548,
-    "weight_delta_std": 0.0006894179969094694,
-    "weight_delta_min": 0.0016056632157415152,
-    "weight_delta_max": 0.00641939090564847,
-    "weight_delta_count": 256
+    "act_per_channel": false
   },
   "model.input_blocks.8.0.in_layers.2": {
-    "act_delta": 0.051843270659446716,
-    "act_zero_point": 5.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.002869757590815425,
-    "weight_delta_q2": 0.0036635976284742355,
-    "weight_delta_q3": 0.004376402124762535,
-    "weight_delta_quantiles": {
-      "0.5": 0.0036635976284742355,
-      "0.99": 0.006295991595834494,
-      "0.999": 0.008462956175208092
-    },
-    "weight_delta_mean": 0.0036891140043735504,
-    "weight_delta_std": 0.001087678363546729,
-    "weight_delta_min": 0.0015761277172714472,
-    "weight_delta_max": 0.009122546762228012,
-    "weight_delta_count": 256
+    "act_per_channel": false
   },
   "model.input_blocks.8.0.emb_layers.1": {
-    "act_delta": 0.010149265639483929,
-    "act_zero_point": 27.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0008378792554140091,
-    "weight_delta_q2": 0.0010172001784667373,
-    "weight_delta_q3": 0.0012261057272553444,
-    "weight_delta_quantiles": {
-      "0.5": 0.0010172001784667373,
-      "0.99": 0.0026241131126880646,
-      "0.999": 0.0033374358899891376
-    },
-    "weight_delta_mean": 0.0010864690411835909,
-    "weight_delta_std": 0.0003864552709273994,
-    "weight_delta_min": 0.000480897055240348,
-    "weight_delta_max": 0.003404380287975073,
-    "weight_delta_count": 512
+    "act_per_channel": false
   },
   "model.input_blocks.8.0.cond_emb_layers.1": {
-    "act_delta": 0.002145506674423814,
-    "act_zero_point": 130.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.002056554425507784,
-    "weight_delta_q2": 0.0023809608537703753,
-    "weight_delta_q3": 0.0026596328243613243,
-    "weight_delta_quantiles": {
-      "0.5": 0.0023809608537703753,
-      "0.99": 0.0042232125997543335,
-      "0.999": 0.00503429863601923
-    },
-    "weight_delta_mean": 0.0024255295284092426,
-    "weight_delta_std": 0.0005495893419720232,
-    "weight_delta_min": 0.0013387209037318826,
-    "weight_delta_max": 0.005116479936987162,
-    "weight_delta_count": 256
+    "act_per_channel": false
   },
   "model.input_blocks.8.0.out_layers.3": {
-    "act_delta": 0.03356333449482918,
-    "act_zero_point": 8.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0023079942911863327,
-    "weight_delta_q2": 0.0025481879711151123,
-    "weight_delta_q3": 0.0028454256244003773,
-    "weight_delta_quantiles": {
-      "0.5": 0.0025481879711151123,
-      "0.99": 0.004958606790751219,
-      "0.999": 0.006042452063411474
-    },
-    "weight_delta_mean": 0.0026527163572609425,
-    "weight_delta_std": 0.0005963640287518501,
-    "weight_delta_min": 0.0015147210797294974,
-    "weight_delta_max": 0.006328684743493795,
-    "weight_delta_count": 256
+    "act_per_channel": false
   },
   "model.input_blocks.9.0.in_layers.2": {
-    "act_delta": 0.0504615381360054,
-    "act_zero_point": 5.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.00246451236307621,
-    "weight_delta_q2": 0.002807280048727989,
-    "weight_delta_q3": 0.003349288832396269,
-    "weight_delta_quantiles": {
-      "0.5": 0.002807280048727989,
-      "0.99": 0.0057814414612948895,
-      "0.999": 0.007446530275046825
-    },
-    "weight_delta_mean": 0.0030129235237836838,
-    "weight_delta_std": 0.0008256056462414563,
-    "weight_delta_min": 0.0017938838573172688,
-    "weight_delta_max": 0.007872949354350567,
-    "weight_delta_count": 256
+    "act_per_channel": false
   },
   "model.input_blocks.9.0.emb_layers.1": {
-    "act_delta": 0.010149265639483929,
-    "act_zero_point": 27.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0007006549858488142,
-    "weight_delta_q2": 0.0009243634412996471,
-    "weight_delta_q3": 0.0012362102279439569,
-    "weight_delta_quantiles": {
-      "0.5": 0.0009243634412996471,
-      "0.99": 0.0024673794396221638,
-      "0.999": 0.0035370171535760164
-    },
-    "weight_delta_mean": 0.0010351041564717889,
-    "weight_delta_std": 0.00045622052857652307,
-    "weight_delta_min": 0.0003734222846105695,
-    "weight_delta_max": 0.003627174533903599,
-    "weight_delta_count": 512
+    "act_per_channel": false
   },
   "model.input_blocks.9.0.cond_emb_layers.1": {
-    "act_delta": 0.002145506674423814,
-    "act_zero_point": 130.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0022081639617681503,
-    "weight_delta_q2": 0.0025207712315022945,
-    "weight_delta_q3": 0.002831418998539448,
-    "weight_delta_quantiles": {
-      "0.5": 0.0025207712315022945,
-      "0.99": 0.003661940572783351,
-      "0.999": 0.003883966477587819
-    },
-    "weight_delta_mean": 0.0025504929944872856,
-    "weight_delta_std": 0.0004447406972758472,
-    "weight_delta_min": 0.0015294617041945457,
-    "weight_delta_max": 0.003938134294003248,
-    "weight_delta_count": 256
+    "act_per_channel": false
   },
   "model.input_blocks.9.0.out_layers.3": {
-    "act_delta": 0.02683432586491108,
-    "act_zero_point": 10.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.002880952786654234,
-    "weight_delta_q2": 0.003212505718693137,
-    "weight_delta_q3": 0.003720976412296295,
-    "weight_delta_quantiles": {
-      "0.5": 0.003212505718693137,
-      "0.99": 0.004858807660639286,
-      "0.999": 0.005115020088851452
-    },
-    "weight_delta_mean": 0.0032886811532080173,
-    "weight_delta_std": 0.0006457424024119973,
-    "weight_delta_min": 0.0015035398537293077,
-    "weight_delta_max": 0.0051666018553078175,
-    "weight_delta_count": 256
+    "act_per_channel": false
   },
   "model.input_blocks.10.0.in_layers.2": {
-    "act_delta": 0.05211198702454567,
-    "act_zero_point": 5.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.002487561199814081,
-    "weight_delta_q2": 0.0027551832608878613,
-    "weight_delta_q3": 0.0031661754474043846,
-    "weight_delta_quantiles": {
-      "0.5": 0.0027551832608878613,
-      "0.99": 0.005238252226263285,
-      "0.999": 0.005937381647527218
-    },
-    "weight_delta_mean": 0.002926661167293787,
-    "weight_delta_std": 0.0006571731064468622,
-    "weight_delta_min": 0.001727844588458538,
-    "weight_delta_max": 0.006074724718928337,
-    "weight_delta_count": 384
+    "act_per_channel": false
   },
   "model.input_blocks.10.0.emb_layers.1": {
-    "act_delta": 0.010149265639483929,
-    "act_zero_point": 27.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0007740542641840875,
-    "weight_delta_q2": 0.0010238083777949214,
-    "weight_delta_q3": 0.0012404987355694175,
-    "weight_delta_quantiles": {
-      "0.5": 0.0010238083777949214,
-      "0.99": 0.002209714613854885,
-      "0.999": 0.002825669012963772
-    },
-    "weight_delta_mean": 0.0010384655324742198,
-    "weight_delta_std": 0.0003728223964571953,
-    "weight_delta_min": 0.00041998663800768554,
-    "weight_delta_max": 0.0034128124825656414,
-    "weight_delta_count": 768
+    "act_per_channel": false
   },
   "model.input_blocks.10.0.cond_emb_layers.1": {
-    "act_delta": 0.002145506674423814,
-    "act_zero_point": 130.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0024502924643456936,
-    "weight_delta_q2": 0.0027743452228605747,
-    "weight_delta_q3": 0.0030681067146360874,
-    "weight_delta_quantiles": {
-      "0.5": 0.0027743452228605747,
-      "0.99": 0.004005752503871918,
-      "0.999": 0.004435105714946985
-    },
-    "weight_delta_mean": 0.002779159462079406,
-    "weight_delta_std": 0.000492459163069725,
-    "weight_delta_min": 0.0015301498351618648,
-    "weight_delta_max": 0.004438740201294422,
-    "weight_delta_count": 384
+    "act_per_channel": false
   },
   "model.input_blocks.10.0.out_layers.3": {
-    "act_delta": 0.022355331107974052,
-    "act_zero_point": 12.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0027537483256310225,
-    "weight_delta_q2": 0.0030290489085018635,
-    "weight_delta_q3": 0.0033788634464144707,
-    "weight_delta_quantiles": {
-      "0.5": 0.0030290489085018635,
-      "0.99": 0.004471051972359419,
-      "0.999": 0.004955860786139965
-    },
-    "weight_delta_mean": 0.0031046615913510323,
-    "weight_delta_std": 0.00047496790648438036,
-    "weight_delta_min": 0.0022019725292921066,
-    "weight_delta_max": 0.0051531135104596615,
-    "weight_delta_count": 384
+    "act_per_channel": false
   },
   "model.input_blocks.11.0.in_layers.2": {
-    "act_delta": 0.033529527485370636,
-    "act_zero_point": 8.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0023686911445111036,
-    "weight_delta_q2": 0.0026337921153753996,
-    "weight_delta_q3": 0.003027352038770914,
-    "weight_delta_quantiles": {
-      "0.5": 0.0026337921153753996,
-      "0.99": 0.004901731386780739,
-      "0.999": 0.005716605577617884
-    },
-    "weight_delta_mean": 0.0027520768344402313,
-    "weight_delta_std": 0.0005758660845458508,
-    "weight_delta_min": 0.0017926472937688231,
-    "weight_delta_max": 0.005737855099141598,
-    "weight_delta_count": 384
+    "act_per_channel": false
   },
   "model.input_blocks.11.0.emb_layers.1": {
-    "act_delta": 0.010149265639483929,
-    "act_zero_point": 27.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0007282424485310912,
-    "weight_delta_q2": 0.0010088831186294556,
-    "weight_delta_q3": 0.001198046375066042,
-    "weight_delta_quantiles": {
-      "0.5": 0.0010088831186294556,
-      "0.99": 0.002105152001604438,
-      "0.999": 0.0026430520229041576
-    },
-    "weight_delta_mean": 0.0009883305756375194,
-    "weight_delta_std": 0.00034700045944191515,
-    "weight_delta_min": 0.000387130567105487,
-    "weight_delta_max": 0.002958769677206874,
-    "weight_delta_count": 768
+    "act_per_channel": false
   },
   "model.input_blocks.11.0.cond_emb_layers.1": {
-    "act_delta": 0.002145506674423814,
-    "act_zero_point": 130.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0023492176551371813,
-    "weight_delta_q2": 0.0026049071457237005,
-    "weight_delta_q3": 0.0029119006358087063,
-    "weight_delta_quantiles": {
-      "0.5": 0.0026049071457237005,
-      "0.99": 0.004019691608846188,
-      "0.999": 0.004523398354649544
-    },
-    "weight_delta_mean": 0.002657645847648382,
-    "weight_delta_std": 0.0004552877217065543,
-    "weight_delta_min": 0.0015372798079624772,
-    "weight_delta_max": 0.004615426063537598,
-    "weight_delta_count": 384
+    "act_per_channel": false
   },
   "model.input_blocks.11.0.out_layers.3": {
-    "act_delta": 0.024471387267112732,
-    "act_zero_point": 11.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0027500437572598457,
-    "weight_delta_q2": 0.003005165373906493,
-    "weight_delta_q3": 0.00332840858027339,
-    "weight_delta_quantiles": {
-      "0.5": 0.003005165373906493,
-      "0.99": 0.004672618582844734,
-      "0.999": 0.005024041049182415
-    },
-    "weight_delta_mean": 0.0030880672857165337,
-    "weight_delta_std": 0.0004874850274063647,
-    "weight_delta_min": 0.0021240003407001495,
-    "weight_delta_max": 0.0051355124451220036,
-    "weight_delta_count": 384
+    "act_per_channel": false
   },
   "model.input_blocks.12.0.in_layers.2": {
-    "act_delta": 0.019085822626948357,
-    "act_zero_point": 14.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0023015481419861317,
-    "weight_delta_q2": 0.002437679562717676,
-    "weight_delta_q3": 0.002597812097519636,
-    "weight_delta_quantiles": {
-      "0.5": 0.002437679562717676,
-      "0.99": 0.0031842184253036976,
-      "0.999": 0.003919708542525768
-    },
-    "weight_delta_mean": 0.0024720788933336735,
-    "weight_delta_std": 0.00024763733381405473,
-    "weight_delta_min": 0.0019491735147312284,
-    "weight_delta_max": 0.00393576780334115,
-    "weight_delta_count": 384
+    "act_per_channel": false
   },
   "model.input_blocks.12.0.emb_layers.1": {
-    "act_delta": 0.010149265639483929,
-    "act_zero_point": 27.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0009106368524953723,
-    "weight_delta_q2": 0.0010730985086411238,
-    "weight_delta_q3": 0.0012026631738990545,
-    "weight_delta_quantiles": {
-      "0.5": 0.0010730985086411238,
-      "0.99": 0.0015436486573889852,
-      "0.999": 0.001738478895276785
-    },
-    "weight_delta_mean": 0.001047900877892971,
-    "weight_delta_std": 0.0002279101317981258,
-    "weight_delta_min": 0.00047192079364322126,
-    "weight_delta_max": 0.001838597934693098,
-    "weight_delta_count": 768
+    "act_per_channel": false
   },
   "model.input_blocks.12.0.cond_emb_layers.1": {
-    "act_delta": 0.002145506674423814,
-    "act_zero_point": 130.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0025272094644606113,
-    "weight_delta_q2": 0.0027228749822825193,
-    "weight_delta_q3": 0.0029381706845015287,
-    "weight_delta_quantiles": {
-      "0.5": 0.0027228749822825193,
-      "0.99": 0.0038300531450659037,
-      "0.999": 0.00410601356998086
-    },
-    "weight_delta_mean": 0.002761696232482791,
-    "weight_delta_std": 0.0003693378821481019,
-    "weight_delta_min": 0.001891381456516683,
-    "weight_delta_max": 0.004144617822021246,
-    "weight_delta_count": 384
+    "act_per_channel": false
   },
   "model.input_blocks.12.0.out_layers.3": {
-    "act_delta": 0.01955009065568447,
-    "act_zero_point": 14.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0024026338942348957,
-    "weight_delta_q2": 0.002563473302870989,
-    "weight_delta_q3": 0.0029133406933397055,
-    "weight_delta_quantiles": {
-      "0.5": 0.002563473302870989,
-      "0.99": 0.003814881667494774,
-      "0.999": 0.004158452153205872
-    },
-    "weight_delta_mean": 0.002669943030923605,
-    "weight_delta_std": 0.000383319886168465,
-    "weight_delta_min": 0.001953782746568322,
-    "weight_delta_max": 0.004225676879286766,
-    "weight_delta_count": 384
+    "act_per_channel": false
   },
   "model.input_blocks.13.0.in_layers.2": {
-    "act_delta": 0.030272657051682472,
-    "act_zero_point": 9.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.002320126397535205,
-    "weight_delta_q2": 0.002431572414934635,
-    "weight_delta_q3": 0.002585222478955984,
-    "weight_delta_quantiles": {
-      "0.5": 0.002431572414934635,
-      "0.99": 0.003363092662766576,
-      "0.999": 0.006008495576679707
-    },
-    "weight_delta_mean": 0.0024867160245776176,
-    "weight_delta_std": 0.0003244509862270206,
-    "weight_delta_min": 0.0019425078062340617,
-    "weight_delta_max": 0.006354739889502525,
-    "weight_delta_count": 512
+    "act_per_channel": false
   },
   "model.input_blocks.13.0.emb_layers.1": {
-    "act_delta": 0.010149265639483929,
-    "act_zero_point": 27.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0009239321807399392,
-    "weight_delta_q2": 0.0010766603518277407,
-    "weight_delta_q3": 0.0012475011171773076,
-    "weight_delta_quantiles": {
-      "0.5": 0.0010766603518277407,
-      "0.99": 0.0018546758219599724,
-      "0.999": 0.0023939425591379404
-    },
-    "weight_delta_mean": 0.0010769718792289495,
-    "weight_delta_std": 0.00028373999521136284,
-    "weight_delta_min": 0.00042189835221506655,
-    "weight_delta_max": 0.0025292676873505116,
-    "weight_delta_count": 1024
+    "act_per_channel": false
   },
   "model.input_blocks.13.0.cond_emb_layers.1": {
-    "act_delta": 0.002145506674423814,
-    "act_zero_point": 130.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.002583967987447977,
-    "weight_delta_q2": 0.002751884050667286,
-    "weight_delta_q3": 0.002963195089250803,
-    "weight_delta_quantiles": {
-      "0.5": 0.002751884050667286,
-      "0.99": 0.003569449530914426,
-      "0.999": 0.0044110859744250774
-    },
-    "weight_delta_mean": 0.00277569517493248,
-    "weight_delta_std": 0.0003262671525590122,
-    "weight_delta_min": 0.001546578831039369,
-    "weight_delta_max": 0.0049435654655098915,
-    "weight_delta_count": 512
+    "act_per_channel": false
   },
   "model.input_blocks.13.0.out_layers.3": {
-    "act_delta": 0.033305950462818146,
-    "act_zero_point": 8.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0026886616833508015,
-    "weight_delta_q2": 0.002892168937250972,
-    "weight_delta_q3": 0.003172636963427067,
-    "weight_delta_quantiles": {
-      "0.5": 0.002892168937250972,
-      "0.99": 0.004221577197313309,
-      "0.999": 0.005665594711899757
-    },
-    "weight_delta_mean": 0.0029655105900019407,
-    "weight_delta_std": 0.00043843197636306286,
-    "weight_delta_min": 0.0021058290731161833,
-    "weight_delta_max": 0.005963181145489216,
-    "weight_delta_count": 512
+    "act_per_channel": false
   },
   "model.input_blocks.14.0.in_layers.2": {
-    "act_delta": 0.04549001157283783,
-    "act_zero_point": 6.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.002210918115451932,
-    "weight_delta_q2": 0.0023183298762887716,
-    "weight_delta_q3": 0.002445756457746029,
-    "weight_delta_quantiles": {
-      "0.5": 0.0023183298762887716,
-      "0.99": 0.0038691109512001276,
-      "0.999": 0.004939140751957893
-    },
-    "weight_delta_mean": 0.002385595114901662,
-    "weight_delta_std": 0.0003572733257897198,
-    "weight_delta_min": 0.0018459249986335635,
-    "weight_delta_max": 0.004973114002496004,
-    "weight_delta_count": 512
+    "act_per_channel": false
   },
   "model.input_blocks.14.0.emb_layers.1": {
-    "act_delta": 0.010149265639483929,
-    "act_zero_point": 27.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0008352213772013783,
-    "weight_delta_q2": 0.001025315490551293,
-    "weight_delta_q3": 0.0012129044625908136,
-    "weight_delta_quantiles": {
-      "0.5": 0.001025315490551293,
-      "0.99": 0.0022286945022642612,
-      "0.999": 0.002528100274503231
-    },
-    "weight_delta_mean": 0.0010400498285889626,
-    "weight_delta_std": 0.0003328016900923103,
-    "weight_delta_min": 0.0004172286717221141,
-    "weight_delta_max": 0.002657672157511115,
-    "weight_delta_count": 1024
+    "act_per_channel": false
   },
   "model.input_blocks.14.0.cond_emb_layers.1": {
-    "act_delta": 0.002145506674423814,
-    "act_zero_point": 130.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.002441404154524207,
-    "weight_delta_q2": 0.0026495002675801516,
-    "weight_delta_q3": 0.0028837735299021006,
-    "weight_delta_quantiles": {
-      "0.5": 0.0026495002675801516,
-      "0.99": 0.003691005287691951,
-      "0.999": 0.004179365932941437
-    },
-    "weight_delta_mean": 0.002680508652701974,
-    "weight_delta_std": 0.00036901835119351745,
-    "weight_delta_min": 0.0015480145812034607,
-    "weight_delta_max": 0.004284295253455639,
-    "weight_delta_count": 512
+    "act_per_channel": false
   },
   "model.input_blocks.14.0.out_layers.3": {
-    "act_delta": 0.02990029938519001,
-    "act_zero_point": 9.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0028854392003268003,
-    "weight_delta_q2": 0.003226937260478735,
-    "weight_delta_q3": 0.0036409287713468075,
-    "weight_delta_quantiles": {
-      "0.5": 0.003226937260478735,
-      "0.99": 0.005350311752408743,
-      "0.999": 0.005967778619378805
-    },
-    "weight_delta_mean": 0.003329790662974119,
-    "weight_delta_std": 0.0006151349516585469,
-    "weight_delta_min": 0.0022667685989290476,
-    "weight_delta_max": 0.006241451017558575,
-    "weight_delta_count": 512
+    "act_per_channel": false
   },
   "model.middle_block.0.in_layers.2": {
-    "act_delta": 0.04561345651745796,
-    "act_zero_point": 6.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.002247076015919447,
-    "weight_delta_q2": 0.0023503676056861877,
-    "weight_delta_q3": 0.002476329216733575,
-    "weight_delta_quantiles": {
-      "0.5": 0.0023503676056861877,
-      "0.99": 0.0033161258324980736,
-      "0.999": 0.005362554453313351
-    },
-    "weight_delta_mean": 0.002390235662460327,
-    "weight_delta_std": 0.00029294996056705713,
-    "weight_delta_min": 0.0019529194105416536,
-    "weight_delta_max": 0.005701818969100714,
-    "weight_delta_count": 512
+    "act_per_channel": false
   },
   "model.middle_block.0.emb_layers.1": {
-    "act_delta": 0.010149265639483929,
-    "act_zero_point": 27.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0009195126476697624,
-    "weight_delta_q2": 0.0010175587376579642,
-    "weight_delta_q3": 0.0011634738184511662,
-    "weight_delta_quantiles": {
-      "0.5": 0.0010175587376579642,
-      "0.99": 0.0020169937051832676,
-      "0.999": 0.0022885168436914682
-    },
-    "weight_delta_mean": 0.0010520278010517359,
-    "weight_delta_std": 0.00024210898845922202,
-    "weight_delta_min": 0.0004240851558279246,
-    "weight_delta_max": 0.002324135508388281,
-    "weight_delta_count": 1024
+    "act_per_channel": false
   },
   "model.middle_block.0.cond_emb_layers.1": {
-    "act_delta": 0.002145506674423814,
-    "act_zero_point": 130.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.002264196053147316,
-    "weight_delta_q2": 0.0024607409723103046,
-    "weight_delta_q3": 0.0027111226227134466,
-    "weight_delta_quantiles": {
-      "0.5": 0.0024607409723103046,
-      "0.99": 0.0037339471746236086,
-      "0.999": 0.004139292519539595
-    },
-    "weight_delta_mean": 0.002520902780815959,
-    "weight_delta_std": 0.0003789570473600179,
-    "weight_delta_min": 0.0016975761391222477,
-    "weight_delta_max": 0.004171166568994522,
-    "weight_delta_count": 512
+    "act_per_channel": false
   },
   "model.middle_block.0.out_layers.3": {
-    "act_delta": 0.029837606474757195,
-    "act_zero_point": 9.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0025875854771584272,
-    "weight_delta_q2": 0.0028790240176022053,
-    "weight_delta_q3": 0.0032838296610862017,
-    "weight_delta_quantiles": {
-      "0.5": 0.0028790240176022053,
-      "0.99": 0.005252921022474766,
-      "0.999": 0.005937263369560242
-    },
-    "weight_delta_mean": 0.0030221245251595974,
-    "weight_delta_std": 0.000650400179438293,
-    "weight_delta_min": 0.0019343872554600239,
-    "weight_delta_max": 0.006039645057171583,
-    "weight_delta_count": 512
+    "act_per_channel": false
   },
   "model.middle_block.2.in_layers.2": {
-    "act_delta": 0.043495964258909225,
-    "act_zero_point": 6.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.002267662202939391,
-    "weight_delta_q2": 0.0023806733079254627,
-    "weight_delta_q3": 0.0024950075894594193,
-    "weight_delta_quantiles": {
-      "0.5": 0.0023806733079254627,
-      "0.99": 0.003258543089032173,
-      "0.999": 0.0038438024930655956
-    },
-    "weight_delta_mean": 0.00240598083473742,
-    "weight_delta_std": 0.00023597441031597555,
-    "weight_delta_min": 0.0015793937491253018,
-    "weight_delta_max": 0.0038869548588991165,
-    "weight_delta_count": 512
+    "act_per_channel": false
   },
   "model.middle_block.2.emb_layers.1": {
-    "act_delta": 0.010149265639483929,
-    "act_zero_point": 27.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.000912797695491463,
-    "weight_delta_q2": 0.0010083852102980018,
-    "weight_delta_q3": 0.0011643400648608804,
-    "weight_delta_quantiles": {
-      "0.5": 0.0010083852102980018,
-      "0.99": 0.0017621684819459915,
-      "0.999": 0.0023107167799025774
-    },
-    "weight_delta_mean": 0.0010551349259912968,
-    "weight_delta_std": 0.00022032353444956243,
-    "weight_delta_min": 0.00040049722883850336,
-    "weight_delta_max": 0.002430274384096265,
-    "weight_delta_count": 1024
+    "act_per_channel": false
   },
   "model.middle_block.2.cond_emb_layers.1": {
-    "act_delta": 0.002145506674423814,
-    "act_zero_point": 130.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.002121680648997426,
-    "weight_delta_q2": 0.0023279304150491953,
-    "weight_delta_q3": 0.0025849174708127975,
-    "weight_delta_quantiles": {
-      "0.5": 0.0023279304150491953,
-      "0.99": 0.0035055377520620823,
-      "0.999": 0.004356589168310165
-    },
-    "weight_delta_mean": 0.0023979227989912033,
-    "weight_delta_std": 0.0003916565328836441,
-    "weight_delta_min": 0.0013248786563053727,
-    "weight_delta_max": 0.004543696995824575,
-    "weight_delta_count": 512
+    "act_per_channel": false
   },
   "model.middle_block.2.out_layers.3": {
-    "act_delta": 0.038522373884916306,
-    "act_zero_point": 7.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0022997478954494,
-    "weight_delta_q2": 0.002447838895022869,
-    "weight_delta_q3": 0.002634931355714798,
-    "weight_delta_quantiles": {
-      "0.5": 0.002447838895022869,
-      "0.99": 0.004033536650240421,
-      "0.999": 0.004774500150233507
-    },
-    "weight_delta_mean": 0.0025121450889855623,
-    "weight_delta_std": 0.00033988599898293614,
-    "weight_delta_min": 0.0020236223936080933,
-    "weight_delta_max": 0.004795802757143974,
-    "weight_delta_count": 512
+    "act_per_channel": false
   },
   "model.output_blocks.0.0.in_layers.2": {
-    "act_delta": 0.0332401804625988,
-    "act_zero_point": 8.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0022955145686864853,
-    "weight_delta_q2": 0.0024115461856126785,
-    "weight_delta_q3": 0.0025415951386094093,
-    "weight_delta_quantiles": {
-      "0.5": 0.0024115461856126785,
-      "0.99": 0.003399110399186611,
-      "0.999": 0.004421068821102381
-    },
-    "weight_delta_mean": 0.0024544447660446167,
-    "weight_delta_std": 0.0002679054159671068,
-    "weight_delta_min": 0.0017987517639994621,
-    "weight_delta_max": 0.00442748935893178,
-    "weight_delta_count": 512
+    "act_per_channel": false
   },
   "model.output_blocks.0.0.emb_layers.1": {
-    "act_delta": 0.010149265639483929,
-    "act_zero_point": 27.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0009403134463354945,
-    "weight_delta_q2": 0.0010459576733410358,
-    "weight_delta_q3": 0.0012098074657842517,
-    "weight_delta_quantiles": {
-      "0.5": 0.0010459576733410358,
-      "0.99": 0.002382275415584445,
-      "0.999": 0.00261491141282022
-    },
-    "weight_delta_mean": 0.0011226595379412174,
-    "weight_delta_std": 0.0003100027097389102,
-    "weight_delta_min": 0.00039786758134141564,
-    "weight_delta_max": 0.002623808104544878,
-    "weight_delta_count": 1024
+    "act_per_channel": false
   },
   "model.output_blocks.0.0.cond_emb_layers.1": {
-    "act_delta": 0.002145506674423814,
-    "act_zero_point": 130.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0022726012393832207,
-    "weight_delta_q2": 0.0024723669048398733,
-    "weight_delta_q3": 0.0027814924251288176,
-    "weight_delta_quantiles": {
-      "0.5": 0.0024723669048398733,
-      "0.99": 0.003595505142584443,
-      "0.999": 0.0039444840513169765
-    },
-    "weight_delta_mean": 0.002544936491176486,
-    "weight_delta_std": 0.00040422240272164345,
-    "weight_delta_min": 0.001274090725928545,
-    "weight_delta_max": 0.004099034704267979,
-    "weight_delta_count": 512
+    "act_per_channel": false
   },
   "model.output_blocks.0.0.out_layers.3": {
-    "act_delta": 0.03835923969745636,
-    "act_zero_point": 7.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0025970132555812597,
-    "weight_delta_q2": 0.0027945407200604677,
-    "weight_delta_q3": 0.0030868134927004576,
-    "weight_delta_quantiles": {
-      "0.5": 0.0027945407200604677,
-      "0.99": 0.004425075836479664,
-      "0.999": 0.0051446333527565
-    },
-    "weight_delta_mean": 0.0029012002050876617,
-    "weight_delta_std": 0.000438760151155293,
-    "weight_delta_min": 0.002154906280338764,
-    "weight_delta_max": 0.0051569947972893715,
-    "weight_delta_count": 512
+    "act_per_channel": false
   },
   "model.output_blocks.1.0.in_layers.2": {
-    "act_delta": 0.05307072401046753,
-    "act_zero_point": 5.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0023605830501765013,
-    "weight_delta_q2": 0.0024722074158489704,
-    "weight_delta_q3": 0.00261758454144001,
-    "weight_delta_quantiles": {
-      "0.5": 0.0024722074158489704,
-      "0.99": 0.004642523359507322,
-      "0.999": 0.005382546689361334
-    },
-    "weight_delta_mean": 0.002573207952082157,
-    "weight_delta_std": 0.0004243885341566056,
-    "weight_delta_min": 0.002116765594109893,
-    "weight_delta_max": 0.005419867113232613,
-    "weight_delta_count": 512
+    "act_per_channel": false
   },
   "model.output_blocks.1.0.emb_layers.1": {
-    "act_delta": 0.010149265639483929,
-    "act_zero_point": 27.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0008632444078102708,
-    "weight_delta_q2": 0.0010466593084856868,
-    "weight_delta_q3": 0.0014098061947152019,
-    "weight_delta_quantiles": {
-      "0.5": 0.0010466593084856868,
-      "0.99": 0.0024315763730555773,
-      "0.999": 0.0026002340018749237
-    },
-    "weight_delta_mean": 0.0011805756948888302,
-    "weight_delta_std": 0.0004692954826168716,
-    "weight_delta_min": 0.0004097807395737618,
-    "weight_delta_max": 0.002794726984575391,
-    "weight_delta_count": 1024
+    "act_per_channel": false
   },
   "model.output_blocks.1.0.cond_emb_layers.1": {
-    "act_delta": 0.002145506674423814,
-    "act_zero_point": 130.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0025892751291394234,
-    "weight_delta_q2": 0.002832439262419939,
-    "weight_delta_q3": 0.0031195476185530424,
-    "weight_delta_quantiles": {
-      "0.5": 0.002832439262419939,
-      "0.99": 0.0037632063031196594,
-      "0.999": 0.0039059226401150227
-    },
-    "weight_delta_mean": 0.0028535020537674427,
-    "weight_delta_std": 0.00037840864388272166,
-    "weight_delta_min": 0.0016093486919999123,
-    "weight_delta_max": 0.003907061647623777,
-    "weight_delta_count": 512
+    "act_per_channel": false
   },
   "model.output_blocks.1.0.out_layers.3": {
-    "act_delta": 0.033474259078502655,
-    "act_zero_point": 8.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0030490532517433167,
-    "weight_delta_q2": 0.003339352086186409,
-    "weight_delta_q3": 0.0038372864946722984,
-    "weight_delta_quantiles": {
-      "0.5": 0.003339352086186409,
-      "0.99": 0.00617443909868598,
-      "0.999": 0.00760089885443449
-    },
-    "weight_delta_mean": 0.0035428996197879314,
-    "weight_delta_std": 0.0007436095620505512,
-    "weight_delta_min": 0.0024563614279031754,
-    "weight_delta_max": 0.008090092800557613,
-    "weight_delta_count": 512
+    "act_per_channel": false
   },
   "model.output_blocks.2.0.in_layers.2": {
-    "act_delta": 0.12093851715326309,
-    "act_zero_point": 2.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0024443790316581726,
-    "weight_delta_q2": 0.00259947101585567,
-    "weight_delta_q3": 0.0028374549001455307,
-    "weight_delta_quantiles": {
-      "0.5": 0.00259947101585567,
-      "0.99": 0.004650103859603405,
-      "0.999": 0.0055052111856639385
-    },
-    "weight_delta_mean": 0.0027405191212892532,
-    "weight_delta_std": 0.0004985770210623741,
-    "weight_delta_min": 0.0020274119451642036,
-    "weight_delta_max": 0.005725064314901829,
-    "weight_delta_count": 512
+    "act_per_channel": false
   },
   "model.output_blocks.2.0.emb_layers.1": {
-    "act_delta": 0.010149265639483929,
-    "act_zero_point": 27.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0009038110729306936,
-    "weight_delta_q2": 0.0010474739829078317,
-    "weight_delta_q3": 0.0012725499691441655,
-    "weight_delta_quantiles": {
-      "0.5": 0.0010474739829078317,
-      "0.99": 0.002067382214590907,
-      "0.999": 0.0024122437462210655
-    },
-    "weight_delta_mean": 0.001106595853343606,
-    "weight_delta_std": 0.00031675814534537494,
-    "weight_delta_min": 0.00045636840513907373,
-    "weight_delta_max": 0.0027587024960666895,
-    "weight_delta_count": 1024
+    "act_per_channel": false
   },
   "model.output_blocks.2.0.cond_emb_layers.1": {
-    "act_delta": 0.002145506674423814,
-    "act_zero_point": 130.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.002573692938312888,
-    "weight_delta_q2": 0.0027908366173505783,
-    "weight_delta_q3": 0.0030554139520972967,
-    "weight_delta_quantiles": {
-      "0.5": 0.0027908366173505783,
-      "0.99": 0.003702561603859067,
-      "0.999": 0.004081436898559332
-    },
-    "weight_delta_mean": 0.0028327328618615866,
-    "weight_delta_std": 0.00035862685763277113,
-    "weight_delta_min": 0.001794841606169939,
-    "weight_delta_max": 0.00414347555488348,
-    "weight_delta_count": 512
+    "act_per_channel": false
   },
   "model.output_blocks.2.0.out_layers.3": {
-    "act_delta": 0.033656083047389984,
-    "act_zero_point": 8.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0030374524649232626,
-    "weight_delta_q2": 0.0032724104821681976,
-    "weight_delta_q3": 0.003697254229336977,
-    "weight_delta_quantiles": {
-      "0.5": 0.0032724104821681976,
-      "0.99": 0.005491200368851423,
-      "0.999": 0.00682829087600112
-    },
-    "weight_delta_mean": 0.0034328149631619453,
-    "weight_delta_std": 0.0006239464273676276,
-    "weight_delta_min": 0.002377327997237444,
-    "weight_delta_max": 0.0072724344208836555,
-    "weight_delta_count": 512
+    "act_per_channel": false
   },
   "model.output_blocks.2.1.in_layers.2": {
-    "act_delta": 0.06947483867406845,
-    "act_zero_point": 4.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0023921479005366564,
-    "weight_delta_q2": 0.0025560706853866577,
-    "weight_delta_q3": 0.0027857490349560976,
-    "weight_delta_quantiles": {
-      "0.5": 0.0025560706853866577,
-      "0.99": 0.004656834062188864,
-      "0.999": 0.005047420505434275
-    },
-    "weight_delta_mean": 0.0027050026692450047,
-    "weight_delta_std": 0.0005232479888945818,
-    "weight_delta_min": 0.002011476317420602,
-    "weight_delta_max": 0.005155276972800493,
-    "weight_delta_count": 512
+    "act_per_channel": false
   },
   "model.output_blocks.2.1.emb_layers.1": {
-    "act_delta": 0.010149265639483929,
-    "act_zero_point": 27.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0008161673904396594,
-    "weight_delta_q2": 0.0010691974312067032,
-    "weight_delta_q3": 0.001250848057679832,
-    "weight_delta_quantiles": {
-      "0.5": 0.0010691974312067032,
-      "0.99": 0.00246416125446558,
-      "0.999": 0.0027829816099256277
-    },
-    "weight_delta_mean": 0.0010868350509554148,
-    "weight_delta_std": 0.00038164708530530334,
-    "weight_delta_min": 0.0004072398296557367,
-    "weight_delta_max": 0.002866049762815237,
-    "weight_delta_count": 1024
+    "act_per_channel": false
   },
   "model.output_blocks.2.1.cond_emb_layers.1": {
-    "act_delta": 0.002145506674423814,
-    "act_zero_point": 130.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0026567652821540833,
-    "weight_delta_q2": 0.0028763958252966404,
-    "weight_delta_q3": 0.003104564268141985,
-    "weight_delta_quantiles": {
-      "0.5": 0.0028763958252966404,
-      "0.99": 0.003968537785112858,
-      "0.999": 0.0044753882102668285
-    },
-    "weight_delta_mean": 0.0029053573962301016,
-    "weight_delta_std": 0.00036871200427412987,
-    "weight_delta_min": 0.0018672739388421178,
-    "weight_delta_max": 0.004541298374533653,
-    "weight_delta_count": 512
+    "act_per_channel": false
   },
   "model.output_blocks.2.1.out_layers.3": {
-    "act_delta": 0.030157413333654404,
-    "act_zero_point": 9.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0034518481697887182,
-    "weight_delta_q2": 0.003818956669420004,
-    "weight_delta_q3": 0.00436707679182291,
-    "weight_delta_quantiles": {
-      "0.5": 0.003818956669420004,
-      "0.99": 0.0060393111780285835,
-      "0.999": 0.007253190968185663
-    },
-    "weight_delta_mean": 0.003955697175115347,
-    "weight_delta_std": 0.0007066300604492426,
-    "weight_delta_min": 0.0024496042169630527,
-    "weight_delta_max": 0.007777826394885778,
-    "weight_delta_count": 512
+    "act_per_channel": false
   },
   "model.output_blocks.3.0.in_layers.2": {
-    "act_delta": 0.07957654446363449,
-    "act_zero_point": 3.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0025656588841229677,
-    "weight_delta_q2": 0.0027535324916243553,
-    "weight_delta_q3": 0.003097018226981163,
-    "weight_delta_quantiles": {
-      "0.5": 0.0027535324916243553,
-      "0.99": 0.004820769187062979,
-      "0.999": 0.006194189190864563
-    },
-    "weight_delta_mean": 0.002923400141298771,
-    "weight_delta_std": 0.0005813480238430202,
-    "weight_delta_min": 0.0018367613665759563,
-    "weight_delta_max": 0.006412927992641926,
-    "weight_delta_count": 384
+    "act_per_channel": false
   },
   "model.output_blocks.3.0.emb_layers.1": {
-    "act_delta": 0.010149265639483929,
-    "act_zero_point": 27.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0007583486731164157,
-    "weight_delta_q2": 0.0010113215539604425,
-    "weight_delta_q3": 0.0012027889024466276,
-    "weight_delta_quantiles": {
-      "0.5": 0.0010113215539604425,
-      "0.99": 0.002750396030023694,
-      "0.999": 0.003176662838086486
-    },
-    "weight_delta_mean": 0.0010489034466445446,
-    "weight_delta_std": 0.0004363294574432075,
-    "weight_delta_min": 0.0004268686461728066,
-    "weight_delta_max": 0.0032477518543601036,
-    "weight_delta_count": 768
+    "act_per_channel": false
   },
   "model.output_blocks.3.0.cond_emb_layers.1": {
-    "act_delta": 0.002145506674423814,
-    "act_zero_point": 130.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.002504410222172737,
-    "weight_delta_q2": 0.0027617791201919317,
-    "weight_delta_q3": 0.00301397149451077,
-    "weight_delta_quantiles": {
-      "0.5": 0.0027617791201919317,
-      "0.99": 0.0038906647823750973,
-      "0.999": 0.004053259268403053
-    },
-    "weight_delta_mean": 0.002771292580291629,
-    "weight_delta_std": 0.0004096025077160448,
-    "weight_delta_min": 0.00176156684756279,
-    "weight_delta_max": 0.00409293919801712,
-    "weight_delta_count": 384
+    "act_per_channel": false
   },
   "model.output_blocks.3.0.out_layers.3": {
-    "act_delta": 0.02711297571659088,
-    "act_zero_point": 10.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.003512317780405283,
-    "weight_delta_q2": 0.003933417610824108,
-    "weight_delta_q3": 0.004427318461239338,
-    "weight_delta_quantiles": {
-      "0.5": 0.003933417610824108,
-      "0.99": 0.006616332568228245,
-      "0.999": 0.007316760718822479
-    },
-    "weight_delta_mean": 0.004054101184010506,
-    "weight_delta_std": 0.0007397307199425995,
-    "weight_delta_min": 0.0025251624174416065,
-    "weight_delta_max": 0.007492721546441317,
-    "weight_delta_count": 384
+    "act_per_channel": false
   },
   "model.output_blocks.4.0.in_layers.2": {
-    "act_delta": 0.04435461759567261,
-    "act_zero_point": 6.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.002644595457240939,
-    "weight_delta_q2": 0.0029619154520332813,
-    "weight_delta_q3": 0.0034320377744734287,
-    "weight_delta_quantiles": {
-      "0.5": 0.0029619154520332813,
-      "0.99": 0.005822256673127413,
-      "0.999": 0.0070608993992209435
-    },
-    "weight_delta_mean": 0.0031387340277433395,
-    "weight_delta_std": 0.0007211988558992743,
-    "weight_delta_min": 0.002084183506667614,
-    "weight_delta_max": 0.007622043136507273,
-    "weight_delta_count": 384
+    "act_per_channel": false
   },
   "model.output_blocks.4.0.emb_layers.1": {
-    "act_delta": 0.010149265639483929,
-    "act_zero_point": 27.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0008434358169324696,
-    "weight_delta_q2": 0.0010363159235566854,
-    "weight_delta_q3": 0.0011837368365377188,
-    "weight_delta_quantiles": {
-      "0.5": 0.0010363159235566854,
-      "0.99": 0.0029781442135572433,
-      "0.999": 0.003812129143625498
-    },
-    "weight_delta_mean": 0.0010835861321538687,
-    "weight_delta_std": 0.0004371209943201393,
-    "weight_delta_min": 0.00048496495583094656,
-    "weight_delta_max": 0.005196673795580864,
-    "weight_delta_count": 768
+    "act_per_channel": false
   },
   "model.output_blocks.4.0.cond_emb_layers.1": {
-    "act_delta": 0.002145506674423814,
-    "act_zero_point": 130.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0024345158599317074,
-    "weight_delta_q2": 0.0027081298176199198,
-    "weight_delta_q3": 0.0029995511285960674,
-    "weight_delta_quantiles": {
-      "0.5": 0.0027081298176199198,
-      "0.99": 0.003941723145544529,
-      "0.999": 0.004318151157349348
-    },
-    "weight_delta_mean": 0.002731251996010542,
-    "weight_delta_std": 0.00045184511691331863,
-    "weight_delta_min": 0.0017466731369495392,
-    "weight_delta_max": 0.0044667660258710384,
-    "weight_delta_count": 384
+    "act_per_channel": false
   },
   "model.output_blocks.4.0.out_layers.3": {
-    "act_delta": 0.03777901828289032,
-    "act_zero_point": 7.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0032870532013475895,
-    "weight_delta_q2": 0.0037044836208224297,
-    "weight_delta_q3": 0.004329449497163296,
-    "weight_delta_quantiles": {
-      "0.5": 0.0037044836208224297,
-      "0.99": 0.007157753687351942,
-      "0.999": 0.007936161942780018
-    },
-    "weight_delta_mean": 0.003945867531001568,
-    "weight_delta_std": 0.0009214171441271901,
-    "weight_delta_min": 0.002585221081972122,
-    "weight_delta_max": 0.008290817961096764,
-    "weight_delta_count": 384
+    "act_per_channel": false
   },
   "model.output_blocks.5.0.in_layers.2": {
-    "act_delta": 0.02467859908938408,
-    "act_zero_point": 11.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0026493906043469906,
-    "weight_delta_q2": 0.002925617154687643,
-    "weight_delta_q3": 0.003435707651078701,
-    "weight_delta_quantiles": {
-      "0.5": 0.002925617154687643,
-      "0.99": 0.006571017671376467,
-      "0.999": 0.006833105813711882
-    },
-    "weight_delta_mean": 0.003184851258993149,
-    "weight_delta_std": 0.000795541622210294,
-    "weight_delta_min": 0.0022571624722331762,
-    "weight_delta_max": 0.006861965171992779,
-    "weight_delta_count": 384
+    "act_per_channel": false
   },
   "model.output_blocks.5.0.emb_layers.1": {
-    "act_delta": 0.010149265639483929,
-    "act_zero_point": 27.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.000898421392776072,
-    "weight_delta_q2": 0.001039333175867796,
-    "weight_delta_q3": 0.0011888928711414337,
-    "weight_delta_quantiles": {
-      "0.5": 0.001039333175867796,
-      "0.99": 0.0026417593471705914,
-      "0.999": 0.003260428085923195
-    },
-    "weight_delta_mean": 0.0010978770442306995,
-    "weight_delta_std": 0.00034765020245686173,
-    "weight_delta_min": 0.0004966678097844124,
-    "weight_delta_max": 0.003280754666775465,
-    "weight_delta_count": 768
+    "act_per_channel": false
   },
   "model.output_blocks.5.0.cond_emb_layers.1": {
-    "act_delta": 0.002145506674423814,
-    "act_zero_point": 130.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.002318995539098978,
-    "weight_delta_q2": 0.0025673757772892714,
-    "weight_delta_q3": 0.0028848990332335234,
-    "weight_delta_quantiles": {
-      "0.5": 0.0025673757772892714,
-      "0.99": 0.0035388695541769266,
-      "0.999": 0.0039757005870342255
-    },
-    "weight_delta_mean": 0.002605875488370657,
-    "weight_delta_std": 0.00041832984425127506,
-    "weight_delta_min": 0.001475993893109262,
-    "weight_delta_max": 0.004148196894675493,
-    "weight_delta_count": 384
+    "act_per_channel": false
   },
   "model.output_blocks.5.0.out_layers.3": {
-    "act_delta": 0.0381515771150589,
-    "act_zero_point": 7.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.002801851835101843,
-    "weight_delta_q2": 0.003041710238903761,
-    "weight_delta_q3": 0.0033782715909183025,
-    "weight_delta_quantiles": {
-      "0.5": 0.003041710238903761,
-      "0.99": 0.005530030932277441,
-      "0.999": 0.0072040315717458725
-    },
-    "weight_delta_mean": 0.0031677805818617344,
-    "weight_delta_std": 0.0006203678203746676,
-    "weight_delta_min": 0.002148191910237074,
-    "weight_delta_max": 0.008105232380330563,
-    "weight_delta_count": 384
+    "act_per_channel": false
   },
   "model.output_blocks.5.2.in_layers.2": {
-    "act_delta": 0.022634213790297508,
-    "act_zero_point": 12.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.002514094114303589,
-    "weight_delta_q2": 0.0026809759438037872,
-    "weight_delta_q3": 0.002952737733721733,
-    "weight_delta_quantiles": {
-      "0.5": 0.0026809759438037872,
-      "0.99": 0.004886888898909092,
-      "0.999": 0.005740416701883078
-    },
-    "weight_delta_mean": 0.002812933176755905,
-    "weight_delta_std": 0.0005343062221072614,
-    "weight_delta_min": 0.0015326961874961853,
-    "weight_delta_max": 0.006055677309632301,
-    "weight_delta_count": 384
+    "act_per_channel": false
   },
   "model.output_blocks.5.2.emb_layers.1": {
-    "act_delta": 0.010149265639483929,
-    "act_zero_point": 27.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0009497245191596448,
-    "weight_delta_q2": 0.001060226932168007,
-    "weight_delta_q3": 0.0012005120515823364,
-    "weight_delta_quantiles": {
-      "0.5": 0.001060226932168007,
-      "0.99": 0.0021280222572386265,
-      "0.999": 0.002651961287483573
-    },
-    "weight_delta_mean": 0.0011083597782999277,
-    "weight_delta_std": 0.000282455439446494,
-    "weight_delta_min": 0.0005335563910193741,
-    "weight_delta_max": 0.0027225399389863014,
-    "weight_delta_count": 768
+    "act_per_channel": false
   },
   "model.output_blocks.5.2.cond_emb_layers.1": {
-    "act_delta": 0.002145506674423814,
-    "act_zero_point": 130.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.00251573882997036,
-    "weight_delta_q2": 0.0027710162103176117,
-    "weight_delta_q3": 0.003067504381760955,
-    "weight_delta_quantiles": {
-      "0.5": 0.0027710162103176117,
-      "0.99": 0.003941822797060013,
-      "0.999": 0.00469924183562398
-    },
-    "weight_delta_mean": 0.002802753821015358,
-    "weight_delta_std": 0.0004275439423508942,
-    "weight_delta_min": 0.0017516870284453034,
-    "weight_delta_max": 0.004763550590723753,
-    "weight_delta_count": 384
+    "act_per_channel": false
   },
   "model.output_blocks.5.2.out_layers.3": {
-    "act_delta": 0.06505490094423294,
-    "act_zero_point": 4.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0029821537900716066,
-    "weight_delta_q2": 0.0032320418395102024,
-    "weight_delta_q3": 0.0035541364923119545,
-    "weight_delta_quantiles": {
-      "0.5": 0.0032320418395102024,
-      "0.99": 0.005981932859867811,
-      "0.999": 0.011401886120438576
-    },
-    "weight_delta_mean": 0.003355011809617281,
-    "weight_delta_std": 0.0007795926067046821,
-    "weight_delta_min": 0.002144260099157691,
-    "weight_delta_max": 0.013606403954327106,
-    "weight_delta_count": 384
+    "act_per_channel": false
   },
   "model.output_blocks.6.0.in_layers.2": {
-    "act_delta": 0.026898864656686783,
-    "act_zero_point": 10.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.002803247421979904,
-    "weight_delta_q2": 0.0030798842199146748,
-    "weight_delta_q3": 0.003623441094532609,
-    "weight_delta_quantiles": {
-      "0.5": 0.0030798842199146748,
-      "0.99": 0.005397198721766472,
-      "0.999": 0.010007820092141628
-    },
-    "weight_delta_mean": 0.003296201815828681,
-    "weight_delta_std": 0.0008258220623247325,
-    "weight_delta_min": 0.0022669981699436903,
-    "weight_delta_max": 0.011368010193109512,
-    "weight_delta_count": 256
+    "act_per_channel": false
   },
   "model.output_blocks.6.0.emb_layers.1": {
-    "act_delta": 0.010149265639483929,
-    "act_zero_point": 27.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0008801939547993243,
-    "weight_delta_q2": 0.0010089376010000706,
-    "weight_delta_q3": 0.001222594059072435,
-    "weight_delta_quantiles": {
-      "0.5": 0.0010089376010000706,
-      "0.99": 0.002943483181297779,
-      "0.999": 0.0035710863303393126
-    },
-    "weight_delta_mean": 0.0011695502325892448,
-    "weight_delta_std": 0.00047801490291021764,
-    "weight_delta_min": 0.0005207766080275178,
-    "weight_delta_max": 0.0037085891235619783,
-    "weight_delta_count": 512
+    "act_per_channel": false
   },
   "model.output_blocks.6.0.cond_emb_layers.1": {
-    "act_delta": 0.002145506674423814,
-    "act_zero_point": 130.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.00215568533167243,
-    "weight_delta_q2": 0.0023941965773701668,
-    "weight_delta_q3": 0.002728988416492939,
-    "weight_delta_quantiles": {
-      "0.5": 0.0023941965773701668,
-      "0.99": 0.004019932355731726,
-      "0.999": 0.0043489872477948666
-    },
-    "weight_delta_mean": 0.002504059113562107,
-    "weight_delta_std": 0.0005023807170800865,
-    "weight_delta_min": 0.0016137794591486454,
-    "weight_delta_max": 0.004431004635989666,
-    "weight_delta_count": 256
+    "act_per_channel": false
   },
   "model.output_blocks.6.0.out_layers.3": {
-    "act_delta": 0.06465817987918854,
-    "act_zero_point": 4.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.003693504724651575,
-    "weight_delta_q2": 0.004154467023909092,
-    "weight_delta_q3": 0.004847181960940361,
-    "weight_delta_quantiles": {
-      "0.5": 0.004154467023909092,
-      "0.99": 0.011363144032657146,
-      "0.999": 0.017293302342295647
-    },
-    "weight_delta_mean": 0.004577322863042355,
-    "weight_delta_std": 0.001636272994801402,
-    "weight_delta_min": 0.0028923044446855783,
-    "weight_delta_max": 0.018539076671004295,
-    "weight_delta_count": 256
+    "act_per_channel": false
   },
   "model.output_blocks.7.0.in_layers.2": {
-    "act_delta": 0.03017008863389492,
-    "act_zero_point": 9.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0030592274852097034,
-    "weight_delta_q2": 0.003395423525944352,
-    "weight_delta_q3": 0.004042978398501873,
-    "weight_delta_quantiles": {
-      "0.5": 0.003395423525944352,
-      "0.99": 0.006811978295445442,
-      "0.999": 0.0070307557471096516
-    },
-    "weight_delta_mean": 0.0036359832156449556,
-    "weight_delta_std": 0.000884631066583097,
-    "weight_delta_min": 0.002180954208597541,
-    "weight_delta_max": 0.007032710127532482,
-    "weight_delta_count": 256
+    "act_per_channel": false
   },
   "model.output_blocks.7.0.emb_layers.1": {
-    "act_delta": 0.010149265639483929,
-    "act_zero_point": 27.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0008694182615727186,
-    "weight_delta_q2": 0.001013581408187747,
-    "weight_delta_q3": 0.0012265181867405772,
-    "weight_delta_quantiles": {
-      "0.5": 0.001013581408187747,
-      "0.99": 0.0028860021848231554,
-      "0.999": 0.0031707773450762033
-    },
-    "weight_delta_mean": 0.001116245985031128,
-    "weight_delta_std": 0.0004087157140020281,
-    "weight_delta_min": 0.0005384347750805318,
-    "weight_delta_max": 0.0032804138027131557,
-    "weight_delta_count": 512
+    "act_per_channel": false
   },
   "model.output_blocks.7.0.cond_emb_layers.1": {
-    "act_delta": 0.002145506674423814,
-    "act_zero_point": 130.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.002032758668065071,
-    "weight_delta_q2": 0.002261189743876457,
-    "weight_delta_q3": 0.002650196896865964,
-    "weight_delta_quantiles": {
-      "0.5": 0.002261189743876457,
-      "0.99": 0.0038529622834175825,
-      "0.999": 0.003936060704290867
-    },
-    "weight_delta_mean": 0.002387471031397581,
-    "weight_delta_std": 0.0005037632072344422,
-    "weight_delta_min": 0.0011823372915387154,
-    "weight_delta_max": 0.003952210769057274,
-    "weight_delta_count": 256
+    "act_per_channel": false
   },
   "model.output_blocks.7.0.out_layers.3": {
-    "act_delta": 0.029979323968291283,
-    "act_zero_point": 9.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.003203260712325573,
-    "weight_delta_q2": 0.0035919398069381714,
-    "weight_delta_q3": 0.004027319140732288,
-    "weight_delta_quantiles": {
-      "0.5": 0.0035919398069381714,
-      "0.99": 0.008637011982500553,
-      "0.999": 0.010166611522436142
-    },
-    "weight_delta_mean": 0.003804469481110573,
-    "weight_delta_std": 0.0010304017923772335,
-    "weight_delta_min": 0.002530867699533701,
-    "weight_delta_max": 0.010465038940310478,
-    "weight_delta_count": 256
+    "act_per_channel": false
   },
   "model.output_blocks.8.0.in_layers.2": {
-    "act_delta": 0.029909491539001465,
-    "act_zero_point": 9.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0029297887813299894,
-    "weight_delta_q2": 0.0033459244295954704,
-    "weight_delta_q3": 0.004099528305232525,
-    "weight_delta_quantiles": {
-      "0.5": 0.0033459244295954704,
-      "0.99": 0.008061532862484455,
-      "0.999": 0.008414576761424541
-    },
-    "weight_delta_mean": 0.0036737658083438873,
-    "weight_delta_std": 0.0011057823430746794,
-    "weight_delta_min": 0.0020961894188076258,
-    "weight_delta_max": 0.008478168398141861,
-    "weight_delta_count": 256
+    "act_per_channel": false
   },
   "model.output_blocks.8.0.emb_layers.1": {
-    "act_delta": 0.010149265639483929,
-    "act_zero_point": 27.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0008252988918684423,
-    "weight_delta_q2": 0.0009583683568052948,
-    "weight_delta_q3": 0.001178481848910451,
-    "weight_delta_quantiles": {
-      "0.5": 0.0009583683568052948,
-      "0.99": 0.002284560352563858,
-      "0.999": 0.002973109483718872
-    },
-    "weight_delta_mean": 0.001061556045897305,
-    "weight_delta_std": 0.0003569147374946624,
-    "weight_delta_min": 0.0005738066392950714,
-    "weight_delta_max": 0.0032557544764131308,
-    "weight_delta_count": 512
+    "act_per_channel": false
   },
   "model.output_blocks.8.0.cond_emb_layers.1": {
-    "act_delta": 0.002145506674423814,
-    "act_zero_point": 130.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0018956884741783142,
-    "weight_delta_q2": 0.0021240347996354103,
-    "weight_delta_q3": 0.002431240165606141,
-    "weight_delta_quantiles": {
-      "0.5": 0.0021240347996354103,
-      "0.99": 0.0038872796576470137,
-      "0.999": 0.004329594783484936
-    },
-    "weight_delta_mean": 0.002238653600215912,
-    "weight_delta_std": 0.0005292216665111482,
-    "weight_delta_min": 0.0011688688537105918,
-    "weight_delta_max": 0.004337093327194452,
-    "weight_delta_count": 256
+    "act_per_channel": false
   },
   "model.output_blocks.8.0.out_layers.3": {
-    "act_delta": 0.030027348548173904,
-    "act_zero_point": 9.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.002723389770835638,
-    "weight_delta_q2": 0.002992495894432068,
-    "weight_delta_q3": 0.003358355723321438,
-    "weight_delta_quantiles": {
-      "0.5": 0.002992495894432068,
-      "0.99": 0.007373930420726538,
-      "0.999": 0.01154605858027935
-    },
-    "weight_delta_mean": 0.0032213511876761913,
-    "weight_delta_std": 0.0009732691687531769,
-    "weight_delta_min": 0.0021610623225569725,
-    "weight_delta_max": 0.012670066207647324,
-    "weight_delta_count": 256
+    "act_per_channel": false
   },
   "model.output_blocks.8.1.in_layers.2": {
-    "act_delta": 0.029778219759464264,
-    "act_zero_point": 9.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.002563347341492772,
-    "weight_delta_q2": 0.002777564339339733,
-    "weight_delta_q3": 0.0030504059977829456,
-    "weight_delta_quantiles": {
-      "0.5": 0.002777564339339733,
-      "0.99": 0.006145693361759186,
-      "0.999": 0.007063629571348429
-    },
-    "weight_delta_mean": 0.0029086361173540354,
-    "weight_delta_std": 0.0006712568574585021,
-    "weight_delta_min": 0.0017913832562044263,
-    "weight_delta_max": 0.00720447301864624,
-    "weight_delta_count": 256
+    "act_per_channel": false
   },
   "model.output_blocks.8.1.emb_layers.1": {
-    "act_delta": 0.010149265639483929,
-    "act_zero_point": 27.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0008869933080859482,
-    "weight_delta_q2": 0.0010603617411106825,
-    "weight_delta_q3": 0.0012844102457165718,
-    "weight_delta_quantiles": {
-      "0.5": 0.0010603617411106825,
-      "0.99": 0.002577233361080289,
-      "0.999": 0.002926968038082123
-    },
-    "weight_delta_mean": 0.0011339662596583366,
-    "weight_delta_std": 0.00037100829649716616,
-    "weight_delta_min": 0.0005054215434938669,
-    "weight_delta_max": 0.0030259406194090843,
-    "weight_delta_count": 512
+    "act_per_channel": false
   },
   "model.output_blocks.8.1.cond_emb_layers.1": {
-    "act_delta": 0.002145506674423814,
-    "act_zero_point": 130.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0022939774207770824,
-    "weight_delta_q2": 0.0025430377572774887,
-    "weight_delta_q3": 0.0029044279363006353,
-    "weight_delta_quantiles": {
-      "0.5": 0.0025430377572774887,
-      "0.99": 0.004775822628289461,
-      "0.999": 0.005781044252216816
-    },
-    "weight_delta_mean": 0.0026817461475729942,
-    "weight_delta_std": 0.0006498880684375763,
-    "weight_delta_min": 0.0011470923200249672,
-    "weight_delta_max": 0.005965566728264093,
-    "weight_delta_count": 256
+    "act_per_channel": false
   },
   "model.output_blocks.8.1.out_layers.3": {
-    "act_delta": 0.06504487991333008,
-    "act_zero_point": 4.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.003309320192784071,
-    "weight_delta_q2": 0.003532217815518379,
-    "weight_delta_q3": 0.003956211265176535,
-    "weight_delta_quantiles": {
-      "0.5": 0.003532217815518379,
-      "0.99": 0.005713253747671843,
-      "0.999": 0.006551089230924845
-    },
-    "weight_delta_mean": 0.003684749361127615,
-    "weight_delta_std": 0.0006060575833544135,
-    "weight_delta_min": 0.0025145148392766714,
-    "weight_delta_max": 0.006771915126591921,
-    "weight_delta_count": 256
+    "act_per_channel": false
   },
   "model.output_blocks.9.0.in_layers.2": {
-    "act_delta": 0.033583905547857285,
-    "act_zero_point": 8.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0032674791291356087,
-    "weight_delta_q2": 0.0037582614459097385,
-    "weight_delta_q3": 0.004200075753033161,
-    "weight_delta_quantiles": {
-      "0.5": 0.0037582614459097385,
-      "0.99": 0.0066174049861729145,
-      "0.999": 0.0070106773637235165
-    },
-    "weight_delta_mean": 0.0038960790261626244,
-    "weight_delta_std": 0.000870725023560226,
-    "weight_delta_min": 0.002641243627294898,
-    "weight_delta_max": 0.007062848191708326,
-    "weight_delta_count": 128
+    "act_per_channel": false
   },
   "model.output_blocks.9.0.emb_layers.1": {
-    "act_delta": 0.010149265639483929,
-    "act_zero_point": 27.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0008209123625420034,
-    "weight_delta_q2": 0.0009444779716432095,
-    "weight_delta_q3": 0.001130071934312582,
-    "weight_delta_quantiles": {
-      "0.5": 0.0009444779716432095,
-      "0.99": 0.0019177502254024148,
-      "0.999": 0.002422747202217579
-    },
-    "weight_delta_mean": 0.0010049899574369192,
-    "weight_delta_std": 0.00027588053490035236,
-    "weight_delta_min": 0.0005785543471574783,
-    "weight_delta_max": 0.0025573186576366425,
-    "weight_delta_count": 256
+    "act_per_channel": false
   },
   "model.output_blocks.9.0.cond_emb_layers.1": {
-    "act_delta": 0.002145506674423814,
-    "act_zero_point": 130.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.00186095479875803,
-    "weight_delta_q2": 0.00209212489426136,
-    "weight_delta_q3": 0.002404895145446062,
-    "weight_delta_quantiles": {
-      "0.5": 0.00209212489426136,
-      "0.99": 0.0038011157885193825,
-      "0.999": 0.004140771459788084
-    },
-    "weight_delta_mean": 0.002216373337432742,
-    "weight_delta_std": 0.00048688010429032147,
-    "weight_delta_min": 0.0015006746398285031,
-    "weight_delta_max": 0.004187209531664848,
-    "weight_delta_count": 128
+    "act_per_channel": false
   },
   "model.output_blocks.9.0.out_layers.3": {
-    "act_delta": 0.03833884000778198,
-    "act_zero_point": 7.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0039138635620474815,
-    "weight_delta_q2": 0.004368196241557598,
-    "weight_delta_q3": 0.004851584322750568,
-    "weight_delta_quantiles": {
-      "0.5": 0.004368196241557598,
-      "0.99": 0.0084530645981431,
-      "0.999": 0.009212709963321686
-    },
-    "weight_delta_mean": 0.0046004727482795715,
-    "weight_delta_std": 0.0011273708660155535,
-    "weight_delta_min": 0.003072248073294759,
-    "weight_delta_max": 0.009312910959124565,
-    "weight_delta_count": 128
+    "act_per_channel": false
   },
   "model.output_blocks.10.0.in_layers.2": {
-    "act_delta": 0.02990983985364437,
-    "act_zero_point": 9.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.003207460744306445,
-    "weight_delta_q2": 0.0037061870098114014,
-    "weight_delta_q3": 0.004141892306506634,
-    "weight_delta_quantiles": {
-      "0.5": 0.0037061870098114014,
-      "0.99": 0.006264738272875547,
-      "0.999": 0.006321982946246862
-    },
-    "weight_delta_mean": 0.003830841276794672,
-    "weight_delta_std": 0.0008342947694472969,
-    "weight_delta_min": 0.002504084724932909,
-    "weight_delta_max": 0.006324636749923229,
-    "weight_delta_count": 128
+    "act_per_channel": false
   },
   "model.output_blocks.10.0.emb_layers.1": {
-    "act_delta": 0.010149265639483929,
-    "act_zero_point": 27.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.000879297498613596,
-    "weight_delta_q2": 0.001040005125105381,
-    "weight_delta_q3": 0.0012523671612143517,
-    "weight_delta_quantiles": {
-      "0.5": 0.001040005125105381,
-      "0.99": 0.0021500922739505768,
-      "0.999": 0.002264399314299226
-    },
-    "weight_delta_mean": 0.00111640733666718,
-    "weight_delta_std": 0.0003438875428400934,
-    "weight_delta_min": 0.0005776902544312179,
-    "weight_delta_max": 0.0022827659267932177,
-    "weight_delta_count": 256
+    "act_per_channel": false
   },
   "model.output_blocks.10.0.cond_emb_layers.1": {
-    "act_delta": 0.002145506674423814,
-    "act_zero_point": 130.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0017940397374331951,
-    "weight_delta_q2": 0.0020365226082503796,
-    "weight_delta_q3": 0.002357783727347851,
-    "weight_delta_quantiles": {
-      "0.5": 0.0020365226082503796,
-      "0.99": 0.004518883768469095,
-      "0.999": 0.006097933277487755
-    },
-    "weight_delta_mean": 0.0021560618188232183,
-    "weight_delta_std": 0.0006211441359482706,
-    "weight_delta_min": 0.0011138682020828128,
-    "weight_delta_max": 0.006271063350141048,
-    "weight_delta_count": 128
+    "act_per_channel": false
   },
   "model.output_blocks.10.0.out_layers.3": {
-    "act_delta": 0.02719949558377266,
-    "act_zero_point": 10.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.002894654404371977,
-    "weight_delta_q2": 0.0033156953286379576,
-    "weight_delta_q3": 0.003737812861800194,
-    "weight_delta_quantiles": {
-      "0.5": 0.0033156953286379576,
-      "0.99": 0.005448226351290941,
-      "0.999": 0.0061321500688791275
-    },
-    "weight_delta_mean": 0.003413429483771324,
-    "weight_delta_std": 0.000731012667529285,
-    "weight_delta_min": 0.0022084410302340984,
-    "weight_delta_max": 0.006231361068785191,
-    "weight_delta_count": 128
+    "act_per_channel": false
   },
   "model.output_blocks.11.0.in_layers.2": {
-    "act_delta": 0.029955940321087837,
-    "act_zero_point": 9.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0033757362980395555,
-    "weight_delta_q2": 0.003947823774069548,
-    "weight_delta_q3": 0.004628716502338648,
-    "weight_delta_quantiles": {
-      "0.5": 0.003947823774069548,
-      "0.99": 0.0075173769146203995,
-      "0.999": 0.008253379724919796
-    },
-    "weight_delta_mean": 0.004131918307393789,
-    "weight_delta_std": 0.001051644911058247,
-    "weight_delta_min": 0.002476943889632821,
-    "weight_delta_max": 0.008325790986418724,
-    "weight_delta_count": 128
+    "act_per_channel": false
   },
   "model.output_blocks.11.0.emb_layers.1": {
-    "act_delta": 0.010149265639483929,
-    "act_zero_point": 27.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0010616291547194123,
-    "weight_delta_q2": 0.0012878593988716602,
-    "weight_delta_q3": 0.0016040710033848882,
-    "weight_delta_quantiles": {
-      "0.5": 0.0012878593988716602,
-      "0.99": 0.0029134266078472137,
-      "0.999": 0.0030748178251087666
-    },
-    "weight_delta_mean": 0.0013732407242059708,
-    "weight_delta_std": 0.0004544838739093393,
-    "weight_delta_min": 0.0005579887656494975,
-    "weight_delta_max": 0.003077681176364422,
-    "weight_delta_count": 256
+    "act_per_channel": false
   },
   "model.output_blocks.11.0.cond_emb_layers.1": {
-    "act_delta": 0.002145506674423814,
-    "act_zero_point": 130.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0015888155903667212,
-    "weight_delta_q2": 0.0018948429496958852,
-    "weight_delta_q3": 0.002222833689302206,
-    "weight_delta_quantiles": {
-      "0.5": 0.0018948429496958852,
-      "0.99": 0.0034990839194506407,
-      "0.999": 0.0036719131749123335
-    },
-    "weight_delta_mean": 0.001959444023668766,
-    "weight_delta_std": 0.0005082357092760503,
-    "weight_delta_min": 0.0009812666103243828,
-    "weight_delta_max": 0.0036838026717305183,
-    "weight_delta_count": 128
+    "act_per_channel": false
   },
   "model.output_blocks.11.0.out_layers.3": {
-    "act_delta": 0.037932515144348145,
-    "act_zero_point": 7.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0026423255912959576,
-    "weight_delta_q2": 0.002971154171973467,
-    "weight_delta_q3": 0.0034788819029927254,
-    "weight_delta_quantiles": {
-      "0.5": 0.002971154171973467,
-      "0.99": 0.0061917430721223354,
-      "0.999": 0.006476561538875103
-    },
-    "weight_delta_mean": 0.0031764251179993153,
-    "weight_delta_std": 0.0008450993918813765,
-    "weight_delta_min": 0.001850767876021564,
-    "weight_delta_max": 0.0065175858326256275,
-    "weight_delta_count": 128
+    "act_per_channel": false
   },
   "model.output_blocks.11.1.in_layers.2": {
-    "act_delta": 0.017947668209671974,
-    "act_zero_point": 15.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.002329584676772356,
-    "weight_delta_q2": 0.0025965534150600433,
-    "weight_delta_q3": 0.0028983564116060734,
-    "weight_delta_quantiles": {
-      "0.5": 0.0025965534150600433,
-      "0.99": 0.005892342422157526,
-      "0.999": 0.006729537155479193
-    },
-    "weight_delta_mean": 0.0027391058392822742,
-    "weight_delta_std": 0.0007360331946983933,
-    "weight_delta_min": 0.001678218599408865,
-    "weight_delta_max": 0.006836142390966415,
-    "weight_delta_count": 128
+    "act_per_channel": false
   },
   "model.output_blocks.11.1.emb_layers.1": {
-    "act_delta": 0.010149265639483929,
-    "act_zero_point": 27.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0008880543755367398,
-    "weight_delta_q2": 0.0011444146512076259,
-    "weight_delta_q3": 0.001439323415979743,
-    "weight_delta_quantiles": {
-      "0.5": 0.0011444146512076259,
-      "0.99": 0.002506297081708908,
-      "0.999": 0.003341275965794921
-    },
-    "weight_delta_mean": 0.0012108099181205034,
-    "weight_delta_std": 0.0004169982566963881,
-    "weight_delta_min": 0.0005239150486886501,
-    "weight_delta_max": 0.003623406868427992,
-    "weight_delta_count": 256
+    "act_per_channel": false
   },
   "model.output_blocks.11.1.cond_emb_layers.1": {
-    "act_delta": 0.002145506674423814,
-    "act_zero_point": 130.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.001936212182044983,
-    "weight_delta_q2": 0.0022662230767309666,
-    "weight_delta_q3": 0.0028173180762678385,
-    "weight_delta_quantiles": {
-      "0.5": 0.0022662230767309666,
-      "0.99": 0.005063408054411411,
-      "0.999": 0.006218608468770981
-    },
-    "weight_delta_mean": 0.002451629377901554,
-    "weight_delta_std": 0.000830328615847975,
-    "weight_delta_min": 0.0011697659501805902,
-    "weight_delta_max": 0.006364595144987106,
-    "weight_delta_count": 128
+    "act_per_channel": false
   },
   "model.output_blocks.11.1.out_layers.3": {
-    "act_delta": 0.11915373057126999,
-    "act_zero_point": 2.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0029141774866729975,
-    "weight_delta_q2": 0.0033647615928202868,
-    "weight_delta_q3": 0.003879512194544077,
-    "weight_delta_quantiles": {
-      "0.5": 0.0033647615928202868,
-      "0.99": 0.007551552262157202,
-      "0.999": 0.007735895458608866
-    },
-    "weight_delta_mean": 0.003537104232236743,
-    "weight_delta_std": 0.0009980755858123302,
-    "weight_delta_min": 0.0020974779035896063,
-    "weight_delta_max": 0.00774700241163373,
-    "weight_delta_count": 128
+    "act_per_channel": false
   },
   "model.output_blocks.12.0.in_layers.2": {
-    "act_delta": 0.03787323832511902,
-    "act_zero_point": 7.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0033331699669361115,
-    "weight_delta_q2": 0.003825969062745571,
-    "weight_delta_q3": 0.00461534783244133,
-    "weight_delta_quantiles": {
-      "0.5": 0.003825969062745571,
-      "0.99": 0.008462292142212391,
-      "0.999": 0.009142173454165459
-    },
-    "weight_delta_mean": 0.004159318283200264,
-    "weight_delta_std": 0.0012863880256190896,
-    "weight_delta_min": 0.002182051772251725,
-    "weight_delta_max": 0.009202506393194199,
-    "weight_delta_count": 128
+    "act_per_channel": false
   },
   "model.output_blocks.12.0.emb_layers.1": {
-    "act_delta": 0.010149265639483929,
-    "act_zero_point": 27.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0009445308824069798,
-    "weight_delta_q2": 0.0012202858924865723,
-    "weight_delta_q3": 0.0015544784255325794,
-    "weight_delta_quantiles": {
-      "0.5": 0.0012202858924865723,
-      "0.99": 0.002678116550669074,
-      "0.999": 0.003942069597542286
-    },
-    "weight_delta_mean": 0.0012928189244121313,
-    "weight_delta_std": 0.00047562175313942134,
-    "weight_delta_min": 0.0005079124821349978,
-    "weight_delta_max": 0.004227383993566036,
-    "weight_delta_count": 256
+    "act_per_channel": false
   },
   "model.output_blocks.12.0.cond_emb_layers.1": {
-    "act_delta": 0.002145506674423814,
-    "act_zero_point": 130.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0019802090246230364,
-    "weight_delta_q2": 0.0022854397539049387,
-    "weight_delta_q3": 0.0027502006851136684,
-    "weight_delta_quantiles": {
-      "0.5": 0.0022854397539049387,
-      "0.99": 0.004567885771393776,
-      "0.999": 0.004967125598341227
-    },
-    "weight_delta_mean": 0.0024268045090138912,
-    "weight_delta_std": 0.0006761333788745105,
-    "weight_delta_min": 0.0011661251774057746,
-    "weight_delta_max": 0.0050026243552565575,
-    "weight_delta_count": 128
+    "act_per_channel": false
   },
   "model.output_blocks.12.0.out_layers.3": {
-    "act_delta": 0.06267154961824417,
-    "act_zero_point": 4.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.002903069369494915,
-    "weight_delta_q2": 0.0032412242144346237,
-    "weight_delta_q3": 0.00387723371386528,
-    "weight_delta_quantiles": {
-      "0.5": 0.0032412242144346237,
-      "0.99": 0.011047394014894962,
-      "0.999": 0.014572345651686192
-    },
-    "weight_delta_mean": 0.0036770636215806007,
-    "weight_delta_std": 0.0017393958987668157,
-    "weight_delta_min": 0.002031653420999646,
-    "weight_delta_max": 0.015060441568493843,
-    "weight_delta_count": 128
+    "act_per_channel": false
   },
   "model.output_blocks.13.0.in_layers.2": {
-    "act_delta": 0.0521056093275547,
-    "act_zero_point": 5.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0037486706860363483,
-    "weight_delta_q2": 0.004355812445282936,
-    "weight_delta_q3": 0.005142172798514366,
-    "weight_delta_quantiles": {
-      "0.5": 0.004355812445282936,
-      "0.99": 0.008478195406496525,
-      "0.999": 0.00881416629999876
-    },
-    "weight_delta_mean": 0.004649583715945482,
-    "weight_delta_std": 0.0014566659228876233,
-    "weight_delta_min": 0.0021808412857353687,
-    "weight_delta_max": 0.008852830156683922,
-    "weight_delta_count": 128
+    "act_per_channel": false
   },
   "model.output_blocks.13.0.emb_layers.1": {
-    "act_delta": 0.010149265639483929,
-    "act_zero_point": 27.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0009372606291435659,
-    "weight_delta_q2": 0.0011542805004864931,
-    "weight_delta_q3": 0.0014164516469463706,
-    "weight_delta_quantiles": {
-      "0.5": 0.0011542805004864931,
-      "0.99": 0.002808215329423547,
-      "0.999": 0.004053355194628239
-    },
-    "weight_delta_mean": 0.001242851372808218,
-    "weight_delta_std": 0.0004929039278067648,
-    "weight_delta_min": 0.0004988174769096076,
-    "weight_delta_max": 0.004302080255001783,
-    "weight_delta_count": 256
+    "act_per_channel": false
   },
   "model.output_blocks.13.0.cond_emb_layers.1": {
-    "act_delta": 0.002145506674423814,
-    "act_zero_point": 130.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0015938980504870415,
-    "weight_delta_q2": 0.0020914929918944836,
-    "weight_delta_q3": 0.002660021185874939,
-    "weight_delta_quantiles": {
-      "0.5": 0.0020914929918944836,
-      "0.99": 0.004001416265964508,
-      "0.999": 0.004392544273287058
-    },
-    "weight_delta_mean": 0.0021390728652477264,
-    "weight_delta_std": 0.0007062575896270573,
-    "weight_delta_min": 0.0009248624555766582,
-    "weight_delta_max": 0.004431930836290121,
-    "weight_delta_count": 128
+    "act_per_channel": false
   },
   "model.output_blocks.13.0.out_layers.3": {
-    "act_delta": 0.04260439798235893,
-    "act_zero_point": 6.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.003287423402070999,
-    "weight_delta_q2": 0.0039582583121955395,
-    "weight_delta_q3": 0.00494111655279994,
-    "weight_delta_quantiles": {
-      "0.5": 0.0039582583121955395,
-      "0.99": 0.014212382026016712,
-      "0.999": 0.018599988892674446
-    },
-    "weight_delta_mean": 0.004547391086816788,
-    "weight_delta_std": 0.0022111674770712852,
-    "weight_delta_min": 0.002461726311594248,
-    "weight_delta_max": 0.01908254809677601,
-    "weight_delta_count": 128
+    "act_per_channel": false
   },
   "model.output_blocks.14.0.in_layers.2": {
-    "act_delta": 0.037995051592588425,
-    "act_zero_point": 7.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0029079075902700424,
-    "weight_delta_q2": 0.0034551317803561687,
-    "weight_delta_q3": 0.004035397432744503,
-    "weight_delta_quantiles": {
-      "0.5": 0.0034551317803561687,
-      "0.99": 0.005943995900452137,
-      "0.999": 0.006008311174809933
-    },
-    "weight_delta_mean": 0.003516060533002019,
-    "weight_delta_std": 0.0009172612917609513,
-    "weight_delta_min": 0.0014713914133608341,
-    "weight_delta_max": 0.006013756152242422,
-    "weight_delta_count": 128
+    "act_per_channel": false
   },
   "model.output_blocks.14.0.emb_layers.1": {
-    "act_delta": 0.010149265639483929,
-    "act_zero_point": 27.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0009240306681022048,
-    "weight_delta_q2": 0.0012719213264063,
-    "weight_delta_q3": 0.0016300543211400509,
-    "weight_delta_quantiles": {
-      "0.5": 0.0012719213264063,
-      "0.99": 0.004435595590621233,
-      "0.999": 0.005445580463856459
-    },
-    "weight_delta_mean": 0.0014550251653417945,
-    "weight_delta_std": 0.0007925492827780545,
-    "weight_delta_min": 0.00043490392272360623,
-    "weight_delta_max": 0.0055356635712087154,
-    "weight_delta_count": 256
+    "act_per_channel": false
   },
   "model.output_blocks.14.0.cond_emb_layers.1": {
-    "act_delta": 0.002145506674423814,
-    "act_zero_point": 130.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0012514125555753708,
-    "weight_delta_q2": 0.0016877376474440098,
-    "weight_delta_q3": 0.002338837366551161,
-    "weight_delta_quantiles": {
-      "0.5": 0.0016877376474440098,
-      "0.99": 0.004753200337290764,
-      "0.999": 0.0067871855571866035
-    },
-    "weight_delta_mean": 0.0019003645284101367,
-    "weight_delta_std": 0.0008970998460426927,
-    "weight_delta_min": 0.0007366743520833552,
-    "weight_delta_max": 0.0070794932544231415,
-    "weight_delta_count": 128
+    "act_per_channel": false
   },
   "model.output_blocks.14.0.out_layers.3": {
-    "act_delta": 0.06204329803586006,
-    "act_zero_point": 4.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0028564059175550938,
-    "weight_delta_q2": 0.0033985646441578865,
-    "weight_delta_q3": 0.004170617554336786,
-    "weight_delta_quantiles": {
-      "0.5": 0.0033985646441578865,
-      "0.99": 0.006921327672898769,
-      "0.999": 0.0074148522689938545
-    },
-    "weight_delta_mean": 0.0036359592340886593,
-    "weight_delta_std": 0.0011348992120474577,
-    "weight_delta_min": 0.0012619170593097806,
-    "weight_delta_max": 0.007467105519026518,
-    "weight_delta_count": 128
+    "act_per_channel": false
   },
   "model.out.2": {
-    "act_delta": 0.02263263240456581,
-    "act_zero_point": 12.0,
+    "act_delta": null,
+    "act_zero_point": null,
     "n_bits": 8,
-    "act_per_channel": false,
-    "weight_delta_q1": 0.0020344036165624857,
-    "weight_delta_q2": 0.0021879260893911123,
-    "weight_delta_q3": 0.00241681607440114,
-    "weight_delta_quantiles": {
-      "0.5": 0.0021879260893911123,
-      "0.99": 0.0026365506928414106,
-      "0.999": 0.0026447908021509647
-    },
-    "weight_delta_mean": 0.002238171175122261,
-    "weight_delta_std": 0.00038488017162308097,
-    "weight_delta_min": 0.0018808812601491809,
-    "weight_delta_max": 0.0026457062922418118,
-    "weight_delta_count": 3
+    "act_per_channel": false
   }
 }

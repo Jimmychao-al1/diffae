@@ -343,7 +343,7 @@ def evaluate_fid(
     fid = 0
     
     model.train()
-    '''
+    
     barrier()
     
     if get_rank() == 0:
@@ -351,8 +351,8 @@ def evaluate_fid(
             [cache_dir, out_put_dir],
             batch_size,
             device=device,
-            dims=2048)
-            #dims=192) # for FID sensitivity experiment
+            #dims=2048)
+            dims=192) # for FID sensitivity experiment
         # remove the cache
         if remove_cache and os.path.exists(conf.generate_dir):
             shutil.rmtree(conf.generate_dir)
@@ -368,7 +368,7 @@ def evaluate_fid(
         broadcast(fid, 0)
     fid = fid.item()
     print(f'fid ({get_rank()}):', fid)
-    '''
+    
     return fid
 
 
