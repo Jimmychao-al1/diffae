@@ -27,7 +27,8 @@ from tqdm import tqdm, trange
 
 # 添加專案根目錄到 Python 路徑
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
-
+sys.path.append(".")
+sys.path.append("./model")
 from config import *
 from templates_latent import *
 from experiment import LitModel
@@ -36,13 +37,17 @@ from model.blocks import TimestepEmbedSequential
 
 # 複用 similarity_calculation.py 的工具函數
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../L1_L2_cosine')))
-from QATcode.cache_method.L1_L2_cosine.similarity_calculation import (
+
+from QATcode.quantize_ver2.quant_model_lora_v2 import (
+    SimpleDequantizer,
+    QuantModule_DiffAE_LoRA,
+    QuantModel_DiffAE_LoRA
+)
+from QATcode.quantize_ver2.sample_lora_intmodel_v2 import (
     load_diffae_model,
     create_float_quantized_model,
     load_calibration_data,
-    SimpleDequantizer,
 )
-from QATcode.quantize_ver2.quant_model_lora_v2 import QuantModule_DiffAE_LoRA
 
 # ==================== 設定 ====================
 class Config:
@@ -307,7 +312,7 @@ def main():
         diffusion_model = base_model.ema_model
         
         # 2. 創建量化模型
-        quant_model = create_float_quantized_model(
+        quant_model : QuantModel_DiffAE_LoRA = create_float_quantized_model(
             diffusion_model,
             num_steps=CONFIG.NUM_DIFFUSION_STEPS,
             lora_rank=CONFIG.LORA_RANK,

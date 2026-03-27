@@ -3,8 +3,8 @@ SVD vs Similarity 相關性分析
 
 功能：
 - 讀取 svd_metrics/<block_slug>.json（SVD 子空間距離）
-- 讀取 L1_L2_cosine/T_100/*/result_npz/<block_slug>.npz（similarity step 曲線）
-- 計算 Pearson / Spearman 相關性（L1 vs SVDdist、L1rel_rate vs SVDdist、CosDist vs SVDdist）
+- 讀取 L1_L2_cosine/T_100/v2_latest/result_npz/<block_slug>.npz（similarity step 曲線）
+- 計算 Pearson / Spearman 相關性（L1 vs SVDdist、CosDist vs SVDdist）
 - 可選：畫對齊曲線圖與散點圖
 - 輸出：correlation/<block_slug>.json
 """

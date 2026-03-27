@@ -1,24 +1,19 @@
-2026-03-26 18:29:32 [INFO] [SVD_Feature_Collector] [設定] Log 檔案: QATcode/cache_method/SVD/logs/svd_feature_model_input_blocks_0.log
-2026-03-26 18:29:32 [INFO] [SVD_Feature_Collector] ================================================================================
-2026-03-26 18:29:32 [INFO] [SVD_Feature_Collector] SVD Feature 收集開始
-2026-03-26 18:29:32 [INFO] [SVD_Feature_Collector] ================================================================================
-2026-03-26 18:29:34 [INFO] [SVD_Feature_Collector] ✅ Diff-AE 模型載入成功
-2026-03-26 18:29:35 [INFO] [SVD_Feature_Collector] ✅ 量化模型載入成功
-2026-03-26 18:29:36 [INFO] [SVD_Feature_Collector] ✅ 基礎模型設定完成
-2026-03-26 18:29:36 [INFO] [SVD_Feature_Collector] ==================================================
-2026-03-26 18:29:36 [INFO] [SVD_Feature_Collector] 啟用 SVD Feature 收集
-2026-03-26 18:29:36 [INFO] [SVD_Feature_Collector] 目標 Block: model.input_blocks.0
-2026-03-26 18:29:36 [INFO] [SVD_Feature_Collector] Target N: 32
-2026-03-26 18:29:36 [INFO] [SVD_Feature_Collector] 擴散步數: 100
-2026-03-26 18:29:36 [INFO] [SVD_Feature_Collector] ==================================================
-2026-03-26 18:29:36 [INFO] [SVD_Feature_Collector] [SVD] 初始化 SvdFeatureCollector: block=model.input_blocks.0, target_N=32, T=100
-2026-03-26 18:29:36 [INFO] [SVD_Feature_Collector] [SVD] 註冊 block hook: model.input_blocks.0
-2026-03-26 18:29:36 [INFO] [SVD_Feature_Collector] [SVD] 註冊 model step hook 完成
-2026-03-26 18:29:36 [INFO] [SVD_Feature_Collector] [SVD] eval_num_images 設為 32（1 batches）
-2026-03-26 18:29:36 [INFO] [SVD_Feature_Collector] [SVD] 開始生成與收集...
-2026-03-26 18:29:36 [INFO] [SVD_Feature_Collector] [SVD] Feature shape: C=128, H=128, W=128
-2026-03-26 18:30:03 [INFO] [SVD_Feature_Collector] [SVD] FID@32 100 steps score: 0
-2026-03-26 18:30:03 [INFO] [SVD_Feature_Collector] [SVD] Hook 已移除
-2026-03-26 18:30:03 [INFO] [SVD_Feature_Collector] [SVD] 啟用 in-memory pipeline：略過 t_{t}.pt 寫檔，直接計算 B/C
-2026-03-26 18:30:18 [INFO] [SVD_Feature_Collector] [SVD] 階段 B 完成（in-memory）
-2026-03-26 18:30:18 [ERROR] [SVD_Feature_Collector] Error: 'l2_step_mean is not a file in the archive'
+2026-03-27 10:35:47 [INFO] [SVD_Feature_Collector] [設定] Log 檔案: QATcode/cache_method/SVD/logs/svd_feature_model_input_blocks_0.log
+2026-03-27 10:35:47 [INFO] [SVD_Feature_Collector] ================================================================================
+2026-03-27 10:35:47 [INFO] [SVD_Feature_Collector] SVD Feature 收集開始
+2026-03-27 10:35:47 [INFO] [SVD_Feature_Collector] ================================================================================
+2026-03-27 10:35:49 [INFO] [SVD_Feature_Collector] ✅ Diff-AE 模型載入成功
+2026-03-27 10:35:50 [INFO] [SVD_Feature_Collector] ✅ 量化模型載入成功
+2026-03-27 10:35:50 [INFO] [SVD_Feature_Collector] ✅ 基礎模型設定完成
+2026-03-27 10:35:50 [INFO] [SVD_Feature_Collector] ==================================================
+2026-03-27 10:35:50 [INFO] [SVD_Feature_Collector] 啟用 SVD Feature 收集
+2026-03-27 10:35:50 [INFO] [SVD_Feature_Collector] 目標 Block: model.input_blocks.0
+2026-03-27 10:35:50 [INFO] [SVD_Feature_Collector] Target N: 32
+2026-03-27 10:35:50 [INFO] [SVD_Feature_Collector] 擴散步數: 100
+2026-03-27 10:35:50 [INFO] [SVD_Feature_Collector] ==================================================
+2026-03-27 10:35:50 [INFO] [SVD_Feature_Collector] [SVD] 初始化 SvdFeatureCollector: block=model.input_blocks.0, target_N=32, T=100
+2026-03-27 10:35:50 [INFO] [SVD_Feature_Collector] [SVD] 註冊 block hook: model.input_blocks.0
+2026-03-27 10:35:50 [INFO] [SVD_Feature_Collector] [SVD] 註冊 model step hook 完成
+2026-03-27 10:35:50 [INFO] [SVD_Feature_Collector] [SVD] eval_num_images 設為 32（1 batches）
+2026-03-27 10:35:50 [INFO] [SVD_Feature_Collector] [SVD] 開始生成與收集...
+2026-03-27 10:35:51 [INFO] [SVD_Feature_Collector] [SVD] Feature shape: C=128, H=128, W=128
