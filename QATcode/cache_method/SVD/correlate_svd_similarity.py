@@ -38,9 +38,17 @@ def load_svd_metrics(svd_json_path: Path) -> Dict:
 def load_similarity_npz(npz_path: Path) -> Dict:
     """
     載入 similarity NPZ
-    
+
+    Stage C 正式分析僅使用：
+    - l1_step_mean
+    - cos_step_mean
+
+    備註：
+    - 若 npz 仍包含 l1_rate_step_mean，視為上游殘留欄位，這裡不參與分析。
+
     Returns:
-        dict: 包含 l1_step_mean, cos_step_mean, step_idx, t_curr_interval
+        dict: 包含 l1_step_mean, cos_step_mean，以及可選 metadata
+              (step_idx, t_curr_interval, axis_convention)
     """
     if not npz_path.exists():
         raise FileNotFoundError(f"Similarity NPZ 不存在: {npz_path}")
@@ -55,11 +63,13 @@ def load_similarity_npz(npz_path: Path) -> Dict:
 
     step_idx = data['step_idx'] if 'step_idx' in keys else None
     t_curr_interval = data['t_curr_interval'] if 't_curr_interval' in keys else None
+    axis_convention = data['axis_convention'] if 'axis_convention' in keys else None
     return {
         'l1_step_mean': data['l1_step_mean'],
         'cos_step_mean': data['cos_step_mean'],
         'step_idx': step_idx,
         't_curr_interval': t_curr_interval,
+        'axis_convention': axis_convention,
     }
 
 
@@ -106,7 +116,8 @@ def plot_alignment(
     l1: np.ndarray,
     cos_dist: np.ndarray,
     block_slug: str,
-    output_path: Path
+    output_path: Path,
+    t_curr_interval: Optional[np.ndarray] = None,
 ):
     """
     畫對齊曲線圖
@@ -117,16 +128,19 @@ def plot_alignment(
         cos_dist: 1 - cos_step_mean 的 step 序列，長度 L
         block_slug: Block 名稱
         output_path: 輸出路徑
+        t_curr_interval: 可選，interval 的 t_curr 顯示標籤（長度 L）
     """
     fig, axes = plt.subplots(2, 1, figsize=(14, 8))
-    T = len(svd_dist)
-    x = np.arange(T)
-    # point-wise:
-    # analysis index left->right is 0..T-1 (noise->clear), display label should be t=T-1..0
-    xticks = list(range(0, T, 10))
-    if (T - 1) not in xticks:
-        xticks.append(T - 1)
-    xticklabels = [str((T - 1) - i) for i in xticks]
+    L = len(svd_dist)
+    x = np.arange(L)
+    # interval-wise 顯示：若有 t_curr_interval，優先用它；否則 fallback 為 L-1..0
+    xticks = list(range(0, L, 10))
+    if (L - 1) not in xticks:
+        xticks.append(L - 1)
+    if t_curr_interval is not None and len(t_curr_interval) == L:
+        xticklabels = [str(int(t_curr_interval[i])) for i in xticks]
+    else:
+        xticklabels = [str(int((L - 1) - i)) for i in xticks]
     
     # 上圖：L1 vs SVD
     ax1 = axes[0]
@@ -186,9 +200,9 @@ def plot_scatter(
     畫散點圖
     
     Args:
-        svd_dist: SVD 子空間距離，長度 T
-        l1: L1 relative change，長度 T (L1 step mean)
-        cos_dist: 1 - Cosine，長度 T
+        svd_dist: SVD 子空間距離（interval-wise），長度 L
+        l1: L1 relative change（interval-wise），長度 L
+        cos_dist: cosine distance = 1 - cosine similarity（interval-wise），長度 L
         block_slug: Block 名稱
         output_path: 輸出路徑
         l1_corr: L1 vs SVD 的相關性統計
@@ -249,23 +263,31 @@ def process_single_correlation(
     print(f"{'='*60}")
     print(f"T={T}, rank_r={svd_data['rank_r']}")
     
-    # 2. 載入 similarity（interval-wise: 長度通常為 T-1）
+    # 2. 載入 similarity（interval-wise）
     sim_data = load_similarity_npz(similarity_npz_path)
-    l1_step_mean = sim_data['l1_step_mean']
-    cos_step_mean = sim_data['cos_step_mean']
+    l1_step_mean = np.asarray(sim_data['l1_step_mean'])
+    cos_step_mean = np.asarray(sim_data['cos_step_mean'])
+    t_curr_interval = sim_data.get('t_curr_interval', None)
     
-    # 3. 檢查長度
+    # 3. 檢查長度與對齊
     interval_len = len(l1_step_mean)
-    if len(cos_step_mean) != interval_len:
+    lengths = [interval_len, len(cos_step_mean)]
+    if t_curr_interval is not None:
+        t_curr_interval = np.asarray(t_curr_interval)
+        lengths.append(len(t_curr_interval))
+    if len(set(lengths)) != 1:
         print(
             "警告：similarity 各序列長度不一致，將取最小長度對齊 "
-            f"(l1={len(l1_step_mean)}, cos={len(cos_step_mean)})"
+            f"(l1={len(l1_step_mean)}, cos={len(cos_step_mean)}, "
+            f"t_curr_interval={len(t_curr_interval) if t_curr_interval is not None else 'None'})"
         )
-    min_interval_len = min(len(l1_step_mean), len(cos_step_mean))
+    min_interval_len = min(lengths)
     if min_interval_len <= 0:
         raise ValueError("Similarity step 序列長度為 0，無法計算相關性")
 
-    # subspace_dist[t]（t>=1）對應 interval index j=t-1，所以取 svd_dist[1:1+L]
+    # subspace_dist[t] 對應 transition (t-1 -> t)；subspace_dist[0]=0 為初始化值。
+    # similarity interval-wise 第 j 個元素對應 current timestep t_curr（T=100 時通常是 98..0）。
+    # 對齊時使用 subspace_dist[1:] 與 similarity 序列做共同最短長度裁切。
     if len(svd_dist) - 1 < min_interval_len:
         print(
             f"警告：SVD interval 長度不足，SVD 可用={len(svd_dist)-1}, similarity={min_interval_len}，"
@@ -278,6 +300,8 @@ def process_single_correlation(
     svd_dist_seq = svd_dist[1:1 + L]
     l1_seq = l1_step_mean[:L]
     cos_dist_seq = 1.0 - cos_step_mean[:L]  # Cosine distance = 1 - CosSim
+    if t_curr_interval is not None:
+        t_curr_interval = t_curr_interval[:L]
     
     # 5. 計算相關性
     print("\n計算相關性...")
@@ -301,11 +325,14 @@ def process_single_correlation(
         "T_svd": int(T),
         "interval_length_used": int(L),
         "rank_r": svd_data['rank_r'],
+        "x_axis_def": "interval-wise t_curr (left=noise side, right=clear side)",
         "correlation": {
             "L1_vs_SVD": l1_vs_svd,
             "CosDist_vs_SVD": cos_vs_svd
         }
     }
+    if t_curr_interval is not None:
+        result["t_curr_interval"] = t_curr_interval.tolist()
     
     with open(output_json, 'w') as f:
         json.dump(result, f, indent=2)
@@ -319,7 +346,7 @@ def process_single_correlation(
         
         # 對齊曲線圖
         alignment_path = figures_dir / f"{block_slug}_alignment.png"
-        plot_alignment(svd_dist_seq, l1_seq, cos_dist_seq, block_slug, alignment_path)
+        plot_alignment(svd_dist_seq, l1_seq, cos_dist_seq, block_slug, alignment_path, t_curr_interval=t_curr_interval)
         
         # 散點圖
         scatter_path = figures_dir / f"{block_slug}_scatter.png"

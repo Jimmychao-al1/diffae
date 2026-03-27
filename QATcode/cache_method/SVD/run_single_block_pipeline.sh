@@ -5,6 +5,7 @@
 #   $2 = 樣本數 N（選填，預設 32）
 # 說明：
 #   - 低磁碟模式：不寫 svd_features/*.pt，A 收集後直接在記憶體跑 B/C
+#   - similarity NPZ 正式路徑：QATcode/cache_method/L1_L2_cosine/T_100/v2_latest/result_npz
 
 set -e
 

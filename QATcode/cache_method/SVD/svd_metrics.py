@@ -54,7 +54,7 @@ def load_features(feature_dir: Path) -> Tuple[List[torch.Tensor], Dict]:
 
 def compute_covariance_eigen(X: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
     """
-    計算 channel covariance matrix 的 eigenvalues 與 eigenvectors
+    計算 channel second-moment matrix（uncentered covariance-like）的 eigenvalues 與 eigenvectors
     
     Args:
         X: shape (N, C, H, W)
@@ -69,7 +69,8 @@ def compute_covariance_eigen(X: torch.Tensor) -> Tuple[torch.Tensor, torch.Tenso
     # Reshape: (C, M)
     X_reshaped = X.permute(1, 0, 2, 3).reshape(C, M).double()
     
-    # Uncentered Second Moment Covariance Matrix: Σ = (X @ X^T) / M
+    # Uncentered second-moment matrix（未做中心化）
+    # Σ = (X @ X^T) / M
     Sigma = (X_reshaped @ X_reshaped.T) / M
     
     # Eigen decomposition（對稱矩陣，用 eigh）
@@ -222,7 +223,7 @@ def process_features_in_memory(
 
     # 3. 計算子空間距離
     print("\n計算子空間距離...")
-    subspace_dist = [0.0]  # t=0 填 0
+    subspace_dist = [0.0]  # subspace_dist[0] 為初始化；真正 interval distance 從 t=1 開始
 
     for t in tqdm(range(1, T), desc="Subspace distance"):
         U_t = eigenvectors_list[t]
@@ -231,6 +232,7 @@ def process_features_in_memory(
         subspace_dist.append(dist)
 
     print(f"子空間距離統計: mean={np.mean(subspace_dist[1:]):.6f}, max={np.max(subspace_dist[1:]):.6f}, min={np.min(subspace_dist[1:]):.6f}")
+    print("註：與 similarity 對齊時使用 subspace_dist[1:]（對應 interval）")
 
     # 4. 可選：計算 energy ratio
     energy_ratio = None
@@ -335,12 +337,13 @@ def process_feature_buffers_in_memory(
     print(f"實際 cumulative energy: {actual_energy:.6f}")
 
     print("\n計算子空間距離...")
-    subspace_dist = [0.0]
+    subspace_dist = [0.0]  # subspace_dist[0] 為初始化；真正 interval distance 從 t=1 開始
     for t in tqdm(range(1, T), desc="Subspace distance"):
         dist = compute_subspace_distance(eigenvectors_list[t], eigenvectors_list[t - 1], rank_r)
         subspace_dist.append(dist)
 
     print(f"子空間距離統計: mean={np.mean(subspace_dist[1:]):.6f}, max={np.max(subspace_dist[1:]):.6f}, min={np.min(subspace_dist[1:]):.6f}")
+    print("註：與 similarity 對齊時使用 subspace_dist[1:]（對應 interval）")
 
     energy_ratio = None
     if compute_energy:

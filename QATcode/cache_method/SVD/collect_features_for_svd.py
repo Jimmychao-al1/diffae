@@ -121,7 +121,11 @@ class SvdFeatureCollector:
     """
     SVD Feature 收集器
     
-    對單一 block 在每個 timestep 收集 feature，最終寫出 (target_N, C, H, W) 的 tensor
+    對單一 block 在每個 timestep 收集 feature，最終寫出 (target_N, C, H, W) 的 tensor。
+
+    時間軸約定（與 similarity pipeline 一致）：
+    - feature_buffers 的 key 使用 analysis index: 0..T-1
+    - 顯示/語意上的 DDIM timestep 可由 t_ddim = (T-1) - analysis_index 對應
     """
     
     def __init__(
@@ -145,6 +149,8 @@ class SvdFeatureCollector:
         self.hooks = []
         
         # Step 追蹤
+        # _step_counter: analysis index（0..T-1），實際用來索引 feature_buffers
+        # current_step_idx: 顯示用 DDIM timestep（T-1..0），不作為 buffer key
         self._step_counter = -1
         self.current_step_idx = None
         
@@ -193,7 +199,7 @@ class SvdFeatureCollector:
         LOGGER.info("[SVD] Hook 已移除")
     
     def _create_step_pre_hook(self):
-        """創建 step pre-hook"""
+        """創建 step pre-hook：更新 analysis index 與顯示用 DDIM timestep。"""
         def pre_hook(module, args, kwargs):
             self._step_counter = (self._step_counter + 1) % self.max_timesteps
             self.current_step_idx = self.max_timesteps - 1 - self._step_counter
@@ -213,7 +219,7 @@ class SvdFeatureCollector:
             if self.feature_counts[step_idx] >= self.target_N:
                 return
             
-            # Detach 並立即移到 CPU（避免 GPU OOM）
+            # Hook 當下就 detach + 搬到 CPU，以避免 GPU OOM
             out = output.detach().cpu()
 
             remain = self.target_N - self.feature_counts[step_idx]
@@ -292,7 +298,9 @@ class SvdFeatureCollector:
             "T": self.max_timesteps,
             "C": self.C,
             "H": self.H,
-            "W": self.W
+            "W": self.W,
+            "index_convention": "analysis_index: 0..T-1",
+            "display_t_mapping": "display_ddim_t = (T-1) - analysis_index",
         }
         return features, meta
 

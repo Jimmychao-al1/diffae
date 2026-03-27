@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # 逐一執行所有 block 的單 block 流程（A -> B -> C）
 # 預設低磁碟模式：每個 block 不寫 svd_features/*.pt（in-memory 直算）
+# similarity NPZ 路徑以 run_single_block_pipeline.sh 的正式設定為準：
+# QATcode/cache_method/L1_L2_cosine/T_100/v2_latest/result_npz
 #
 # 用法：
 #   bash QATcode/cache_method/SVD/run_svd_all_blocks_single_pipeline.sh [target_N] [start_from_block]
