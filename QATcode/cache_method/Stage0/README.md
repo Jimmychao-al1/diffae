@@ -1,6 +1,6 @@
 # Stage-0E: Loader + Normalization
 
-此模組用於將 Stage-0 的原始實驗數據（T=100）轉換為正規化的 interval-wise 指標，供 Stage-1 cache scheduler 使用。
+此模組用於將 Stage-0 的原始實驗資料（T=100）轉換為正規化的 interval-wise 指標，供 Stage-1 cache scheduler 使用。
 
 ## 功能
 
@@ -75,7 +75,7 @@ run_stage0e(
 - `l1_interval_norm[b, 50]` 等三檔同欄
 - DDIM 上對應的是 **t_ddim：49→48** 這一步的特徵差（不是 t=50→51）
 
-### 原始數據的索引對應
+### 原始資料的索引對應
 
 | 指標 | 原始格式 | Interval i 的來源 |
 |------|---------|------------------|
@@ -97,10 +97,10 @@ run_stage0e(
    - 內部轉換為：`model.input_blocks.0`
    - FID 使用：`encoder_layer_0`（自動 mapping）
 
-2. **FID 數據要求**：
+2. **FID 資料要求**：
    - 必須包含 `"T100"` 或 `"100steps"` 的實驗結果
-   - 需要 k=3, 4, 5 的數據
-   - 如果某些 block 缺少 FID 數據，對應權重設為 0
+   - 需要 k=3, 4, 5 的資料
+   - 如果某些 block 缺少 FID 資料，對應權重設為 0
 
 3. **Cosine distance 修正**：
    - 原始 `cos_step_mean` 是 **similarity**
@@ -111,7 +111,7 @@ run_stage0e(
 ```python
 import numpy as np
 
-# 載入數據
+# 載入資料
 names = np.load('stage0e_output/block_names.npy', allow_pickle=True)
 l1 = np.load('stage0e_output/l1_interval_norm.npy')
 cos = np.load('stage0e_output/cosdist_interval_norm.npy')

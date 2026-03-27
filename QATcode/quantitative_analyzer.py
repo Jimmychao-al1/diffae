@@ -1,6 +1,6 @@
 """
 Q-DiffAE Quantitative Analysis Module
-用于分析模型大小、参数量、MACs、生成时间和 Data Transfer
+用於分析模型大小、參數量、MACs、生成時間和 Data Transfer
 """
 
 import torch
@@ -22,7 +22,7 @@ class QuantitativeAnalyzer:
         self.log_file = log_file
         self.results = {}
         
-        # 设置日志
+        # 設置日誌
         handler = logging.FileHandler(log_file)
         handler.setFormatter(logging.Formatter('%(asctime)s [%(levelname)s] %(message)s'))
         logger.addHandler(handler)
@@ -30,22 +30,22 @@ class QuantitativeAnalyzer:
     
     def analyze_model_size_and_params(self, model: nn.Module, model_name: str) -> Dict:
         """
-        分析模型大小和参数量
+        分析模型大小和參數量
         
         Returns:
             {
                 'total_params': int,
                 'trainable_params': int,
                 'model_size_mb': float,
-                'checkpoint_size_mb': float,  # 如果可能的话
-                'layer_breakdown': Dict[str, int]  # 各层参数量
+                'checkpoint_size_mb': float,  # 如果可能的話
+                'layer_breakdown': Dict[str, int]  # 各層參數量
             }
         """
         total_params = 0
         trainable_params = 0
         layer_breakdown = {}
         
-        # 计算参数量
+        # 計算參數量
         for name, param in model.named_parameters():
             num_params = param.numel()
             total_params += num_params
@@ -53,25 +53,25 @@ class QuantitativeAnalyzer:
                 trainable_params += num_params
             layer_breakdown[name] = num_params
         
-        # 计算模型大小（假设 FP32）
+        # 計算模型大小（假設 FP32）
         model_size_mb = total_params * 4 / (1024 ** 2)  # FP32 = 4 bytes
         
-        # 对于量化模型，计算实际存储大小
+        # 對於量化模型，計算實際存儲大小
         quantized_size_mb = 0
         quantized_params = 0
         for name, module in model.named_modules():
             if hasattr(module, 'weight') and module.weight is not None:
                 if isinstance(module.weight, torch.Tensor):
                     if module.weight.dtype == torch.uint8:
-                        # INT8 量化权重
+                        # INT8 量化權重
                         quantized_size_mb += module.weight.numel() * 1 / (1024 ** 2)
                         quantized_params += module.weight.numel()
                     else:
-                        # FP32 权重
+                        # FP32 權重
                         quantized_size_mb += module.weight.numel() * 4 / (1024 ** 2)
                         quantized_params += module.weight.numel()
         
-        # 如果没有量化权重，使用原始大小
+        # 如果沒有量化權重，使用原始大小
         if quantized_size_mb == 0:
             quantized_size_mb = model_size_mb
         
@@ -99,12 +99,12 @@ class QuantitativeAnalyzer:
                       timestep: int = 0, use_cache: bool = False,
                       cache_scheduler: Optional[Dict] = None) -> Dict:
         """
-        计算 MACs (Multiply-Accumulate Operations)
+        計算 MACs (Multiply-Accumulate Operations)
         
         Args:
             model: 模型
-            input_shape: 输入形状 (C, H, W)
-            timestep: 时间步
+            input_shape: 輸入形狀 (C, H, W)
+            timestep: 時間步
             use_cache: 是否使用 cache
             cache_scheduler: cache scheduler 字典
             
@@ -127,19 +127,19 @@ class QuantitativeAnalyzer:
         device = next(model.parameters()).device
         batch_size = 1
         
-        # 创建输入
+        # 創建輸入
         x = torch.randn(batch_size, *input_shape, device=device)
         t = torch.tensor([timestep] * batch_size, device=device)
         
-        # 准备 model_kwargs
+        # 準備 model_kwargs
         model_kwargs = {}
         if use_cache and cache_scheduler is not None:
             model_kwargs['cached_data'] = {}
-            model_kwargs['cached_scheduler'] = [1] * len(cache_scheduler)  # 假设全部重新计算
+            model_kwargs['cached_scheduler'] = [1] * len(cache_scheduler)  # 假設全部重新計算
         
         if USE_FVCORE:
             try:
-                # 计算单步 MACs
+                # 計算單步 MACs
                 flops_dict, _ = flop_count(model, (x, t), **model_kwargs)
                 total_macs = sum(flops_dict.values())
                 layer_macs = {k: int(v) for k, v in flops_dict.items()}
@@ -148,17 +148,17 @@ class QuantitativeAnalyzer:
                 USE_FVCORE = False
         
         if not USE_FVCORE:
-            # 手动计算 MACs
+            # 手動計算 MACs
             total_macs, layer_macs = self._manual_macs_calculation(model, input_shape)
         
-        # 计算所有 timestep 的 MACs
-        num_timesteps = 100 if timestep == 0 else timestep + 1  # 假设
+        # 計算所有 timestep 的 MACs
+        num_timesteps = 100 if timestep == 0 else timestep + 1  # 假設
         total_macs_all = total_macs * num_timesteps
         
-        # 如果使用 cache，计算减少的 MACs
+        # 如果使用 cache，計算減少的 MACs
         cache_reduction_ratio = 0.0
         if use_cache and cache_scheduler is not None:
-            # 计算实际需要计算的 layer 数量
+            # 計算實際需要計算的 layer 數量
             total_layers = len(cache_scheduler)
             recompute_layers = sum(1 for layer_timesteps in cache_scheduler.values() 
                                  if timestep in layer_timesteps)
@@ -184,21 +184,21 @@ class QuantitativeAnalyzer:
         return result
     
     def _manual_macs_calculation(self, model: nn.Module, input_shape: Tuple) -> Tuple[int, Dict]:
-        """手动计算 MACs（简化版本）"""
+        """手動計算 MACs（簡化版本）"""
         total_macs = 0
         layer_macs = {}
         
-        # 遍历模型计算各层 MACs
+        # 遍歷模型計算各層 MACs
         for name, module in model.named_modules():
             macs = 0
             if isinstance(module, nn.Conv2d):
                 # Conv2d: output_size * kernel_size * in_channels
-                # 简化：假设 output_size = input_size (stride=1, padding=same)
+                # 簡化：假設 output_size = input_size (stride=1, padding=same)
                 if hasattr(module, 'weight') and module.weight is not None:
                     kernel_size = module.kernel_size[0] * module.kernel_size[1] if isinstance(module.kernel_size, tuple) else module.kernel_size ** 2
                     in_channels = module.in_channels
                     out_channels = module.out_channels
-                    # 假设 output size = input size (简化)
+                    # 假設 output size = input size (簡化)
                     output_size = input_shape[1] * input_shape[2]  # H * W
                     macs = output_size * kernel_size * in_channels * out_channels
             elif isinstance(module, nn.Linear):
@@ -215,7 +215,7 @@ class QuantitativeAnalyzer:
                                 device=None, latent_sampler=None,
                                 conds_mean=None, conds_std=None) -> Dict:
         """
-        测量生成时间
+        測量生成時間
         
         Returns:
             {
@@ -233,20 +233,20 @@ class QuantitativeAnalyzer:
         
         logger.info(f"Measuring generation time for {num_samples} samples...")
         
-        # 准备数据
+        # 準備資料
         from renderer import render_uncondition
         
         for i in range(num_samples):
             torch.cuda.synchronize() if torch.cuda.is_available() else None
             start_time = time.time()
             
-            # 生成一张图片
+            # 生成一張圖片
             with torch.no_grad():
                 try:
-                    # 创建随机噪声
+                    # 創建隨機噪聲
                     x_T = torch.randn(1, 3, *image_size, device=device)
                     
-                    # 使用 render_uncondition 生成图片
+                    # 使用 render_uncondition 生成圖片
                     _ = render_uncondition(
                         conf=conf,
                         model=model,
@@ -301,22 +301,22 @@ class QuantitativeAnalyzer:
     def analyze_data_transfer(self, model: nn.Module, input_shape: Tuple[int, int, int],
                              batch_size: int = 1, cali_images=None, cali_t=None, cali_y=None) -> Dict:
         """
-        分析各层的 Data Transfer（输入输出大小）
+        分析各層的 Data Transfer（輸入/輸出大小）
         
         Args:
             model: 模型
-            input_shape: 输入形状 (C, H, W)
+            input_shape: 輸入形狀 (C, H, W)
             batch_size: batch size
-            cali_images: 校正数据 images（如果提供，使用校正数据做 forward pass）
-            cali_t: 校正数据 timesteps
-            cali_y: 校正数据 conditions
+            cali_images: 校正資料 images（如果提供，使用校正資料做 forward pass）
+            cali_t: 校正資料 timesteps
+            cali_y: 校正資料 conditions
         
         Returns:
             {
                 'total_input_size_mb': float,
                 'total_output_size_mb': float,
                 'total_transfer_mb': float,
-                'layer_breakdown': Dict[str, Dict]  # 每层的输入输出大小
+                'layer_breakdown': Dict[str, Dict]  # 每層的輸入/輸出大小
             }
         """
         device = next(model.parameters()).device
@@ -337,28 +337,28 @@ class QuantitativeAnalyzer:
                 }
             return hook
         
-        # 注册 hooks（只针对量化后的 Conv2d 和 Linear）
+        # 註冊 hooks（只針對量化後的 Conv2d 和 Linear）
         for name, module in model.named_modules():
-            # 检查是否是量化模块中的 Conv2d 或 Linear
+            # 檢查是否是量化模組中的 Conv2d 或 Linear
             if isinstance(module, (nn.Conv2d, nn.Linear)):
                 hooks.append(module.register_forward_hook(hook_fn(name)))
         
-        # Forward pass - 使用校正数据（参考量化模型建立时的做法）
+        # Forward pass - 使用校正資料（參考量化模型建立時的做法）
         try:
             with torch.no_grad():
                 if cali_images is not None and cali_t is not None and cali_y is not None:
-                    # 使用校正数据（参考 sample_lora_intmodel.py 中的做法）
+                    # 使用校正資料（參考 sample_lora_intmodel.py 中的做法）
                     _ = model(x=cali_images[:batch_size].to(device), 
                              t=cali_t[:batch_size].to(device), 
                              cond=cali_y[:batch_size].to(device))
                 else:
-                    # 如果没有提供校正数据，使用随机数据
+                    # 如果沒有提供校正資料，使用隨機資料
                     x = torch.randn(batch_size, *input_shape, device=device)
                     t = torch.tensor([0] * batch_size, device=device)
-                    # 尝试使用 cond 参数
+                    # 嘗試使用 cond 參數
                     try:
-                        # 生成随机 cond（如果是 latent diffusion）
-                        cond = torch.randn(batch_size, 512, device=device)  # 假设 latent dim = 512
+                        # 生成隨機 cond（如果是 latent diffusion）
+                        cond = torch.randn(batch_size, 512, device=device)  # 假設 latent dim = 512
                         _ = model(x=x, t=t, cond=cond)
                     except:
                         try:
@@ -383,7 +383,7 @@ class QuantitativeAnalyzer:
         for hook in hooks:
             hook.remove()
         
-        # 计算总和
+        # 計算總和
         total_input = sum(info['input_size_mb'] for info in layer_transfers.values())
         total_output = sum(info['output_size_mb'] for info in layer_transfers.values())
         total_transfer = total_input + total_output
@@ -405,22 +405,22 @@ class QuantitativeAnalyzer:
     def analyze_timestep_embed_sequential_transfer(self, model: nn.Module, input_shape: Tuple[int, int, int],
                                                    batch_size: int = 1, cali_images=None, cali_t=None, cali_y=None) -> Dict:
         """
-        分析所有 TimestepEmbedSequential 的 Data Transfer（輸入輸出大小）
+        分析所有 TimestepEmbedSequential 的 Data Transfer（輸入/輸出大小）
         
         Args:
             model: 模型
             input_shape: 輸入形狀 (C, H, W)
             batch_size: batch size
-            cali_images: 校正數據 images
-            cali_t: 校正數據 timesteps
-            cali_y: 校正數據 conditions
+            cali_images: 校正資料 images
+            cali_t: 校正資料 timesteps
+            cali_y: 校正資料 conditions
         
         Returns:
             {
                 'total_input_size_mb': float,
                 'total_output_size_mb': float,
                 'total_transfer_mb': float,
-                'layer_breakdown': Dict[str, Dict]  # 每層的輸入輸出大小
+                'layer_breakdown': Dict[str, Dict]  # 每層的輸入/輸出大小
             }
         """
         from model.blocks import TimestepEmbedSequential
@@ -513,7 +513,7 @@ class QuantitativeAnalyzer:
                                          batch_size: int = 1, num_steps: int = 20,
                                          cali_images=None, cali_t=None, cali_y=None) -> Dict:
         """
-        分析所有被量化的 Conv2d/Linear 的 Data Transfer（輸入輸出大小）
+        分析所有被量化的 Conv2d/Linear 的 Data Transfer（輸入/輸出大小）
         只追蹤 QuantModule_DiffAE_LoRA 和 QuantModule
         
         Args:
@@ -521,9 +521,9 @@ class QuantitativeAnalyzer:
             input_shape: 輸入形狀 (C, H, W)
             batch_size: batch size
             num_steps: 擴散步數，用於計算所有 timestep 的總和
-            cali_images: 校正數據 images
-            cali_t: 校正數據 timesteps
-            cali_y: 校正數據 conditions
+            cali_images: 校正資料 images
+            cali_t: 校正資料 timesteps
+            cali_y: 校正資料 conditions
         
         Returns:
             {
@@ -534,7 +534,7 @@ class QuantitativeAnalyzer:
                 'single_timestep_output_mb': float, # 單一 timestep
                 'single_timestep_transfer_mb': float, # 單一 timestep
                 'num_steps': int,
-                'layer_breakdown': Dict[str, Dict]  # 每層的輸入輸出大小（所有 timestep 總和）
+                'layer_breakdown': Dict[str, Dict]  # 每層的輸入/輸出大小（所有 timestep 總和）
             }
         """
         try:
@@ -669,9 +669,9 @@ class QuantitativeAnalyzer:
             input_shape: 輸入形狀 (C, H, W)
             batch_size: batch size
             num_steps: 擴散步數，用於計算所有 timestep 的總和
-            cali_images: 校正數據 images
-            cali_t: 校正數據 timesteps
-            cali_y: 校正數據 conditions
+            cali_images: 校正資料 images
+            cali_t: 校正資料 timesteps
+            cali_y: 校正資料 conditions
         
         Returns:
             {
@@ -818,8 +818,8 @@ class QuantitativeAnalyzer:
                                                  conds_mean=None, conds_std=None,
                                                  batch_size: int = 1, cali_images=None, cali_t=None, cali_y=None) -> Dict:
         """
-        分析使用 cache 後，有執行計算的量化層的 Data Transfer（輸入輸出大小）
-        需要模擬整個擴散過程，追蹤每個 timestep 哪些層有執行計算
+        分析使用 cache 後，有執行運算的量化層的 Data Transfer（輸入/輸出大小）
+        需要模擬完整擴散流程，追蹤每個 timestep 哪些層有執行運算
         
         Args:
             model: 模型
@@ -827,16 +827,16 @@ class QuantitativeAnalyzer:
             cache_scheduler: cache scheduler 字典，格式為 {layer_name: Set[int]}，表示哪些 timestep 需要重新計算
             num_steps: 擴散步數
             batch_size: batch size
-            cali_images: 校正數據 images
-            cali_t: 校正數據 timesteps
-            cali_y: 校正數據 conditions
+            cali_images: 校正資料 images
+            cali_t: 校正資料 timesteps
+            cali_y: 校正資料 conditions
         
         Returns:
             {
                 'total_input_size_mb': float,
                 'total_output_size_mb': float,
                 'total_transfer_mb': float,
-                'layer_breakdown': Dict[str, Dict]  # 每層的輸入輸出大小（累積所有 timestep）
+                'layer_breakdown': Dict[str, Dict]  # 每層的輸入/輸出大小（累積所有 timestep）
                 'timestep_breakdown': Dict[int, Dict]  # 每個 timestep 的統計
             }
         """
@@ -855,7 +855,7 @@ class QuantitativeAnalyzer:
         
         device = next(model.parameters()).device
         
-        # 建立 layer name 到 module 的映射，以及 layer name 到 cache scheduler key 的映射
+        # 建立 layer name 到 module 的對應映射，以及 layer name 到 cache scheduler key 的對應映射
         layer_name_to_module = {}
         layer_name_to_cache_key = {}
         
@@ -864,7 +864,7 @@ class QuantitativeAnalyzer:
             if isinstance(module, (QuantModule_DiffAE_LoRA, QuantModule)):
                 layer_name_to_module[name] = module
         
-        # 解析 cache_scheduler（可能是字符串格式的集合）
+        # 解析 cache_scheduler（可能是字串格式的集合）
         if cache_scheduler is None:
             logger.warning("cache_scheduler is None, returning empty result")
             return {
@@ -875,11 +875,11 @@ class QuantitativeAnalyzer:
                 'timestep_breakdown': {}
             }
         
-        # 轉換 cache_scheduler 格式：如果是字符串，解析為 Set
+        # 轉換 cache_scheduler 格式：如果是字串，解析為 Set
         parsed_cache_scheduler = {}
         for key, value in cache_scheduler.items():
             if isinstance(value, str):
-                # 解析字符串格式的集合，如 "{0, 1, 2, 3}"
+                # 解析字串格式的集合，如 "{0, 1, 2, 3}"
                 import ast
                 try:
                     parsed_cache_scheduler[key] = ast.literal_eval(value)
@@ -898,7 +898,7 @@ class QuantitativeAnalyzer:
         # 我們需要追蹤每個 TimestepEmbedSequential 內部的量化層
         from model.blocks import TimestepEmbedSequential
         
-        # 建立 TimestepEmbedSequential 到其內部量化層的映射
+        # 建立 TimestepEmbedSequential 到其內部量化層的對應映射
         sequential_to_quantized_layers = {}
         for seq_name, seq_module in model.named_modules():
             if isinstance(seq_module, TimestepEmbedSequential):
@@ -910,24 +910,24 @@ class QuantitativeAnalyzer:
                         quantized_in_seq.append(layer_name)
                 sequential_to_quantized_layers[seq_name] = quantized_in_seq
         
-        # 建立 cache scheduler key 到 TimestepEmbedSequential name 的映射
-        # 這需要根據實際的命名規則來匹配
+        # 建立 cache scheduler key 到 TimestepEmbedSequential name 的對應映射
+        # 這需要根據實際的命名規則來對應
         cache_key_to_sequential = {}
         for cache_key in cache_scheduler.keys():
-            # 嘗試匹配 TimestepEmbedSequential
+            # 嘗試對應 TimestepEmbedSequential
             # 例如 "encoder_layer_0" 可能對應到 "model.input_blocks.0" 等
-            # 這裡需要根據實際的模型結構來調整
+            # 此處需要根據實際的模型結構來調整
             matched_sequential = None
             for seq_name in sequential_to_quantized_layers.keys():
-                # 簡化匹配邏輯：根據 cache_key 和 seq_name 的結構來匹配
+                # 簡化對應邏輯：根據 cache_key 和 seq_name 的結構來對應
                 # 實際實現可能需要更複雜的邏輯
                 if 'input_blocks' in seq_name or 'output_blocks' in seq_name or 'middle_block' in seq_name:
-                    # 提取索引
+                    # 擷取索引
                     try:
                         if 'encoder_layer' in cache_key:
                             idx = int(cache_key.split('_')[-1])
                             if 'input_blocks' in seq_name:
-                                # 需要根據實際結構來匹配
+                                # 需要根據實際結構來對應
                                 matched_sequential = seq_name
                         elif 'decoder_layer' in cache_key:
                             idx = int(cache_key.split('_')[-1])
@@ -941,8 +941,8 @@ class QuantitativeAnalyzer:
             if matched_sequential:
                 cache_key_to_sequential[cache_key] = matched_sequential
         
-        # 如果無法建立映射，使用簡化方法：追蹤所有量化層，但只在對應的 timestep 記錄
-        # 這裡我們使用一個更簡單的方法：追蹤所有量化層，並在 forward pass 時檢查是否應該記錄
+        # 若無法建立對應映射，使用簡化方法：追蹤所有量化層，但只在對應的 timestep 紀錄
+        # 此處我們使用一個更簡單的方法：追蹤所有量化層，並在 forward pass 時檢查是否應該紀錄
         
         layer_transfers = {}  # {layer_name: {'input_size_mb': float, 'output_size_mb': float, ...}}
         timestep_transfers = {}  # {timestep: {'layers': int, 'input_size_mb': float, ...}}
@@ -952,10 +952,10 @@ class QuantitativeAnalyzer:
         
         def hook_fn(name, cache_key=None):
             def hook(module, input, output):
-                # 檢查當前 timestep 是否需要記錄這個層
+                # 檢查當前 timestep 是否需要紀錄此層
                 should_record = True
                 if cache_key is not None and cache_scheduler is not None:
-                    # 檢查這個 cache_key 在當前 timestep 是否需要重新計算
+                    # 檢查此 cache_key 在當前 timestep 是否需要重新計算
                     if cache_key in cache_scheduler:
                         recompute_timesteps = cache_scheduler[cache_key]
                         # 轉換 timestep：擴散過程是從 T-1 到 0，但 cache_scheduler 可能是正序
@@ -981,7 +981,7 @@ class QuantitativeAnalyzer:
                     layer_transfers[name]['total_size_mb'] += (input_size + output_size) / (1024 ** 2)
                     layer_transfers[name]['execution_count'] += 1
                     
-                    # 記錄 timestep 統計
+                    # 紀錄 timestep 統計
                     t = current_timestep[0]
                     if t not in timestep_transfers:
                         timestep_transfers[t] = {
@@ -1008,14 +1008,14 @@ class QuantitativeAnalyzer:
                         break
                 hooks.append(module.register_forward_hook(hook_fn(name, cache_key)))
         
-        # 模擬整個擴散過程
+        # 模擬完整擴散流程
         logger.info("Simulating diffusion process with cache scheduler...")
         
-        # 使用 sampler 運行完整的擴散過程
+        # 使用 sampler 執行完整擴散流程
         try:
             with torch.no_grad():
                 if sampler is not None and conf is not None:
-                    # 使用實際的擴散過程
+                    # 使用實際擴散流程
                     from renderer import render_uncondition
                     
                     # 準備輸入
@@ -1028,7 +1028,7 @@ class QuantitativeAnalyzer:
                     original_forward = model.forward
                     
                     def wrapped_forward(*args, **kwargs):
-                        # 從參數中提取 timestep
+                        # 從參數中擷取 timestep
                         timestep = None
                         if len(args) >= 2:
                             timestep = args[1]
@@ -1055,7 +1055,7 @@ class QuantitativeAnalyzer:
                     model.forward = wrapped_forward
                     
                     try:
-                        # 運行擴散過程
+                        # 執行擴散流程
                         _ = render_uncondition(
                             conf=conf,
                             model=model,
@@ -1070,7 +1070,7 @@ class QuantitativeAnalyzer:
                         # 恢復原始 forward 方法
                         model.forward = original_forward
                 else:
-                    # 簡化實現：運行單次 forward pass
+                    # 簡化實現：執行單次 forward pass
                     logger.warning("sampler or conf not provided, using simplified single forward pass")
                     if cali_images is not None and cali_t is not None and cali_y is not None:
                         current_timestep[0] = cali_t[0].item() if torch.is_tensor(cali_t[0]) else cali_t[0]
@@ -1134,19 +1134,19 @@ class QuantitativeAnalyzer:
                          skip_original_time_and_transfer: bool = False,
                          cali_images=None, cali_t=None, cali_y=None) -> Dict:
         """
-        运行完整分析
+        執行完整分析
         
         Args:
-            original_model: 原始 FP32 模型（可以为 None，如果跳过 original 分析）
+            original_model: 原始 FP32 模型（可以爲 None，如果跳過 original 分析）
             quantized_model: 量化模型
-            sampler: 采样器
-            conf: 配置对象
+            sampler: 採樣器
+            conf: 配置對象
             config: 配置字典，包含 steps, cache_method, threshold 等
-            skip_original_time_and_transfer: 如果为 True，跳过原始模型的生成时间和 data transfer 分析
-                                            （用于同一组 step+method 只执行一次）
-            cali_images: 校正数据 images（用于 data transfer 分析）
-            cali_t: 校正数据 timesteps
-            cali_y: 校正数据 conditions
+            skip_original_time_and_transfer: 如果爲 True，跳過原始模型的生成時間和 data transfer 分析
+                                            （用於同一組 step+method 只執行一次）
+            cali_images: 校正資料 images（用於 data transfer 分析）
+            cali_t: 校正資料 timesteps
+            cali_y: 校正資料 conditions
         """
         logger.info("=" * 80)
         logger.info("Starting Full Quantitative Analysis")
@@ -1158,20 +1158,20 @@ class QuantitativeAnalyzer:
             'timestamp': time.strftime('%Y-%m-%d %H:%M:%S')
         }
         
-        # 1. 模型大小和参数量
+        # 1. 模型大小和參數量
         logger.info("\n[1/4] Analyzing model size and parameters...")
         if original_model is not None:
             results['original_model'] = self.analyze_model_size_and_params(
                 original_model, 'Original Diff-AE'
             )
         else:
-            # 如果跳过 original 分析，使用占位符
+            # 如果跳過 original 分析，使用佔位符
             results['original_model'] = {'model_size_mb': 0.0, 'quantized_size_mb': 0.0}
         results['quantized_model'] = self.analyze_model_size_and_params(
             quantized_model, 'Q-DiffAE'
         )
         
-        # 计算压缩比
+        # 計算壓縮比
         if original_model is not None and results['original_model']['model_size_mb'] > 0:
             compression_ratio = results['original_model']['model_size_mb'] / results['quantized_model']['quantized_size_mb']
             results['compression_ratio'] = compression_ratio
@@ -1181,7 +1181,7 @@ class QuantitativeAnalyzer:
         
         # 2. MACs 分析
         logger.info("\n[2/4] Analyzing MACs...")
-        input_shape = (3, 128, 128)  # 根据实际调整
+        input_shape = (3, 128, 128)  # 根據實際調整
         if original_model is not None:
             results['macs_original'] = self.calculate_macs(
                 original_model, input_shape, timestep=0, use_cache=False
@@ -1199,11 +1199,11 @@ class QuantitativeAnalyzer:
                 use_cache=True, cache_scheduler=cache_scheduler
             )
         
-        # 3. 生成时间
+        # 3. 生成時間
         logger.info("\n[3/4] Measuring generation time...")
         num_samples = config.get('num_samples', 10)
         
-        # 只在需要时执行原始模型的生成时间分析
+        # 只在需要時執行原始模型的生成時間分析
         if not skip_original_time_and_transfer and original_model is not None:
             results['time_original'] = self.measure_generation_time(
                 sampler, original_model, conf, num_samples=num_samples, device=config.get('device'),
@@ -1230,7 +1230,7 @@ class QuantitativeAnalyzer:
         # 4. Data Transfer
         logger.info("\n[4/4] Analyzing data transfer...")
         
-        # 只在需要时执行原始模型的 data transfer 分析
+        # 只在需要時執行原始模型的 data transfer 分析
         if not skip_original_time_and_transfer and original_model is not None:
             results['data_transfer_original'] = self.analyze_data_transfer(
                 original_model, input_shape, 
@@ -1281,7 +1281,7 @@ class QuantitativeAnalyzer:
         else:
             results['data_transfer_cached_quantized_layers'] = None
         
-        # 保存结果
+        # 保存結果
         self.results = results
         self.save_results(config)
         
@@ -1292,12 +1292,12 @@ class QuantitativeAnalyzer:
         return results
     
     def save_results(self, config: Dict):
-        """保存结果到 JSON"""
+        """保存結果到 JSON"""
         output_file = self.log_file.replace('.log', '.json')
-        # 确保目录存在
+        # 確保目錄存在
         Path(output_file).parent.mkdir(parents=True, exist_ok=True)
         
-        # 转换不可序列化的对象
+        # 轉換不可序列化的對象
         def convert_to_serializable(obj):
             if isinstance(obj, (torch.Tensor, np.ndarray)):
                 return obj.tolist() if hasattr(obj, 'tolist') else str(obj)

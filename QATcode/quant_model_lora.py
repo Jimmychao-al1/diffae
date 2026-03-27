@@ -11,7 +11,7 @@ from QATcode.quant_layer import (
     StraightThrough,
     TemporalActivationQuantizer,
 )
-# 避免循環相依：不要在這裡 import model.unet_autoenc
+# 避免循環相依：不要在此處 import model.unet_autoenc
 from model.blocks import *
 logger = logging.getLogger(__name__)
 
@@ -301,7 +301,7 @@ class QuantModel_DiffAE_LoRA(nn.Module):
 
     def reparameterize(self, mu: torch.Tensor, logvar: torch.Tensor):
         """
-        重參數化 (reparameterization) 采樣
+        重參數化 (reparameterization) 採樣
         """
         return self.model.reparameterize(mu, logvar)
 
@@ -557,7 +557,7 @@ class INT_QuantModel_DiffAE_LoRA(nn.Module):
 
     def reparameterize(self, mu: torch.Tensor, logvar: torch.Tensor):
         """
-        重參數化 (reparameterization) 采樣
+        重參數化 (reparameterization) 採樣
         """
         return self.model.reparameterize(mu, logvar)
 

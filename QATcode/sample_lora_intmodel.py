@@ -415,8 +415,8 @@ def _load_quant_and_ema_from_ckpt(base_model: LitModel, quant_model: nn.Module, 
     """
     載入策略（嚴格符合需求）:
     1) base_model.ema_model 架構 = deepcopy(quant_model)
-    2) base_model.ema_model 權重只吃 `ema_model.model.*`
-    3) base_model.model 權重吃 `model.model.*`（若存在）
+    2) base_model.ema_model 權重只喫 `ema_model.model.*`
+    3) base_model.model 權重喫 `model.model.*`（若存在）
     """
     setattr(base_model, 'model', quant_model)
     base_model.ema_model = deepcopy(quant_model)
@@ -462,14 +462,14 @@ def main_float_model():
     流程概要:
     1. 載入預訓練模型
     2. 創建並設定量化模型
-    3. 設定優化器與學習率
+    3. 設定最佳化器與學習率
     4. 訓練與評估
     """
     LOGGER.info("=" * 50)
     LOGGER.info("Diff-AE EfficientDM Step 7 : 生成圖片")
     LOGGER.info("=" * 50)
     
-    # 設置運行環境（已在參數解析後設置，此處不再重複調用）
+    # 設置執行環境（已在參數解析後設置，此處不再重複調用）
     # CONFIG.setup_environment()
     #_seed_all(CONFIG.SEED)
 
@@ -558,7 +558,7 @@ def main_float_model():
         # 初始化新功能模組
         LOGGER.info("=== 初始化新功能模組 ===")
         
-        # 4. 創建優化器 (按原作邏輯 + Layer-by-Layer 支援)
+        # 4. 創建最佳化器 (按原作邏輯 + Layer-by-Layer 支援)
         ddim_steps = CONFIG.NUM_DIFFUSION_STEPS  # 對應原作
         
         
@@ -643,7 +643,7 @@ def main_float_model():
         # === 快取分析後處理 ===
         if collector is not None:
             LOGGER.info("=" * 50)
-            LOGGER.info("處理收集到的數據...")
+            LOGGER.info("處理收集到的資料...")
             
             # 計算並保存 L1rel 矩陣
             LOGGER.info("計算 L1 相對差異矩陣...")
@@ -685,7 +685,7 @@ def main_int_model():
     LOGGER.info("Diff-AE EfficientDM Step 7 : 生成圖片")
     LOGGER.info("=" * 50)
     
-    # 設置運行環境（已在參數解析後設置，此處不再重複調用）
+    # 設置執行環境（已在參數解析後設置，此處不再重複調用）
     # CONFIG.setup_environment()
     #_seed_all(CONFIG.SEED)
 
@@ -753,7 +753,7 @@ def main_int_model():
         # 初始化新功能模組
         LOGGER.info("=== 初始化新功能模組 ===")
         
-        # 4. 創建優化器 (按原作邏輯 + Layer-by-Layer 支援)
+        # 4. 創建最佳化器 (按原作邏輯 + Layer-by-Layer 支援)
         ddim_steps = CONFIG.NUM_DIFFUSION_STEPS  # 對應原作
         
         
@@ -837,7 +837,7 @@ def main_int_model():
                     log_file=f"QATcode/quantitative_analysis_T{T}_{CONFIG.CACHE_METHOD}_th{CONFIG.CACHE_THRESHOLD}.log"
                 )
                 
-                # 准备配置
+                # 準備配置
                 analysis_config = {
                     'num_steps': T,
                     'cache_method': CONFIG.CACHE_METHOD,
@@ -848,12 +848,12 @@ def main_int_model():
                     'device': CONFIG.DEVICE
                 }
                 
-                # 加载校正数据（用于 data transfer 分析）
+                # 加載校正資料（用於 data transfer 分析）
                 LOGGER.info("Loading calibration data for data transfer analysis...")
                 cali_images, cali_t, cali_y = load_calibration_data()
                 
-                # 检查是否已经执行过该 step+method 组合的 original 分析
-                # 使用一个简单的文件标记来跟踪
+                # 檢查是否已經執行過該 step+method 組合的 original 分析
+                # 使用一個簡單的文件標記來跟蹤
                 import os
                 from pathlib import Path
                 original_analysis_marker = f"QATcode/original_analysis_done_T{T}_{CONFIG.CACHE_METHOD}.marker"
@@ -868,10 +868,10 @@ def main_int_model():
                     original_model = original_base_model.model
                     original_model.to(CONFIG.DEVICE)
                     original_model.eval()
-                    # 创建标记文件
+                    # 創建標記文件
                     Path(original_analysis_marker).touch()
                 
-                # 运行分析
+                # 執行分析
                 results = analyzer.run_full_analysis(
                     original_model=original_model,
                     quantized_model=base_model.ema_model,
@@ -958,7 +958,7 @@ if __name__ == "__main__":
         print(f"[設定] Log 檔案已設為: {CONFIG.LOG_FILE}", flush=True)
     
     def setup_environment(cls) -> None:
-        """設置運行環境"""
+        """設置執行環境"""
         os.environ['CUDA_VISIBLE_DEVICES'] = cls.GPU_ID
         #torch.cuda.manual_seed(cls.SEED)
         

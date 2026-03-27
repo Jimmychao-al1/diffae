@@ -256,7 +256,7 @@ def evaluate_fid_with_train(
         gpus: GPU 列表，預設為 [0]
     
     Returns:
-        float: FID 分數（從 trainer.test() 的返回值中提取）
+        float: FID 分數（從 trainer.test() 的返回值中擷取）
     """
     if num_steps is None:
         num_steps = CONFIG.NUM_DIFFUSION_STEPS
@@ -363,10 +363,10 @@ def evaluate_fid_with_train(
     # 執行 trainer.test()（類似 train() 函數內部，line 1063）
     out = trainer.test(model, dataloaders=dummy)
     
-    # 提取結果（類似 train() 函數內部，line 1065-1066）
+    # 擷取結果（類似 train() 函數內部，line 1065-1066）
     out = out[0]  # first (and only) loader
     
-    # 從結果字典中提取 FID 分數
+    # 從結果字典中擷取 FID 分數
     # 對於 fid(T,T) 格式，FID 會被記錄為 f'fid_ema_T{T}'（experiment.py line 851）
     fid_key = f'fid_ema_T{num_steps}'
     

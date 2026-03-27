@@ -20,7 +20,7 @@ TARGET_N="${1:-32}"
 START_FROM_BLOCK="${2:-}"
 RUN_SINGLE_SCRIPT="QATcode/cache_method/SVD/run_single_block_pipeline.sh"
 
-# GPU 記憶體較吃緊的 block，降低樣本數
+# GPU 記憶體較喫緊的 block，降低樣本數
 declare -A OVERRIDE_N=(
   ["model.output_blocks.11"]=16
 )

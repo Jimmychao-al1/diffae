@@ -503,14 +503,14 @@ def main_float_model():
     流程概要:
     1. 載入預訓練模型
     2. 創建並設定量化模型
-    3. 設定優化器與學習率
+    3. 設定最佳化器與學習率
     4. 訓練與評估
     """
     LOGGER.info("=" * 50)
     LOGGER.info("Diff-AE EfficientDM Step 7 : 生成圖片")
     LOGGER.info("=" * 50)
     
-    # 設置運行環境（已在參數解析後設置，此處不再重複調用）
+    # 設置執行環境（已在參數解析後設置，此處不再重複調用）
     # CONFIG.setup_environment()
     _seed_all(CONFIG.SEED)
 
@@ -579,7 +579,7 @@ def main_float_model():
         # 初始化新功能模組
         LOGGER.info("=== 初始化新功能模組 ===")
         
-        # 4. 創建優化器 (按原作邏輯 + Layer-by-Layer 支援)
+        # 4. 創建最佳化器 (按原作邏輯 + Layer-by-Layer 支援)
         ddim_steps = CONFIG.NUM_DIFFUSION_STEPS  # 對應原作
         
         
@@ -663,7 +663,7 @@ def main_float_model():
         # === 快取分析後處理 ===
         if collector is not None:
             LOGGER.info("=" * 50)
-            LOGGER.info("處理收集到的數據...")
+            LOGGER.info("處理收集到的資料...")
             
             # 計算並保存 L1rel 矩陣
             LOGGER.info("計算 L1 相對差異矩陣...")
@@ -736,7 +736,7 @@ if __name__ == "__main__":
         print(f"[設定] Log 檔案已設為: {CONFIG.LOG_FILE}", flush=True)
     
     def setup_environment(cls) -> None:
-        """設置運行環境"""
+        """設置執行環境"""
         os.environ['CUDA_VISIBLE_DEVICES'] = cls.GPU_ID
         #torch.cuda.manual_seed(cls.SEED)
         log_dir = os.path.dirname(cls.LOG_FILE)

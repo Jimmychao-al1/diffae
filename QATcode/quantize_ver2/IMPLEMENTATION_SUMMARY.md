@@ -165,7 +165,7 @@ Weight: w [C_out, C_in, K, K]
 
 ### Step6 (訓練)
 - 載入 Step4 checkpoint (帶初始 `a_x[k]`)
-- 訓練 LoRA + `a_x[k]` (同步優化)
+- 訓練 LoRA + `a_x[k]` (同步最佳化)
 - 每步通過 `set_quant_step(i)` 設置 timestep
 - 輸出: `diffae_step6_lora_best.pth`
 

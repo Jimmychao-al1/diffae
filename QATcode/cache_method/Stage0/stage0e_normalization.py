@@ -1,7 +1,7 @@
 """
 Stage-0E: Loader + Normalization for Cache Scheduler
 
-此模組讀取 Stage-0 的原始實驗數據（T=100）並產生正規化的 interval-wise 指標。
+此模組讀取 Stage-0 的原始實驗資料（T=100）並產生正規化的 interval-wise 指標。
 
 資料來源：
 1. L1 / Cosine: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/*.npz
@@ -150,7 +150,7 @@ def load_interval_metrics(
             continue
     
     if len(block_names) == 0:
-        raise ValueError("沒有成功載入任何 block 的數據")
+        raise ValueError("沒有成功載入任何 block 的資料")
     
     # 5. 堆疊成 (B, T-1) 陣列
     L1_interval_all = np.stack(L1_list, axis=0)  # (B, T-1)
@@ -216,7 +216,7 @@ def normalize_minmax(x: np.ndarray, eps: float = 1e-8) -> np.ndarray:
 
 
 #=============================================================================
-# 三、載入 FID sensitivity 數據
+# 三、載入 FID sensitivity 資料
 #=============================================================================
 
 def load_delta_fid_qdiffae(
@@ -245,7 +245,7 @@ def load_delta_fid_qdiffae(
     with open(fid_path, 'r') as f:
         results = json.load(f)
     
-    # 檢查是否有 T=100 的數據（可能是 "100steps" 或 "T100"）
+    # 檢查是否有 T=100 的資料（可能是 "100steps" 或 "T100"）
     results_dict = results.get("results", {})
     
     if "100steps" in results_dict:
@@ -255,7 +255,7 @@ def load_delta_fid_qdiffae(
     else:
         available_keys = list(results_dict.keys())
         raise ValueError(
-            f"FID JSON 中沒有 T=100 的數據。可用的 keys: {available_keys}\n"
+            f"FID JSON 中沒有 T=100 的資料。可用的 keys: {available_keys}\n"
             f"請確認已執行 T=100 的 FID 實驗"
         )
     baseline_fid = step_results.get("baseline_fid")
@@ -272,7 +272,7 @@ def load_delta_fid_qdiffae(
     for k in k_values:
         k_key = f"k{k}"
         if k_key not in step_results:
-            LOGGER.warning(f"找不到 k={k} 的數據，跳過")
+            LOGGER.warning(f"找不到 k={k} 的資料，跳過")
             continue
         
         for layer_name, layer_data in step_results[k_key].items():
@@ -319,7 +319,7 @@ def compute_fid_weights(
     2. Worst-case 聚合：S_b = max_k delta_pos[b][k]
     3. Quantile clipping：S_clip = min(S, quantile_95)
     4. Min-max 正規化：w = S_clip / max(S_clip)
-    5. Rank-based（可選）：按 S 排序後線性映射到 [0, 1]
+    5. Rank-based（可選）：按 S 排序後線性對應映射到 [0, 1]
     """
     B = len(block_names)
     S = np.zeros(B, dtype=np.float32)
@@ -327,7 +327,7 @@ def compute_fid_weights(
     # 1. Noise 修正 + Worst-case 聚合
     for i, block_name in enumerate(block_names):
         if block_name not in delta_fid:
-            LOGGER.warning(f"Block {block_name} 沒有 FID 數據，使用 S_b = 0")
+            LOGGER.warning(f"Block {block_name} 沒有 FID 資料，使用 S_b = 0")
             continue
         
         delta_dict = delta_fid[block_name]
@@ -502,7 +502,7 @@ def run_stage0e(
         if fid_layer_name in delta_fid:
             delta_fid_aligned[block_name] = delta_fid[fid_layer_name]
         else:
-            LOGGER.warning(f"Block {block_name} (FID: {fid_layer_name}) 在 FID 數據中找不到，使用空字典")
+            LOGGER.warning(f"Block {block_name} (FID: {fid_layer_name}) 在 FID 資料中找不到，使用空字典")
             delta_fid_aligned[block_name] = {}
     
     w_clip, w_rank = compute_fid_weights(

@@ -44,7 +44,7 @@ def load_similarity_npz(npz_path: Path) -> Dict:
     - cos_step_mean
 
     備註：
-    - 若 npz 仍包含 l1_rate_step_mean，視為上游殘留欄位，這裡不參與分析。
+    - 若 npz 仍包含 l1_rate_step_mean，視為上游殘留欄位，此處不參與分析。
 
     Returns:
         dict: 包含 l1_step_mean, cos_step_mean，以及可選 metadata

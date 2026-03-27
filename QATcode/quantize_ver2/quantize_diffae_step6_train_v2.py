@@ -82,12 +82,12 @@ class TrainingConfig:
     # 其他設定 - 調整為 EfficientDM 風格
     LOG_INTERVAL = 5   # 每隔幾個批次記錄一次
     CALIB_SAMPLES = 1024
-    TRAIN_BATCHES_PER_EPOCH = 2  # 增加每個 epoch 的批次數，因為不再依賴真實數據
+    TRAIN_BATCHES_PER_EPOCH = 2  # 增加每個 epoch 的批次數，因為不再依賴真實資料
     CURRENT_LAYER_IDX = 4
     
     @classmethod
     def setup_environment(cls, log_name: str = "step6_train.log") -> str:
-        """設置運行環境並初始化 logger。"""
+        """設置執行環境並初始化 logger。"""
         os.environ['CUDA_VISIBLE_DEVICES'] = cls.GPU_ID
         torch.cuda.manual_seed(cls.SEED)
         log_dir = os.path.join("QATcode", "quantize_ver2", "log")
@@ -277,7 +277,7 @@ def collect_quant_update_diagnostics(
     """
     計算每層「有效量化更新比例」：
     - changed_ratio_dynamic: 使用各自動態 a_w（最接近實際 forward）
-    - changed_ratio_same_scale: 固定使用 base a_w（觀察 LoRA 是否跨越既有量化台階）
+    - changed_ratio_same_scale: 固定使用 base a_w（觀察 LoRA 是否跨越既有量化臺階）
     """
     rows: List[Dict[str, Any]] = []
 
@@ -473,7 +473,7 @@ def log_trainable_parameters_details(model: nn.Module) -> None:
             trainable_count += 1
             LOGGER.info(f"可訓練參數 {trainable_count}: {name}")
             LOGGER.info(f"  形狀: {param.shape}")
-            LOGGER.info(f"  數據類型: {param.dtype}")
+            LOGGER.info(f"  資料類型: {param.dtype}")
             LOGGER.info(f"  設備: {param.device}")
             LOGGER.info(f"  參數數量: {param.numel():,}")
             LOGGER.info(f"  數值範圍: [{param.min().item():.6f}, {param.max().item():.6f}]")
@@ -651,13 +651,13 @@ def get_adaptive_learning_rates(
     act_quant_lr_override: Optional[float] = None,
 ) -> Dict[str, float]:
     """
-    根據量化分析數據確定自適應學習率
+    根據量化分析資料確定自適應學習率
     
     Args:
         base_model: 基礎模型
         model_type: "diffae" 或 "efficientdm"
         lora_factor_override: 若給定，覆寫內建的 lora_factor（LoRA lr = avg_weight_scale / lora_factor）
-        act_quant_lr_override: 若給定，覆寫內建的 act_quant_lr（scale_list 參數群組）
+        act_quant_lr_override: 若給定，覆寫內建的 act_quant_lr（scale_list 參數羣組）
     
     Returns:
         包含三種學習率的字典
@@ -677,7 +677,7 @@ def get_adaptive_learning_rates(
                 weight_scales.append(max(avg_scale, 1e-8))
             
             # 檢查激活量化誤差（需要從之前的分析中估算）
-            # 這裡使用簡化的啟發式方法
+            # 此處使用簡化的啟發式方法
             if hasattr(module, 'act_quantizer'):
                 # 假設高誤差層的比例
                 if model_type == "diffae" and total_layers % 3 == 0:  # 基於觀察到的高 pct_clipped
@@ -690,7 +690,7 @@ def get_adaptive_learning_rates(
     max_weight_scale = np.max(weight_scales)
     error_ratio = high_error_layers / max(total_layers, 1)
     
-    # 基於模型類型和分析數據調整學習率
+    # 基於模型類型和分析資料調整學習率
     if model_type == "diffae":
         # Diff-AE 需要更保守的學習率，因為：
         # 1. 權重變化幅度大
@@ -745,7 +745,7 @@ def setup_optimizer_with_dynamic_lr(
     act_quant_lr: Optional[float] = None,
 ) -> Tuple[torch.optim.Optimizer, Any]:
     """
-    基於量化分析數據的動態學習率設定
+    基於量化分析資料的動態學習率設定
     
     Args:
         lora_factor: 若給定，覆寫內建 lora_factor（與 CLI --lora-factor 對應）
@@ -917,7 +917,7 @@ def save_checkpoint(
     Args:
         base_model: 基礎模型
         qnn: 量化模型
-        optimizer: 優化器
+        optimizer: 最佳化器
         epoch: 當前訓練輪數
         loss: 當前損失值
         ema_helper: EMA 輔助器
@@ -985,7 +985,7 @@ def main():
     流程概要:
     1. 載入預訓練模型
     2. 創建並設定量化模型
-    3. 設定優化器與學習率
+    3. 設定最佳化器與學習率
     4. 訓練與評估
     """
     args = _get_cli_args()
@@ -997,7 +997,7 @@ def main():
     else:
         log_name = "step6_train.log"
 
-    # 設置運行環境
+    # 設置執行環境
     log_path = CONFIG.setup_environment(log_name=log_name)
     _seed_all(CONFIG.SEED)
 
@@ -1135,7 +1135,7 @@ def main():
         print_trainable_parameters(quant_model)
         #count_lora_parameters(quant_model)
         
-        # 4. 創建優化器 (按原作邏輯 + Layer-by-Layer 支援)
+        # 4. 創建最佳化器 (按原作邏輯 + Layer-by-Layer 支援)
         ddim_steps = CONFIG.NUM_DIFFUSION_STEPS  # 對應原作
         
         optimizer, lr_scheduler = setup_optimizer_with_dynamic_lr(

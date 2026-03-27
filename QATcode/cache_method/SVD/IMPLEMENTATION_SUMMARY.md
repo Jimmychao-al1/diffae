@@ -19,7 +19,7 @@
   - 在每個 timestep 累積 feature（保持在 GPU）
   - Finalize 時 concat + 截斷到 target_N + 寫 `t_{t}.pt`
   - 輸出 `meta.json`（block、N、T、C、H、W）
-- GPU 優化：hook 內只 detach + append，finalize 才搬 CPU
+- GPU 最佳化：hook 內只 detach + append，finalize 才搬 CPU
 
 **關鍵設計**：
 - 每個 t 累積固定 N 個樣本（所有 timestep 共用同一組 sample）

@@ -47,8 +47,8 @@ check_range(svd, "SVD_interval_norm")
 check_range(w_clip, "FID w_clip")
 check_range(w_rank, "FID w_rank")
 
-# FID weights 分布
-print(f"\n🎯 FID Weights 分布：")
+# FID weights 分佈
+print(f"\n🎯 FID Weights 分佈：")
 nonzero_count = np.sum(w_clip > 0)
 print(f"  非零 block 數: {nonzero_count}/{len(names)}")
 print(f"  Top 5 敏感 block:")

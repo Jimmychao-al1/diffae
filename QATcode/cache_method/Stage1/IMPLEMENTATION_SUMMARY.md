@@ -31,7 +31,7 @@
 - Zone-level 聚合（mean over zone timesteps）
 - 預設權重：α=β=γ=1/3
 
-✅ **k 映射**
+✅ **k 對應映射**
 - k_raw[b,z] = k_min + round(A[b,z] × (k_max - k_min))
 - 範圍：[1, 8]（可調）
 
@@ -95,7 +95,7 @@
 
 ✅ **IMPLEMENTATION_SUMMARY.md** (本文件)
 
-## 關鍵數據（T=100, B=31）
+## 關鍵資料（T=100, B=31）
 
 ### Zones
 ```
@@ -145,7 +145,7 @@ Zone 5-6: R_z ~ 0.20  (高風險，k_max ceiling 降到 7)
 ### 2. Shared Zones vs Per-block Zones
 - **選擇**: Shared zones（所有 blocks 共用）
 - **理由**: 簡化 scheduling，減少狀態管理
-- **Trade-off**: 無法針對個別 block 做極致優化
+- **Trade-off**: 無法針對個別 block 做極致最佳化
 
 ### 3. Zone-level Ceiling vs Global Ceiling
 - **選擇**: Zone-level（每個 zone 有獨立的 k_max_z）

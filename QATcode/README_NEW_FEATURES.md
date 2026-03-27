@@ -132,7 +132,7 @@ runs/{exp_dir}/
 ├── layer_states.json           # 層狀態記錄
 ├── eval/
 │   ├── proxy_history.jsonl     # 代理指標歷史
-│   ├── real_stats/             # 真實數據統計快取
+│   ├── real_stats/             # 真實資料統計快取
 │   ├── gen_cache/              # 生成特徵快取
 │   ├── fid_2k.json            # FID 結果
 │   └── dfid_2k.json           # dFID 結果

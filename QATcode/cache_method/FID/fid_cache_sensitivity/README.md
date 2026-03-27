@@ -113,9 +113,9 @@ done
 
 腳本會自動檢查已完成的實驗並跳過，可以安全地中斷並重新執行。
 
-## 硬碟空間優化
+## 硬碟空間最佳化
 
-腳本已優化為**不保留生成的圖片**：
+腳本已最佳化為**不保留生成的圖片**：
 - 使用固定的臨時資料夾（位於 `{conf.generate_dir}_temp_T{num_steps}`）
   - 例如：`checkpoints/ffhq128_autoenc_latent/mycache/gen_images_temp_T20`
 - 每次實驗前自動清空該資料夾

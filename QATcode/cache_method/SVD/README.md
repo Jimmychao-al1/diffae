@@ -121,7 +121,7 @@ python QATcode/cache_method/SVD/correlate_svd_similarity.py \
 - **與 similarity 的差異**：
   - Similarity：累積後計算 L1/L1_rel/cosine，寫 NPZ/CSV/PNG
   - SVD：只累積 raw feature，寫 `t_{t}.pt` + `meta.json`
-- **GPU 優化**：
+- **GPU 最佳化**：
   - Hook 內立即做 `detach().cpu()`，避免 GPU OOM
   - buffer 與後續 concat 以 CPU tensor 為主
 - **target_N**：每個 t 最終寫出 `(target_N, C, H, W)`，所有 timestep 共用同一組 N 個 sample

@@ -506,7 +506,7 @@ class ActivationCollector:
 
 
 def load_calibration_data():
-    """載入校準數據"""
+    """載入校準資料"""
     print("="*100)
     print("2. Loading calibration data...")
     calib_file = 'QATcode/calibration_diffae.pth'
@@ -609,7 +609,7 @@ def calibrate_quantized_model(qnn, model : LitModel, cali_images, cali_t, cali_y
     qnn.set_quant_state(True, True)
 
     start = time.time()
-    # 準備數據和採樣器
+    # 準備資料和採樣器
     device = next(qnn.parameters()).device
     collector = ActivationCollector(model=qnn, out_dir="./analysis_step4", run_tag="step4_diffae")  # change run_tag to "step4_efficientdm" when running EfficientDM script
     collector.set_mode("pre")
@@ -679,7 +679,7 @@ def main():
         model.cuda()
         model.eval()
         print("✅ Model loaded successfully!")
-        # 2. 載入校準數據
+        # 2. 載入校準資料
         dataset, data_loader = load_calibration_data()
         
         # 3. 設置量化參數
@@ -692,7 +692,7 @@ def main():
         # 5. 設置首尾層
         setup_first_last_layers(qnn)
         
-        # 6. 提取校準樣本
+        # 6. 擷取校準樣本
         cali_images, cali_t, cali_y = get_train_samples(data_loader, num_samples=1024)
         
         # 7. 校準量化模型

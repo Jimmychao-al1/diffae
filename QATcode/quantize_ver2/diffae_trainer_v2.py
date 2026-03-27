@@ -124,7 +124,7 @@ class SpacedDiffusionBeatGans_Trainer(SpacedDiffusionBeatGans):
     """
     繼承 Diff-AE 的 SpacedDiffusionBeatGans，加入 EfficientDM 的知識蒸餾邏輯
     
-    這個類別結合了兩個框架的優勢：
+    此類別結合了兩個框架的優勢：
     - Diff-AE: 自編碼器擴散模型架構、條件輸入 x_start
     - EfficientDM: 知識蒸餾訓練邏輯、浮點-量化模型對比
     - 在完整的 inference 流程中進行訓練
@@ -146,7 +146,7 @@ class SpacedDiffusionBeatGans_Trainer(SpacedDiffusionBeatGans):
             base_sampler: 基礎的 SpacedDiffusionBeatGans 採樣器
             fp_model: 浮點教師模型
             quant_model: 量化學生模型
-            optimizer: 優化器
+            optimizer: 最佳化器
             lr_scheduler: 學習率調度器
             conds_mean: 潛在條件標準化均值
             conds_std: 潛在條件標準化標準差
@@ -1130,7 +1130,7 @@ class SpacedDiffusionBeatGans_Trainer(SpacedDiffusionBeatGans):
         單步 Teacher-Student 訓練函數
         
         Args:
-            batch: 來自 dataloader 的批次數據 (x_start)
+            batch: 來自 dataloader 的批次資料 (x_start)
             
         Returns:
             Dict: 包含損失值和統計信息的字典
@@ -1335,7 +1335,7 @@ def create_diffae_trainer(base_sampler,
         base_sampler: 基礎的 SpacedDiffusionBeatGans 採樣器
         fp_model: 浮點教師模型
         quant_model: 量化學生模型
-        optimizer: 優化器
+        optimizer: 最佳化器
         lr_scheduler: 學習率調度器
         conds_mean: 潛在條件標準化均值
         conds_std: 潛在條件標準化標準差

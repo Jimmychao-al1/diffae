@@ -4,20 +4,20 @@ from collections import defaultdict
 from pathlib import Path
 
 def parse_cache_scheduler(cache_scheduler_str):
-    """解析 cache_scheduler 字符串格式的集合"""
+    """解析 cache_scheduler 字串格式的集合"""
     if isinstance(cache_scheduler_str, str):
         return ast.literal_eval(cache_scheduler_str)
     return cache_scheduler_str
 
 def infer_timestep_embed_sequential_transfer(data_transfer_quantized):
     """
-    從量化層的數據推斷 TimestepEmbedSequential 的數據傳輸
+    從量化層的資料推斷 TimestepEmbedSequential 的資料傳輸
     
-    根據需求：Q-DiffAE float 中所有 TimestepEmbedSequential 的輸入輸出總和。
+    根據需求：Q-DiffAE float 中所有 TimestepEmbedSequential 的輸入/輸出總和。
     
-    每個 TimestepEmbedSequential block 的數據傳輸應該是：
-    - Block 的輸入：進入這個 block 的 feature map（通常是第一個量化層的輸入）
-    - Block 的輸出：離開這個 block 的 feature map（通常是最後一個量化層的輸出，或 skip_connection 的輸出）
+    每個 TimestepEmbedSequential block 的資料傳輸應該是：
+    - Block 的輸入：進入此 block 的 feature map（通常是第一個量化層的輸入）
+    - Block 的輸出：離開此 block 的 feature map（通常是最後一個量化層的輸出，或 skip_connection 的輸出）
     
     策略：
     1. 對於每個 block，找到第一個量化層的輸入作為 block 的輸入
@@ -26,11 +26,11 @@ def infer_timestep_embed_sequential_transfer(data_transfer_quantized):
     """
     layer_breakdown = data_transfer_quantized.get('layer_breakdown', {})
     
-    # 建立 TimestepEmbedSequential 到其內部量化層的映射
+    # 建立 TimestepEmbedSequential 到其內部量化層的對應映射
     sequential_layers = defaultdict(list)
     
     for layer_name, layer_info in layer_breakdown.items():
-        # 提取 TimestepEmbedSequential 名稱
+        # 擷取 TimestepEmbedSequential 名稱
         parts = layer_name.split('.')
         if 'input_blocks' in parts:
             idx = parts.index('input_blocks')
@@ -121,12 +121,12 @@ def infer_timestep_embed_sequential_transfer(data_transfer_quantized):
 
 def calculate_cached_quantized_transfer(data_transfer_quantized, cache_scheduler, num_steps):
     """
-    計算使用 cache 後的量化層數據傳輸
+    計算使用 cache 後的量化層資料傳輸
     根據 cache_scheduler 決定哪些層在哪些 timestep 需要重新計算
     """
     layer_breakdown = data_transfer_quantized.get('layer_breakdown', {})
     
-    # 建立 layer 名稱到 cache_key 的映射
+    # 建立 layer 名稱到 cache_key 的對應映射
     # cache_key 格式: encoder_layer_0, decoder_layer_0, middle_layer
     layer_to_cache_key = {}
     
@@ -149,7 +149,7 @@ def calculate_cached_quantized_transfer(data_transfer_quantized, cache_scheduler
         elif 'middle_block' in parts:
             layer_to_cache_key[layer_name] = 'middle_layer'
     
-    # 計算每個層在所有 timestep 的累積數據傳輸
+    # 計算每個層在所有 timestep 的累積資料傳輸
     cached_layer_transfers = {}
     timestep_breakdown = defaultdict(lambda: {
         'layers_executed': 0,
@@ -163,7 +163,7 @@ def calculate_cached_quantized_transfer(data_transfer_quantized, cache_scheduler
             recompute_timesteps = parse_cache_scheduler(cache_scheduler[cache_key])
             num_recomputes = len(recompute_timesteps)
             
-            # 單次 forward pass 的數據傳輸
+            # 單次 forward pass 的資料傳輸
             single_input = float(layer_info['input_size_mb'])
             single_output = float(layer_info['output_size_mb'])
             single_total = float(layer_info['total_size_mb'])
@@ -224,13 +224,13 @@ def derive_data_transfer_results(json_file_path):
     
     results = {}
     
-    # 1. TimestepEmbedSequential 的數據傳輸
+    # 1. TimestepEmbedSequential 的資料傳輸
     results['data_transfer_timestep_embed_sequential'] = infer_timestep_embed_sequential_transfer(
         data_transfer_quantized
     )
     
-    # 2. 所有量化層的數據傳輸（需要乘以 timestep 數量）
-    # 從現有數據推導所有 timestep 的總和
+    # 2. 所有量化層的資料傳輸（需要乘以 timestep 數量）
+    # 從現有資料推導所有 timestep 的總和
     single_timestep_input = float(data_transfer_quantized['total_input_size_mb'])
     single_timestep_output = float(data_transfer_quantized['total_output_size_mb'])
     single_timestep_transfer = float(data_transfer_quantized['total_transfer_mb'])
@@ -264,7 +264,7 @@ def derive_data_transfer_results(json_file_path):
         'layer_breakdown': layer_breakdown_all_steps
     }
     
-    # 2.5. 所有量化層的數據傳輸（排除 skip_connection 和 LoRA，所有 timestep 總和）
+    # 2.5. 所有量化層的資料傳輸（排除 skip_connection 和 LoRA，所有 timestep 總和）
     layer_breakdown_no_skip = {}
     for layer_name, layer_info in data_transfer_quantized.get('layer_breakdown', {}).items():
         # 排除 skip_connection 和 LoRA 層
@@ -298,7 +298,7 @@ def derive_data_transfer_results(json_file_path):
         'layer_breakdown': layer_breakdown_no_skip
     }
         
-        # 3. 使用 cache 後的量化層數據傳輸
+        # 3. 使用 cache 後的量化層資料傳輸
     if cache_scheduler:
         results['data_transfer_cached_quantized_layers'] = calculate_cached_quantized_transfer(
             data_transfer_quantized, cache_scheduler, num_steps

@@ -16,7 +16,7 @@ Stage-1: Offline Scheduler Synthesis (T=100)
 2. 計算 FID-weighted global drift D_global（per-interval）
 3. 平滑 + 找 change points → 分 zones（axis 上 0..99 的點區間）
 4. 計算 zone-level tri-evidence score A[b,z]
-5. 映射到 k_raw[b,z]
+5. 對應映射到 k_raw[b,z]
 6. Zone-level risk ceiling
 7. Regularization（避免 k 跳太大）
 8. 輸出 scheduler_config.json + diagnostics
@@ -283,7 +283,7 @@ def find_zones(
     
     演算法：
     1. 計算 Δ（沿 interval 軸）= |D_smooth[j] - D_smooth[j-1]|
-    2. 選 change points（映射為 axis 上的分界點）
+    2. 選 change points（對應映射為 axis 上的分界點）
     3. boundaries = [0] + sorted(change_points) + [T-1]
     4. zones 的 axis_start..axis_end 為 **analysis axis 索引**，**不是**未轉換的 DDIM t_ddim
     """
@@ -298,7 +298,7 @@ def find_zones(
         Delta[t] = abs(D_smooth[t] - D_smooth[t - 1])
     
     # 2. 選 change points（timestep index，不是 interval index）
-    # 這裡要小心：interval t 代表 timestep t → t+1
+    # 此處要小心：interval t 代表 timestep t → t+1
     # 如果 Delta[t] 大（interval t 變化大），change point 應該在 timestep t 或 t+1
     # 為簡化，我們把 change point 定為 interval index t+1（即下一個 timestep 的開始）
     
@@ -432,7 +432,7 @@ def map_to_k_raw(
     k_max: int = 8,
 ) -> np.ndarray:
     """
-    將 tri-evidence score A[b,z] 映射到 k_raw[b,z]。
+    將 tri-evidence score A[b,z] 對應映射到 k_raw[b,z]。
     
     Args:
         A: (B, Z) tri-evidence score in [0, 1]
@@ -593,7 +593,7 @@ def build_recompute_mask(
     從 zones + k 轉成 **analysis axis** 上的 recompute mask（長度 T=100）。
 
     **索引語意**：mask[i]=True 表示在 **analysis axis_idx = i** 對應的 forward 步要 full compute。
-    接 DDIM 時：**t_ddim = 99 - i**（單張量 timestep 張量請用此映射）。
+    接 DDIM 時：**t_ddim = 99 - i**（單張量 timestep 張量請用此對應映射）。
 
     Args:
         T: 總步數（100），與 axis 0..99 對齊

@@ -211,8 +211,8 @@ def _load_quant_and_ema_from_ckpt(base_model: LitModel, quant_model: nn.Module, 
     """
     Load strategy (consistent with the existing codebase logic):
     - base_model.ema_model 架構 = deepcopy(quant_model)
-    - base_model.ema_model 權重只吃 `ema_model.model.*` (mapped to `model.*` keys)
-    - base_model.model 權重吃 `model.model.*` (if exists)
+    - base_model.ema_model 權重只喫 `ema_model.model.*` (mapped to `model.*` keys)
+    - base_model.model 權重喫 `model.model.*` (if exists)
     """
     setattr(base_model, "model", quant_model)
     base_model.ema_model = copy.deepcopy(quant_model)

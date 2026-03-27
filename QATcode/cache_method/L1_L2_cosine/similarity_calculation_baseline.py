@@ -318,7 +318,7 @@ class SimilarityCollector:
         self._batch_outputs: Dict[str, Dict[int, torch.Tensor]] = {}
         self._batch_size = None
         
-        # 样本计数器：追踪已收集的样本数
+        # 樣本計數器：追蹤已收集的樣本數
         self._collected_samples = 0
         self._collection_active = True
         self._batch_collect_limit = None  # 每個 batch 要收集的樣本數（會在 register_hooks 時設定）
@@ -337,13 +337,13 @@ class SimilarityCollector:
         self.tier_step_sumsq = {}
         self.tier_step_counts = {}
         
-        # per-batch 數據收集（用於多組折線圖）
+        # per-batch 資料收集（用於多組折線圖）
         # 格式：{block_name: [batch_0_data, batch_1_data, ...]}
         # 每個 batch_data 是 {metric: {sums, sumsq, counts}}
         self.batch_step_data = {}  # {block_name: [{l1: {...}, l2: {...}, cos: {...}}, ...]}
         self.current_batch_idx = 0  # 追蹤當前是第幾個 batch
         self.current_batch_collected = 0  # 當前 batch 已收集的樣本數
-        # 當前 batch 的累加器（用於累積當前 batch 的數據，直到達到 collect_samples）
+        # 當前 batch 的累加器（用於累積當前 batch 的資料，直到達到 collect_samples）
         self.current_batch_accumulator = {}  # {block_name: {l1: {...}, l2: {...}, cos: {...}}}
 
     def register_hooks(self, model: nn.Module, sampler):
@@ -406,27 +406,27 @@ class SimilarityCollector:
 
     def _create_block_hook(self, block_name: str):
         def hook_fn(module, input, output):
-            # 如果已收集足够样本，直接跳过
+            # 如果已收集足夠樣本，直接跳過
             if not self._collection_active:
                 return
             if self._step_counter is None or self._step_counter < 0:
                 return
-            # 使用 _step_counter (0→99) 作为索引，统一表示方法
+            # 使用 _step_counter (0→99) 作爲索引，統一表示方法
             step_idx = int(self._step_counter)
             if not (0 <= step_idx < self.max_timesteps):
                 return
             
-            # 计算还需要收集多少样本
+            # 計算還需要收集多少樣本
             remaining = self.num_samples - self._collected_samples
             if remaining <= 0:
                 self._collection_active = False
                 return
             
-            # 先保持在 GPU，避免阻塞；dtype 转换也在 GPU 上做
+            # 先保持在 GPU，避免阻塞；dtype 轉換也在 GPU 上做
             out = output.detach()
             out = out.to(dtype=torch.float16 if self.save_dtype == np.float16 else torch.float32)
             
-            # 只取需要的样本数（batch 内截断）
+            # 只取需要的樣本數（batch 內截斷）
             batch_size = out.shape[0]
             n_collect = min(batch_size, remaining)
             
@@ -541,11 +541,11 @@ class SimilarityCollector:
             # 保持在 GPU 上，不轉移到 CPU（所有計算在 GPU 上進行）
             outputs = [step_dict[i] for i in range(T)]
             
-            # 更新已收集样本数（基于实际收集的样本）
+            # 更新已收集樣本數（基於實際收集的樣本）
             actual_batch_size = outputs[0].shape[0]
             
             # 計算當前 batch 實際應該收集多少樣本
-            # 考慮全局限制和每個 batch 的限制
+            # 考慮全侷限制和每個 batch 的限制
             if self._collection_active and self._batch_collect_limit is not None:
                 # 計算當前 batch 還需要多少樣本才能達到 batch 限制
                 remaining_for_batch = self._batch_collect_limit - self.current_batch_collected
@@ -573,10 +573,10 @@ class SimilarityCollector:
             if self._collection_active:
                 self.current_batch_collected += actual_collected
                 
-                # 检查是否已收集足够样本（全局）
-                # 注意：即使達到全局限制，也要先保存當前 batch 的數據，然後再停止
+                # 檢查是否已收集足夠樣本（全局）
+                # 注意：即使達到全侷限制，也要先保存當前 batch 的資料，然後再停止
                 if self._collected_samples >= self.num_samples:
-                    LOGGER.info(f"[Similarity] 已收集 {self._collected_samples} 个样本，停止数据收集（目标: {self.num_samples}）")
+                    LOGGER.info(f"[Similarity] 已收集 {self._collected_samples} 個樣本，停止資料收集（目標: {self.num_samples}）")
                     # 不立即設置 _collection_active = False，讓後續邏輯有機會保存當前 batch
 
             # 記錄 block 空間尺寸，用於 tier 分組
@@ -608,7 +608,7 @@ class SimilarityCollector:
             cosine_matrices = []
             
             for b in range(batch_size):
-                # 對每個樣本，提取所有 timestep 的特徵
+                # 對每個樣本，擷取所有 timestep 的特徵
                 features_list = []
                 for i in range(T):
                     feat = outputs[i][b].flatten().to(torch.float64)  # shape: (C*H*W,)
@@ -681,16 +681,16 @@ class SimilarityCollector:
             
             # 檢查當前 batch 是否收集完足夠的樣本（每個 batch 收集 _batch_collect_limit 個樣本）
             # _batch_collect_limit 在 register_hooks 時設定為 similarity_collect_samples
-            # 或者已經達到全局限制（需要保存最後一個 batch）
+            # 或者已經達到全侷限制（需要保存最後一個 batch）
             should_save_batch = False
             if self._batch_collect_limit is not None and self.current_batch_collected >= self._batch_collect_limit:
                 should_save_batch = True
             elif self._collected_samples >= self.num_samples and self.current_batch_collected > 0:
-                # 達到全局限制，但當前 batch 有數據，也要保存
+                # 達到全侷限制，但當前 batch 有資料，也要保存
                 should_save_batch = True
             
             if should_save_batch:
-                # 當前 batch 已收集足夠的樣本，保存數據並開始新 batch
+                # 當前 batch 已收集足夠的樣本，保存資料並開始新 batch
                 # 轉移到 CPU 並轉換為 numpy（用於保存和後續繪圖）
                 batch_data = {
                     "l1": {k: v.cpu().clone().numpy() if isinstance(v, torch.Tensor) else v.copy() for k, v in self.current_batch_accumulator[block_name]["l1"].items()},
@@ -701,7 +701,7 @@ class SimilarityCollector:
                 self.batch_step_data[block_name].append(batch_data)
                 LOGGER.info(f"[Similarity] Batch {self.current_batch_idx} 完成，已收集 {self.current_batch_collected} 個樣本")
                 
-                # 如果已達到全局限制，停止收集
+                # 如果已達到全侷限制，停止收集
                 if self._collected_samples >= self.num_samples:
                     self._collection_active = False
                 
@@ -803,7 +803,7 @@ class SimilarityCollector:
             # 繪製單組折線圖（原有功能）
             self._plot_step_curve(l1_step_mean, l1_step_std, l1_block_dir / f"{block_slug}_l1.png", "L1rel")
             
-            # 如果有 per-batch 數據，繪製多組折線圖
+            # 如果有 per-batch 資料，繪製多組折線圖
             if block_name in self.batch_step_data and len(self.batch_step_data[block_name]) > 0:
                 self._plot_multi_batch_curves(
                     block_name, "l1", l1_block_dir / f"{block_slug}_l1_multi_batch.png", "L1rel (Multi-Batch)"
@@ -828,7 +828,7 @@ class SimilarityCollector:
         counts = self.block_step_counts[block_name]
         mean = self._safe_div(sums, counts)
         var = self._safe_div(sums_sq, counts) - mean ** 2
-        # 支持 GPU tensor 和 numpy array
+        # 支援 GPU tensor 和 numpy array
         if isinstance(var, torch.Tensor):
             std = torch.sqrt(torch.clamp(var, min=0.0))
             # 轉移到 CPU 並轉換為 numpy
@@ -843,7 +843,7 @@ class SimilarityCollector:
         counts = self.tier_step_counts[tier]
         mean = self._safe_div(sums, counts)
         var = self._safe_div(sums_sq, counts) - mean ** 2
-        # 支持 GPU tensor 和 numpy array
+        # 支援 GPU tensor 和 numpy array
         if isinstance(var, torch.Tensor):
             std = torch.sqrt(torch.clamp(var, min=0.0))
             # 轉移到 CPU 並轉換為 numpy
@@ -889,7 +889,7 @@ class SimilarityCollector:
         plt.close()
     
     def _plot_multi_batch_curves(self, block_name: str, metric: str, out_path: Path, title: str):
-        """繪製多組 batch 的折線圖（4 組數據在同一張圖上）"""
+        """繪製多組 batch 的折線圖（4 組資料在同一張圖上）"""
         if block_name not in self.batch_step_data or len(self.batch_step_data[block_name]) == 0:
             return
         
@@ -935,7 +935,7 @@ class SimilarityCollector:
             tick_labels.append(str(int(t_curr_left_to_right[len(means_list[0]) - 1])))
         plt.xticks(tick_positions, tick_labels)
         
-        # 添加圖例說明有多少組數據
+        # 添加圖例說明有多少組資料
         plt.text(0.02, 0.98, f"{num_batches} batches", 
                 transform=plt.gca().transAxes, 
                 verticalalignment='top',
@@ -1046,7 +1046,7 @@ class SimilarityCollector:
         df.to_csv(out_path)
 
     def _safe_div(self, num, denom):
-        """安全除法，支持 numpy array 和 torch tensor"""
+        """安全除法，支援 numpy array 和 torch tensor"""
         if isinstance(num, torch.Tensor):
             # GPU tensor 版本
             # 確保輸出 dtype 是 float64，即使輸入是其他類型
@@ -1075,14 +1075,14 @@ def main_float_model():
     流程概要:
     1. 載入預訓練模型
     2. 創建並設定量化模型
-    3. 設定優化器與學習率
+    3. 設定最佳化器與學習率
     4. 訓練與評估
     """
     LOGGER.info("=" * 50)
     LOGGER.info("Diff-AE EfficientDM Step 7 : 生成圖片")
     LOGGER.info("=" * 50)
     
-    # 設置運行環境（已在參數解析後設置，此處不再重複調用）
+    # 設置執行環境（已在參數解析後設置，此處不再重複調用）
     # CONFIG.setup_environment()
     _seed_all(CONFIG.SEED)
 
@@ -1133,7 +1133,7 @@ def main_float_model():
             similarity_root = f"{CONFIG.SIMILARITY_OUTPUT_ROOT}/T_{T}/v1"
             # 計算總共要收集的樣本數：每個 batch 收集 similarity_collect_samples 個
             # 如果 similarity_samples = 128, batch_size = 32，會有 4 個 batch
-            # 每個 batch 收集 15 個，總共收集 60 個（但實際上會收集 4 組數據，每組 15 個）
+            # 每個 batch 收集 15 個，總共收集 60 個（但實際上會收集 4 組資料，每組 15 個）
             total_collect_samples = CONFIG.SIMILARITY_COLLECT_SAMPLES * (CONFIG.SIMILARITY_SAMPLES // 32)  # 假設 batch_size = 32
             similarity_collector = SimilarityCollector(
                 save_root=similarity_root,
@@ -1236,7 +1236,7 @@ if __name__ == "__main__":
     parser.add_argument('--log_file','--lf', type=str, default=None,
                         help='指定 log 檔案路徑（預設: QATcode/cache_method/L1_L2_cosine/log/similarity_calculation.log）')
     parser.add_argument('--run_all_blocks', action='store_true',
-                        help='自動運行所有 31 個 block 的實驗（類似 run_similarity_experiments.sh）')
+                        help='自動執行所有 31 個 block 的實驗（類似 run_similarity_experiments.sh）')
     args = parser.parse_args()
     CONFIG.NUM_DIFFUSION_STEPS = args.num_steps
     CONFIG.CACHE_ANALYSIS_SAMPLES = args.samples
@@ -1260,7 +1260,7 @@ if __name__ == "__main__":
         print(f"[設定] Log 檔案已設為: {CONFIG.LOG_FILE}", flush=True)
     
     def setup_environment(cls) -> None:
-        """設置運行環境"""
+        """設置執行環境"""
         os.environ['CUDA_VISIBLE_DEVICES'] = cls.GPU_ID
         #torch.cuda.manual_seed(cls.SEED)
         
@@ -1318,7 +1318,7 @@ if __name__ == "__main__":
     # 如果啟用 run_all_blocks，循環處理所有 block
     if args.run_all_blocks and args.enable_similarity:
         LOGGER.info("=" * 50)
-        LOGGER.info("啟用自動運行所有 block 實驗")
+        LOGGER.info("啟用自動執行所有 block 實驗")
         LOGGER.info(f"總共 {len(ALL_BLOCKS)} 個 block")
         LOGGER.info("=" * 50)
         
