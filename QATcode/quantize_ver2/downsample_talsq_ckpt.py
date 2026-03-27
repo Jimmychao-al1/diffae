@@ -1,5 +1,6 @@
 import torch
 ckpt = torch.load('QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth', map_location='cpu')
+#ckpt = torch.load('QATcode/quantize_ver2/checkpoints/diffae_step6_lora_final.pth', map_location='cpu')
 newsd = {}
 for k, v in ckpt.items():
     if 'scale_list' in k or 'zp_list' in k:
@@ -12,3 +13,4 @@ for k, v in ckpt.items():
     newsd[k] = newv
 
 torch.save(newsd, 'QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best_20steps.pth')
+#torch.save(newsd, 'QATcode/quantize_ver2/checkpoints/diffae_step6_lora_final_20steps.pth')q
