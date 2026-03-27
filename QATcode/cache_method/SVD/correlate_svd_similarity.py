@@ -124,7 +124,7 @@ def plot_alignment(
     
     Args:
         svd_dist: SVD interval distance 序列，長度 L（通常 T-1，但可能因對齊截斷而更短）
-        l1: L1 relative change 序列，長度 L (L1 step mean)
+        l1: L1 step mean 序列，長度 L
         cos_dist: 1 - cos_step_mean 的 step 序列，長度 L
         block_slug: Block 名稱
         output_path: 輸出路徑
@@ -146,15 +146,15 @@ def plot_alignment(
     ax1 = axes[0]
     ax1_twin = ax1.twinx()
     
-    ax1.plot(x, l1, 'b-', linewidth=2, label='L1 relative change', alpha=0.8)
+    ax1.plot(x, l1, 'b-', linewidth=2, label='L1 step mean', alpha=0.8)
     ax1_twin.plot(x, svd_dist, 'r--', linewidth=2, label='SVD Subspace Dist', alpha=0.8)
     
-    ax1.set_xlabel('DDIM timestep t') # noise (T-1) -> clear (0) 放在論文圖中說明
-    ax1.set_ylabel('L1 relative change', color='b')
+    ax1.set_xlabel('DDIM current timestep t_curr') # noise (T-1) -> clear (0) 放在論文圖中說明
+    ax1.set_ylabel('L1 step mean', color='b')
     ax1_twin.set_ylabel('SVD Subspace Distance', color='r')
     ax1.tick_params(axis='y', labelcolor='b')
     ax1_twin.tick_params(axis='y', labelcolor='r')
-    ax1.set_title(f'{block_slug} - L1 relative change vs SVD Subspace Distance', fontweight='bold')
+    ax1.set_title(f'{block_slug} - L1 step mean vs SVD Subspace Distance', fontweight='bold')
     ax1.grid(True, alpha=0.3)
     ax1.legend(loc='upper left')
     ax1_twin.legend(loc='upper right')
@@ -168,7 +168,7 @@ def plot_alignment(
     ax2.plot(x, cos_dist, 'g-', linewidth=2, label='Cosine distance (1 − cosine similarity)', alpha=0.8)
     ax2_twin.plot(x, svd_dist, 'r--', linewidth=2, label='SVD Subspace Dist', alpha=0.8)
     
-    ax2.set_xlabel('DDIM timestep t') # noise (T-1) -> clear (0) 放在論文圖中說明
+    ax2.set_xlabel('DDIM current timestep t_curr') # noise (T-1) -> clear (0) 放在論文圖中說明
     ax2.set_ylabel('Cosine distance (1 − cosine similarity)', color='g')
     ax2_twin.set_ylabel('SVD Subspace Distance', color='r')
     ax2.tick_params(axis='y', labelcolor='g')
@@ -201,7 +201,7 @@ def plot_scatter(
     
     Args:
         svd_dist: SVD 子空間距離（interval-wise），長度 L
-        l1: L1 relative change（interval-wise），長度 L
+        l1: L1 step mean（interval-wise），長度 L
         cos_dist: cosine distance = 1 - cosine similarity（interval-wise），長度 L
         block_slug: Block 名稱
         output_path: 輸出路徑
@@ -213,9 +213,9 @@ def plot_scatter(
     # 左圖：L1 vs SVD
     ax1 = axes[0]
     ax1.scatter(l1, svd_dist, alpha=0.6, s=30, c='blue')
-    ax1.set_xlabel('L1 relative change')
+    ax1.set_xlabel('L1 step mean')
     ax1.set_ylabel('SVD Subspace Distance')
-    ax1.set_title(f'{block_slug} - L1 relative change vs SVD\nPearson: {l1_corr["pearson"]:.4f}, Spearman: {l1_corr["spearman"]:.4f}',
+    ax1.set_title(f'{block_slug} - L1 step mean vs SVD\nPearson: {l1_corr["pearson"]:.4f}, Spearman: {l1_corr["spearman"]:.4f}',
                   fontweight='bold')
     ax1.grid(True, alpha=0.3)
     

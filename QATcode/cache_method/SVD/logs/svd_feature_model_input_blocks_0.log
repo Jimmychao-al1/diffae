@@ -17,3 +17,20 @@
 2026-03-27 10:35:50 [INFO] [SVD_Feature_Collector] [SVD] eval_num_images 設為 32（1 batches）
 2026-03-27 10:35:50 [INFO] [SVD_Feature_Collector] [SVD] 開始生成與收集...
 2026-03-27 10:35:51 [INFO] [SVD_Feature_Collector] [SVD] Feature shape: C=128, H=128, W=128
+2026-03-27 12:34:40 [INFO] [SVD_Feature_Collector] [設定] Log 檔案: QATcode/cache_method/SVD/logs/svd_feature_model_input_blocks_0.log
+2026-03-27 12:34:40 [INFO] [SVD_Feature_Collector] ================================================================================
+2026-03-27 12:34:40 [INFO] [SVD_Feature_Collector] SVD Feature 收集開始
+2026-03-27 12:34:40 [INFO] [SVD_Feature_Collector] ================================================================================
+2026-03-27 12:34:43 [INFO] [SVD_Feature_Collector] ✅ Diff-AE 模型載入成功
+2026-03-27 12:34:45 [ERROR] [SVD_Feature_Collector] Error: CUDA out of memory. Tried to allocate 2.00 MiB. GPU 0 has a total capacity of 31.36 GiB of which 1.88 MiB is free. Process 1056104 has 530.00 MiB memory in use. Process 1081928 has 28.33 GiB memory in use. Including non-PyTorch memory, this process has 2.48 GiB memory in use. Of the allocated memory 1.87 GiB is allocated by PyTorch, and 5.27 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+2026-03-27 13:28:36 [INFO] [SVD_Feature_Collector] [設定] Log 檔案: QATcode/cache_method/SVD/logs/svd_feature_model_input_blocks_0.log
+2026-03-27 13:28:36 [INFO] [SVD_Feature_Collector] ================================================================================
+2026-03-27 13:28:36 [INFO] [SVD_Feature_Collector] SVD Feature 收集開始
+2026-03-27 13:28:36 [INFO] [SVD_Feature_Collector] ================================================================================
+2026-03-27 13:28:40 [INFO] [SVD_Feature_Collector] ✅ Diff-AE 模型載入成功
+2026-03-27 13:28:44 [INFO] [SVD_Feature_Collector] ✅ 量化模型載入成功
+2026-03-27 13:28:44 [INFO] [SVD_Feature_Collector] ✅ 基礎模型設定完成
+2026-03-27 13:28:44 [INFO] [SVD_Feature_Collector] ==================================================
+2026-03-27 13:28:44 [INFO] [SVD_Feature_Collector] 啟用 SVD Feature 收集
+2026-03-27 13:28:44 [INFO] [SVD_Feature_Collector] 目標 Block: model.input_blocks.0
+2026-03-27 13:28:44 [INFO] [SVD_Feature_Collect
