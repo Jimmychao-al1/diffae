@@ -2,7 +2,7 @@
 Stage-0E Visualization
 
 讀取 Stage-0E 的 .npy 輸出，繪製：
-1. 代表性 block 的三條曲線（L1 / CosDist / SVD）
+1. 代表性 block 的三條曲線（L1 step mean / cosine distance / SVD interval distance）
 2. 所有 block 的 FID weight bar chart
 3. 全局 heatmap（B × T-1）
 
@@ -25,6 +25,11 @@ import matplotlib.gridspec as gridspec
 # 一、讀取 Stage-0E 輸出
 # ============================================================
 
+def _build_default_t_curr(T_minus_1: int) -> np.ndarray:
+    """Fallback: interval index j -> t_curr = (T-2) - j."""
+    return (T_minus_1 - 1) - np.arange(T_minus_1, dtype=np.int32)
+
+
 def load_stage0e_outputs(output_dir: str):
     """
     從 output_dir 讀取 Stage-0E 的結果。
@@ -35,6 +40,8 @@ def load_stage0e_outputs(output_dir: str):
         cos_norm:    np.ndarray, shape (B, T-1)
         svd_norm:    np.ndarray, shape (B, T-1)
         fid_w:       np.ndarray, shape (B,)
+        t_curr:      np.ndarray, shape (T-1,)
+        axis_def:    str
     """
     p = Path(output_dir)
     block_names = np.load(p / "block_names.npy", allow_pickle=True)
@@ -42,7 +49,25 @@ def load_stage0e_outputs(output_dir: str):
     cos_norm = np.load(p / "cosdist_interval_norm.npy")
     svd_norm = np.load(p / "svd_interval_norm.npy")
     fid_w = np.load(p / "fid_w_qdiffae_clip.npy")
-    return block_names, l1_norm, cos_norm, svd_norm, fid_w
+    T_minus_1 = int(l1_norm.shape[1])
+
+    t_curr_path = p / "t_curr_interval.npy"
+    axis_def_path = p / "axis_interval_def.npy"
+    if t_curr_path.exists():
+        t_curr = np.load(t_curr_path)
+    else:
+        t_curr = _build_default_t_curr(T_minus_1)
+    if axis_def_path.exists():
+        axis_def_obj = np.load(axis_def_path, allow_pickle=True)
+        axis_def = str(axis_def_obj.item() if hasattr(axis_def_obj, "item") else axis_def_obj)
+    else:
+        axis_def = "interval-wise: display label t_curr=(T-2)-j (fallback)"
+
+    if t_curr.ndim != 1 or int(t_curr.shape[0]) != T_minus_1:
+        t_curr = _build_default_t_curr(T_minus_1)
+        axis_def = "interval-wise: display label t_curr=(T-2)-j (fallback due to invalid shape)"
+
+    return block_names, l1_norm, cos_norm, svd_norm, fid_w, t_curr, axis_def
 
 
 # ============================================================
@@ -56,10 +81,11 @@ def plot_block_curves(
     cos: np.ndarray,
     svd: np.ndarray,
     fid_w: float,
+    t_curr: np.ndarray,
     save_path: str,
 ):
     """
-    對單一 block 繪製 L1 / CosDist / SVD 三條 interval-wise 曲線。
+    對單一 block 繪製 L1 step mean / cosine distance / SVD interval distance 曲線。
 
     Args:
         block_idx: block 在陣列中的 index
@@ -69,16 +95,16 @@ def plot_block_curves(
         save_path: 輸出 PNG 路徑
     """
     T_minus_1 = len(l1)
-    x = np.arange(T_minus_1)  # interval index j (analysis axis): 0..T-2
+    x = np.arange(T_minus_1)  # analysis axis interval index j: 0..T-2
 
     fig, ax = plt.subplots(figsize=(14, 4))
 
-    ax.plot(x, l1, label="L1rel_rate (norm)", color="#1f77b4", linewidth=1.2, alpha=0.9)
-    ax.plot(x, cos, label="CosDist (norm)", color="#ff7f0e", linewidth=1.2, alpha=0.9)
-    ax.plot(x, svd, label="SVD drift (norm)", color="#2ca02c", linewidth=1.2, alpha=0.9)
+    ax.plot(x, l1, label="L1 step mean (norm)", color="#1f77b4", linewidth=1.2, alpha=0.9)
+    ax.plot(x, cos, label="Cosine distance (norm)", color="#ff7f0e", linewidth=1.2, alpha=0.9)
+    ax.plot(x, svd, label="SVD interval distance (norm)", color="#2ca02c", linewidth=1.2, alpha=0.9)
 
     # 依照統一約定：輸出顯示 t_curr，j=0 -> t_curr=T-2，j=T-2 -> t_curr=0
-    ax.set_xlabel("Current timestep t in transition x_{t+1} → x_t", fontsize=10)
+    ax.set_xlabel("Current timestep t_curr in transition x_{t+1} -> x_t", fontsize=10)
     ax.set_ylabel("Normalized value  [0, 1]", fontsize=10)
     ax.set_title(
         f"{block_name}    (FID weight = {fid_w:.4f})",
@@ -93,7 +119,7 @@ def plot_block_curves(
     xticks = list(range(0, T_minus_1, 10))
     if (T_minus_1 - 1) not in xticks:
         xticks.append(T_minus_1 - 1)
-    xticklabels = [str((T_minus_1 - 1) - j) for j in xticks]
+    xticklabels = [str(int(t_curr[j])) for j in xticks]
     ax.set_xticks(xticks)
     ax.set_xticklabels(xticklabels)
 
@@ -108,6 +134,7 @@ def plot_selected_blocks(
     cos_norm: np.ndarray,
     svd_norm: np.ndarray,
     fid_w: np.ndarray,
+    t_curr: np.ndarray,
     indices: List[int],
     save_dir: str,
 ):
@@ -132,6 +159,7 @@ def plot_selected_blocks(
             cos=cos_norm[idx],
             svd=svd_norm[idx],
             fid_w=fid_w[idx],
+            t_curr=t_curr,
             save_path=str(out),
         )
         print(f"  ✅ {name} -> {out}")
@@ -195,11 +223,12 @@ def plot_heatmap(
     block_names: np.ndarray,
     title: str,
     save_path: str,
+    t_curr: np.ndarray,
     cmap: str = "YlOrRd",
 ):
     """
     繪製 (B, T-1) 的 heatmap。
-    X 軸 = interval index, Y 軸 = block（按原始順序）。
+    X 軸顯示 DDIM current timestep t_curr（底層資料順序仍為 analysis interval index）。
     """
     B, T = data.shape
 
@@ -209,16 +238,18 @@ def plot_heatmap(
     fig, ax = plt.subplots(figsize=(16, 8))
     im = ax.imshow(data, aspect="auto", cmap=cmap, vmin=0, vmax=1, interpolation="nearest")
 
-    ax.set_xlabel("Current timestep t in transition x_{t+1} → x_t", fontsize=10)
+    ax.set_xlabel("Current timestep t_curr in transition x_{t+1} -> x_t", fontsize=10)
     ax.set_ylabel("Block", fontsize=10)
     ax.set_title(title, fontsize=12, fontweight="bold")
     ax.set_yticks(range(B))
     ax.set_yticklabels(short_names, fontsize=6)
 
-    # X 軸每 10 個 tick：tick index=j -> 顯示 t_curr=(T-1)-j (此處 T=data.shape[1]=T-1)
+    # X 軸每 10 個 tick：tick index=j -> 顯示 t_curr[j]
     xticks = list(range(0, T, 10))
+    if (T - 1) not in xticks:
+        xticks.append(T - 1)
     ax.set_xticks(xticks)
-    ax.set_xticklabels([(T - 1) - j for j in xticks], fontsize=8)
+    ax.set_xticklabels([int(t_curr[j]) for j in xticks], fontsize=8)
 
     cbar = fig.colorbar(im, ax=ax, shrink=0.8, pad=0.02)
     cbar.set_label("Normalized value [0, 1]", fontsize=9)
@@ -241,6 +272,7 @@ def plot_combined_overview(
     svd: np.ndarray,
     fid_w_all: np.ndarray,
     block_names: np.ndarray,
+    t_curr: np.ndarray,
     save_path: str,
 ):
     """
@@ -257,10 +289,10 @@ def plot_combined_overview(
 
     # --- 上半：三曲線 ---
     ax_top = fig.add_subplot(gs[0])
-    ax_top.plot(x, l1, label="L1rel_rate", color="#1f77b4", linewidth=1.3)
-    ax_top.plot(x, cos, label="CosDist", color="#ff7f0e", linewidth=1.3)
-    ax_top.plot(x, svd, label="SVD drift", color="#2ca02c", linewidth=1.3)
-    ax_top.set_xlabel("Current timestep t in transition x_{t+1} → x_t", fontsize=10)
+    ax_top.plot(x, l1, label="L1 step mean", color="#1f77b4", linewidth=1.3)
+    ax_top.plot(x, cos, label="Cosine distance", color="#ff7f0e", linewidth=1.3)
+    ax_top.plot(x, svd, label="SVD interval distance", color="#2ca02c", linewidth=1.3)
+    ax_top.set_xlabel("Current timestep t_curr in transition x_{t+1} -> x_t", fontsize=10)
     ax_top.set_ylabel("Normalized [0, 1]", fontsize=10)
     ax_top.set_title(
         f"Stage-0E: {block_name}  (w_b = {fid_w_all[block_idx]:.4f})",
@@ -272,7 +304,7 @@ def plot_combined_overview(
     if (T_minus_1 - 1) not in xticks:
         xticks.append(T_minus_1 - 1)
     ax_top.set_xticks(xticks)
-    ax_top.set_xticklabels([(T_minus_1 - 1) - j for j in xticks])
+    ax_top.set_xticklabels([int(t_curr[j]) for j in xticks])
     y_max = max(l1.max(), cos.max(), svd.max())
     ax_top.set_ylim(-0.02, min(1.05, y_max * 1.15 + 0.02))
     ax_top.legend(fontsize=9)
@@ -379,9 +411,10 @@ def main(
 
     # 1. 讀取
     print("\n[1] 載入 Stage-0E 輸出...")
-    block_names, l1_norm, cos_norm, svd_norm, fid_w = load_stage0e_outputs(input_dir)
+    block_names, l1_norm, cos_norm, svd_norm, fid_w, t_curr, axis_def = load_stage0e_outputs(input_dir)
     B, T_minus_1 = l1_norm.shape
     print(f"    B={B}, T-1={T_minus_1}")
+    print(f"    axis: {axis_def}")
 
     # 2. 選出代表性 block
     print("\n[2] 選出代表性 block...")
@@ -398,7 +431,7 @@ def main(
     curves_dir = out / "block_curves"
     plot_selected_blocks(
         block_names, l1_norm, cos_norm, svd_norm, fid_w,
-        indices=indices, save_dir=str(curves_dir),
+        t_curr=t_curr, indices=indices, save_dir=str(curves_dir),
     )
 
     # 4. Combined overview（每個 selected block 一張大圖）
@@ -415,6 +448,7 @@ def main(
             svd=svd_norm[idx],
             fid_w_all=fid_w,
             block_names=block_names,
+            t_curr=t_curr,
             save_path=str(overview_dir / f"{slug}_overview.png"),
         )
 
@@ -426,9 +460,9 @@ def main(
     print("\n[6] 繪製全局 heatmap...")
     heatmap_dir = out / "heatmaps"
     heatmap_dir.mkdir(parents=True, exist_ok=True)
-    plot_heatmap(l1_norm, block_names, "L1rel_rate (normalized)", str(heatmap_dir / "heatmap_l1.png"), cmap="YlOrRd")
-    plot_heatmap(cos_norm, block_names, "Cosine Distance (normalized)", str(heatmap_dir / "heatmap_cosdist.png"), cmap="YlOrRd")
-    plot_heatmap(svd_norm, block_names, "SVD Subspace Drift (normalized)", str(heatmap_dir / "heatmap_svd.png"), cmap="YlOrRd")
+    plot_heatmap(l1_norm, block_names, "L1 step mean (normalized)", str(heatmap_dir / "heatmap_l1.png"), t_curr=t_curr, cmap="YlOrRd")
+    plot_heatmap(cos_norm, block_names, "Cosine distance (normalized)", str(heatmap_dir / "heatmap_cosdist.png"), t_curr=t_curr, cmap="YlOrRd")
+    plot_heatmap(svd_norm, block_names, "SVD interval distance (normalized)", str(heatmap_dir / "heatmap_svd.png"), t_curr=t_curr, cmap="YlOrRd")
 
     print("\n" + "=" * 60)
     print(f"✅ 所有圖片已儲存至: {out}")

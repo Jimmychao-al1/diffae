@@ -4,7 +4,7 @@ Stage-0E: Loader + Normalization for Cache Scheduler
 此模組讀取 Stage-0 的原始實驗資料（T=100）並產生正規化的 interval-wise 指標。
 
 資料來源：
-1. L1 / Cosine: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/*.npz
+1. L1 / Cosine: QATcode/cache_method/L1_L2_cosine/T_100/v2_latest/result_npz/*.npz
 2. SVD drift: QATcode/cache_method/SVD/svd_metrics/*.json
 3. FID sensitivity: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json
 
@@ -16,7 +16,7 @@ Stage-0E: Loader + Normalization for Cache Scheduler
 import json
 import logging
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 
@@ -35,26 +35,32 @@ LOGGER = logging.getLogger("Stage0E")
 
 def load_interval_metrics(
     l1_cos_dir: str,
-    svd_dir: str
-) -> Tuple[List[str], np.ndarray, np.ndarray, np.ndarray]:
+    svd_dir: str,
+    strict: bool = False,
+) -> Tuple[List[str], np.ndarray, np.ndarray, np.ndarray, Dict[str, str], List[str]]:
     """
-    掃描兩個資料夾，讀取所有 block 的 L1 / Cos / SVD。
+    掃描兩個資料夾，讀取所有 block 的 L1 step mean / cosine distance / SVD interval distance。
     
     Args:
-        l1_cos_dir: L1/Cosine npz 檔案目錄，例如 "QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz"
+        l1_cos_dir: L1/Cosine npz 檔案目錄，例如 "QATcode/cache_method/L1_L2_cosine/T_100/v2_latest/result_npz"
         svd_dir: SVD metrics JSON 目錄，例如 "QATcode/cache_method/SVD/svd_metrics"
+        strict: 若為 True，任一 block 載入失敗時最終會 raise RuntimeError
     
     Returns:
         block_names: List[str]，block 名稱列表（依 npz 檔名排序）
         L1_interval: np.ndarray, shape (B, T-1)，第 j 欄 = **analysis axis 上 interval j**（與 .npz 一致）
         CosDist_interval: 同上
         SVD_interval: 同上
+        source_keys: Dict[str, str]，記錄實際使用的來源 key
+        failed_blocks: List[str]，載入失敗或被跳過的 block
     
     Interval mapping（與 similarity_calculation / L1_L2_cosine .npz 一致）：
     - 欄位索引 j ∈ [0..T-2]：**interval j** = 沿 **analysis axis** 在點 j 與 j+1 之間的變化
     - 與 DDIM 進模型 timestep：**該區間對應 t_ddim 由 (99−j) 變到 (98−j)**（T=100）
     - 勿將 j 誤解為「DDIM 張量上的 t=j→t=j+1」；兩者索引方向相反，見 cache_time_axis_audit.md
-    - L1: l1_rate_step_mean[j]；Cos: 1.0 - cos_step_mean[j]；SVD: subspace_dist[j+1]（見下方原始對應）
+    - L1: 正式優先使用 l1_step_mean[j]；若缺失則 fallback 至 l1_rate_step_mean[j]（legacy）
+    - Cos: 1.0 - cos_step_mean[j]
+    - SVD: subspace_dist[j+1]（見下方原始對應）
     """
     l1_cos_path = Path(l1_cos_dir)
     svd_path = Path(svd_dir)
@@ -69,10 +75,12 @@ def load_interval_metrics(
     if len(npz_files) == 0:
         raise ValueError(f"在 {l1_cos_path} 中找不到任何 .npz 檔案")
     
-    block_names = []
-    L1_list = []
-    CosDist_list = []
-    SVD_list = []
+    block_names: List[str] = []
+    L1_list: List[np.ndarray] = []
+    CosDist_list: List[np.ndarray] = []
+    SVD_list: List[np.ndarray] = []
+    failed_blocks: List[str] = []
+    l1_source_used: Optional[str] = None
     
     LOGGER.info(f"載入 {len(npz_files)} 個 block 的 interval-wise 指標...")
     
@@ -80,40 +88,53 @@ def load_interval_metrics(
         block_slug = npz_file.stem  # 例如 "model_input_blocks_0"
         
         # 轉回原始格式：model_input_blocks_0 -> model.input_blocks.0
-        # 策略：只替換特定的關鍵下劃線
-        block_name = block_slug
-        block_name = block_name.replace('model_', 'model.', 1)  # model_ -> model.
-        block_name = block_name.replace('_blocks_', '_blocks.', 1)  # _blocks_ -> _blocks.
-        block_name = block_name.replace('input_', 'input_')  # 保持 input_
-        block_name = block_name.replace('output_', 'output_')  # 保持 output_
-        block_name = block_name.replace('middle_', 'middle_')  # 保持 middle_
-        # 然後再全部的 _ 替換成 .
-        # 不對，應該更小心：
-        # model_input_blocks_0 -> 想要 model.input_blocks.0
-        # model_middle_block -> 想要 model.middle_block
-        
-        # 重新設計：
         if block_slug.startswith('model_'):
             rest = block_slug[6:]  # 去掉 'model_'
-            # rest 可能是：input_blocks_0, middle_block, output_blocks_5
             parts = rest.split('_')
             if len(parts) >= 3 and parts[-1].isdigit():
-                # input_blocks_0 -> ['input', 'blocks', '0']
-                # 合成：input_blocks.0
                 block_name = 'model.' + '_'.join(parts[:-1]) + '.' + parts[-1]
             else:
-                # middle_block -> ['middle', 'block']
-                block_name = 'model.' + rest.replace('_', '_')
+                block_name = 'model.' + rest
         else:
             block_name = block_slug
         
         # 2. 讀取 L1 / Cosine
         try:
             data = np.load(npz_file)
-            l1_rate_step_mean = data['l1_rate_step_mean']  # shape (T-1,)
+            if 'l1_step_mean' in data:
+                l1_step_mean = data['l1_step_mean']
+                l1_source_key = 'l1_step_mean'
+            elif 'l1_rate_step_mean' in data:
+                l1_step_mean = data['l1_rate_step_mean']
+                l1_source_key = 'l1_rate_step_mean (fallback)'
+                LOGGER.warning(
+                    f"[legacy fallback] block={block_name} 缺少 l1_step_mean，改用 l1_rate_step_mean"
+                )
+            else:
+                raise ValueError(
+                    f"block={block_name}: similarity npz 缺少 L1 key，"
+                    f"找不到 'l1_step_mean' 或 'l1_rate_step_mean'"
+                )
+            if 'cos_step_mean' not in data:
+                raise ValueError(
+                    f"block={block_name}: similarity npz 缺少必要 key 'cos_step_mean'"
+                )
             cos_step_mean = data['cos_step_mean']  # shape (T-1,)，cosine similarity
-            
-            T_minus_1 = len(l1_rate_step_mean)
+
+            if l1_step_mean.ndim != 1:
+                raise ValueError(
+                    f"block={block_name}, key={l1_source_key}: shape={l1_step_mean.shape}, expected 1D (T-1,)"
+                )
+            if cos_step_mean.ndim != 1:
+                raise ValueError(
+                    f"block={block_name}, key=cos_step_mean: shape={cos_step_mean.shape}, expected 1D (T-1,)"
+                )
+            T_minus_1 = int(l1_step_mean.shape[0])
+            if int(cos_step_mean.shape[0]) != T_minus_1:
+                raise ValueError(
+                    f"block={block_name}: 長度不一致，"
+                    f"{l1_source_key}={l1_step_mean.shape}, cos_step_mean={cos_step_mean.shape}"
+                )
             
             # 3. 讀取 SVD
             svd_json_path = svd_path / f"{block_slug}.json"
@@ -123,12 +144,19 @@ def load_interval_metrics(
             
             with open(svd_json_path, 'r') as f:
                 svd_data = json.load(f)
-            
+            if 'subspace_dist' not in svd_data:
+                raise ValueError(
+                    f"block={block_name}: SVD JSON 缺少必要 key 'subspace_dist'"
+                )
             subspace_dist = np.array(svd_data['subspace_dist'])  # shape (T,)
+            if subspace_dist.ndim != 1:
+                raise ValueError(
+                    f"block={block_name}, key=subspace_dist: shape={subspace_dist.shape}, expected 1D (T,)"
+                )
             
             # 4. Interval mapping
             # interval i in [0..T-2] 代表 step i → i+1
-            L1_interval = l1_rate_step_mean  # shape (T-1,)
+            L1_interval = l1_step_mean  # shape (T-1,)
             CosDist_interval = 1.0 - cos_step_mean  # 轉成 cosine distance
             
             # SVD: subspace_dist[t] 測量 (t-1) → t
@@ -136,9 +164,24 @@ def load_interval_metrics(
             SVD_interval = subspace_dist[1:]  # shape (T-1,)，取 subspace_dist[1..T-1]
             
             # 檢查長度一致性
-            assert len(L1_interval) == T_minus_1
-            assert len(CosDist_interval) == T_minus_1
-            assert len(SVD_interval) == T_minus_1
+            if len(L1_interval) != T_minus_1:
+                raise ValueError(
+                    f"block={block_name}, key={l1_source_key}: len={len(L1_interval)}, expected={T_minus_1}"
+                )
+            if len(CosDist_interval) != T_minus_1:
+                raise ValueError(
+                    f"block={block_name}, key=cos_step_mean: len={len(CosDist_interval)}, expected={T_minus_1}"
+                )
+            if len(SVD_interval) != T_minus_1:
+                raise ValueError(
+                    f"block={block_name}, key=subspace_dist[1:]: len={len(SVD_interval)}, expected={T_minus_1}, "
+                    f"raw_subspace_dist_shape={subspace_dist.shape}"
+                )
+
+            if l1_source_used is None:
+                l1_source_used = l1_source_key
+            elif l1_source_used != l1_source_key:
+                l1_source_used = "mixed(l1_step_mean + l1_rate_step_mean fallback)"
             
             block_names.append(block_name)
             L1_list.append(L1_interval)
@@ -147,11 +190,21 @@ def load_interval_metrics(
             
         except Exception as e:
             LOGGER.error(f"載入 {block_name} 時出錯: {e}")
+            failed_blocks.append(block_name)
             continue
     
     if len(block_names) == 0:
         raise ValueError("沒有成功載入任何 block 的資料")
     
+    if failed_blocks:
+        LOGGER.warning(
+            f"共有 {len(failed_blocks)} 個 block 載入失敗/跳過：{failed_blocks}"
+        )
+        if strict:
+            raise RuntimeError(
+                f"strict=True，且有 block 載入失敗：{failed_blocks}"
+            )
+
     # 5. 堆疊成 (B, T-1) 陣列
     L1_interval_all = np.stack(L1_list, axis=0)  # (B, T-1)
     CosDist_interval_all = np.stack(CosDist_list, axis=0)  # (B, T-1)
@@ -162,7 +215,13 @@ def load_interval_metrics(
     LOGGER.info(f"   CosDist_interval shape: {CosDist_interval_all.shape}")
     LOGGER.info(f"   SVD_interval shape: {SVD_interval_all.shape}")
     
-    return block_names, L1_interval_all, CosDist_interval_all, SVD_interval_all
+    source_keys = {
+        "l1_source_key": l1_source_used or "unknown",
+        "cos_source_key": "cos_step_mean",
+        "svd_source_key": "subspace_dist[1:]",
+    }
+
+    return block_names, L1_interval_all, CosDist_interval_all, SVD_interval_all, source_keys, failed_blocks
 
 
 #=============================================================================
@@ -318,7 +377,7 @@ def compute_fid_weights(
     1. Noise 修正：delta_pos = max(0, delta - eps_noise)
     2. Worst-case 聚合：S_b = max_k delta_pos[b][k]
     3. Quantile clipping：S_clip = min(S, quantile_95)
-    4. Min-max 正規化：w = S_clip / max(S_clip)
+    4. Quantile clipping 後做 max-normalization：w = S_clip / max(S_clip)
     5. Rank-based（可選）：按 S 排序後線性對應映射到 [0, 1]
     """
     B = len(block_names)
@@ -358,7 +417,7 @@ def compute_fid_weights(
     LOGGER.info(f"Quantile clipping (q={quantile}): hi={hi:.4f}")
     LOGGER.info(f"S_clip 統計：min={S_clip.min():.4f}, max={S_clip.max():.4f}, mean={S_clip.mean():.4f}")
     
-    # 4. Min-max 正規化
+    # 4. Quantile clipping 後做 max-normalization
     h = S_clip.max()
     if h <= 0:
         LOGGER.warning("S_clip.max() <= 0，回傳全零權重")
@@ -414,6 +473,7 @@ def run_stage0e(
     output_dir: str,
     eps_noise: float = 0.5,
     quantile: float = 0.95,
+    strict: bool = False,
 ):
     """
     Stage-0E 主流程：讀取 + 正規化 + 輸出。
@@ -426,13 +486,14 @@ def run_stage0e(
         eps_noise: FID noise 修正閾值
         quantile: FID quantile clipping 閾值
     
-    輸出檔案（都存成 .npy）：
+    輸出檔案（都存成 .npy / .json）：
     - block_names.npy: (B,) object array，block 名稱列表
-    - l1_interval_norm.npy: (B, T-1) float32，正規化的 L1rel_rate
+    - l1_interval_norm.npy: (B, T-1) float32，正規化的 L1 step mean (interval-wise)
     - cosdist_interval_norm.npy: (B, T-1) float32，正規化的 cosine distance
-    - svd_interval_norm.npy: (B, T-1) float32，正規化的 SVD 子空間距離
+    - svd_interval_norm.npy: (B, T-1) float32，正規化的 SVD interval distance
     - fid_w_qdiffae_clip.npy: (B,) float32，quantile-clipped FID weights
     - fid_w_qdiffae_rank.npy: (B,) float32，rank-based FID weights（用於 ablation）
+    - stage0e_metadata.json: 輸入來源與時間軸定義 metadata
     """
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
@@ -443,9 +504,10 @@ def run_stage0e(
     
     # 1. 載入 interval-wise 指標
     LOGGER.info("\n[步驟 1] 載入 L1 / Cosine / SVD interval-wise 指標...")
-    block_names_metric, L1_interval_all, CosDist_interval_all, SVD_interval_all = load_interval_metrics(
+    block_names_metric, L1_interval_all, CosDist_interval_all, SVD_interval_all, source_keys, failed_blocks = load_interval_metrics(
         l1_cos_dir=l1_cos_dir,
-        svd_dir=svd_dir
+        svd_dir=svd_dir,
+        strict=strict,
     )
     
     # 2. 正規化
@@ -538,11 +600,14 @@ def run_stage0e(
     block_names_array = np.array(block_names_metric, dtype=object)
     
     np.save(output_path / "block_names.npy", block_names_array)
+    np.save(output_path / "block_names_metric.npy", block_names_array)  # legacy alias
     np.save(output_path / "l1_interval_norm.npy", L1_interval_norm)
     np.save(output_path / "cosdist_interval_norm.npy", CosDist_interval_norm)
     np.save(output_path / "svd_interval_norm.npy", SVD_interval_norm)
     np.save(output_path / "fid_w_qdiffae_clip.npy", w_clip)
+    np.save(output_path / "fid_weights.npy", w_clip)  # legacy alias
     np.save(output_path / "fid_w_qdiffae_rank.npy", w_rank)
+    np.save(output_path / "delta_fid.npy", np.array(delta_fid_aligned, dtype=object), allow_pickle=True)  # legacy alias
 
     # ------------------------------------------------------------
     # 輸出層：時間軸對齊資訊（不改變既有數值陣列）
@@ -559,15 +624,33 @@ def run_stage0e(
             dtype=object,
         ),
     )
+
+    metadata = {
+        "l1_source_key": source_keys["l1_source_key"],
+        "cos_source_key": source_keys["cos_source_key"],
+        "svd_source_key": source_keys["svd_source_key"],
+        "t_axis_definition": "interval-wise: analysis interval index j (0..T-2) keeps internal order; display label is t_curr=(T-2)-j",
+        "similarity_root": str(Path(l1_cos_dir).resolve()),
+        "svd_root": str(Path(svd_dir).resolve()),
+        "failed_blocks_count": len(failed_blocks),
+        "failed_blocks": failed_blocks,
+        "strict_mode": bool(strict),
+    }
+    with open(output_path / "stage0e_metadata.json", "w", encoding="utf-8") as f:
+        json.dump(metadata, f, ensure_ascii=False, indent=2)
     
     LOGGER.info(f"✅ 所有檔案已儲存至: {output_path}")
     LOGGER.info("\n輸出檔案列表：")
     LOGGER.info(f"  - block_names.npy: shape {block_names_array.shape}")
+    LOGGER.info(f"  - block_names_metric.npy: shape {block_names_array.shape} (legacy alias)")
     LOGGER.info(f"  - l1_interval_norm.npy: shape {L1_interval_norm.shape}")
     LOGGER.info(f"  - cosdist_interval_norm.npy: shape {CosDist_interval_norm.shape}")
     LOGGER.info(f"  - svd_interval_norm.npy: shape {SVD_interval_norm.shape}")
     LOGGER.info(f"  - fid_w_qdiffae_clip.npy: shape {w_clip.shape}")
+    LOGGER.info(f"  - fid_weights.npy: shape {w_clip.shape} (legacy alias)")
     LOGGER.info(f"  - fid_w_qdiffae_rank.npy: shape {w_rank.shape}")
+    LOGGER.info("  - delta_fid.npy: object array (legacy alias)")
+    LOGGER.info("  - stage0e_metadata.json")
     
     LOGGER.info("\n" + "=" * 80)
     LOGGER.info("Stage-0E 完成！")
