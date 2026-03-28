@@ -11350,3 +11350,1458 @@ batch_size: 32
 2026-03-24 11:01:17,036 [INFO] 執行 'main_float_model' 完成，耗時: 19912.01 秒
 2026-03-24 11:01:17,036 [INFO] 執行 'main_float_model' 完成，耗時: 19912.01 秒
 fid (0): 2.810190439224243
+/home/jimmy/anaconda3/envs/diffae_bw/lib/python3.10/site-packages/torchmetrics/utilities/imports.py:21: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import DistributionNotFound, get_distribution
+2026-03-28 04:06:36,960 [INFO] ==================================================
+2026-03-28 04:06:36,960 [INFO] ==================================================
+2026-03-28 04:06:36,960 [INFO] FID Cache Sensitivity Analysis
+2026-03-28 04:06:36,960 [INFO] FID Cache Sensitivity Analysis
+2026-03-28 04:06:36,960 [INFO] ==================================================
+2026-03-28 04:06:36,960 [INFO] ==================================================
+2026-03-28 04:06:36,960 [INFO] Diffusion steps: 100
+2026-03-28 04:06:36,960 [INFO] Diffusion steps: 100
+2026-03-28 04:06:36,960 [INFO] FID evaluation samples: 1000
+2026-03-28 04:06:36,960 [INFO] FID evaluation samples: 1000
+2026-03-28 04:06:36,960 [INFO] Checkpoint: QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth
+2026-03-28 04:06:36,960 [INFO] Checkpoint: QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth
+2026-03-28 04:06:36,960 [INFO] Output directory: QATcode/cache_method/FID/fid_cache_sensitivity
+2026-03-28 04:06:36,960 [INFO] Output directory: QATcode/cache_method/FID/fid_cache_sensitivity
+2026-03-28 04:06:36,960 [INFO] Results JSON: fid_sensitivity_results.json
+2026-03-28 04:06:36,960 [INFO] Results JSON: fid_sensitivity_results.json
+2026-03-28 04:06:36,960 [INFO] Log file: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_T100.log
+2026-03-28 04:06:36,960 [INFO] Log file: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_T100.log
+2026-03-28 04:06:36,960 [INFO] ==================================================
+2026-03-28 04:06:36,960 [INFO] ==================================================
+2026-03-28 04:06:36,960 [INFO] ==================================================
+2026-03-28 04:06:36,960 [INFO] ==================================================
+2026-03-28 04:06:36,960 [INFO] FID Cache Sensitivity Analysis
+2026-03-28 04:06:36,960 [INFO] FID Cache Sensitivity Analysis
+2026-03-28 04:06:36,960 [INFO] ==================================================
+2026-03-28 04:06:36,960 [INFO] ==================================================
+2026-03-28 04:06:36,960 [INFO] 使用設備: cuda
+2026-03-28 04:06:36,960 [INFO] 使用設備: cuda
+2026-03-28 04:06:36,960 [INFO] Diffusion steps: 100
+2026-03-28 04:06:36,960 [INFO] Diffusion steps: 100
+2026-03-28 04:06:36,960 [INFO] FID evaluation samples: 1000
+2026-03-28 04:06:36,960 [INFO] FID evaluation samples: 1000
+2026-03-28 04:06:36,960 [INFO] 載入 Diff-AE 模型: checkpoints/ffhq128_autoenc_latent/last.ckpt
+2026-03-28 04:06:36,960 [INFO] 載入 Diff-AE 模型: checkpoints/ffhq128_autoenc_latent/last.ckpt
+Global seed set to 0
+2026-03-28 04:06:38,989 [INFO] Diff-AE 模型載入完成
+2026-03-28 04:06:38,989 [INFO] Diff-AE 模型載入完成
+2026-03-28 04:06:39,047 [INFO] 執行 'load_diffae_model' 完成，耗時: 2.09 秒
+2026-03-28 04:06:39,047 [INFO] 執行 'load_diffae_model' 完成，耗時: 2.09 秒
+2026-03-28 04:06:39,047 [INFO] ✅ Diff-AE 模型載入成功
+2026-03-28 04:06:39,047 [INFO] ✅ Diff-AE 模型載入成功
+2026-03-28 04:06:39,047 [INFO] === 創建 LoRA 量化模型 ===
+2026-03-28 04:06:39,047 [INFO] === 創建 LoRA 量化模型 ===
+2026-03-28 04:06:39,047 [INFO] === 開始 UNet LoRA 量化改造 ===
+2026-03-28 04:06:39,047 [INFO] === 開始 UNet LoRA 量化改造 ===
+2026-03-28 04:06:39,047 [INFO] 改造模組: time_embed
+2026-03-28 04:06:39,047 [INFO] 改造模組: time_embed
+2026-03-28 04:06:39,047 [INFO]   跳過量化特殊模組: 0
+2026-03-28 04:06:39,047 [INFO]   跳過量化特殊模組: 0
+2026-03-28 04:06:39,047 [INFO]   跳過量化特殊模組: 2
+2026-03-28 04:06:39,047 [INFO]   跳過量化特殊模組: 2
+2026-03-28 04:06:39,047 [INFO] 改造模組: input_blocks
+2026-03-28 04:06:39,047 [INFO] 改造模組: input_blocks
+2026-03-28 04:06:39,047 [INFO]   跳過量化特殊模組: 0
+2026-03-28 04:06:39,047 [INFO]   跳過量化特殊模組: 0
+2026-03-28 04:06:39,048 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,048 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,122 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,122 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,123 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,123 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,124 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,124 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,124 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,124 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,125 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,125 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,126 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,126 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,126 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,126 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,127 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,127 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,128 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,128 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,128 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,128 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,129 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,129 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,130 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,130 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,130 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,130 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,131 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,131 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,131 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,131 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,132 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,132 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,133 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,133 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,133 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,133 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,134 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,134 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,135 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,135 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,135 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,135 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,136 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,136 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,137 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,137 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,137 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,137 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,139 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,139 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,140 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,140 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,140 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,140 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,143 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:06:39,143 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:06:39,143 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,143 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,145 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,145 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,146 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,146 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,147 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,147 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,150 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,150 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,152 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,152 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,153 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,153 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,154 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,154 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,156 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,156 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,160 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,160 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,162 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,162 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,163 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,163 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,168 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:06:39,168 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:06:39,168 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,168 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,173 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,173 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,174 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,174 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,175 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,175 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,180 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,180 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,185 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,185 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,187 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,187 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,188 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,188 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,193 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,193 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,199 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,199 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,201 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,201 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,202 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,202 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,209 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:06:39,209 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:06:39,209 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,209 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,218 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,218 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,221 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,221 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,222 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,222 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,229 [INFO] 改造模組: middle_block
+2026-03-28 04:06:39,229 [INFO] 改造模組: middle_block
+2026-03-28 04:06:39,229 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,229 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,238 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,238 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,240 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,240 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,241 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,241 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,248 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,248 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,257 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,257 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,259 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,259 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,260 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,260 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,268 [INFO] 改造模組: output_blocks
+2026-03-28 04:06:39,268 [INFO] 改造模組: output_blocks
+2026-03-28 04:06:39,268 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,268 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,286 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,286 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,288 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,288 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,289 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,289 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,299 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:06:39,299 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:06:39,299 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,299 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,316 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,316 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,319 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,319 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,320 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,320 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,329 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:06:39,329 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:06:39,329 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,329 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,345 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,345 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,347 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,347 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,348 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,348 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,356 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:06:39,356 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:06:39,357 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,357 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,366 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,366 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,368 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,368 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,369 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,369 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,378 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,378 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,387 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,387 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,389 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,389 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,390 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,390 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,395 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:06:39,395 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:06:39,396 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,396 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,406 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,406 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,408 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,408 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,410 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,410 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,414 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:06:39,414 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:06:39,414 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,414 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,424 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,424 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,426 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,426 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,427 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,427 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,434 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:06:39,434 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:06:39,434 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,434 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,439 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,439 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,441 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,441 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,442 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,442 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,447 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,447 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,454 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,454 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,455 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,455 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,456 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,456 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,458 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:06:39,458 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:06:39,459 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,459 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,463 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,463 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,464 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,464 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,465 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,465 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,468 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:06:39,468 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:06:39,468 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,468 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,471 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,471 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,473 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,473 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,474 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,474 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,476 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:06:39,476 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:06:39,476 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,476 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,479 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,479 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,480 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,480 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,481 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,481 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,483 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,483 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,486 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,486 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,486 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,486 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,487 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,487 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,488 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:06:39,488 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:06:39,488 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,488 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,489 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,489 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,490 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,490 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,490 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,490 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,491 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:06:39,491 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:06:39,491 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,491 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,493 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,493 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,493 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,493 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,494 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,494 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,495 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:06:39,495 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:06:39,495 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,495 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,495 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,495 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,496 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,496 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,497 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,497 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,497 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,497 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,499 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,499 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,500 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,500 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,500 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,500 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,501 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:06:39,501 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:06:39,501 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,501 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,503 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,503 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,504 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,504 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,504 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,504 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,505 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:06:39,505 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:06:39,505 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,505 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,506 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,506 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,507 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,507 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,507 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,507 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:06:39,508 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:06:39,508 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:06:39,508 [INFO] 改造模組: out
+2026-03-28 04:06:39,508 [INFO] 改造模組: out
+2026-03-28 04:06:39,508 [INFO]   跳過量化特殊模組: 2
+2026-03-28 04:06:39,508 [INFO]   跳過量化特殊模組: 2
+2026-03-28 04:06:39,512 [INFO] 執行 'create_float_quantized_model' 完成，耗時: 0.47 秒
+2026-03-28 04:06:39,512 [INFO] 執行 'create_float_quantized_model' 完成，耗時: 0.47 秒
+2026-03-28 04:06:39,601 [INFO] 載入校準資料...
+2026-03-28 04:06:39,601 [INFO] 載入校準資料...
+2026-03-28 04:06:39,860 [INFO] ✅ 載入真實校準資料成功
+2026-03-28 04:06:39,860 [INFO] ✅ 載入真實校準資料成功
+2026-03-28 04:06:39,862 [INFO] ==================================================
+2026-03-28 04:06:39,862 [INFO] ==================================================
+2026-03-28 04:06:39,862 [INFO] 5. Setting first and last layers to 8-bit...
+2026-03-28 04:06:39,862 [INFO] 5. Setting first and last layers to 8-bit...
+2026-03-28 04:06:39,864 [INFO] 找到 144 個量化模組
+2026-03-28 04:06:39,864 [INFO] 找到 144 個量化模組
+2026-03-28 04:06:39,864 [INFO] ✅ 首尾層 8-bit 設定完成
+2026-03-28 04:06:39,864 [INFO] ✅ 首尾層 8-bit 設定完成
+2026-03-28 04:06:39,864 [INFO] set quant state to True, True for layer 1
+2026-03-28 04:06:39,864 [INFO] set quant state to True, True for layer 1
+2026-03-28 04:06:39,864 [INFO] set quant state to True, True for layer 2
+2026-03-28 04:06:39,864 [INFO] set quant state to True, True for layer 2
+2026-03-28 04:06:39,864 [INFO] set quant state to True, False for layer 3
+2026-03-28 04:06:39,864 [INFO] set quant state to True, False for layer 3
+2026-03-28 04:06:39,865 [INFO] set quant state to False, False for layer 144
+2026-03-28 04:06:39,865 [INFO] set quant state to False, False for layer 144
+2026-03-28 04:06:43,042 [INFO] EMA(load from ema_model.model.*): provided=1106 effective_loaded=1106 missing=0 unexpected=0
+2026-03-28 04:06:43,042 [INFO] EMA(load from ema_model.model.*): provided=1106 effective_loaded=1106 missing=0 unexpected=0
+2026-03-28 04:06:43,099 [INFO] MODEL(load from model.model.*): provided=1106 effective_loaded=1106 missing=0 unexpected=0
+2026-03-28 04:06:43,099 [INFO] MODEL(load from model.model.*): provided=1106 effective_loaded=1106 missing=0 unexpected=0
+2026-03-28 04:06:43,118 [INFO] ✅ 模型載入與設定完成
+2026-03-28 04:06:43,118 [INFO] ✅ 模型載入與設定完成
+2026-03-28 04:06:43,119 [INFO] ==================================================
+2026-03-28 04:06:43,119 [INFO] 執行 Baseline FID (無 cache)
+2026-03-28 04:06:43,119 [INFO] ==================================================
+2026-03-28 04:06:43,119 [INFO] 執行 Baseline FID (無 cache)
+2026-03-28 04:06:43,119 [INFO] ==================================================
+2026-03-28 04:06:43,119 [INFO] ==================================================
+2026-03-28 04:06:43,119 [INFO] 🚫 不使用 cache (baseline)
+2026-03-28 04:06:43,119 [INFO] 🚫 不使用 cache (baseline)
+2026-03-28 04:06:43,119 [INFO] 開始生成 1000 張圖片並計算 FID...
+2026-03-28 04:06:43,119 [INFO] 開始生成 1000 張圖片並計算 FID...
+2026-03-28 04:06:43,119 [INFO] 輸出目錄: mycache/gen_images/ffhq128_autoenc_latent_temp_T100 (實驗結束後會清空)
+2026-03-28 04:06:43,119 [INFO] 輸出目錄: mycache/gen_images/ffhq128_autoenc_latent_temp_T100 (實驗結束後會清空)
+Model params: 174.19 M
+loading pretrain ... 130M
+step: 1019986
+loading latent stats ...
+使用自動混合精度: torch.bfloat16
+local seed: 0
+train data: 70001
+val data: 70001
+copy images:   0%|          | 0/31 [00:00<?, ?it/s]copy images:   3%|▎         | 1/31 [00:00<00:10,  2.79it/s]copy images:  10%|▉         | 3/31 [00:00<00:04,  6.11it/s]copy images:  16%|█▌        | 5/31 [00:00<00:03,  7.86it/s]copy images:  23%|██▎       | 7/31 [00:00<00:02,  8.72it/s]copy images:  29%|██▉       | 9/31 [00:01<00:02,  9.26it/s]copy images:  32%|███▏      | 10/31 [00:01<00:02,  9.39it/s]copy images:  35%|███▌      | 11/31 [00:01<00:02,  9.50it/s]copy images:  39%|███▊      | 12/31 [00:01<00:02,  9.47it/s]copy images:  45%|████▌     | 14/31 [00:01<00:01,  9.72it/s]copy images:  48%|████▊     | 15/31 [00:01<00:01,  9.74it/s]copy images:  55%|█████▍    | 17/31 [00:01<00:01,  9.94it/s]copy images:  58%|█████▊    | 18/31 [00:02<00:01,  9.87it/s]copy images:  65%|██████▍   | 20/31 [00:02<00:01,  9.92it/s]copy images:  71%|███████   | 22/31 [00:02<00:00, 10.01it/s]copy images:  74%|███████▍  | 23/31 [00:02<00:00,  9.99it/s]copy images:  81%|████████  | 25/31 [00:02<00:00, 10.03it/s]copy images:  87%|████████▋ | 27/31 [00:02<00:00, 10.15it/s]copy images:  94%|█████████▎| 29/31 [00:03<00:00, 10.13it/s]copy images: 100%|██████████| 31/31 [00:03<00:00, 10.08it/s]copy images: 100%|██████████| 31/31 [00:03<00:00,  9.14it/s]
+batch_size: 32
+generating images:   0%|          | 0/32 [00:00<?, ?it/s]/home/jimmy/diffae/./diffusion/base.py:329: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast(self.conf.fp16):
+generating images:   3%|▎         | 1/32 [00:20<10:46, 20.86s/it]generating images:   6%|▋         | 2/32 [00:41<10:23, 20.79s/it]generating images:   9%|▉         | 3/32 [01:02<10:02, 20.77s/it]generating images:  12%|█▎        | 4/32 [01:23<09:41, 20.76s/it]generating images:  16%|█▌        | 5/32 [01:43<09:20, 20.75s/it]generating images:  19%|█▉        | 6/32 [02:04<08:59, 20.75s/it]generating images:  22%|██▏       | 7/32 [02:25<08:38, 20.74s/it]generating images:  25%|██▌       | 8/32 [02:46<08:17, 20.74s/it]generating images:  28%|██▊       | 9/32 [03:06<07:57, 20.74s/it]generating images:  31%|███▏      | 10/32 [03:27<07:36, 20.74s/it]generating images:  34%|███▍      | 11/32 [03:48<07:15, 20.74s/it]generating images:  38%|███▊      | 12/32 [04:09<06:54, 20.75s/it]generating images:  41%|████      | 13/32 [04:29<06:34, 20.74s/it]generating images:  44%|████▍     | 14/32 [04:50<06:13, 20.75s/it]generating images:  47%|████▋     | 15/32 [05:11<05:52, 20.75s/it]generating images:  50%|█████     | 16/32 [05:32<05:31, 20.75s/it]generating images:  53%|█████▎    | 17/32 [05:52<05:11, 20.74s/it]generating images:  56%|█████▋    | 18/32 [06:13<04:50, 20.74s/it]generating images:  59%|█████▉    | 19/32 [06:34<04:29, 20.74s/it]generating images:  62%|██████▎   | 20/32 [06:54<04:08, 20.74s/it]generating images:  66%|██████▌   | 21/32 [07:15<03:48, 20.74s/it]generating images:  69%|██████▉   | 22/32 [07:36<03:27, 20.74s/it]generating images:  72%|███████▏  | 23/32 [07:57<03:06, 20.74s/it]generating images:  75%|███████▌  | 24/32 [08:17<02:45, 20.74s/it]generating images:  78%|███████▊  | 25/32 [08:38<02:25, 20.74s/it]generating images:  81%|████████▏ | 26/32 [08:59<02:04, 20.74s/it]generating images:  84%|████████▍ | 27/32 [09:20<01:43, 20.74s/it]generating images:  88%|████████▊ | 28/32 [09:40<01:22, 20.74s/it]generating images:  91%|█████████ | 29/32 [10:01<01:02, 20.74s/it]generating images:  94%|█████████▍| 30/32 [10:22<00:41, 20.74s/it]generating images:  97%|█████████▋| 31/32 [10:43<00:20, 20.74s/it]generating images: 100%|██████████| 32/32 [10:48<00:00, 16.24s/it]generating images: 100%|██████████| 32/32 [10:48<00:00, 20.28s/it]
+  0%|          | 0/124 [00:00<?, ?it/s]  8%|▊         | 10/124 [00:00<00:01, 99.94it/s] 31%|███▏      | 39/124 [00:00<00:00, 208.69it/s] 55%|█████▍    | 68/124 [00:00<00:00, 243.12it/s] 78%|███████▊  | 97/124 [00:00<00:00, 259.03it/s]100%|██████████| 124/124 [00:00<00:00, 224.54it/s]
+  0%|          | 0/125 [00:00<?, ?it/s] 11%|█         | 14/125 [00:00<00:00, 136.55it/s] 34%|███▍      | 43/125 [00:00<00:00, 222.50it/s] 58%|█████▊    | 72/125 [00:00<00:00, 250.16it/s] 81%|████████  | 101/125 [00:00<00:00, 264.33it/s]100%|██████████| 125/125 [00:00<00:00, 230.43it/s]
+2026-03-28 04:17:36,699 [INFO] 📊 FID Score: 0.4936
+2026-03-28 04:17:36,699 [INFO] 📊 FID Score: 0.4936
+2026-03-28 04:17:36,699 [INFO] 🗑️  清空臨時圖片: mycache/gen_images/ffhq128_autoenc_latent_temp_T100
+2026-03-28 04:17:36,699 [INFO] 🗑️  清空臨時圖片: mycache/gen_images/ffhq128_autoenc_latent_temp_T100
+2026-03-28 04:17:36,743 [INFO] ✅ 結果已保存至: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json
+2026-03-28 04:17:36,743 [INFO] ✅ 結果已保存至: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json
+2026-03-28 04:17:36,784 [INFO] 執行 'main_float_model' 完成，耗時: 659.82 秒
+2026-03-28 04:17:36,784 [INFO] 執行 'main_float_model' 完成，耗時: 659.82 秒
+fid (0): 0.4935755729675293
+/home/jimmy/anaconda3/envs/diffae_bw/lib/python3.10/site-packages/torchmetrics/utilities/imports.py:21: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import DistributionNotFound, get_distribution
+2026-03-28 04:17:38,896 [INFO] ==================================================
+2026-03-28 04:17:38,896 [INFO] ==================================================
+2026-03-28 04:17:38,896 [INFO] FID Cache Sensitivity Analysis
+2026-03-28 04:17:38,896 [INFO] FID Cache Sensitivity Analysis
+2026-03-28 04:17:38,896 [INFO] ==================================================
+2026-03-28 04:17:38,896 [INFO] Diffusion steps: 100
+2026-03-28 04:17:38,896 [INFO] ==================================================
+2026-03-28 04:17:38,896 [INFO] Diffusion steps: 100
+2026-03-28 04:17:38,896 [INFO] FID evaluation samples: 1000
+2026-03-28 04:17:38,896 [INFO] Checkpoint: QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth
+2026-03-28 04:17:38,896 [INFO] Output directory: QATcode/cache_method/FID/fid_cache_sensitivity
+2026-03-28 04:17:38,896 [INFO] FID evaluation samples: 1000
+2026-03-28 04:17:38,896 [INFO] Checkpoint: QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth
+2026-03-28 04:17:38,896 [INFO] Output directory: QATcode/cache_method/FID/fid_cache_sensitivity
+2026-03-28 04:17:38,896 [INFO] Results JSON: fid_sensitivity_results.json
+2026-03-28 04:17:38,896 [INFO] Results JSON: fid_sensitivity_results.json
+2026-03-28 04:17:38,896 [INFO] Log file: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_T100.log
+2026-03-28 04:17:38,896 [INFO] Log file: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_T100.log
+2026-03-28 04:17:38,896 [INFO] ==================================================
+2026-03-28 04:17:38,896 [INFO] ==================================================
+2026-03-28 04:17:38,896 [INFO] ==================================================
+2026-03-28 04:17:38,896 [INFO] ==================================================
+2026-03-28 04:17:38,896 [INFO] FID Cache Sensitivity Analysis
+2026-03-28 04:17:38,896 [INFO] FID Cache Sensitivity Analysis
+2026-03-28 04:17:38,896 [INFO] ==================================================
+2026-03-28 04:17:38,896 [INFO] ==================================================
+2026-03-28 04:17:38,896 [INFO] 使用設備: cuda
+2026-03-28 04:17:38,896 [INFO] 使用設備: cuda
+2026-03-28 04:17:38,896 [INFO] Diffusion steps: 100
+2026-03-28 04:17:38,896 [INFO] Diffusion steps: 100
+2026-03-28 04:17:38,896 [INFO] FID evaluation samples: 1000
+2026-03-28 04:17:38,896 [INFO] FID evaluation samples: 1000
+2026-03-28 04:17:38,896 [INFO] 載入 Diff-AE 模型: checkpoints/ffhq128_autoenc_latent/last.ckpt
+2026-03-28 04:17:38,896 [INFO] 載入 Diff-AE 模型: checkpoints/ffhq128_autoenc_latent/last.ckpt
+Global seed set to 0
+2026-03-28 04:17:40,794 [INFO] Diff-AE 模型載入完成
+2026-03-28 04:17:40,794 [INFO] Diff-AE 模型載入完成
+2026-03-28 04:17:40,858 [INFO] 執行 'load_diffae_model' 完成，耗時: 1.96 秒
+2026-03-28 04:17:40,858 [INFO] 執行 'load_diffae_model' 完成，耗時: 1.96 秒
+2026-03-28 04:17:40,858 [INFO] ✅ Diff-AE 模型載入成功
+2026-03-28 04:17:40,858 [INFO] ✅ Diff-AE 模型載入成功
+2026-03-28 04:17:40,858 [INFO] === 創建 LoRA 量化模型 ===
+2026-03-28 04:17:40,858 [INFO] === 創建 LoRA 量化模型 ===
+2026-03-28 04:17:40,858 [INFO] === 開始 UNet LoRA 量化改造 ===
+2026-03-28 04:17:40,858 [INFO] === 開始 UNet LoRA 量化改造 ===
+2026-03-28 04:17:40,858 [INFO] 改造模組: time_embed
+2026-03-28 04:17:40,858 [INFO] 改造模組: time_embed
+2026-03-28 04:17:40,858 [INFO]   跳過量化特殊模組: 0
+2026-03-28 04:17:40,858 [INFO]   跳過量化特殊模組: 0
+2026-03-28 04:17:40,858 [INFO]   跳過量化特殊模組: 2
+2026-03-28 04:17:40,858 [INFO]   跳過量化特殊模組: 2
+2026-03-28 04:17:40,858 [INFO] 改造模組: input_blocks
+2026-03-28 04:17:40,858 [INFO] 改造模組: input_blocks
+2026-03-28 04:17:40,858 [INFO]   跳過量化特殊模組: 0
+2026-03-28 04:17:40,858 [INFO]   跳過量化特殊模組: 0
+2026-03-28 04:17:40,858 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,858 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,933 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,933 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,934 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,934 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,934 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,934 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,935 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,935 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,936 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,936 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,937 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,937 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,937 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,937 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,938 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,938 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,939 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,939 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,940 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,940 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,940 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,940 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,941 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,941 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,942 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,942 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,943 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,943 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,943 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,943 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,944 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,944 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,945 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,945 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,945 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,945 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,946 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,946 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,947 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,947 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,948 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,948 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,949 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,949 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,949 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,949 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,950 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,950 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,951 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,951 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,952 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,952 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,953 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,953 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,955 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:17:40,955 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:17:40,955 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,955 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,958 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,958 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,959 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,959 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,959 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,959 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,962 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,962 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,964 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,964 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,965 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,965 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,966 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,966 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,969 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,969 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,972 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,972 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,974 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,974 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,974 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,974 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,979 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:17:40,979 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:17:40,979 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,979 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,984 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,984 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,985 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,985 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,986 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,986 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,990 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,990 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,994 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,994 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,997 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,997 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,999 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:40,999 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,003 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,003 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,009 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,009 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,011 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,011 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,013 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,013 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,021 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:17:41,021 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:17:41,021 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,021 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,029 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,029 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,031 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,031 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,032 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,032 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,040 [INFO] 改造模組: middle_block
+2026-03-28 04:17:41,040 [INFO] 改造模組: middle_block
+2026-03-28 04:17:41,040 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,040 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,048 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,048 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,050 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,050 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,051 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,051 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,059 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,059 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,067 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,067 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,069 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,069 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,070 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,070 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,077 [INFO] 改造模組: output_blocks
+2026-03-28 04:17:41,077 [INFO] 改造模組: output_blocks
+2026-03-28 04:17:41,077 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,077 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,090 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,090 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,093 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,093 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,094 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,094 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,102 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:17:41,102 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:17:41,102 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,102 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,115 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,115 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,117 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,117 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,118 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,118 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,127 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:17:41,127 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:17:41,127 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,127 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,139 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,139 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,140 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,140 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,142 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,142 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,148 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:17:41,148 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:17:41,148 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,148 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,156 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,156 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,159 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,159 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,161 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,161 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,168 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,168 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,179 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,179 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,181 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,181 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,182 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,182 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,187 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:17:41,187 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:17:41,187 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,187 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,194 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,194 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,196 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,196 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,197 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,197 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,201 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:17:41,201 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:17:41,201 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,201 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,208 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,208 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,209 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,209 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,210 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,210 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,214 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:17:41,214 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:17:41,214 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,214 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,218 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,218 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,220 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,220 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,220 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,220 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,224 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,224 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,229 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,229 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,230 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,230 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,231 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,231 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,233 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:17:41,233 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:17:41,233 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,233 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,237 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,237 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,239 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,239 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,239 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,239 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,241 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:17:41,241 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:17:41,241 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,241 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,244 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,244 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,245 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,245 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,246 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,246 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,248 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:17:41,248 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:17:41,248 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,248 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,250 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,250 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,251 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,251 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,251 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,251 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,253 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,253 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,255 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,255 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,255 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,255 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,256 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,256 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,257 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:17:41,257 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:17:41,257 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,257 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,258 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,258 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,259 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,259 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,259 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,259 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,260 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:17:41,260 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:17:41,260 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,260 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,261 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,261 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,262 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,262 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,262 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,262 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,263 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:17:41,263 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:17:41,263 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,263 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,264 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,264 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,264 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,264 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,265 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,265 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,266 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,266 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,267 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,267 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,268 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,268 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,268 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,268 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,269 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:17:41,269 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:17:41,269 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,269 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,270 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,270 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,271 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,271 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,271 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,271 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,272 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:17:41,272 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:17:41,272 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,272 [INFO]   替換層 2 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,273 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,273 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,274 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,274 [INFO]   替換層 1 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,275 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,275 [INFO]   替換層 3 -> QuantModule_DiffAE_LoRA
+2026-03-28 04:17:41,275 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:17:41,275 [INFO]   跳過量化 skip connection: skip_connection
+2026-03-28 04:17:41,275 [INFO] 改造模組: out
+2026-03-28 04:17:41,275 [INFO] 改造模組: out
+2026-03-28 04:17:41,276 [INFO]   跳過量化特殊模組: 2
+2026-03-28 04:17:41,276 [INFO]   跳過量化特殊模組: 2
+2026-03-28 04:17:41,278 [INFO] 執行 'create_float_quantized_model' 完成，耗時: 0.42 秒
+2026-03-28 04:17:41,278 [INFO] 執行 'create_float_quantized_model' 完成，耗時: 0.42 秒
+2026-03-28 04:17:41,357 [INFO] 載入校準資料...
+2026-03-28 04:17:41,357 [INFO] 載入校準資料...
+2026-03-28 04:17:41,567 [INFO] ✅ 載入真實校準資料成功
+2026-03-28 04:17:41,567 [INFO] ✅ 載入真實校準資料成功
+2026-03-28 04:17:41,569 [INFO] ==================================================
+2026-03-28 04:17:41,569 [INFO] ==================================================
+2026-03-28 04:17:41,569 [INFO] 5. Setting first and last layers to 8-bit...
+2026-03-28 04:17:41,569 [INFO] 5. Setting first and last layers to 8-bit...
+2026-03-28 04:17:41,570 [INFO] 找到 144 個量化模組
+2026-03-28 04:17:41,570 [INFO] 找到 144 個量化模組
+2026-03-28 04:17:41,570 [INFO] ✅ 首尾層 8-bit 設定完成
+2026-03-28 04:17:41,570 [INFO] ✅ 首尾層 8-bit 設定完成
+2026-03-28 04:17:41,570 [INFO] set quant state to True, True for layer 1
+2026-03-28 04:17:41,570 [INFO] set quant state to True, True for layer 1
+2026-03-28 04:17:41,570 [INFO] set quant state to True, True for layer 2
+2026-03-28 04:17:41,570 [INFO] set quant state to True, True for layer 2
+2026-03-28 04:17:41,570 [INFO] set quant state to True, False for layer 3
+2026-03-28 04:17:41,570 [INFO] set quant state to True, False for layer 3
+2026-03-28 04:17:41,571 [INFO] set quant state to False, False for layer 144
+2026-03-28 04:17:41,571 [INFO] set quant state to False, False for layer 144
+2026-03-28 04:17:42,663 [INFO] EMA(load from ema_model.model.*): provided=1106 effective_loaded=1106 missing=0 unexpected=0
+2026-03-28 04:17:42,663 [INFO] EMA(load from ema_model.model.*): provided=1106 effective_loaded=1106 missing=0 unexpected=0
+2026-03-28 04:17:42,722 [INFO] MODEL(load from model.model.*): provided=1106 effective_loaded=1106 missing=0 unexpected=0
+2026-03-28 04:17:42,722 [INFO] MODEL(load from model.model.*): provided=1106 effective_loaded=1106 missing=0 unexpected=0
+2026-03-28 04:17:42,742 [INFO] ✅ 模型載入與設定完成
+2026-03-28 04:17:42,742 [INFO] ✅ 模型載入與設定完成
+2026-03-28 04:17:42,742 [INFO] 📊 Baseline FID: 0.4936
+2026-03-28 04:17:42,742 [INFO] 📊 Baseline FID: 0.4936
+2026-03-28 04:17:42,742 [INFO] 🎯 測試所有 31 個 layers
+2026-03-28 04:17:42,742 [INFO] 🎯 測試所有 31 個 layers
+2026-03-28 04:17:42,742 [INFO] ==================================================
+2026-03-28 04:17:42,742 [INFO] ==================================================
+2026-03-28 04:17:42,742 [INFO] 🔬 [1/31] 測試 encoder_layer_0 (k=3)
+2026-03-28 04:17:42,742 [INFO] 🔬 [1/31] 測試 encoder_layer_0 (k=3)
+2026-03-28 04:17:42,742 [INFO] ==================================================
+2026-03-28 04:17:42,742 [INFO] ==================================================
+2026-03-28 04:17:42,742 [INFO] ✅ Cache scheduler 已設定
+2026-03-28 04:17:42,742 [INFO] ✅ Cache scheduler 已設定
+2026-03-28 04:17:42,743 [INFO] 開始生成 1000 張圖片並計算 FID...
+2026-03-28 04:17:42,743 [INFO] 開始生成 1000 張圖片並計算 FID...
+2026-03-28 04:17:42,743 [INFO] 輸出目錄: mycache/gen_images/ffhq128_autoenc_latent_temp_T100 (實驗結束後會清空)
+2026-03-28 04:17:42,743 [INFO] 輸出目錄: mycache/gen_images/ffhq128_autoenc_latent_temp_T100 (實驗結束後會清空)
+Model params: 174.19 M
+loading pretrain ... 130M
+step: 1019986
+loading latent stats ...
+使用自動混合精度: torch.bfloat16
+local seed: 0
+train data: 70001
+val data: 70001
+copy images:   0%|          | 0/31 [00:00<?, ?it/s]copy images:   3%|▎         | 1/31 [00:00<00:09,  3.07it/s]copy images:   6%|▋         | 2/31 [00:00<00:05,  5.10it/s]copy images:  13%|█▎        | 4/31 [00:00<00:03,  7.60it/s]copy images:  19%|█▉        | 6/31 [00:00<00:02,  8.70it/s]copy images:  26%|██▌       | 8/31 [00:01<00:02,  9.29it/s]copy images:  32%|███▏      | 10/31 [00:01<00:02,  9.63it/s]copy images:  35%|███▌      | 11/31 [00:01<00:02,  9.70it/s]copy images:  39%|███▊      | 12/31 [00:01<00:01,  9.71it/s]copy images:  45%|████▌     | 14/31 [00:01<00:01, 10.01it/s]copy images:  52%|█████▏    | 16/31 [00:01<00:01, 10.08it/s]copy images:  58%|█████▊    | 18/31 [00:01<00:01, 10.19it/s]copy images:  65%|██████▍   | 20/31 [00:02<00:01, 10.23it/s]copy images:  71%|███████   | 22/31 [00:02<00:00, 10.39it/s]copy images:  77%|███████▋  | 24/31 [00:02<00:00, 10.41it/s]copy images:  84%|████████▍ | 26/31 [00:02<00:00, 10.51it/s]copy images:  90%|█████████ | 28/31 [00:02<00:00, 10.58it/s]copy images:  97%|█████████▋| 30/31 [00:03<00:00, 10.63it/s]copy images: 100%|██████████| 31/31 [00:03<00:00,  9.36it/s]
+batch_size: 32
+generating images:   0%|          | 0/32 [00:00<?, ?it/s]/home/jimmy/diffae/./diffusion/base.py:329: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast(self.conf.fp16):
+generating images:   3%|▎         | 1/32 [00:20<10:44, 20.79s/it]generating images:   6%|▋         | 2/32 [00:41<10:21, 20.73s/it]generating images:   9%|▉         | 3/32 [01:02<10:00, 20.70s/it]generating images:  12%|█▎        | 4/32 [01:22<09:39, 20.69s/it]generating images:  16%|█▌        | 5/32 [01:43<09:18, 20.69s/it]generating images:  19%|█▉        | 6/32 [02:04<08:57, 20.68s/it]generating images:  22%|██▏       | 7/32 [02:24<08:37, 20.68s/it]generating images:  25%|██▌       | 8/32 [02:45<08:16, 20.68s/it]generating images:  28%|██▊       | 9/32 [03:06<07:55, 20.68s/it]generating images:  31%|███▏      | 10/32 [03:26<07:34, 20.68s/it]generating images:  34%|███▍      | 11/32 [03:47<07:14, 20.68s/it]generating images:  38%|███▊      | 12/32 [04:08<06:53, 20.68s/it]generating images:  41%|████      | 13/32 [04:28<06:32, 20.68s/it]generating images:  44%|████▍     | 14/32 [04:49<06:12, 20.68s/it]generating images:  47%|████▋     | 15/32 [05:10<05:51, 20.68s/it]generating images:  50%|█████     | 16/32 [05:30<05:30, 20.68s/it]generating images:  53%|█████▎    | 17/32 [05:51<05:10, 20.68s/it]generating images:  56%|█████▋    | 18/32 [06:12<04:49, 20.68s/it]generating images:  59%|█████▉    | 19/32 [06:33<04:28, 20.68s/it]generating images:  62%|██████▎   | 20/32 [06:53<04:08, 20.68s/it]generating images:  66%|██████▌   | 21/32 [07:14<03:47, 20.68s/it]generating images:  69%|██████▉   | 22/32 [07:35<03:26, 20.68s/it]generating images:  72%|███████▏  | 23/32 [07:55<03:06, 20.68s/it]generating images:  75%|███████▌  | 24/32 [08:16<02:45, 20.68s/it]generating images:  78%|███████▊  | 25/32 [08:37<02:24, 20.68s/it]generating images:  81%|████████▏ | 26/32 [08:57<02:04, 20.68s/it]generating images:  84%|████████▍ | 27/32 [09:18<01:43, 20.68s/it]generating images:  88%|████████▊ | 28/32 [09:39<01:22, 20.68s/it]generating images:  91%|█████████ | 29/32 [09:59<01:02, 20.68s/it]generating images:  94%|█████████▍| 30/32 [10:20<00:41, 20.68s/it]generating images:  97%|█████████▋| 31/32 [10:41<00:20, 20.68s/it]generating images: 100%|██████████| 32/32 [10:46<00:00, 16.21s/it]generating images: 100%|██████████| 32/32 [10:46<00:00, 20.22s/it]
+  0%|          | 0/124 [00:00<?, ?it/s]  9%|▉         | 11/124 [00:00<00:01, 106.98it/s] 32%|███▏      | 40/124 [00:00<00:00, 211.04it/s] 56%|█████▌    | 69/124 [00:00<00:00, 244.12it/s] 79%|███████▉  | 98/124 [00:00<00:00, 260.68it/s]100%|██████████| 124/124 [00:00<00:00, 225.30it/s]
+  0%|          | 0/125 [00:00<?, ?it/s] 11%|█         | 14/125 [00:00<00:00, 137.30it/s] 34%|███▎      | 42/125 [00:00<00:00, 216.28it/s] 56%|█████▌    | 70/125 [00:00<00:00, 243.58it/s] 78%|███████▊  | 98/125 [00:00<00:00, 257.67it/s]100%|██████████| 125/125 [00:00<00:00, 225.71it/s]
+2026-03-28 04:28:34,312 [INFO] 📊 FID Score: 1.7970
+2026-03-28 04:28:34,312 [INFO] 📊 FID Score: 1.7970
+2026-03-28 04:28:34,312 [INFO] 🗑️  清空臨時圖片: mycache/gen_images/ffhq128_autoenc_latent_temp_T100
+2026-03-28 04:28:34,312 [INFO] 🗑️  清空臨時圖片: mycache/gen_images/ffhq128_autoenc_latent_temp_T100
+2026-03-28 04:28:34,351 [INFO] ✅ 結果已保存至: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json
+2026-03-28 04:28:34,351 [INFO] ✅ 結果已保存至: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json
+2026-03-28 04:28:34,351 [INFO] ✅ encoder_layer_0: FID=1.7970, Δ=+1.3034
+2026-03-28 04:28:34,351 [INFO] ✅ encoder_layer_0: FID=1.7970, Δ=+1.3034
+2026-03-28 04:28:34,351 [INFO] ==================================================
+2026-03-28 04:28:34,351 [INFO] ==================================================
+2026-03-28 04:28:34,351 [INFO] 🔬 [2/31] 測試 encoder_layer_1 (k=3)
+2026-03-28 04:28:34,351 [INFO] 🔬 [2/31] 測試 encoder_layer_1 (k=3)
+2026-03-28 04:28:34,351 [INFO] ==================================================
+2026-03-28 04:28:34,351 [INFO] ==================================================
+2026-03-28 04:28:34,351 [INFO] ✅ Cache scheduler 已設定
+2026-03-28 04:28:34,351 [INFO] ✅ Cache scheduler 已設定
+2026-03-28 04:28:34,352 [INFO] 開始生成 1000 張圖片並計算 FID...
+2026-03-28 04:28:34,352 [INFO] 開始生成 1000 張圖片並計算 FID...
+2026-03-28 04:28:34,352 [INFO] 輸出目錄: mycache/gen_images/ffhq128_autoenc_latent_temp_T100 (實驗結束後會清空)
+2026-03-28 04:28:34,352 [INFO] 輸出目錄: mycache/gen_images/ffhq128_autoenc_latent_temp_T100 (實驗結束後會清空)
+fid (0): 1.796951174736023
+copy images:   0%|          | 0/31 [00:00<?, ?it/s]copy images:   3%|▎         | 1/31 [00:00<00:09,  3.14it/s]copy images:   6%|▋         | 2/31 [00:00<00:05,  5.22it/s]copy images:  13%|█▎        | 4/31 [00:00<00:03,  7.62it/s]copy images:  19%|█▉        | 6/31 [00:00<00:02,  8.79it/s]copy images:  26%|██▌       | 8/31 [00:00<00:02,  9.43it/s]copy images:  32%|███▏      | 10/31 [00:01<00:02,  9.88it/s]copy images:  39%|███▊      | 12/31 [00:01<00:01, 10.05it/s]copy images:  45%|████▌     | 14/31 [00:01<00:01, 10.37it/s]copy images:  52%|█████▏    | 16/31 [00:01<00:01, 10.48it/s]copy images:  58%|█████▊    | 18/31 [00:01<00:01, 10.48it/s]copy images:  65%|██████▍   | 20/31 [00:02<00:01, 10.53it/s]copy images:  71%|███████   | 22/31 [00:02<00:00, 10.62it/s]copy images:  77%|███████▋  | 24/31 [00:02<00:00, 10.57it/s]copy images:  84%|████████▍ | 26/31 [00:02<00:00, 10.61it/s]copy images:  90%|█████████ | 28/31 [00:02<00:00, 10.63it/s]copy images:  97%|█████████▋| 30/31 [00:03<00:00, 10.66it/s]copy images: 100%|██████████| 31/31 [00:03<00:00,  9.59it/s]
+batch_size: 32
+generating images:   0%|          | 0/32 [00:00<?, ?it/s]generating images:   3%|▎         | 1/32 [00:19<10:08, 19.62s/it]generating images:   6%|▋         | 2/32 [00:39<09:48, 19.61s/it]generating images:   9%|▉         | 3/32 [00:58<09:28, 19.61s/it]generating images:  12%|█▎        | 4/32 [01:18<09:09, 19.61s/it]generating images:  16%|█▌        | 5/32 [01:38<08:49, 19.61s/it]generating images:  19%|█▉        | 6/32 [01:57<08:29, 19.61s/it]generating images:  22%|██▏       | 7/32 [02:17<08:10, 19.61s/it]generating images:  25%|██▌       | 8/32 [02:36<07:50, 19.61s/it]generating images:  28%|██▊       | 9/32 [02:56<07:31, 19.61s/it]generating images:  31%|███▏      | 10/32 [03:16<07:11, 19.62s/it]generating images:  34%|███▍      | 11/32 [03:35<06:51, 19.62s/it]generating images:  38%|███▊      | 12/32 [03:55<06:32, 19.62s/it]generating images:  41%|████      | 13/32 [04:15<06:12, 19.62s/it]generating images:  44%|████▍     | 14/32 [04:34<05:53, 19.62s/it]generating images:  47%|████▋     | 15/32 [04:54<05:33, 19.62s/it]generating images:  50%|█████     | 16/32 [05:13<05:13, 19.62s/it]generating images:  53%|█████▎    | 17/32 [05:33<04:54, 19.62s/it]generating images:  56%|█████▋    | 18/32 [05:53<04:34, 19.62s/it]generating images:  59%|█████▉    | 19/32 [06:12<04:15, 19.62s/it]generating images:  62%|██████▎   | 20/32 [06:32<03:55, 19.62s/it]generating images:  66%|██████▌   | 21/32 [06:51<03:35, 19.61s/it]generating images:  69%|██████▉   | 22/32 [07:11<03:16, 19.61s/it]generating images:  72%|███████▏  | 23/32 [07:31<02:56, 19.62s/it]generating images:  75%|███████▌  | 24/32 [07:50<02:36, 19.62s/it]generating images:  78%|███████▊  | 25/32 [08:10<02:17, 19.62s/it]generating images:  81%|████████▏ | 26/32 [08:30<01:57, 19.61s/it]generating images:  84%|████████▍ | 27/32 [08:49<01:38, 19.62s/it]generating images:  88%|████████▊ | 28/32 [09:09<01:18, 19.62s/it]generating images:  91%|█████████ | 29/32 [09:28<00:58, 19.62s/it]generating images:  94%|█████████▍| 30/32 [09:48<00:39, 19.62s/it]generating images:  97%|█████████▋| 31/32 [10:08<00:19, 19.62s/it]generating images: 100%|██████████| 32/32 [10:13<00:00, 15.40s/it]generating images: 100%|██████████| 32/32 [10:13<00:00, 19.18s/it]
+  0%|          | 0/124 [00:00<?, ?it/s] 10%|█         | 13/124 [00:00<00:00, 129.45it/s] 34%|███▍      | 42/124 [00:00<00:00, 221.69it/s] 56%|█████▋    | 70/124 [00:00<00:00, 247.21it/s] 80%|███████▉  | 99/124 [00:00<00:00, 262.71it/s]100%|██████████| 124/124 [00:00<00:00, 229.19it/s]
+  0%|          | 0/125 [00:00<?, ?it/s] 10%|█         | 13/125 [00:00<00:00, 128.72it/s] 34%|███▎      | 42/125 [00:00<00:00, 221.65it/s] 57%|█████▋    | 71/125 [00:00<00:00, 252.18it/s] 80%|████████  | 100/125 [00:00<00:00, 266.91it/s]100%|██████████| 125/125 [00:00<00:00, 232.51it/s]
+2026-03-28 04:38:52,525 [INFO] 📊 FID Score: 2.1834
+2026-03-28 04:38:52,525 [INFO] 📊 FID Score: 2.1834
+2026-03-28 04:38:52,525 [INFO] 🗑️  清空臨時圖片: mycache/gen_images/ffhq128_autoenc_latent_temp_T100
+2026-03-28 04:38:52,525 [INFO] 🗑️  清空臨時圖片: mycache/gen_images/ffhq128_autoenc_latent_temp_T100
+2026-03-28 04:38:52,565 [INFO] ✅ 結果已保存至: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json
+2026-03-28 04:38:52,565 [INFO] ✅ 結果已保存至: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json
+2026-03-28 04:38:52,565 [INFO] ✅ encoder_layer_1: FID=2.1834, Δ=+1.6898
+2026-03-28 04:38:52,565 [INFO] ✅ encoder_layer_1: FID=2.1834, Δ=+1.6898
+2026-03-28 04:38:52,565 [INFO] ==================================================
+2026-03-28 04:38:52,565 [INFO] ==================================================
+2026-03-28 04:38:52,565 [INFO] 🔬 [3/31] 測試 encoder_layer_2 (k=3)
+2026-03-28 04:38:52,565 [INFO] 🔬 [3/31] 測試 encoder_layer_2 (k=3)
+2026-03-28 04:38:52,565 [INFO] ==================================================
+2026-03-28 04:38:52,565 [INFO] ==================================================
+2026-03-28 04:38:52,565 [INFO] ✅ Cache scheduler 已設定
+2026-03-28 04:38:52,565 [INFO] ✅ Cache scheduler 已設定
+2026-03-28 04:38:52,566 [INFO] 開始生成 1000 張圖片並計算 FID...
+2026-03-28 04:38:52,566 [INFO] 開始生成 1000 張圖片並計算 FID...
+2026-03-28 04:38:52,566 [INFO] 輸出目錄: mycache/gen_images/ffhq128_autoenc_latent_temp_T100 (實驗結束後會清空)
+2026-03-28 04:38:52,566 [INFO] 輸出目錄: mycache/gen_images/ffhq128_autoenc_latent_temp_T100 (實驗結束後會清空)
+fid (0): 2.183391571044922
+copy images:   0%|          | 0/31 [00:00<?, ?it/s]copy images:   3%|▎         | 1/31 [00:00<00:09,  3.19it/s]copy images:  10%|▉         | 3/31 [00:00<00:04,  6.54it/s]copy images:  16%|█▌        | 5/31 [00:00<00:03,  8.00it/s]copy images:  19%|█▉        | 6/31 [00:00<00:03,  8.30it/s]copy images:  26%|██▌       | 8/31 [00:01<00:02,  9.10it/s]copy images:  32%|███▏      | 10/31 [00:01<00:02,  9.51it/s]copy images:  39%|███▊      | 12/31 [00:01<00:01,  9.64it/s]copy images:  45%|████▌     | 14/31 [00:01<00:01,  9.91it/s]copy images:  48%|████▊     | 15/31 [00:01<00:01,  9.90it/s]copy images:  55%|█████▍    | 17/31 [00:01<00:01, 10.08it/s]copy images:  61%|██████▏   | 19/31 [00:02<00:01, 10.08it/s]copy images:  68%|██████▊   | 21/31 [00:02<00:00, 10.17it/s]copy images:  74%|███████▍  | 23/31 [00:02<00:00, 10.19it/s]copy images:  81%|████████  | 25/31 [00:02<00:00, 10.18it/s]copy images:  87%|████████▋ | 27/31 [00:02<00:00, 10.26it/s]copy images:  94%|█████████▎| 29/31 [00:03<00:00, 10.32it/s]copy images: 100%|██████████| 31/31 [00:03<00:00, 10.29it/s]copy images: 100%|██████████| 31/31 [00:03<00:00,  9.30it/s]
+batch_size: 32
+generating images:   0%|          | 0/32 [00:00<?, ?it/s]generating images:   3%|▎         | 1/32 [00:19<10:08, 19.62s/it]generating images:   6%|▋         | 2/32 [00:39<09:48, 19.62s/it]generating images:   9%|▉         | 3/32 [00:58<09:28, 19.62s/it]generating images:  12%|█▎        | 4/32 [01:18<09:09, 19.61s/it]generating images:  16%|█▌        | 5/32 [01:38<08:49, 19.62s/it]generating images:  19%|█▉        | 6/32 [01:57<08:29, 19.61s/it]generating images:  22%|██▏       | 7/32 [02:17<08:10, 19.61s/it]generating images:  25%|██▌       | 8/32 [02:36<07:50, 19.61s/it]generating images:  28%|██▊       | 9/32 [02:56<07:31, 19.61s/it]generating images:  31%|███▏      | 10/32 [03:16<07:11, 19.61s/it]generating images:  34%|███▍      | 11/32 [03:35<06:51, 19.61s/it]generating images:  38%|███▊      | 12/32 [03:55<06:32, 19.61s/it]generating images:  41%|████      | 13/32 [04:14<06:12, 19.61s/it]generating images:  44%|████▍     | 14/32 [04:34<05:53, 19.61s/it]generating images:  47%|████▋     | 15/32 [04:54<05:33, 19.61s/it]generating images:  50%|█████     | 16/32 [05:13<05:13, 19.61s/it]generating images:  53%|█████▎    | 17/32 [05:33<04:54, 19.61s/it]generating images:  56%|█████▋    | 18/32 [05:53<04:34, 19.61s/it]generating images:  59%|█████▉    | 19/32 [06:12<04:14, 19.61s/it]generating images:  62%|██████▎   | 20/32 [06:32<03:55, 19.61s/it]generating images:  66%|██████▌   | 21/32 [06:51<03:35, 19.61s/it]generating images:  69%|██████▉   | 22/32 [07:11<03:16, 19.61s/it]generating images:  72%|███████▏  | 23/32 [07:31<02:56, 19.62s/it]generating images:  75%|███████▌  | 24/32 [07:50<02:36, 19.61s/it]generating images:  78%|███████▊  | 25/32 [08:10<02:17, 19.62s/it]generating images:  81%|████████▏ | 26/32 [08:29<01:57, 19.61s/it]generating images:  84%|████████▍ | 27/32 [08:49<01:38, 19.61s/it]generating images:  88%|████████▊ | 28/32 [09:09<01:18, 19.62s/it]generating images:  91%|█████████ | 29/32 [09:28<00:58, 19.61s/it]generating images:  94%|█████████▍| 30/32 [09:48<00:39, 19.61s/it]generating images:  97%|█████████▋| 31/32 [10:08<00:19, 19.61s/it]generating images: 100%|██████████| 32/32 [10:13<00:00, 15.40s/it]generating images: 100%|██████████| 32/32 [10:13<00:00, 19.17s/it]
+  0%|          | 0/124 [00:00<?, ?it/s]  9%|▉         | 11/124 [00:00<00:01, 108.69it/s] 32%|███▏      | 40/124 [00:00<00:00, 211.55it/s] 56%|█████▌    | 69/124 [00:00<00:00, 245.28it/s] 78%|███████▊  | 97/124 [00:00<00:00, 258.79it/s]100%|██████████| 124/124 [00:00<00:00, 262.60it/s]100%|██████████| 124/124 [00:00<00:00, 220.60it/s]
+  0%|          | 0/125 [00:00<?, ?it/s] 10%|▉         | 12/125 [00:00<00:00, 116.76it/s] 32%|███▏      | 40/125 [00:00<00:00, 209.61it/s] 54%|█████▎    | 67/125 [00:00<00:00, 236.21it/s] 76%|███████▌  | 95/125 [00:00<00:00, 252.70it/s] 99%|█████████▉| 124/125 [00:00<00:00, 265.23it/s]100%|██████████| 125/125 [00:00<00:00, 220.80it/s]
+2026-03-28 04:49:10,824 [INFO] 📊 FID Score: 0.7197
+2026-03-28 04:49:10,824 [INFO] 📊 FID Score: 0.7197
+2026-03-28 04:49:10,824 [INFO] 🗑️  清空臨時圖片: mycache/gen_images/ffhq128_autoenc_latent_temp_T100
+2026-03-28 04:49:10,824 [INFO] 🗑️  清空臨時圖片: mycache/gen_images/ffhq128_autoenc_latent_temp_T100
+2026-03-28 04:49:10,838 [INFO] ✅ 結果已保存至: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json
+2026-03-28 04:49:10,838 [INFO] ✅ 結果已保存至: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json
+2026-03-28 04:49:10,838 [INFO] ✅ encoder_layer_2: FID=0.7197, Δ=+0.2262
+2026-03-28 04:49:10,838 [INFO] ✅ encoder_layer_2: FID=0.7197, Δ=+0.2262
+2026-03-28 04:49:10,838 [INFO] ==================================================
+2026-03-28 04:49:10,838 [INFO] 🔬 [4/31] 測試 encoder_layer_3 (k=3)
+2026-03-28 04:49:10,838 [INFO] ==================================================
+2026-03-28 04:49:10,838 [INFO] ==================================================
+2026-03-28 04:49:10,838 [INFO] 🔬 [4/31] 測試 encoder_layer_3 (k=3)
+2026-03-28 04:49:10,838 [INFO] ==================================================
+2026-03-28 04:49:10,838 [INFO] ✅ Cache scheduler 已設定
+2026-03-28 04:49:10,838 [INFO] ✅ Cache scheduler 已設定
+2026-03-28 04:49:10,839 [INFO] 開始生成 1000 張圖片並計算 FID...
+2026-03-28 04:49:10,839 [INFO] 開始生成 1000 張圖片並計算 FID...
+2026-03-28 04:49:10,839 [INFO] 輸出目錄: mycache/gen_images/ffhq128_autoenc_latent_temp_T100 (實驗結束後會清空)
+2026-03-28 04:49:10,839 [INFO] 輸出目錄: mycache/gen_images/ffhq128_autoenc_latent_temp_T100 (實驗結束後會清空)
+fid (0): 0.7197441458702087
+copy images:   0%|          | 0/31 [00:00<?, ?it/s]copy images:   3%|▎         | 1/31 [00:00<00:10,  2.99it/s]copy images:  10%|▉         | 3/31 [00:00<00:04,  6.42it/s]copy images:  16%|█▌        | 5/31 [00:00<00:03,  8.20it/s]copy images:  23%|██▎       | 7/31 [00:00<00:02,  9.17it/s]copy images:  29%|██▉       | 9/31 [00:01<00:02,  9.80it/s]copy images:  35%|███▌      | 11/31 [00:01<00:01, 10.04it/s]copy images:  42%|████▏     | 13/31 [00:01<00:01, 10.21it/s]copy images:  48%|████▊     | 15/31 [00:01<00:01, 10.33it/s]copy images:  55%|█████▍    | 17/31 [00:01<00:01, 10.51it/s]copy images:  61%|██████▏   | 19/31 [00:02<00:01, 10.51it/s]copy images:  68%|██████▊   | 21/31 [00:02<00:00, 10.60it/s]copy images:  74%|███████▍  | 23/31 [00:02<00:00, 10.60it/s]copy images:  81%|████████  | 25/31 [00:02<00:00, 10.59it/s]copy images:  87%|████████▋ | 27/31 [00:02<00:00, 10.67it/s]copy images:  94%|█████████▎| 29/31 [00:02<00:00, 10.73it/s]copy images: 100%|██████████| 31/31 [00:03<00:00, 10.71it/s]copy images: 100%|██████████| 31/31 [00:03<00:00,  9.59it/s]
+batch_size: 32
+generating images:   0%|          | 0/32 [00:00<?, ?it/s]generating images:   3%|▎         | 1/32 [00:20<10:33, 20.44s/it]generating images:   6%|▋         | 2/32 [00:40<10:13, 20.44s/it]generating images:   9%|▉         | 3/32 [01:01<09:52, 20.44s/it]generating images:  12%|█▎        | 4/32 [01:21<09:32, 20.44s/it]generating images:  16%|█▌        | 5/32 [01:42<09:11, 20.44s/it]generating images:  19%|█▉        | 6/32 [02:02<08:51, 20.44s/it]generating images:  22%|██▏       | 7/32 [02:23<08:31, 20.44s/it]generating images:  25%|██▌       | 8/32 [02:43<08:10, 20.44s/it]generating images:  28%|██▊       | 9/32 [03:03<07:50, 20.44s/it]generating images:  31%|███▏      | 10/32 [03:24<07:29, 20.44s/it]generating images:  34%|███▍      | 11/32 [03:44<07:09, 20.44s/it]generating images:  38%|███▊      | 12/32 [04:05<06:48, 20.44s/it]generating images:  41%|████      | 13/32 [04:25<06:28, 20.44s/it]generating images:  44%|████▍     | 14/32 [04:46<06:07, 20.44s/it]generating images:  47%|████▋     | 15/32 [05:06<05:47, 20.44s/it]generating images:  50%|█████     | 16/32 [05:27<05:27, 20.44s/it]generating images:  53%|█████▎    | 17/32 [05:47<05:06, 20.44s/it]generating images:  56%|█████▋    | 18/32 [06:07<04:46, 20.44s/it]generating images:  59%|█████▉    | 19/32 [06:28<04:25, 20.44s/it]generating images:  62%|██████▎   | 20/32 [06:48<04:05, 20.44s/it]generating images:  66%|██████▌   | 21/32 [07:09<03:44, 20.44s/it]generating images:  69%|██████▉   | 22/32 [07:29<03:24, 20.44s/it]generating images:  72%|███████▏  | 23/32 [07:50<03:03, 20.44s/it]generating images:  75%|███████▌  | 24/32 [08:10<02:43, 20.44s/it]generating images:  78%|███████▊  | 25/32 [08:31<02:23, 20.44s/it]generating images:  81%|████████▏ | 26/32 [08:51<02:02, 20.44s/it]generating images:  84%|████████▍ | 27/32 [09:11<01:42, 20.44s/it]generating images:  88%|████████▊ | 28/32 [09:32<01:21, 20.44s/it]generating images:  91%|█████████ | 29/32 [09:52<01:01, 20.44s/it]generating images:  94%|█████████▍| 30/32 [10:13<00:40, 20.44s/it]generating images:  97%|█████████▋| 31/32 [10:33<00:20, 20.44s/it]generating images: 100%|██████████| 32/32 [10:39<00:00, 15.99s/it]generating images: 100%|██████████| 32/32 [10:39<00:00, 19.98s/it]
+  0%|          | 0/124 [00:00<?, ?it/s] 10%|▉         | 12/124 [00:00<00:00, 117.10it/s] 32%|███▏      | 40/124 [00:00<00:00, 210.01it/s] 55%|█████▍    | 68/124 [00:00<00:00, 240.48it/s] 77%|███████▋  | 95/124 [00:00<00:00, 250.31it/s]100%|██████████| 124/124 [00:00<00:00, 262.48it/s]100%|██████████| 124/124 [00:00<00:00, 218.45it/s]
+  0%|          | 0/125 [00:00<?, ?it/s]  6%|▋         | 8/125 [00:00<00:01, 79.90it/s] 29%|██▉       | 36/125 [00:00<00:00, 194.18it/s] 51%|█████     | 64/125 [00:00<00:00, 232.98it/s] 74%|███████▍  | 93/125 [00:00<00:00, 253.34it/s] 98%|█████████▊| 122/125 [00:00<00:00, 264.08it/s]100%|██████████| 125/125 [00:00<00:00, 216.56it/s]
+2026-03-28 04:59:54,731 [INFO] 📊 FID Score: 0.4857
+2026-03-28 04:59:54,731 [INFO] 📊 FID Score: 0.4857
+2026-03-28 04:59:54,731 [INFO] 🗑️  清空臨時圖片: mycache/gen_images/ffhq128_autoenc_latent_temp_T100
+2026-03-28 04:59:54,731 [INFO] 🗑️  清空臨時圖片: mycache/gen_images/ffhq128_autoenc_latent_temp_T100
+2026-03-28 04:59:54,771 [INFO] ✅ 結果已保存至: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json
+2026-03-28 04:59:54,771 [INFO] ✅ encoder_layer_3: FID=0.4857, Δ=-0.0079
+2026-03-28 04:59:54,771 [INFO] ==================================================
+2026-03-28 04:59:54,771 [INFO] 🔬 [5/31] 測試 encoder_layer_4 (k=3)
+2026-03-28 04:59:54,771 [INFO] ==================================================
+2026-03-28 04:59:54,772 [INFO] ✅ Cache scheduler 已設定
+2026-03-28 04:59:54,772 [INFO] 開始生成 1000 張圖片並計算 FID...
+2026-03-28 04:59:54,772 [INFO] 輸出目錄: mycache/gen_images/ffhq128_autoenc_latent_temp_T100 (實驗結束後會清空)
+2026-03-28 04:59:54,771 [INFO] ✅ 結果已保存至: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json
+2026-03-28 04:59:54,771 [INFO] ✅ encoder_layer_3: FID=0.4857, Δ=-0.0079
+2026-03-28 04:59:54,771 [INFO] ==================================================
+2026-03-28 04:59:54,771 [INFO] 🔬 [5/31] 測試 encoder_layer_4 (k=3)
+2026-03-28 04:59:54,771 [INFO] ==================================================
+2026-03-28 04:59:54,772 [INFO] ✅ Cache scheduler 已設定
+2026-03-28 04:59:54,772 [INFO] 開始生成 1000 張圖片並計算 FID...
+2026-03-28 04:59:54,772 [INFO] 輸出目錄: mycache/gen_images/ffhq128_autoenc_latent_temp_T100 (實驗結束後會清空)
+fid (0): 0.4856736660003662
+copy images:   0%|          | 0/31 [00:00<?, ?it/s]copy images:   3%|▎         | 1/31 [00:00<00:09,  3.01it/s]copy images:  10%|▉         | 3/31 [00:00<00:04,  6.30it/s]copy images:  16%|█▌        | 5/31 [00:00<00:03,  7.95it/s]copy images:  23%|██▎       | 7/31 [00:00<00:02,  8.81it/s]copy images:  29%|██▉       | 9/31 [00:01<00:02,  9.35it/s]copy images:  32%|███▏      | 10/31 [00:01<00:02,  9.47it/s]copy images:  39%|███▊      | 12/31 [00:01<00:01,  9.68it/s]copy images:  45%|████▌     | 14/31 [00:01<00:01, 10.13it/s]copy images:  52%|█████▏    | 16/31 [00:01<00:01, 10.27it/s]copy images:  58%|█████▊    | 18/31 [00:01<00:01, 10.35it/s]copy images:  65%|██████▍   | 20/31 [00:02<00:01, 10.46it/s]copy images:  71%|███████   | 22/31 [00:02<00:00, 10.59it/s]copy images:  77%|███████▋  | 24/31 [00:02<00:00, 10.56it/s]copy images:  84%|████████▍ | 26/31 [00:02<00:00, 10.63it/s]copy images:  90%|█████████ | 28/31 [00:02<00:00, 10.66it/s]copy images:  97%|█████████▋| 30/31 [00:03<00:00, 10.70it/s]copy images: 100%|██████████| 31/31 [00:03<00:00,  9.43it/s]
+batch_size: 32
+generating images:   0%|          | 0/32 [00:00<?, ?it/s]generating images:   3%|▎         | 1/32 [00:20<10:36, 20.52s/it]generating images:   6%|▋         | 2/32 [00:41<10:15, 20.52s/it]generating images:   9%|▉         | 3/32 [01:01<09:55, 20.52s/it]generating images:  12%|█▎        | 4/32 [01:22<09:34, 20.52s/it]generating images:  16%|█▌        | 5/32 [01:42<09:14, 20.52s/it]generating images:  19%|█▉        | 6/32 [02:03<08:53, 20.52s/it]generating images:  22%|██▏       | 7/32 [02:23<08:33, 20.52s/it]generating images:  25%|██▌       | 8/32 [02:44<08:12, 20.52s/it]generating images:  28%|██▊       | 9/32 [03:04<07:52, 20.52s/it]generating images:  31%|███▏      | 10/32 [03:25<07:31, 20.52s/it]generating images:  34%|███▍      | 11/32 [03:45<07:11, 20.52s/it]generating images:  38%|███▊      | 12/32 [04:06<06:50, 20.52s/it]generating images:  41%|████      | 13/32 [04:26<06:29, 20.52s/it]generating images:  44%|████▍     | 14/32 [04:47<06:09, 20.52s/it]generating images:  47%|████▋     | 15/32 [05:07<05:48, 20.52s/it]generating images:  50%|█████     | 16/32 [05:28<05:28, 20.52s/it]generating images:  53%|█████▎    | 17/32 [05:48<05:07, 20.52s/it]generating images:  56%|█████▋    | 18/32 [06:09<04:47, 20.52s/it]generating images:  59%|█████▉    | 19/32 [06:29<04:26, 20.52s/it]generating images:  62%|██████▎   | 20/32 [06:50<04:06, 20.52s/it]generating images:  66%|██████▌   | 21/32 [07:10<03:45, 20.52s/it]generating images:  69%|██████▉   | 22/32 [07:31<03:25, 20.52s/it]generating images:  72%|███████▏  | 23/32 [07:52<03:04, 20.53s/it]generating images:  75%|███████▌  | 24/32 [08:12<02:44, 20.53s/it]generating images:  78%|███████▊  | 25/32 [08:33<02:23, 20.53s/it]generating images:  81%|████████▏ | 26/32 [08:53<02:03, 20.52s/it]generating images:  84%|████████▍ | 27/32 [09:14<01:42, 20.53s/it]generating images:  88%|████████▊ | 28/32 [09:34<01:22, 20.53s/it]generating images:  91%|█████████ | 29/32 [09:55<01:01, 20.53s/it]generating images:  94%|█████████▍| 30/32 [10:15<00:41, 20.53s/it]generating images:  97%|█████████▋| 31/32 [10:36<00:20, 20.52s/it]generating images: 100%|██████████| 32/32 [10:41<00:00, 16.05s/it]generating images: 100%|██████████| 32/32 [10:41<00:00, 20.06s/it]
+  0%|          | 0/124 [00:00<?, ?it/s]  9%|▉         | 11/124 [00:00<00:01, 108.95it/s] 31%|███▏      | 39/124 [00:00<00:00, 208.12it/s] 55%|█████▍    | 68/124 [00:00<00:00, 242.62it/s] 78%|███████▊  | 97/124 [00:00<00:00, 258.00it/s]100%|██████████| 124/124 [00:00<00:00, 221.84it/s]
+  0%|          | 0/125 [00:00<?, ?it/s] 10%|▉         | 12/125 [00:00<00:00, 116.42it/s] 32%|███▏      | 40/125 [00:00<00:00, 209.15it/s] 54%|█████▍    | 68/125 [00:00<00:00, 238.76it/s] 77%|███████▋  | 96/125 [00:00<00:00, 252.41it/s] 99%|█████████▉| 124/125 [00:00<00:00, 261.71it/s]100%|██████████| 125/125 [00:00<00:00, 218.91it/s]
+2026-03-28 05:10:41,231 [INFO] 📊 FID Score: 0.5200
+2026-03-28 05:10:41,231 [INFO] 📊 FID Score: 0.5200
+2026-03-28 05:10:41,231 [INFO] 🗑️  清空臨時圖片: mycache/gen_images/ffhq128_autoenc_latent_temp_T100
+2026-03-28 05:10:41,231 [INFO] 🗑️  清空臨時圖片: mycache/gen_images/ffhq128_autoenc_latent_temp_T100
+2026-03-28 05:10:41,244 [INFO] ✅ 結果已保存至: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json
+2026-03-28 05:10:41,244 [INFO] ✅ 結果已保存至: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json
+2026-03-28 05:10:41,244 [INFO] ✅ encoder_layer_4: FID=0.5200, Δ=+0.0265
+2026-03-28 05:10:41,244 [INFO] ✅ encoder_layer_4: FID=0.5200, Δ=+0.0265
+2026-03-28 05:10:41,244 [INFO] ==================================================
+2026-03-28 05:10:41,244 [INFO] ==================================================
+2026-03-28 05:10:41,244 [INFO] 🔬 [6/31] 測試 encoder_layer_5 (k=3)
+2026-03-28 05:10:41,244 [INFO] 🔬 [6/31] 測試 encoder_layer_5 (k=3)
+2026-03-28 05:10:41,244 [INFO] ==================================================
+2026-03-28 05:10:41,244 [INFO] ==================================================
+2026-03-28 05:10:41,245 [INFO] ✅ Cache scheduler 已設定
+2026-03-28 05:10:41,245 [INFO] ✅ Cache scheduler 已設定
+2026-03-28 05:10:41,246 [INFO] 開始生成 1000 張圖片並計算 FID...
+2026-03-28 05:10:41,246 [INFO] 開始生成 1000 張圖片並計算 FID...
+2026-03-28 05:10:41,246 [INFO] 輸出目錄: mycache/gen_images/ffhq128_autoenc_latent_temp_T100 (實驗結束後會清空)
+2026-03-28 05:10:41,246 [INFO] 輸出目錄: mycache/gen_images/ffhq128_autoenc_latent_temp_T100 (實驗結束後會清空)
+fid (0): 0.5200400948524475
+copy images:   0%|          | 0/31 [00:00<?, ?it/s]copy images:   3%|▎         | 1/31 [00:00<00:10,  2.93it/s]copy images:  10%|▉         | 3/31 [00:00<00:04,  6.22it/s]copy images:  16%|█▌        | 5/31 [00:00<00:03,  7.88it/s]copy images:  23%|██▎       | 7/31 [00:00<00:02,  8.80it/s]copy images:  29%|██▉       | 9/31 [00:01<00:02,  9.42it/s]copy images:  35%|███▌      | 11/31 [00:01<00:02,  9.73it/s]copy images:  42%|████▏     | 13/31 [00:01<00:01, 10.02it/s]copy images:  48%|████▊     | 15/31 [00:01<00:01, 10.19it/s]copy images:  55%|█████▍    | 17/31 [00:01<00:01, 10.32it/s]copy images:  61%|██████▏   | 19/31 [00:02<00:01, 10.28it/s]copy images:  68%|██████▊   | 21/31 [00:02<00:00, 10.31it/s]copy images:  74%|███████▍  | 23/31 [00:02<00:00, 10.37it/s]copy images:  81%|████████  | 25/31 [00:02<00:00, 10.46it/s]copy images:  87%|████████▋ | 27/31 [00:02<00:00, 10.60it/s]copy images:  94%|█████████▎| 29/31 [00:02<00:00, 10.68it/s]copy images: 100%|██████████| 31/31 [00:03<00:00, 10.67it/s]copy images: 100%|██████████| 31/31 [00:03<00:00,  9.42it/s]
+batch_size: 32
+generating images:   0%|          | 0/32 [00:00<?, ?it/s]generating images:   3%|▎         | 1/32 [00:20<10:35, 20.51s/it]generating images:   6%|▋         | 2/32 [00:41<10:15, 20.52s/it]generating images:   9%|▉         | 3/32 [01:01<09:55, 20.52s/it]generating images:  12%|█▎        | 4/32 [01:22<09:34, 20.52s/it]generating images:  16%|█▌        | 5/32 [01:42<09:14, 20.52s/it]generating images:  19%|█▉        | 6/32 [02:03<08:53, 20.52s/it]generating images:  22%|██▏       | 7/32 [02:23<08:33, 20.52s/it]generating images:  25%|██▌       | 8/32 [02:44<08:12, 20.52s/it]generating images:  28%|██▊       | 9/32 [03:04<07:51, 20.52s/it]generating images:  31%|███▏      | 10/32 [03:25<07:31, 20.52s/it]generating images:  34%|███▍      | 11/32 [03:45<07:10, 20.52s/it]generating images:  38%|███▊      | 12/32 [04:06<06:50, 20.52s/it]generating images:  41%|████      | 13/32 [04:26<06:29, 20.52s/it]generating images:  44%|████▍     | 14/32 [04:47<06:09, 20.52s/it]generating images:  47%|████▋     | 15/32 [05:07<05:48, 20.52s/it]generating images:  50%|█████     | 16/32 [05:28<05:28, 20.52s/it]generating images:  53%|█████▎    | 17/32 [05:48<05:07, 20.53s/it]generating images:  56%|█████▋    | 18/32 [06:09<04:47, 20.53s/it]generating images:  59%|█████▉    | 19/32 [06:29<04:26, 20.53s/it]generating images:  62%|██████▎   | 20/32 [06:50<04:06, 20.52s/it]generating images:  66%|██████▌   | 21/32 [07:10<03:45, 20.52s/it]generating images:  69%|██████▉   | 22/32 [07:31<03:25, 20.52s/it]generating images:  72%|███████▏  | 23/32 [07:52<03:04, 20.52s/it]generating images:  75%|███████▌  | 24/32 [08:12<02:44, 20.53s/it]generating images:  78%|███████▊  | 25/32 [08:33<02:23, 20.52s/it]generating images:  81%|████████▏ | 26/32 [08:53<02:03, 20.52s/it]generating images:  84%|████████▍ | 27/32 [09:14<01:42, 20.52s/it]generating images:  88%|████████▊ | 28/32 [09:34<01:22, 20.52s/it]generating images:  91%|█████████ | 29/32 [09:55<01:01, 20.52s/it]generating images:  94%|█████████▍| 30/32 [10:15<00:41, 20.52s/it]generating images:  97%|█████████▋| 31/32 [10:36<00:20, 20.52s/it]generating images: 100%|██████████| 32/32 [10:41<00:00, 16.05s/it]generating images: 100%|██████████| 32/32 [10:41<00:00, 20.06s/it]
+  0%|          | 0/124 [00:00<?, ?it/s]  9%|▉         | 11/124 [00:00<00:01, 108.35it/s] 31%|███▏      | 39/124 [00:00<00:00, 205.11it/s] 54%|█████▍    | 67/124 [00:00<00:00, 237.62it/s] 77%|███████▋  | 96/124 [00:00<00:00, 256.36it/s]100%|██████████| 124/124 [00:00<00:00, 218.73it/s]
+  0%|          | 0/125 [00:00<?, ?it/s]  8%|▊         | 10/125 [00:00<00:01, 96.79it/s] 31%|███       | 39/125 [00:00<00:00, 205.29it/s] 54%|█████▍    | 68/125 [00:00<00:00, 241.70it/s] 78%|███████▊  | 97/125 [00:00<00:00, 258.20it/s]100%|██████████| 125/125 [00:00<00:00, 265.56it/s]100%|██████████| 125/125 [00:00<00:00, 219.66it/s]
+2026-03-28 05:21:27,680 [INFO] 📊 FID Score: 0.6150
+2026-03-28 05:21:27,680 [INFO] 📊 FID Score: 0.6150
+2026-03-28 05:21:27,680 [INFO] 🗑️  清空臨時圖片: mycache/gen_images/ffhq128_autoenc_latent_temp_T100
+2026-03-28 05:21:27,680 [INFO] 🗑️  清空臨時圖片: mycache/gen_images/ffhq128_autoenc_latent_temp_T100
+2026-03-28 05:21:27,724 [INFO] ✅ 結果已保存至: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json
+2026-03-28 05:21:27,724 [INFO] ✅ encoder_layer_5: FID=0.6150, Δ=+0.1214
+2026-03-28 05:21:27,724 [INFO] ==================================================
+2026-03-28 05:21:27,724 [INFO] 🔬 [7/31] 測試 encoder_layer_6 (k=3)
+2026-03-28 05:21:27,724 [INFO] ==================================================
+2026-03-28 05:21:27,724 [INFO] ✅ Cache scheduler 已設定
+2026-03-28 05:21:27,725 [INFO] 開始生成 1000 張圖片並計算 FID...
+2026-03-28 05:21:27,725 [INFO] 輸出目錄: mycache/gen_images/ffhq128_autoenc_latent_temp_T100 (實驗結束後會清空)
+2026-03-28 05:21:27,724 [INFO] ✅ 結果已保存至: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json
+2026-03-28 05:21:27,724 [INFO] ✅ encoder_layer_5: FID=0.6150, Δ=+0.1214
+2026-03-28 05:21:27,724 [INFO] ==================================================
+2026-03-28 05:21:27,724 [INFO] 🔬 [7/31] 測試 encoder_layer_6 (k=3)
+2026-03-28 05:21:27,724 [INFO] ==================================================
+2026-03-28 05:21:27,724 [INFO] ✅ Cache scheduler 已設定
+2026-03-28 05:21:27,725 [INFO] 開始生成 1000 張圖片並計算 FID...
+2026-03-28 05:21:27,725 [INFO] 輸出目錄: mycache/gen_images/ffhq128_autoenc_latent_temp_T100 (實驗結束後會清空)
+fid (0): 0.6149807572364807
+copy images:   0%|          | 0/31 [00:00<?, ?it/s]copy images:   3%|▎         | 1/31 [00:00<00:10,  2.89it/s]copy images:  10%|▉         | 3/31 [00:00<00:04,  6.23it/s]copy images:  16%|█▌        | 5/31 [00:00<00:03,  7.98it/s]copy images:  23%|██▎       | 7/31 [00:00<00:02,  8.96it/s]copy images:  29%|██▉       | 9/31 [00:01<00:02,  9.55it/s]copy images:  35%|███▌      | 11/31 [00:01<00:02,  9.84it/s]copy images:  42%|████▏     | 13/31 [00:01<00:01, 10.09it/s]copy images:  48%|████▊     | 15/31 [00:01<00:01, 10.22it/s]copy images:  55%|█████▍    | 17/31 [00:01<00:01, 10.37it/s]copy images:  61%|██████▏   | 19/31 [00:02<00:01, 10.40it/s]copy images:  68%|██████▊   | 21/31 [00:02<00:00, 10.49it/s]copy images:  74%|███████▍  | 23/31 [00:02<00:00, 10.54it/s]copy images:  81%|████████  | 25/31 [00:02<00:00, 10.57it/s]copy images:  87%|████████▋ | 27/31 [00:02<00:00, 10.68it/s]copy images:  94%|█████████▎| 29/31 [00:02<00:00, 10.66it/s]copy images: 100%|██████████| 31/31 [00:03<00:00, 10.61it/s]copy images: 100%|██████████| 31/31 [00:03<00:00,  9.54it/s]
+batch_size: 32
+generating images:   0%|          | 0/32 [00:00<?, ?it/s]generating images:   3%|▎         | 1/32 [00:20<10:40, 20.67s/it]generating images:   6%|▋         | 2/32 [00:41<10:20, 20.67s/it]generating images:   9%|▉         | 3/32 [01:02<09:59, 20.67s/it]generating images:  12%|█▎        | 4/32 [01:22<09:38, 20.67s/it]generating images:  16%|█▌        | 5/32 [01:43<09:18, 20.67s/it]generating images:  19%|█▉        | 6/32 [02:04<08:57, 20.67s/it]generating images:  22%|██▏       | 7/32 [02:24<08:36, 20.67s/it]generating images:  25%|██▌       | 8/32 [02:45<08:16, 20.67s/it]generating images:  28%|██▊       | 9/32 [03:06<07:55, 20.67s/it]generating images:  31%|███▏      | 10/32 [03:26<07:34, 20.67s/it]generating images:  34%|███▍      | 11/32 [03:47<07:14, 20.67s/it]generating images:  38%|███▊      | 12/32 [04:08<06:53, 20.67s/it]generating images:  41%|████      | 13/32 [04:28<06:32, 20.67s/it]generating images:  44%|████▍     | 14/32 [04:49<06:12, 20.67s/it]generating images:  47%|████▋     | 15/32 [05:10<05:51, 20.67s/it]generating images:  50%|█████     | 16/32 [05:30<05:30, 20.67s/it]generating images:  53%|█████▎    | 17/32 [05:51<05:10, 20.67s/it]generating images:  56%|█████▋    | 18/32 [06:12<04:49, 20.67s/it]generating images:  59%|█████▉    | 19/32 [06:32<04:28, 20.67s/it]generating images:  62%|██████▎   | 20/32 [06:53<04:08, 20.67s/it]generating images:  66%|██████▌   | 21/32 [07:14<03:47, 20.67s/it]generating images:  69%|██████▉   | 22/32 [07:34<03:26, 20.67s/it]generating images:  72%|███████▏  | 23/32 [07:55<03:06, 20.67s/it]generating images:  75%|███████▌  | 24/32 [08:16<02:45, 20.67s/it]generating images:  78%|███████▊  | 25/32 [08:36<02:24, 20.67s/it]generating images:  81%|████████▏ | 26/32 [08:57<02:04, 20.67s/it]generating images:  84%|████████▍ | 27/32 [09:18<01:43, 20.67s/it]generating images:  88%|████████▊ | 28/32 [09:38<01:22, 20.67s/it]generating images:  91%|█████████ | 29/32 [09:59<01:02, 20.67s/it]generating images:  94%|█████████▍| 30/32 [10:20<00:41, 20.67s/it]generating images:  97%|█████████▋| 31/32 [10:40<00:20, 20.67s/it]generating images: 100%|██████████| 32/32 [10:46<00:00, 16.16s/it]generating images: 100%|██████████| 32/32 [10:46<00:00, 20.20s/it]
+  0%|          | 0/124 [00:00<?, ?it/s]  9%|▉         | 11/124 [00:00<00:01, 109.32it/s] 31%|███▏      | 39/124 [00:00<00:00, 207.72it/s] 55%|█████▍    | 68/124 [00:00<00:00, 242.72it/s] 77%|███████▋  | 96/124 [00:00<00:00, 256.61it/s]100%|██████████| 124/124 [00:00<00:00, 220.15it/s]
+  0%|          | 0/125 [00:00<?, ?it/s] 10%|▉         | 12/125 [00:00<00:00, 118.61it/s] 32%|███▏      | 40/125 [00:00<00:00, 212.19it/s] 54%|█████▍    | 68/125 [00:00<00:00, 242.87it/s] 78%|███████▊  | 97/125 [00:00<00:00, 258.77it/s]100%|██████████| 125/125 [00:00<00:00, 265.63it/s]100%|██████████| 125/125 [00:00<00:00, 222.35it/s]
+2026-03-28 05:32:18,761 [INFO] 📊 FID Score: 0.5186
+2026-03-28 05:32:18,761 [INFO] 📊 FID Score: 0.5186
+2026-03-28 05:32:18,761 [INFO] 🗑️  清空臨時圖片: mycache/gen_images/ffhq128_autoenc_latent_temp_T100
+2026-03-28 05:32:18,761 [INFO] 🗑️  清空臨時圖片: mycache/gen_images/ffhq128_autoenc_latent_temp_T100
+2026-03-28 05:32:18,775 [INFO] ✅ 結果已保存至: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json
+2026-03-28 05:32:18,775 [INFO] ✅ 結果已保存至: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json
+2026-03-28 05:32:18,775 [INFO] ✅ encoder_layer_6: FID=0.5186, Δ=+0.0251
+2026-03-28 05:32:18,775 [INFO] ✅ encoder_layer_6: FID=0.5186, Δ=+0.0251
+2026-03-28 05:32:18,775 [INFO] ==================================================
+2026-03-28 05:32:18,775 [INFO] ==================================================
+2026-03-28 05:32:18,775 [INFO] 🔬 [8/31] 測試 encoder_layer_7 (k=3)
+2026-03-28 05:32:18,775 [INFO] ==================================================
+2026-03-28 05:32:18,775 [INFO] 🔬 [8/31] 測試 encoder_layer_7 (k=3)
+2026-03-28 05:32:18,775 [INFO] ==================================================
+2026-03-28 05:32:18,776 [INFO] ✅ Cache scheduler 已設定
+2026-03-28 05:32:18,776 [INFO] ✅ Cache scheduler 已設定
+2026-03-28 05:32:18,801 [INFO] 開始生成 1000 張圖片並計算 FID...
+2026-03-28 05:32:18,802 [INFO] 輸出目錄: mycache/gen_images/ffhq128_autoenc_latent_temp_T100 (實驗結束後會清空)
+2026-03-28 05:32:18,801 [INFO] 開始生成 1000 張圖片並計算 FID...
+2026-03-28 05:32:18,802 [INFO] 輸出目錄: mycache/gen_images/ffhq128_autoenc_latent_temp_T100 (實驗結束後會清空)
+fid (0): 0.5186383128166199
+copy images:   0%|          | 0/31 [00:00<?, ?it/s]copy images:   3%|▎         | 1/31 [00:00<00:10,  2.93it/s]copy images:  10%|▉         | 3/31 [00:00<00:04,  6.31it/s]copy images:  16%|█▌        | 5/31 [00:00<00:03,  7.90it/s]copy images:  23%|██▎       | 7/31 [00:00<00:02,  8.79it/s]copy images:  29%|██▉       | 9/31 [00:01<00:02,  9.44it/s]copy images:  35%|███▌      | 11/31 [00:01<00:02,  9.77it/s]copy images:  42%|████▏     | 13/31 [00:01<00:01,  9.95it/s]copy images:  48%|████▊     | 15/31 [00:01<00:01, 10.15it/s]copy images:  55%|█████▍    | 17/31 [00:01<00:01, 10.24it/s]copy images:  61%|██████▏   | 19/31 [00:02<00:01, 10.27it/s]copy images:  68%|██████▊   | 21/31 [00:02<00:00, 10.33it/s]copy images:  74%|███████▍  | 23/31 [00:02<00:00, 10.39it/s]copy images:  81%|████████  | 25/31 [00:02<00:00, 10.41it/s]copy images:  87%|████████▋ | 27/31 [00:02<00:00, 10.52it/s]copy images:  94%|█████████▎| 29/31 [00:03<00:00, 10.59it/s]copy images: 100%|██████████| 31/31 [00:03<00:00, 10.44it/s]copy images: 100%|██████████| 31/31 [00:03<00:00,  9.41it/s]
+batch_size: 32
+generating images:   0%|          | 0/32 [00:00<?, ?it/s]generating images:   3%|▎         | 1/32 [00:20<10:40, 20.65s/it]generating images:   6%|▋         | 2/32 [00:41<10:19, 20.65s/it]generating images:   9%|▉         | 3/32 [01:01<09:58, 20.65s/it]generating images:  12%|█▎        | 4/32 [01:22<09:38, 20.65s/it]generating images:  16%|█▌        | 5/32 [01:43<09:17, 20.65s/it]generating images:  19%|█▉        | 6/32 [02:03<08:56, 20.65s/it]generating images:  22%|██▏       | 7/32 [02:24<08:36, 20.65s/it]generating images:  25%|██▌       | 8/32 [02:45<08:15, 20.65s/it]generating images:  28%|██▊       | 9/32 [03:05<07:54, 20.65s/it]generating images:  31%|███▏      | 10/32 [03:26<07:34, 20.65s/it]generating images:  34%|███▍      | 11/32 [03:47<07:13, 20.65s/it]generating images:  38%|███▊      | 12/32 [04:07<06:53, 20.65s/it]generating images:  41%|████      | 13/32 [04:28<06:32, 20.65s/it]generating images:  44%|████▍     | 14/32 [04:49<06:11, 20.65s/it]generating images:  47%|████▋     | 15/32 [05:09<05:51, 20.65s/it]generating images:  50%|█████     | 16/32 [05:30<05:30, 20.65s/it]generating images:  53%|█████▎    | 17/32 [05:51<05:09, 20.65s/it]generating images:  56%|█████▋    | 18/32 [06:11<04:49, 20.65s/it]generating images:  59%|█████▉    | 19/32 [06:32<04:28, 20.65s/it]generating images:  62%|██████▎   | 20/32 [06:53<04:07, 20.65s/it]generating images:  66%|██████▌   | 21/32 [07:13<03:47, 20.65s/it]generating images:  69%|██████▉   | 22/32 [07:34<03:26, 20.65s/it]generating images:  72%|███████▏  | 23/32 [07:54<03:05, 20.65s/it]generating images:  75%|███████▌  | 24/32 [08:15<02:45, 20.65s/it]generating images:  78%|███████▊  | 25/32 [08:36<02:24, 20.65s/it]generating images:  81%|████████▏ | 26/32 [08:56<02:03, 20.65s/it]generating images:  84%|████████▍ | 27/32 [09:17<01:43, 20.65s/it]generating images:  88%|████████▊ | 28/32 [09:38<01:22, 20.65s/it]generating images:  91%|█████████ | 29/32 [09:58<01:01, 20.65s/it]generating images:  94%|█████████▍| 30/32 [10:19<00:41, 20.65s/it]generating images:  97%|█████████▋| 31/32 [10:40<00:20, 20.65s/it]generating images: 100%|██████████| 32/32 [10:45<00:00, 16.14s/it]generating images: 100%|██████████| 32/32 [10:45<00:00, 20.18s/it]
+  0%|          | 0/124 [00:00<?, ?it/s]  9%|▉         | 11/124 [00:00<00:01, 109.58it/s] 31%|███▏      | 39/124 [00:00<00:00, 207.47it/s] 54%|█████▍    | 67/124 [00:00<00:00, 239.52it/s] 77%|███████▋  | 95/124 [00:00<00:00, 254.47it/s] 99%|█████████▉| 123/124 [00:00<00:00, 263.01it/s]100%|██████████| 124/124 [00:00<00:00, 218.64it/s]
+  0%|          | 0/125 [00:00<?, ?it/s] 10%|▉         | 12/125 [00:00<00:00, 117.19it/s] 32%|███▏      | 40/125 [00:00<00:00, 209.96it/s] 55%|█████▌    | 69/125 [00:00<00:00, 243.27it/s] 78%|███████▊  | 98/125 [00:00<00:00, 259.28it/s]100%|██████████| 125/125 [00:00<00:00, 222.33it/s]
+2026-03-28 05:43:09,209 [INFO] 📊 FID Score: 0.4868
+2026-03-28 05:43:09,209 [INFO] 📊 FID Score: 0.4868
+2026-03-28 05:43:09,209 [INFO] 🗑️  清空臨時圖片: mycache/gen_images/ffhq128_autoenc_latent_temp_T100
+2026-03-28 05:43:09,209 [INFO] 🗑️  清空臨時圖片: mycache/gen_images/ffhq128_autoenc_latent_temp_T100
+2026-03-28 05:43:09,250 [INFO] ✅ 結果已保存至: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json
+2026-03-28 05:43:09,250 [INFO] ✅ encoder_layer_7: FID=0.4868, Δ=-0.0067
+2026-03-28 05:43:09,250 [INFO] ==================================================
+2026-03-28 05:43:09,250 [INFO] 🔬 [9/31] 測試 encoder_layer_8 (k=3)
+2026-03-28 05:43:09,250 [INFO] ==================================================
+2026-03-28 05:43:09,250 [INFO] ✅ Cache scheduler 已設定
+2026-03-28 05:43:09,251 [INFO] 開始生成 1000 張圖片並計算 FID...
+2026-03-28 05:43:09,251 [INFO] 輸出目錄: mycache/gen_images/ffhq128_autoenc_latent_temp_T100 (實驗結束後會清空)
+2026-03-28 05:43:09,250 [INFO] ✅ 結果已保存至: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json
+2026-03-28 05:43:09,250 [INFO] ✅ encoder_layer_7: FID=0.4868, Δ=-0.0067
+2026-03-28 05:43:09,250 [INFO] ==================================================
+2026-03-28 05:43:09,250 [INFO] 🔬 [9/31] 測試 encoder_layer_8 (k=3)
+2026-03-28 05:43:09,250 [INFO] ==================================================
+2026-03-28 05:43:09,250 [INFO] ✅ Cache scheduler 已設定
+2026-03-28 05:43:09,251 [INFO] 開始生成 1000 張圖片並計算 FID...
+2026-03-28 05:43:09,251 [INFO] 輸出目錄: mycache/gen_images/ffhq128_autoenc_latent_temp_T100 (實驗結束後會清空)
+fid (0): 0.4868288040161133
+copy images:   0%|          | 0/31 [00:00<?, ?it/s]copy images:   3%|▎         | 1/31 [00:00<00:10,  2.98it/s]copy images:  10%|▉         | 3/31 [00:00<00:04,  6.32it/s]copy images:  16%|█▌        | 5/31 [00:00<00:03,  8.06it/s]copy images:  23%|██▎       | 7/31 [00:00<00:02,  9.01it/s]copy images:  29%|██▉       | 9/31 [00:01<00:02,  9.61it/s]copy images:  35%|███▌      | 11/31 [00:01<00:02,  9.77it/s]copy images:  42%|████▏     | 13/31 [00:01<00:01,  9.91it/s]copy images:  48%|████▊     | 15/31 [00:01<00:01,  9.97it/s]copy images:  55%|█████▍    | 17/31 [00:01<00:01, 10.09it/s]copy images:  61%|██████▏   | 19/31 [00:02<00:01, 10.18it/s]copy images:  68%|██████▊   | 21/31 [00:02<00:00, 10.33it/s]copy images:  74%|███████▍  | 23/31 [00:02<00:00, 10.37it/s]copy images:  81%|████████  | 25/31 [00:02<00:00, 10.43it/s]copy images:  87%|████████▋ | 27/31 [00:02<00:00, 10.55it/s]copy images:  94%|█████████▎| 29/31 [00:02<00:00, 10.62it/s]copy images: 100%|██████████| 31/31 [00:03<00:00, 10.62it/s]copy images: 100%|██████████| 31/31 [00:03<00:00,  9.41it/s]
+batch_size: 32
+generating images:   0%|          | 0/32 [00:00<?, ?it/s]generating images:   3%|▎         | 1/32 [00:20<10:39, 20.63s/it]generating images:   6%|▋         | 2/32 [00:41<10:19, 20.64s/it]generating images:   9%|▉         | 3/32 [01:01<09:58, 20.64s/it]generating images:  12%|█▎        | 4/32 [01:22<09:37, 20.64s/it]generating images:  16%|█▌        | 5/32 [01:43<09:17, 20.64s/it]generating images:  19%|█▉        | 6/32 [02:03<08:56, 20.64s/it]generating images:  22%|██▏       | 7/32 [02:24<08:35, 20.64s/it]generating images:  25%|██▌       | 8/32 [02:45<08:15, 20.64s/it]generating images:  28%|██▊       | 9/32 [03:05<07:54, 20.64s/it]generating images:  31%|███▏      | 10/32 [03:26<07:34, 20.64s/it]generating images:  34%|███▍      | 11/32 [03:47<07:13, 20.64s/it]generating images:  38%|███▊      | 12/32 [04:07<06:52, 20.64s/it]generating images:  41%|████      | 13/32 [04:28<06:32, 20.64s/it]generating images:  44%|████▍     | 14/32 [04:48<06:11, 20.64s/it]generating images:  47%|████▋     | 15/32 [05:09<05:50, 20.64s/it]generating images:  50%|█████     | 16/32 [05:30<05:30, 20.64s/it]generating images:  53%|█████▎    | 17/32 [05:50<05:09, 20.64s/it]generating images:  56%|█████▋    | 18/32 [06:11<04:48, 20.64s/it]generating images:  59%|█████▉    | 19/32 [06:32<04:28, 20.64s/it]generating images:  62%|██████▎   | 20/32 [06:52<04:07, 20.64s/it]generating images:  66%|██████▌   | 21/32 [07:13<03:47, 20.64s/it]generating images:  69%|██████▉   | 22/32 [07:34<03:26, 20.64s/it]generating images:  72%|███████▏  | 23/32 [07:54<03:05, 20.64s/it]generating images:  75%|███████▌  | 24/32 [08:15<02:45, 20.64s/it]generating images:  78%|███████▊  | 25/32 [08:35<02:24, 20.64s/it]generating images:  81%|████████▏ | 26/32 [08:56<02:03, 20.64s/it]generating images:  84%|████████▍ | 27/32 [09:17<01:43, 20.64s/it]generating images:  88%|████████▊ | 28/32 [09:37<01:22, 20.64s/it]generating images:  91%|█████████ | 29/32 [09:58<01:01, 20.64s/it]generating images:  94%|█████████▍| 30/32 [10:19<00:41, 20.64s/it]generating images:  97%|█████████▋| 31/32 [10:39<00:20, 20.64s/it]generating images: 100%|██████████| 32/32 [10:45<00:00, 16.13s/it]generating images: 100%|██████████| 32/32 [10:45<00:00, 20.17s/it]
+  0%|          | 0/124 [00:00<?, ?it/s]  9%|▉         | 11/124 [00:00<00:01, 109.64it/s] 32%|███▏      | 40/124 [00:00<00:00, 213.26it/s] 56%|█████▌    | 69/124 [00:00<00:00, 246.17it/s] 79%|███████▉  | 98/124 [00:00<00:00, 259.78it/s]100%|██████████| 124/124 [00:00<00:00, 222.10it/s]
+  0%|          | 0/125 [00:00<?, ?it/s]  9%|▉         | 11/125 [00:00<00:01, 108.54it/s] 31%|███       | 39/125 [00:00<00:00, 208.13it/s] 54%|█████▍    | 68/125 [00:00<00:00, 242.26it/s] 78%|███████▊  | 97/125 [00:00<00:00, 258.33it/s] 99%|█████████▉| 124/125 [00:00<00:00, 262.45it/s]100%|██████████| 125/125 [00:00<00:00, 220.04it/s]
+2026-03-28 05:53:59,292 [INFO] 📊 FID Score: 0.5153
+2026-03-28 05:53:59,292 [INFO] 📊 FID Score: 0.5153
+2026-03-28 05:53:59,292 [INFO] 🗑️  清空臨時圖片: mycache/gen_images/ffhq128_autoenc_latent_temp_T100
+2026-03-28 05:53:59,292 [INFO] 🗑️  清空臨時圖片: mycache/gen_images/ffhq128_autoenc_latent_temp_T100
+2026-03-28 05:53:59,337 [INFO] ✅ 結果已保存至: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json
+2026-03-28 05:53:59,337 [INFO] ✅ encoder_layer_8: FID=0.5153, Δ=+0.0217
+2026-03-28 05:53:59,337 [INFO] ==================================================
+2026-03-28 05:53:59,337 [INFO] 🔬 [10/31] 測試 encoder_layer_9 (k=3)
+2026-03-28 05:53:59,337 [INFO] ==================================================
+2026-03-28 05:53:59,337 [INFO] ✅ Cache scheduler 已設定
+2026-03-28 05:53:59,337 [INFO] ✅ 結果已保存至: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json
+2026-03-28 05:53:59,337 [INFO] ✅ encoder_layer_8: FID=0.5153, Δ=+0.0217
+2026-03-28 05:53:59,337 [INFO] ==================================================
+2026-03-28 05:53:59,337 [INFO] 🔬 [10/31] 測試 encoder_layer_9 (k=3)
+2026-03-28 05:53:59,337 [INFO] ==================================================
+2026-03-28 05:53:59,337 [INFO] ✅ Cache scheduler 已設定
+2026-03-28 05:53:59,338 [INFO] 開始生成 1000 張圖片並計算 FID...
+2026-03-28 05:53:59,338 [INFO] 開始生成 1000 張圖片並計算 FID...
+2026-03-28 05:53:59,338 [INFO] 輸出目錄: mycache/gen_images/ffhq128_autoenc_latent_temp_T100 (實驗結束後會清空)
+2026-03-28 05:53:59,338 [INFO] 輸出目錄: mycache/gen_images/ffhq128_autoenc_latent_temp_T100 (實驗結束後會清空)
+fid (0): 0.5152702927589417
+copy images:   0%|          | 0/31 [00:00<?, ?it/s]copy images:   3%|▎         | 1/31 [00:00<00:10,  2.97it/s]copy images:  10%|▉         | 3/31 [00:00<00:04,  6.37it/s]copy images:  16%|█▌        | 5/31 [00:00<00:03,  7.96it/s]copy images:  23%|██▎       | 7/31 [00:00<00:02,  8.96it/s]copy images:  29%|██▉       | 9/31 [00:01<00:02,  9.55it/s]copy images:  35%|███▌      | 11/31 [00:01<00:02,  9.85it/s]copy images:  42%|████▏     | 13/31 [00:01<00:01, 10.12it/s]copy images:  48%|████▊     | 15/31 [00:01<00:01, 10.26it/s]copy images:  55%|█████▍    | 17/31 [00:01<00:01, 10.44it/s]copy images:  61%|██████▏   | 19/31 [00:02<00:01, 10.46it/s]copy images:  68%|██████▊   | 21/31 [00:02<00:00, 10.54it/s]copy images:  74%|███████▍  | 23/31 [00:02<00:00, 10.52it/s]copy images:  81%|████████  | 25/31 [00:02<00:00, 10.52it/s]copy images:  87%|████████▋ | 27/31 [00:02<00:00, 10.61it/s]copy images:  94%|█████████▎| 29/31 [00:02<00:00, 10.69it/s]copy images: 100%|██████████| 31/31 [00:03<00:00, 10.67it/s]copy images: 100%|██████████| 31/31 [00:03<00:00,  9.56it/s]
+batch_size: 32
+generating images:   0%|          | 0/32 [00:00<?, ?it/s]generating images:   3%|▎         | 1/32 [00:20<10:41, 20.69s/it]generating images:   6%|▋         | 2/32 [00:41<10:20, 20.69s/it]generating images:   9%|▉         | 3/32 [01:02<10:00, 20.69s/it]generating images:  12%|█▎        | 4/32 [01:22<09:39, 20.69s/it]generating images:  16%|█▌        | 5/32 [01:43<09:18, 20.69s/it]generating images:  19%|█▉        | 6/32 [02:04<08:57, 20.69s/it]generating images:  22%|██▏       | 7/32 [02:24<08:37, 20.69s/it]generating images:  25%|██▌       | 8/32 [02:45<08:16, 20.69s/it]generating images:  28%|██▊       | 9/32 [03:06<07:55, 20.69s/it]generating images:  31%|███▏      | 10/32 [03:26<07:35, 20.69s/it]generating images:  34%|███▍      | 11/32 [03:47<07:14, 20.69s/it]generating images:  38%|███▊      | 12/32 [04:08<06:53, 20.69s/it]generating images:  41%|████      | 13/32 [04:28<06:33, 20.69s/it]generating images:  44%|████▍     | 14/32 [04:49<06:12, 20.69s/it]generating images:  47%|████▋     | 15/32 [05:10<05:51, 20.69s/it]generating images:  50%|█████     | 16/32 [05:31<05:30, 20.69s/it]generating images:  53%|█████▎    | 17/32 [05:51<05:10, 20.69s/it]generating images:  56%|█████▋    | 18/32 [06:12<04:49, 20.69s/it]generating images:  59%|█████▉    | 19/32 [06:33<04:28, 20.69s/it]generating images:  62%|██████▎   | 20/32 [06:53<04:08, 20.69s/it]generating images:  66%|██████▌   | 21/32 [07:14<03:47, 20.69s/it]generating images:  69%|██████▉   | 22/32 [07:35<03:26, 20.70s/it]generating images:  72%|███████▏  | 23/32 [07:55<03:06, 20.70s/it]generating images:  75%|███████▌  | 24/32 [08:16<02:45, 20.70s/it]generating images:  78%|███████▊  | 25/32 [08:37<02:24, 20.70s/it]generating images:  81%|████████▏ | 26/32 [08:57<02:04, 20.69s/it]generating images:  84%|████████▍ | 27/32 [09:18<01:43, 20.69s/it]generating images:  88%|████████▊ | 28/32 [09:39<01:22, 20.69s/it]generating images:  91%|█████████ | 29/32 [10:00<01:02, 20.69s/it]generating images:  94%|█████████▍| 30/32 [10:20<00:41, 20.69s/it]generating images:  97%|█████████▋| 31/32 [10:41<00:20, 20.69s/it]generating images: 100%|██████████| 32/32 [10:47<00:00, 16.17s/it]generating images: 100%|██████████| 32/32 [10:47<00:00, 20.22s/it]
+  0%|          | 0/124 [00:00<?, ?it/s] 10%|▉         | 12/124 [00:00<00:00, 116.50it/s] 32%|███▏      | 40/124 [00:00<00:00, 210.32it/s] 55%|█████▍    | 68/124 [00:00<00:00, 241.73it/s] 77%|███████▋  | 96/124 [00:00<00:00, 254.88it/s]100%|██████████| 124/124 [00:00<00:00, 220.65it/s]
+  0%|          | 0/125 [00:00<?, ?it/s]  6%|▋         | 8/125 [00:00<00:01, 79.02it/s] 29%|██▉       | 36/125 [00:00<00:00, 193.66it/s] 51%|█████     | 64/125 [00:00<00:00, 231.84it/s] 74%|███████▍  | 93/125 [00:00<00:00, 253.41it/s] 98%|█████████▊| 122/125 [00:00<00:00, 264.78it/s]100%|██████████| 125/125 [00:00<00:00, 217.46it/s]
+2026-03-28 06:04:50,930 [INFO] 📊 FID Score: 0.5795
+2026-03-28 06:04:50,930 [INFO] 📊 FID Score: 0.5795
+2026-03-28 06:04:50,931 [INFO] 🗑️  清空臨時圖片: mycache/gen_images/ffhq128_autoenc_latent_temp_T100
+2026-03-28 06:04:50,931 [INFO] 🗑️  清空臨時圖片: mycache/gen_images/ffhq128_autoenc_latent_temp_T100
+2026-03-28 06:04:50,944 [INFO] ✅ 結果已保存至: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json
+2026-03-28 06:04:50,944 [INFO] ✅ 結果已保存至: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json
+2026-03-28 06:04:50,944 [INFO] ✅ encoder_layer_9: FID=0.5795, Δ=+0.0859
+2026-03-28 06:04:50,944 [INFO] ✅ encoder_layer_9: FID=0.5795, Δ=+0.0859
+2026-03-28 06:04:50,944 [INFO] ==================================================
+2026-03-28 06:04:50,944 [INFO] ==================================================
+2026-03-28 06:04:50,944 [INFO] 🔬 [11/31] 測試 encoder_layer_10 (k=3)
+2026-03-28 06:04:50,944 [INFO] 🔬 [11/31] 測試 encoder_layer_10 (k=3)
+2026-03-28 06:04:50,944 [INFO] ==================================================
+2026-03-28 06:04:50,944 [INFO] ==================================================
+2026-03-28 06:04:50,945 [INFO] ✅ Cache scheduler 已設定
+2026-03-28 06:04:50,945 [INFO] ✅ Cache scheduler 已設定
+2026-03-28 06:04:50,945 [INFO] 開始生成 1000 張圖片並計算 FID...
+2026-03-28 06:04:50,945 [INFO] 開始生成 1000 張圖片並計算 FID...
+2026-03-28 06:04:50,945 [INFO] 輸出目錄: mycache/gen_images/ffhq128_autoenc_latent_temp_T100 (實驗結束後會清空)
+2026-03-28 06:04:50,945 [INFO] 輸出目錄: mycache/gen_images/ffhq128_autoenc_latent_temp_T100 (實驗結束後會清空)
+fid (0): 0.5794762969017029
+copy images:   0%|          | 0/31 [00:00<?, ?it/s]copy images:   3%|▎         | 1/31 [00:00<00:10,  2.99it/s]copy images:  10%|▉         | 3/31 [00:00<00:04,  6.37it/s]copy images:  16%|█▌        | 5/31 [00:00<00:03,  8.12it/s]copy images:  23%|██▎       | 7/31 [00:00<00:02,  9.08it/s]copy images:  29%|██▉       | 9/31 [00:01<00:02,  9.71it/s]copy images:  35%|███▌      | 11/31 [00:01<00:02,  9.96it/s]copy images:  42%|████▏     | 13/31 [00:01<00:01, 10.20it/s]copy images:  48%|████▊     | 15/31 [00:01<00:01, 10.27it/s]copy images:  55%|█████▍    | 17/31 [00:01<00:01, 10.45it/s]copy images:  61%|██████▏   | 19/31 [00:02<00:01, 10.47it/s]copy images:  68%|██████▊   | 21/31 [00:02<00:00, 10.54it/s]copy images:  74%|███████▍  | 23/31 [00:02<00:00, 10.51it/s]copy images:  81%|████████  | 25/31 [00:02<00:00, 10.51it/s]copy images:  87%|████████▋ | 27/31 [00:02<00:00, 10.59it/s]copy images:  94%|█████████▎| 29/31 [00:02<00:00, 10.66it/s]copy images: 100%|██████████| 31/31 [00:03<00:00, 10.66it/s]copy images: 100%|██████████| 31/31 [00:03<00:00,  9.58it/s]
+batch_size: 32
+generating images:   0%|          | 0/32 [00:00<?, ?it/s]generating images:   3%|▎         | 1/32 [00:20<10:40, 20.67s/it]generating images:   6%|▋         | 2/32 [00:41<10:19, 20.67s/it]generating images:   9%|▉         | 3/32 [01:01<09:59, 20.66s/it]generating images:  12%|█▎        | 4/32 [01:22<09:38, 20.66s/it]generating images:  16%|█▌        | 5/32 [01:43<09:17, 20.66s/it]generating images:  19%|█▉        | 6/32 [02:03<08:57, 20.66s/it]generating images:  22%|██▏       | 7/32 [02:24<08:36, 20.67s/it]generating images:  25%|██▌       | 8/32 [02:45<08:15, 20.67s/it]generating images:  28%|██▊       | 9/32 [03:05<07:55, 20.67s/it]generating images:  31%|███▏      | 10/32 [03:26<07:34, 20.67s/it]generating images:  34%|███▍      | 11/32 [03:47<07:13, 20.67s/it]generating images:  38%|███▊      | 12/32 [04:07<06:53, 20.67s/it]generating images:  41%|████      | 13/32 [04:28<06:32, 20.67s/it]generating images:  44%|████▍     | 14/32 [04:49<06:11, 20.67s/it]generating images:  47%|████▋     | 15/32 [05:09<05:51, 20.67s/it]generating images:  50%|█████     | 16/32 [05:30<05:30, 20.67s/it]generating images:  53%|█████▎    | 17/32 [05:51<05:09, 20.67s/it]generating images:  56%|█████▋    | 18/32 [06:11<04:49, 20.66s/it]generating images:  59%|█████▉    | 19/32 [06:32<04:28, 20.66s/it]generating images:  62%|██████▎   | 20/32 [06:53<04:07, 20.66s/it]generating images:  66%|██████▌   | 21/32 [07:13<03:47, 20.66s/it]generating images:  69%|██████▉   | 22/32 [07:34<03:26, 20.67s/it]generating images:  72%|███████▏  | 23/32 [07:55<03:06, 20.67s/it]generating images:  75%|███████▌  | 24/32 [08:15<02:45, 20.67s/it]generating images:  78%|███████▊  | 25/32 [08:36<02:24, 20.67s/it]generating images:  81%|████████▏ | 26/32 [08:57<02:03, 20.66s/it]generating images:  84%|████████▍ | 27/32 [09:17<01:43, 20.66s/it]generating images:  88%|████████▊ | 28/32 [09:38<01:22, 20.66s/it]generating images:  91%|█████████ | 29/32 [09:59<01:01, 20.66s/it]generating images:  94%|█████████▍| 30/32 [10:19<00:41, 20.66s/it]generating images:  97%|█████████▋| 31/32 [10:40<00:20, 20.67s/it]generating images: 100%|██████████| 32/32 [10:46<00:00, 16.15s/it]generating images: 100%|██████████| 32/32 [10:46<00:00, 20.19s/it]
+  0%|          | 0/124 [00:00<?, ?it/s]  9%|▉         | 11/124 [00:00<00:01, 108.03it/s] 32%|███▏      | 40/124 [00:00<00:00, 210.15it/s] 56%|█████▌    | 69/124 [00:00<00:00, 244.10it/s] 78%|███████▊  | 97/124 [00:00<00:00, 256.92it/s]100%|██████████| 124/124 [00:00<00:00, 221.73it/s]
+  0%|          | 0/125 [00:00<?, ?it/s] 10%|▉         | 12/125 [00:00<00:00, 116.65it/s] 32%|███▏      | 40/125 [00:00<00:00, 210.53it/s] 54%|█████▍    | 68/125 [00:00<00:00, 241.89it/s] 77%|███████▋  | 96/125 [00:00<00:00, 254.41it/s]100%|██████████| 125/125 [00:00<00:00, 264.61it/s]100%|██████████| 125/125 [00:00<00:00, 220.36it/s]
+2026-03-28 06:15:41,766 [INFO] 📊 FID Score: 0.5023
+2026-03-28 06:15:41,766 [INFO] 📊 FID Score: 0.5023
+2026-03-28 06:15:41,766 [INFO] 🗑️  清空臨時圖片: mycache/gen_images/ffhq128_autoenc_latent_temp_T100
+2026-03-28 06:15:41,766 [INFO] 🗑️  清空臨時圖片: mycache/gen_images/ffhq128_autoenc_latent_temp_T100
+2026-03-28 06:15:41,779 [INFO] ✅ 結果已保存至: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json
+2026-03-28 06:15:41,779 [INFO] ✅ 結果已保存至: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json
+2026-03-28 06:15:41,779 [INFO] ✅ encoder_layer_10: FID=0.5023, Δ=+0.0087
+2026-03-28 06:15:41,779 [INFO] ✅ encoder_layer_10: FID=0.5023, Δ=+0.0087
+2026-03-28 06:15:41,779 [INFO] ==================================================
+2026-03-28 06:15:41,779 [INFO] 🔬 [12/31] 測試 encoder_layer_11 (k=3)
+2026-03-28 06:15:41,779 [INFO] ==================================================
+2026-03-28 06:15:41,779 [INFO] ==================================================
+2026-03-28 06:15:41,779 [INFO] 🔬 [12/31] 測試 encoder_layer_11 (k=3)
+2026-03-28 06:15:41,779 [INFO] ==================================================
+2026-03-28 06:15:41,806 [INFO] ✅ Cache scheduler 已設定
+2026-03-28 06:15:41,806 [INFO] 開始生成 1000 張圖片並計算 FID...
+2026-03-28 06:15:41,806 [INFO] 輸出目錄: mycache/gen_images/ffhq128_autoenc_latent_temp_T100 (實驗結束後會清空)
+2026-03-28 06:15:41,806 [INFO] ✅ Cache scheduler 已設定
+2026-03-28 06:15:41,806 [INFO] 開始生成 1000 張圖片並計算 FID...
+2026-03-28 06:15:41,806 [INFO] 輸出目錄: mycache/gen_images/ffhq128_autoenc_latent_temp_T100 (實驗結束後會清空)
+fid (0): 0.5022920370101929
+copy images:   0%|          | 0/31 [00:00<?, ?it/s]copy images:   3%|▎         | 1/31 [00:00<00:10,  2.92it/s]copy images:   6%|▋         | 2/31 [00:00<00:05,  4.98it/s]copy images:  13%|█▎        | 4/31 [00:00<00:03,  7.35it/s]copy images:  19%|█▉        | 6/31 [00:00<00:02,  8.56it/s]copy images:  26%|██▌       | 8/31 [00:01<00:02,  9.24it/s]copy images:  32%|███▏      | 10/31 [00:01<00:02,  9.63it/s]copy images:  39%|███▊      | 12/31 [00:01<00:01,  9.89it/s]copy images:  45%|████▌     | 14/31 [00:01<00:01, 10.14it/s]copy images:  52%|█████▏    | 16/31 [00:01<00:01, 10.33it/s]copy images:  58%|█████▊    | 18/31 [00:01<00:01, 10.36it/s]copy images:  65%|██████▍   | 20/31 [00:02<00:01, 10.45it/s]copy images:  71%|███████   | 22/31 [00:02<00:00, 10.57it/s]copy images:  77%|███████▋  | 24/31 [00:02<00:00, 10.55it/s]copy images:  84%|████████▍ | 26/31 [00:02<00:00, 10.60it/s]copy images:  90%|█████████ | 28/31 [00:02<00:00, 10.62it/s]copy images:  97%|█████████▋| 30/31 [00:03<00:00, 10.64it/s]copy images: 100%|██████████| 31/31 [00:03<00:00,  9.46it/s]
+batch_size: 32
+generating images:   0%|          | 0/32 [00:00<?, ?it/s]generating images:   3%|▎         | 1/32 [00:20<10:40, 20.65s/it]generating images:   6%|▋         | 2/32 [00:41<10:19, 20.65s/it]generating images:   9%|▉         | 3/32 [01:01<09:59, 20.66s/it]generating images:  12%|█▎        | 4/32 [01:22<09:38, 20.66s/it]generating images:  16%|█▌        | 5/32 [01:43<09:17, 20.66s/it]generating images:  19%|█▉        | 6/32 [02:03<08:57, 20.66s/it]generating images:  22%|██▏       | 7/32 [02:24<08:36, 20.66s/it]generating images:  25%|██▌       | 8/32 [02:45<08:15, 20.66s/it]generating images:  28%|██▊       | 9/32 [03:05<07:55, 20.66s/it]generating images:  31%|███▏      | 10/32 [03:26<07:34, 20.66s/it]generating images:  34%|███▍      | 11/32 [03:47<07:13, 20.66s/it]generating images:  38%|███▊      | 12/32 [04:07<06:53, 20.66s/it]generating images:  41%|████      | 13/32 [04:28<06:32, 20.66s/it]generating images:  44%|████▍     | 14/32 [04:49<06:11, 20.66s/it]generating images:  47%|████▋     | 15/32 [05:09<05:51, 20.66s/it]generating images:  50%|█████     | 16/32 [05:30<05:30, 20.66s/it]generating images:  53%|█████▎    | 17/32 [05:51<05:09, 20.66s/it]generating images:  56%|█████▋    | 18/32 [06:11<04:49, 20.66s/it]generating images:  59%|█████▉    | 19/32 [06:32<04:28, 20.66s/it]generating images:  62%|██████▎   | 20/32 [06:53<04:07, 20.66s/it]generating images:  66%|██████▌   | 21/32 [07:13<03:47, 20.66s/it]generating images:  69%|██████▉   | 22/32 [07:34<03:26, 20.66s/it]generating images:  72%|███████▏  | 23/32 [07:55<03:05, 20.66s/it]generating images:  75%|███████▌  | 24/32 [08:15<02:45, 20.66s/it]generating images:  78%|███████▊  | 25/32 [08:36<02:24, 20.66s/it]generating images:  81%|████████▏ | 26/32 [08:57<02:03, 20.66s/it]generating images:  84%|████████▍ | 27/32 [09:17<01:43, 20.66s/it]generating images:  88%|████████▊ | 28/32 [09:38<01:22, 20.66s/it]generating images:  91%|█████████ | 29/32 [09:59<01:01, 20.66s/it]generating images:  94%|█████████▍| 30/32 [10:19<00:41, 20.66s/it]generating images:  97%|█████████▋| 31/32 [10:40<00:20, 20.66s/it]generating images: 100%|██████████| 32/32 [10:46<00:00, 16.14s/it]generating images: 100%|██████████| 32/32 [10:46<00:00, 20.19s/it]
+  0%|          | 0/124 [00:00<?, ?it/s] 10%|▉         | 12/124 [00:00<00:00, 117.50it/s] 33%|███▎      | 41/124 [00:00<00:00, 213.57it/s] 57%|█████▋    | 71/124 [00:00<00:00, 248.55it/s] 80%|███████▉  | 99/124 [00:00<00:00, 259.56it/s]100%|██████████| 124/124 [00:00<00:00, 223.36it/s]
+  0%|          | 0/125 [00:00<?, ?it/s] 10%|▉         | 12/125 [00:00<00:00, 117.27it/s] 32%|███▏      | 40/125 [00:00<00:00, 208.44it/s] 55%|█████▌    | 69/125 [00:00<00:00, 242.27it/s] 78%|███████▊  | 98/125 [00:00<00:00, 258.02it/s]100%|██████████| 125/125 [00:00<00:00, 223.07it/s]
+2026-03-28 06:26:32,419 [INFO] 📊 FID Score: 0.5157
+2026-03-28 06:26:32,419 [INFO] 📊 FID Score: 0.5157
+2026-03-28 06:26:32,420 [INFO] 🗑️  清空臨時圖片: mycache/gen_images/ffhq128_autoenc_latent_temp_T100
+2026-03-28 06:26:32,420 [INFO] 🗑️  清空臨時圖片: mycache/gen_images/ffhq128_autoenc_latent_temp_T100
+2026-03-28 06:26:32,434 [INFO] ✅ 結果已保存至: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json
+2026-03-28 06:26:32,434 [INFO] ✅ 結果已保存至: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json
+2026-03-28 06:26:32,434 [INFO] ✅ encoder_layer_11: FID=0.5157, Δ=+0.0221
+2026-03-28 06:26:32,434 [INFO] ✅ encoder_layer_11: FID=0.5157, Δ=+0.0221
+2026-03-28 06:26:32,434 [INFO] ==================================================
+2026-03-28 06:26:32,434 [INFO] ==================================================
+2026-03-28 06:26:32,434 [INFO] 🔬 [13/31] 測試 encoder_layer_12 (k=3)
+2026-03-28 06:26:32,434 [INFO] 🔬 [13/31] 測試 encoder_layer_12 (k=3)
+2026-03-28 06:26:32,434 [INFO] ==================================================
+2026-03-28 06:26:32,434 [INFO] ==================================================
+2026-03-28 06:26:32,434 [INFO] ✅ Cache scheduler 已設定
+2026-03-28 06:26:32,434 [INFO] ✅ Cache scheduler 已設定
+2026-03-28 06:26:32,459 [INFO] 開始生成 1000 張圖片並計算 FID...
+2026-03-28 06:26:32,459 [INFO] 輸出目錄: mycache/gen_images/ffhq128_autoenc_latent_temp_T100 (實驗結束後會清空)
+2026-03-28 06:26:32,459 [INFO] 開始生成 1000 張圖片並計算 FID...
+2026-03-28 06:26:32,459 [INFO] 輸出目錄: mycache/gen_images/ffhq128_autoenc_latent_temp_T100 (實驗結束後會清空)
+fid (0): 0.5157250165939331
+copy images:   0%|          | 0/31 [00:00<?, ?it/s]copy images:   3%|▎         | 1/31 [00:00<00:10,  2.80it/s]copy images:   6%|▋         | 2/31 [00:00<00:05,  4.85it/s]copy images:  13%|█▎        | 4/31 [00:00<00:03,  7.29it/s]copy images:  19%|█▉        | 6/31 [00:00<00:02,  8.54it/s]copy images:  26%|██▌       | 8/31 [00:01<00:02,  9.17it/s]copy images:  32%|███▏      | 10/31 [00:01<00:02,  9.57it/s]copy images:  39%|███▊      | 12/31 [00:01<00:01,  9.84it/s]copy images:  45%|████▌     | 14/31 [00:01<00:01, 10.05it/s]copy images:  52%|█████▏    | 16/31 [00:01<00:01, 10.13it/s]copy images:  58%|█████▊    | 18/31 [00:02<00:01, 10.11it/s]copy images:  65%|██████▍   | 20/31 [00:02<00:01, 10.15it/s]copy images:  71%|███████   | 22/31 [00:02<00:00, 10.24it/s]copy images:  77%|███████▋  | 24/31 [00:02<00:00, 10.17it/s]copy images:  84%|████████▍ | 26/31 [00:02<00:00, 10.27it/s]copy images:  90%|█████████ | 28/31 [00:02<00:00, 10.41it/s]copy images:  97%|█████████▋| 30/31 [00:03<00:00, 10.47it/s]copy images: 100%|██████████| 31/31 [00:03<00:00,  9.25it/s]
+batch_size: 32
+generating images:   0%|          | 0/32 [00:00<?, ?it/s]generating images:   3%|▎         | 1/32 [00:20<10:41, 20.70s/it]generating images:   6%|▋         | 2/32 [00:41<10:20, 20.70s/it]generating images:   9%|▉         | 3/32 [01:02<10:00, 20.70s/it]generating images:  12%|█▎        | 4/32 [01:22<09:39, 20.70s/it]generating images:  16%|█▌        | 5/32 [01:43<09:18, 20.70s/it]generating images:  19%|█▉        | 6/32 [02:04<08:58, 20.70s/it]generating images:  22%|██▏       | 7/32 [02:24<08:37, 20.70s/it]generating images:  25%|██▌       | 8/32 [02:45<08:16, 20.70s/it]generating images:  28%|██▊       | 9/32 [03:06<07:56, 20.70s/it]generating images:  31%|███▏      | 10/32 [03:26<07:35, 20.70s/it]generating images:  34%|███▍      | 11/32 [03:47<07:14, 20.70s/it]generating images:  38%|███▊      | 12/32 [04:08<06:53, 20.70s/it]generating images:  41%|████      | 13/32 [04:29<06:33, 20.70s/it]generating images:  44%|████▍     | 14/32 [04:49<06:12, 20.70s/it]generating images:  47%|████▋     | 15/32 [05:10<05:51, 20.70s/it]generating images:  50%|█████     | 16/32 [05:31<05:31, 20.70s/it]generating images:  53%|█████▎    | 17/32 [05:51<05:10, 20.70s/it]generating images:  56%|█████▋    | 18/32 [06:12<04:49, 20.70s/it]generating images:  59%|█████▉    | 19/32 [06:33<04:29, 20.70s/it]generating images:  62%|██████▎   | 20/32 [06:53<04:08, 20.70s/it]generating images:  66%|██████▌   | 21/32 [07:14<03:47, 20.70s/it]generating images:  69%|██████▉   | 22/32 [07:35<03:26, 20.70s/it]generating images:  72%|███████▏  | 23/32 [07:56<03:06, 20.70s/it]generating images:  75%|███████▌  | 24/32 [08:16<02:45, 20.70s/it]generating images:  78%|███████▊  | 25/32 [08:37<02:24, 20.70s/it]generating images:  81%|████████▏ | 26/32 [08:58<02:04, 20.70s/it]generating images:  84%|████████▍ | 27/32 [09:18<01:43, 20.70s/it]generating images:  88%|████████▊ | 28/32 [09:39<01:22, 20.70s/it]generating images:  91%|█████████ | 29/32 [10:00<01:02, 20.70s/it]generating images:  94%|█████████▍| 30/32 [10:20<00:41, 20.70s/it]generating images:  97%|█████████▋| 31/32 [10:41<00:20, 20.70s/it]generating images: 100%|██████████| 32/32 [10:47<00:00, 16.18s/it]generating images: 100%|██████████| 32/32 [10:47<00:00, 20.23s/it]
+  0%|          | 0/124 [00:00<?, ?it/s]  9%|▉         | 11/124 [00:00<00:01, 108.49it/s] 31%|███▏      | 39/124 [00:00<00:00, 207.45it/s] 54%|█████▍    | 67/124 [00:00<00:00, 238.40it/s] 77%|███████▋  | 95/124 [00:00<00:00, 253.50it/s] 98%|█████████▊| 122/124 [00:00<00:00, 258.86it/s]100%|██████████| 124/124 [00:00<00:00, 216.56it/s]
+  0%|          | 0/125 [00:00<?, ?it/s]  6%|▋         | 8/125 [00:00<00:01, 77.31it/s] 29%|██▉       | 36/125 [00:00<00:00, 194.56it/s] 51%|█████     | 64/125 [00:00<00:00, 232.12it/s] 74%|███████▎  | 92/125 [00:00<00:00, 249.04it/s] 97%|█████████▋| 121/125 [00:00<00:00, 260.86it/s]100%|██████████| 125/125 [00:00<00:00, 214.55it/s]
+2026-03-28 06:37:24,464 [INFO] 📊 FID Score: 0.6332
+2026-03-28 06:37:24,464 [INFO] 📊 FID Score: 0.6332
+2026-03-28 06:37:24,465 [INFO] 🗑️  清空臨時圖片: mycache/gen_images/ffhq128_autoenc_latent_temp_T100
+2026-03-28 06:37:24,465 [INFO] 🗑️  清空臨時圖片: mycache/gen_images/ffhq128_autoenc_latent_temp_T100
+2026-03-28 06:37:24,478 [INFO] ✅ 結果已保存至: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json
+2026-03-28 06:37:24,478 [INFO] ✅ 結果已保存至: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json
+2026-03-28 06:37:24,478 [INFO] ✅ encoder_layer_12: FID=0.6332, Δ=+0.1396
+2026-03-28 06:37:24,478 [INFO] ✅ encoder_layer_12: FID=0.6332, Δ=+0.1396
+2026-03-28 06:37:24,478 [INFO] ==================================================
+2026-03-28 06:37:24,478 [INFO] ==================================================
+2026-03-28 06:37:24,478 [INFO] 🔬 [14/31] 測試 encoder_layer_13 (k=3)
+2026-03-28 06:37:24,478 [INFO] 🔬 [14/31] 測試 encoder_layer_13 (k=3)
+2026-03-28 06:37:24,478 [INFO] ==================================================
+2026-03-28 06:37:24,478 [INFO] ==================================================
+2026-03-28 06:37:24,504 [INFO] ✅ Cache scheduler 已設定
+2026-03-28 06:37:24,504 [INFO] 開始生成 1000 張圖片並計算 FID...
+2026-03-28 06:37:24,504 [INFO] 輸出目錄: mycache/gen_images/ffhq128_autoenc_latent_temp_T100 (實驗結束後會清空)
+2026-03-28 06:37:24,504 [INFO] ✅ Cache scheduler 已設定
+2026-03-28 06:37:24,504 [INFO] 開始生成 1000 張圖片並計算 FID...
+2026-03-28 06:37:24,504 [INFO] 輸出目錄: mycache/gen_images/ffhq128_autoenc_latent_temp_T100 (實驗結束後會清空)
+fid (0): 0.6331760287284851
+copy images:   0%|          | 0/31 [00:00<?, ?it/s]copy images:   3%|▎         | 1/31 [00:00<00:10,  2.88it/s]copy images:  10%|▉         | 3/31 [00:00<00:04,  6.22it/s]copy images:  16%|█▌        | 5/31 [00:00<00:03,  7.95it/s]copy images:  23%|██▎       | 7/31 [00:00<00:02,  8.93it/s]copy images:  29%|██▉       | 9/31 [00:01<00:02,  9.54it/s]copy images:  35%|███▌      | 11/31 [00:01<00:02,  9.79it/s]copy images:  42%|████▏     | 13/31 [00:01<00:01, 10.06it/s]copy images:  48%|████▊     | 15/31 [00:01<00:01, 10.15it/s]copy images:  55%|█████▍    | 17/31 [00:01<00:01, 10.36it/s]copy images:  61%|██████▏   | 19/31 [00:02<00:01, 10.40it/s]copy images:  68%|██████▊   | 21/31 [00:02<00:00, 10.49it/s]copy images:  74%|███████▍  | 23/31 [00:02<00:00, 10.52it/s]copy images:  81%|████████  | 25/31 [00:02<00:00, 10.40it/s]copy images:  87%|████████▋ | 27/31 [00:02<00:00, 10.49it/s]copy images:  94%|█████████▎| 29/31 [00:02<00:00, 10.58it/s]copy images: 100%|██████████| 31/31 [00:03<00:00, 10.56it/s]copy images: 100%|██████████| 31/31 [00:03<00:00,  9.47it/s]
+batch_size: 32
+generating images:   0%|          | 0/32 [00:00<?, ?it/s]generating images:   3%|▎         | 1/32 [00:20<10:41, 20.69s/it]generating images:   6%|▋         | 2/32 [00:41<10:20, 20.69s/it]generating images:   9%|▉         | 3/32 [01:02<09:59, 20.69s/it]generating images:  12%|█▎        | 4/32 [01:22<09:39, 20.69s/it]generating images:  16%|█▌        | 5/32 [01:43<09:18, 20.69s/it]generating images:  19%|█▉        | 6/32 [02:04<08:57, 20.69s/it]generating images:  22%|██▏       | 7/32 [02:24<08:37, 20.69s/it]generating images:  25%|██▌       | 8/32 [02:45<08:16, 20.69s/it]generating images:  28%|██▊       | 9/32 [03:06<07:55, 20.69s/it]generating images:  31%|███▏      | 10/32 [03:26<07:35, 20.69s/it]generating images:  34%|███▍      | 11/32 [03:47<07:14, 20.69s/it]generating images:  38%|███▊      | 12/32 [04:08<06:53, 20.69s/it]generating images:  41%|████      | 13/32 [04:28<06:33, 20.69s/it]generating images:  44%|████▍     | 14/32 [04:49<06:12, 20.69s/it]generating images:  47%|████▋     | 15/32 [05:10<05:51, 20.69s/it]generating images:  50%|█████     | 16/32 [05:31<05:31, 20.69s/it]generating images:  53%|█████▎    | 17/32 [05:51<05:10, 20.69s/it]generating images:  56%|█████▋    | 18/32 [06:12<04:49, 20.69s/it]generating images:  59%|█████▉    | 19/32 [06:33<04:28, 20.69s/it]generating images:  62%|██████▎   | 20/32 [06:53<04:08, 20.69s/it]generating images:  66%|██████▌   | 21/32 [07:14<03:47, 20.69s/it]generating images:  69%|██████▉   | 22/32 [07:35<03:26, 20.69s/it]generating images:  72%|███████▏  | 23/32 [07:55<03:06, 20.69s/it]generating images:  75%|███████▌  | 24/32 [08:16<02:45, 20.69s/it]generating images:  78%|███████▊  | 25/32 [08:37<02:24, 20.69s/it]generating images:  81%|████████▏ | 26/32 [08:57<02:04, 20.69s/it]generating images:  84%|████████▍ | 27/32 [09:18<01:43, 20.69s/it]generating images:  88%|████████▊ | 28/32 [09:39<01:22, 20.70s/it]generating images:  91%|█████████ | 29/32 [10:00<01:02, 20.70s/it]generating images:  94%|█████████▍| 30/32 [10:20<00:41, 20.69s/it]generating images:  97%|█████████▋| 31/32 [10:41<00:20, 20.69s/it]generating images: 100%|██████████| 32/32 [10:47<00:00, 16.17s/it]generating images: 100%|██████████| 32/32 [10:47<00:00, 20.22s/it]
+  0%|          | 0/124 [00:00<?, ?it/s]  9%|▉         | 11/124 [00:00<00:01, 108.63it/s] 31%|███▏      | 39/124 [00:00<00:00, 207.54it/s] 55%|█████▍    | 68/124 [00:00<00:00, 242.31it/s] 77%|███████▋  | 96/124 [00:00<00:00, 256.89it/s]100%|██████████| 124/124 [00:00<00:00, 220.22it/s]
+  0%|          | 0/125 [00:00<?, ?it/s] 10%|▉         | 12/125 [00:00<00:00, 118.14it/s] 33%|███▎      | 41/125 [00:00<00:00, 215.45it/s] 55%|█████▌    | 69/125 [00:00<00:00, 243.84it/s] 78%|███████▊  | 97/125 [00:00<00:00, 257.16it/s]100%|██████████| 125/125 [00:00<00:00, 223.57it/s]
+2026-03-28 06:48:16,168 [INFO] 📊 FID Score: 0.5389
+2026-03-28 06:48:16,168 [INFO] 📊 FID Score: 0.5389
+2026-03-28 06:48:16,168 [INFO] 🗑️  清空臨時圖片: mycache/gen_images/ffhq128_autoenc_latent_temp_T100
+2026-03-28 06:48:16,168 [INFO] 🗑️  清空臨時圖片: mycache/gen_images/ffhq128_autoenc_latent_temp_T100
+2026-03-28 06:48:16,202 [INFO] ✅ 結果已保存至: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json
+2026-03-28 06:48:16,202 [INFO] ✅ encoder_layer_13: FID=0.5389, Δ=+0.0453
+2026-03-28 06:48:16,202 [INFO] ==================================================
+2026-03-28 06:48:16,202 [INFO] 🔬 [15/31] 測試 encoder_layer_14 (k=3)
+2026-03-28 06:48:16,202 [INFO] ==================================================
+2026-03-28 06:48:16,203 [INFO] ✅ Cache scheduler 已設定
+2026-03-28 06:48:16,204 [INFO] 開始生成 1000 張圖片並計算 FID...
+2026-03-28 06:48:16,204 [INFO] 輸出目錄: mycache/gen_images/ffhq128_autoenc_latent_temp_T100 (實驗結束後會清空)
+2026-03-28 06:48:16,202 [INFO] ✅ 結果已保存至: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json
+2026-03-28 06:48:16,202 [INFO] ✅ encoder_layer_13: FID=0.5389, Δ=+0.0453
+2026-03-28 06:48:16,202 [INFO] ==================================================
+2026-03-28 06:48:16,202 [INFO] 🔬 [15/31] 測試 encoder_layer_14 (k=3)
+2026-03-28 06:48:16,202 [INFO] ==================================================
+2026-03-28 06:48:16,203 [INFO] ✅ Cache scheduler 已設定
+2026-03-28 06:48:16,204 [INFO] 開始生成 1000 張圖片並計算 FID...
+2026-03-28 06:48:16,204 [INFO] 輸出目錄: mycache/gen_images/ffhq128_autoenc_latent_temp_T100 (實驗結束後會清空)
+fid (0): 0.5388529896736145
+copy images:   0%|          | 0/31 [00:00<?, ?it/s]copy images:   3%|▎         | 1/31 [00:00<00:10,  2.98it/s]copy images:   6%|▋         | 2/31 [00:00<00:05,  5.01it/s]copy images:  13%|█▎        | 4/31 [00:00<00:03,  7.57it/s]copy images:  19%|█▉        | 6/31 [00:00<00:02,  8.86it/s]copy images:  26%|██▌       | 8/31 [00:00<00:02,  9.53it/s]copy images:  32%|███▏      | 10/31 [00:01<00:02,  9.92it/s]copy images:  39%|███▊      | 12/31 [00:01<00:01, 10.09it/s]copy images:  45%|████▌     | 14/31 [00:01<00:01, 10.34it/s]copy images:  52%|█████▏    | 16/31 [00:01<00:01, 10.44it/s]copy images:  58%|█████▊    | 18/31 [00:01<00:01, 10.47it/s]copy images:  65%|██████▍   | 20/31 [00:02<00:01, 10.52it/s]copy images:  71%|███████   | 22/31 [00:02<00:00, 10.59it/s]copy images:  77%|███████▋  | 24/31 [00:02<00:00, 10.52it/s]copy images:  84%|████████▍ | 26/31 [00:02<00:00, 10.57it/s]copy images:  90%|█████████ | 28/31 [00:02<00:00, 10.60it/s]copy images:  97%|█████████▋| 30/31 [00:03<00:00, 10.56it/s]copy images: 100%|██████████| 31/31 [00:03<00:00,  9.44it/s]
+batch_size: 32
+generating images:   0%|          | 0/32 [00:00<?, ?it/s]generating images:   3%|▎         | 1/32 [00:20<10:41, 20.69s/it]generating images:   6%|▋         | 2/32 [00:41<10:20, 20.69s/it]generating images:   9%|▉         | 3/32 [01:02<09:59, 20.69s/it]generating images:  12%|█▎        | 4/32 [01:22<09:39, 20.69s/it]generating images:  16%|█▌        | 5/32 [01:43<09:18, 20.69s/it]generating images:  19%|█▉        | 6/32 [02:04<08:57, 20.69s/it]generating images:  22%|██▏       | 7/32 [02:24<08:37, 20.69s/it]generating images:  25%|██▌       | 8/32 [02:45<08:16, 20.69s/it]generating images:  28%|██▊       | 9/32 [03:06<07:55, 20.69s/it]generating images:  31%|███▏      | 10/32 [03:26<07:35, 20.69s/it]generating images:  34%|███▍      | 11/32 [03:47<07:14, 20.69s/it]generating images:  38%|███▊      | 12/32 [04:08<06:53, 20.69s/it]generating images:  41%|████      | 13/32 [04:28<06:33, 20.69s/it]generating images:  44%|████▍     | 14/32 [04:49<06:12, 20.69s/it]generating images:  47%|████▋     | 15/32 [05:10<05:51, 20.69s/it]generating images:  50%|█████     | 16/32 [05:31<05:31, 20.69s/it]generating images:  53%|█████▎    | 17/32 [05:51<05:10, 20.69s/it]generating images:  56%|█████▋    | 18/32 [06:12<04:49, 20.69s/it]generating images:  59%|█████▉    | 19/32 [06:33<04:28, 20.69s/it]generating images:  62%|██████▎   | 20/32 [06:53<04:08, 20.69s/it]generating images:  66%|██████▌   | 21/32 [07:14<03:47, 20.69s/it]generating images:  69%|██████▉   | 22/32 [07:35<03:26, 20.69s/it]generating images:  72%|███████▏  | 23/32 [07:55<03:06, 20.69s/it]generating images:  75%|███████▌  | 24/32 [08:16<02:45, 20.69s/it]generating images:  78%|███████▊  | 25/32 [08:37<02:24, 20.69s/it]generating images:  81%|████████▏ | 26/32 [08:57<02:04, 20.69s/it]generating images:  84%|████████▍ | 27/32 [09:18<01:43, 20.69s/it]generating images:  88%|████████▊ | 28/32 [09:39<01:22, 20.69s/it]generating images:  91%|█████████ | 29/32 [09:59<01:02, 20.69s/it]generating images:  94%|█████████▍| 30/32 [10:20<00:41, 20.69s/it]generating images:  97%|█████████▋| 31/32 [10:41<00:20, 20.69s/it]generating images: 100%|██████████| 32/32 [10:46<00:00, 16.17s/it]generating images: 100%|██████████| 32/32 [10:46<00:00, 20.22s/it]
+  0%|          | 0/124 [00:00<?, ?it/s] 10%|▉         | 12/124 [00:00<00:00, 116.17it/s] 32%|███▏      | 40/124 [00:00<00:00, 211.04it/s] 55%|█████▍    | 68/124 [00:00<00:00, 241.72it/s] 77%|███████▋  | 96/124 [00:00<00:00, 254.73it/s]100%|██████████| 124/124 [00:00<00:00, 263.13it/s]100%|██████████| 124/124 [00:00<00:00, 220.70it/s]
+  0%|          | 0/125 [00:00<?, ?it/s] 10%|▉         | 12/125 [00:00<00:00, 117.28it/s] 32%|███▏      | 40/125 [00:00<00:00, 209.86it/s] 55%|█████▌    | 69/125 [00:00<00:00, 242.72it/s] 78%|███████▊  | 98/125 [00:00<00:00, 257.70it/s]100%|██████████| 125/125 [00:00<00:00, 219.94it/s]
+2026-03-28 06:59:07,767 [INFO] 📊 FID Score: 0.5500
+2026-03-28 06:59:07,767 [INFO] 📊 FID Score: 0.5500
+2026-03-28 06:59:07,767 [INFO] 🗑️  清空臨時圖片: mycache/gen_images/ffhq128_autoenc_latent_temp_T100
+2026-03-28 06:59:07,767 [INFO] 🗑️  清空臨時圖片: mycache/gen_images/ffhq128_autoenc_latent_temp_T100
+2026-03-28 06:59:07,812 [INFO] ✅ 結果已保存至: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json
+2026-03-28 06:59:07,812 [INFO] ✅ encoder_layer_14: FID=0.5500, Δ=+0.0565
+2026-03-28 06:59:07,812 [INFO] ==================================================
+2026-03-28 06:59:07,812 [INFO] 🔬 [16/31] 測試 middle_layer (k=3)
+2026-03-28 06:59:07,812 [INFO] ==================================================
+2026-03-28 06:59:07,812 [INFO] ✅ Cache scheduler 已設定
+2026-03-28 06:59:07,813 [INFO] 開始生成 1000 張圖片並計算 FID...
+2026-03-28 06:59:07,813 [INFO] 輸出目錄: mycache/gen_images/ffhq128_autoenc_latent_temp_T100 (實驗結束後會清空)
+2026-03-28 06:59:07,812 [INFO] ✅ 結果已保存至: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json
+2026-03-28 06:59:07,812 [INFO] ✅ encoder_layer_14: FID=0.5500, Δ=+0.0565
+2026-03-28 06:59:07,812 [INFO] ==================================================
+2026-03-28 06:59:07,812 [INFO] 🔬 [16/31] 測試 middle_layer (k=3)
+2026-03-28 06:59:07,812 [INFO] ==================================================
+2026-03-28 06:59:07,812 [INFO] ✅ Cache scheduler 已設定
+2026-03-28 06:59:07,813 [INFO] 開始生成 1000 張圖片並計算 FID...
+2026-03-28 06:59:07,813 [INFO] 輸出目錄: mycache/gen_images/ffhq128_autoenc_latent_temp_T100 (實驗結束後會清空)
+fid (0): 0.5500290989875793
+copy images:   0%|          | 0/31 [00:00<?, ?it/s]copy images:   3%|▎         | 1/31 [00:00<00:10,  2.84it/s]copy images:  10%|▉         | 3/31 [00:00<00:04,  6.11it/s]copy images:  16%|█▌        | 5/31 [00:00<00:03,  7.79it/s]copy images:  23%|██▎       | 7/31 [00:00<00:02,  8.72it/s]copy images:  29%|██▉       | 9/31 [00:01<00:02,  9.30it/s]copy images:  35%|███▌      | 11/31 [00:01<00:02,  9.55it/s]copy images:  39%|███▊      | 12/31 [00:01<00:01,  9.61it/s]copy images:  45%|████▌     | 14/31 [00:01<00:01,  9.93it/s]copy images:  52%|█████▏    | 16/31 [00:01<00:01, 10.03it/s]copy images:  58%|█████▊    | 18/31 [00:02<00:01,  9.99it/s]copy images:  65%|██████▍   | 20/31 [00:02<00:01, 10.16it/s]copy images:  71%|███████   | 22/31 [00:02<00:00, 10.38it/s]copy images:  77%|███████▋  | 24/31 [00:02<00:00, 10.35it/s]copy images:  84%|████████▍ | 26/31 [00:02<00:00, 10.50it/s]copy images:  90%|█████████ | 28/31 [00:02<00:00, 10.59it/s]copy images:  97%|█████████▋| 30/31 [00:03<00:00, 10.68it/s]copy images: 100%|██████████| 31/31 [00:03<00:00,  9.36it/s]
+batch_size: 32
+generating images:   0%|          | 0/32 [00:00<?, ?it/s]generating images:   3%|▎         | 1/32 [00:20<10:39, 20.63s/it]generating images:   6%|▋         | 2/32 [00:41<10:18, 20.63s/it]generating images:   9%|▉         | 3/32 [01:01<09:58, 20.63s/it]generating images:  12%|█▎        | 4/32 [01:22<09:37, 20.62s/it]generating images:  16%|█▌        | 5/32 [01:43<09:16, 20.63s/it]generating images:  19%|█▉        | 6/32 [02:03<08:56, 20.63s/it]generating images:  22%|██▏       | 7/32 [02:24<08:35, 20.62s/it]generating images:  25%|██▌       | 8/32 [02:45<08:15, 20.63s/it]generating images:  28%|██▊       | 9/32 [03:05<07:54, 20.63s/it]generating images:  31%|███▏      | 10/32 [03:26<07:33, 20.63s/it]generating images:  34%|███▍      | 11/32 [03:46<07:13, 20.63s/it]generating images:  38%|███▊      | 12/32 [04:07<06:52, 20.63s/it]generating images:  41%|████      | 13/32 [04:28<06:31, 20.63s/it]generating images:  44%|████▍     | 14/32 [04:48<06:11, 20.63s/it]generating images:  47%|████▋     | 15/32 [05:09<05:50, 20.63s/it]generating images:  50%|█████     | 16/32 [05:30<05:30, 20.63s/it]generating images:  53%|█████▎    | 17/32 [05:50<05:09, 20.63s/it]generating images:  56%|█████▋    | 18/32 [06:11<04:48, 20.63s/it]generating images:  59%|█████▉    | 19/32 [06:31<04:28, 20.63s/it]generating images:  62%|██████▎   | 20/32 [06:52<04:07, 20.63s/it]generating images:  66%|██████▌   | 21/32 [07:13<03:46, 20.63s/it]generating images:  69%|██████▉   | 22/32 [07:33<03:26, 20.63s/it]generating images:  72%|███████▏  | 23/32 [07:54<03:05, 20.63s/it]generating images:  75%|███████▌  | 24/32 [08:15<02:45, 20.63s/it]generating images:  78%|███████▊  | 25/32 [08:35<02:24, 20.63s/it]generating images:  81%|████████▏ | 26/32 [08:56<02:03, 20.63s/it]generating images:  84%|████████▍ | 27/32 [09:16<01:43, 20.63s/it]generating images:  88%|████████▊ | 28/32 [09:37<01:22, 20.63s/it]generating images:  91%|█████████ | 29/32 [09:58<01:01, 20.63s/it]generating images:  94%|█████████▍| 30/32 [10:18<00:41, 20.63s/it]generating images:  97%|█████████▋| 31/32 [10:39<00:20, 20.62s/it]generating images: 100%|██████████| 32/32 [10:44<00:00, 16.11s/it]generating images: 100%|██████████| 32/32 [10:44<00:00, 20.16s/it]
+  0%|          | 0/124 [00:00<?, ?it/s] 10%|▉         | 12/124 [00:00<00:00, 116.45it/s] 32%|███▏      | 40/124 [00:00<00:00, 210.64it/s] 55%|█████▍    | 68/124 [00:00<00:00, 240.76it/s] 77%|███████▋  | 96/124 [00:00<00:00, 252.89it/s]100%|██████████| 124/124 [00:00<00:00, 260.70it/s]100%|██████████| 124/124 [00:00<00:00, 217.70it/s]
+  0%|          | 0/125 [00:00<?, ?it/s]  7%|▋         | 9/125 [00:00<00:01, 88.55it/s] 30%|██▉       | 37/125 [00:00<00:00, 199.50it/s] 53%|█████▎    | 66/125 [00:00<00:00, 237.86it/s] 75%|███████▌  | 94/125 [00:00<00:00, 253.04it/s] 98%|█████████▊| 123/125 [00:00<00:00, 264.91it/s]100%|██████████| 125/125 [00:00<00:00, 218.35it/s]
+2026-03-28 07:09:57,457 [INFO] 📊 FID Score: 0.4972
+2026-03-28 07:09:57,457 [INFO] 📊 FID Score: 0.4972
+2026-03-28 07:09:57,457 [INFO] 🗑️  清空臨時圖片: mycache/gen_images/ffhq128_autoenc_latent_temp_T100
+2026-03-28 07:09:57,457 [INFO] 🗑️  清空臨時圖片: mycache/gen_images/ffhq128_autoenc_latent_temp_T100
+2026-03-28 07:09:57,500 [INFO] ✅ 結果已保存至: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json
+2026-03-28 07:09:57,500 [INFO] ✅ middle_layer: FID=0.4972, Δ=+0.0036
+2026-03-28 07:09:57,500 [INFO] ==================================================
+2026-03-28 07:09:57,500 [INFO] 🔬 [17/31] 測試 decoder_layer_0 (k=3)
+2026-03-28 07:09:57,500 [INFO] ==================================================
+2026-03-28 07:09:57,500 [INFO] ✅ Cache scheduler 已設定
+2026-03-28 07:09:57,501 [INFO] 開始生成 1000 張圖片並計算 FID...
+2026-03-28 07:09:57,501 [INFO] 輸出目錄: mycache/gen_images/ffhq128_autoenc_latent_temp_T100 (實驗結束後會清空)
+2026-03-28 07:09:57,500 [INFO] ✅ 結果已保存至: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json
+2026-03-28 07:09:57,500 [INFO] ✅ middle_layer: FID=0.4972, Δ=+0.0036
+2026-03-28 07:09:57,500 [INFO] ==================================================
+2026-03-28 07:09:57,500 [INFO] 🔬 [17/31] 測試 decoder_layer_0 (k=3)
+2026-03-28 07:09:57,500 [INFO] ==================================================
+2026-03-28 07:09:57,500 [INFO] ✅ Cache scheduler 已設定
+2026-03-28 07:09:57,501 [INFO] 開始生成 1000 張圖片並計算 FID...
+2026-03-28 07:09:57,501 [INFO] 輸出目錄: mycache/gen_images/ffhq128_autoenc_latent_temp_T100 (實驗結束後會清空)
+fid (0): 0.497150719165802
+copy images:   0%|          | 0/31 [00:00<?, ?it/s]copy images:   3%|▎         | 1/31 [00:00<00:10,  2.94it/s]copy images:  10%|▉         | 3/31 [00:00<00:04,  6.23it/s]copy images:  16%|█▌        | 5/31 [00:00<00:03,  7.93it/s]copy images:  23%|██▎       | 7/31 [00:00<00:02,  8.78it/s]copy images:  29%|██▉       | 9/31 [00:01<00:02,  9.37it/s]copy images:  35%|███▌      | 11/31 [00:01<00:02,  9.62it/s]copy images:  39%|███▊      | 12/31 [00:01<00:01,  9.58it/s]copy images:  45%|████▌     | 14/31 [00:01<00:01,  9.90it/s]copy images:  48%|████▊     | 15/31 [00:01<00:01,  9.90it/s]copy images:  55%|█████▍    | 17/31 [00:01<00:01, 10.09it/s]copy images:  61%|██████▏   | 19/31 [00:02<00:01, 10.19it/s]copy images:  68%|██████▊   | 21/31 [00:02<00:00, 10.37it/s]copy images:  74%|███████▍  | 23/31 [00:02<00:00, 10.42it/s]copy images:  81%|████████  | 25/31 [00:02<00:00, 10.46it/s]copy images:  87%|████████▋ | 27/31 [00:02<00:00, 10.53it/s]copy images:  94%|█████████▎| 29/31 [00:03<00:00, 10.66it/s]copy images: 100%|██████████| 31/31 [00:03<00:00, 10.68it/s]copy images: 100%|██████████| 31/31 [00:03<00:00,  9.34it/s]
+batch_size: 32
+generating images:   0%|          | 0/32 [00:00<?, ?it/s]generating images:   3%|▎         | 1/32 [00:20<10:41, 20.68s/it]generating images:   6%|▋         | 2/32 [00:41<10:20, 20.68s/it]generating images:   9%|▉         | 3/32 [01:02<09:59, 20.68s/it]generating images:  12%|█▎        | 4/32 [01:22<09:38, 20.68s/it]generating images:  16%|█▌        | 5/32 [01:43<09:18, 20.68s/it]generating images:  19%|█▉        | 6/32 [02:04<08:57, 20.67s/it]generating images:  22%|██▏       | 7/32 [02:24<08:36, 20.67s/it]generating images:  25%|██▌       | 8/32 [02:45<08:16, 20.68s/it]generating images:  28%|██▊       | 9/32 [03:06<07:55, 20.68s/it]generating images:  31%|███▏      | 10/32 [03:26<07:34, 20.68s/it]generating images:  34%|███▍      | 11/32 [03:47<07:14, 20.68s/it]generating images:  38%|███▊      | 12/32 [04:08<06:53, 20.68s/it]generating images:  41%|████      | 13/32 [04:28<06:32, 20.68s/it]generating images:  44%|████▍     | 14/32 [04:49<06:12, 20.67s/it]generating images:  47%|████▋     | 15/32 [05:10<05:51, 20.67s/it]generating images:  50%|█████     | 16/32 [05:30<05:30, 20.67s/it]generating images:  53%|█████▎    | 17/32 [05:51<05:10, 20.68s/it]generating images:  56%|█████▋    | 18/32 [06:12<04:49, 20.68s/it]generating images:  59%|█████▉    | 19/32 [06:32<04:28, 20.68s/it]generating images:  62%|██████▎   | 20/32 [06:53<04:08, 20.68s/it]generating images:  66%|██████▌   | 21/32 [07:14<03:47, 20.68s/it]generating images:  69%|██████▉   | 22/32 [07:34<03:26, 20.68s/it]generating images:  72%|███████▏  | 23/32 [07:55<03:06, 20.68s/it]generating images:  75%|███████▌  | 24/32 [08:16<02:45, 20.67s/it]generating images:  78%|███████▊  | 25/32 [08:36<02:24, 20.67s/it]generating images:  81%|████████▏ | 26/32 [08:57<02:04, 20.68s/it]generating images:  84%|████████▍ | 27/32 [09:18<01:43, 20.67s/it]generating images:  88%|████████▊ | 28/32 [09:38<01:22, 20.68s/it]generating images:  91%|█████████ | 29/32 [09:59<01:02, 20.68s/it]generating images:  94%|█████████▍| 30/32 [10:20<00:41, 20.67s/it]generating images:  97%|█████████▋| 31/32 [10:40<00:20, 20.68s/it]generating images: 100%|██████████| 32/32 [10:46<00:00, 16.16s/it]generating images: 100%|██████████| 32/32 [10:46<00:00, 20.21s/it]
+  0%|          | 0/124 [00:00<?, ?it/s]  9%|▉         | 11/124 [00:00<00:01, 109.30it/s] 31%|███▏      | 39/124 [00:00<00:00, 208.56it/s] 55%|█████▍    | 68/124 [00:00<00:00, 243.76it/s] 78%|███████▊  | 97/124 [00:00<00:00, 260.44it/s]100%|██████████| 124/124 [00:00<00:00, 222.36it/s]
+  0%|          | 0/125 [00:00<?, ?it/s] 10%|▉         | 12/125 [00:00<00:00, 117.07it/s] 33%|███▎      | 41/125 [00:00<00:00, 215.84it/s] 56%|█████▌    | 70/125 [00:00<00:00, 245.88it/s] 79%|███████▉  | 99/125 [00:00<00:00, 259.34it/s]100%|██████████| 125/125 [00:00<00:00, 224.17it/s]
+2026-03-28 07:20:48,814 [INFO] 📊 FID Score: 0.5420
+2026-03-28 07:20:48,814 [INFO] 📊 FID Score: 0.5420
+2026-03-28 07:20:48,814 [INFO] 🗑️  清空臨時圖片: mycache/gen_images/ffhq128_autoenc_latent_temp_T100
+2026-03-28 07:20:48,814 [INFO] 🗑️  清空臨時圖片: mycache/gen_images/ffhq128_autoenc_latent_temp_T100
+2026-03-28 07:20:48,828 [INFO] ✅ 結果已保存至: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json
+2026-03-28 07:20:48,828 [INFO] ✅ 結果已保存至: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json
+2026-03-28 07:20:48,828 [INFO] ✅ decoder_layer_0: FID=0.5420, Δ=+0.0484
+2026-03-28 07:20:48,828 [INFO] ✅ decoder_layer_0: FID=0.5420, Δ=+0.0484
+2026-03-28 07:20:48,828 [INFO] ==================================================
+2026-03-28 07:20:48,828 [INFO] 🔬 [18/31] 測試 decoder_layer_1 (k=3)
+2026-03-28 07:20:48,828 [INFO] ==================================================
+2026-03-28 07:20:48,828 [INFO] ==================================================
+2026-03-28 07:20:48,828 [INFO] 🔬 [18/31] 測試 decoder_layer_1 (k=3)
+2026-03-28 07:20:48,828 [INFO] ==================================================
+2026-03-28 07:20:48,854 [INFO] ✅ Cache scheduler 已設定
+2026-03-28 07:20:48,854 [INFO] 開始生成 1000 張圖片並計算 FID...
+2026-03-28 07:20:48,854 [INFO] 輸出目錄: mycache/gen_images/ffhq128_autoenc_latent_temp_T100 (實驗結束後會清空)
+2026-03-28 07:20:48,854 [INFO] ✅ Cache scheduler 已設定
+2026-03-28 07:20:48,854 [INFO] 開始生成 1000 張圖片並計算 FID...
+2026-03-28 07:20:48,854 [INFO] 輸出目錄: mycache/gen_images/ffhq128_autoenc_latent_temp_T100 (實驗結束後會清空)
+fid (0): 0.5419606566429138
+copy images:   0%|          | 0/31 [00:00<?, ?it/s]copy images:   3%|▎         | 1/31 [00:00<00:10,  2.93it/s]copy images:  10%|▉         | 3/31 [00:00<00:04,  6.22it/s]copy images:  16%|█▌        | 5/31 [00:00<00:03,  8.01it/s]copy images:  23%|██▎       | 7/31 [00:00<00:02,  9.01it/s]copy images:  29%|██▉       | 9/31 [00:01<00:02,  9.65it/s]copy images:  35%|███▌      | 11/31 [00:01<00:02,  9.93it/s]copy images:  42%|████▏     | 13/31 [00:01<00:01, 10.19it/s]copy images:  48%|████▊     | 15/31 [00:01<00:01, 10.32it/s]copy images:  55%|█████▍    | 17/31 [00:01<00:01, 10.51it/s]copy images:  61%|██████▏   | 19/31 [00:02<00:01, 10.45it/s]copy images:  68%|██████▊   | 21/31 [00:02<00:00, 10.55it/s]copy images:  74%|███████▍  | 23/31 [00:02<00:00, 10.58it/s]copy images:  81%|████████  | 25/31 [00:02<00:00, 10.56it/s]copy images:  87%|████████▋ | 27/31 [00:02<00:00, 10.62it/s]copy images:  94%|█████████▎| 29/31 [00:02<00:00, 10.68it/s]copy images: 100%|██████████| 31/31 [00:03<00:00, 10.63it/s]copy images: 100%|██████████| 31/31 [00:03<00:00,  9.56it/s]
+batch_size: 32
+generating images:   0%|          | 0/32 [00:00<?, ?it/s]generating images:   3%|▎         | 1/32 [00:20<10:40, 20.67s/it]generating images:   6%|▋         | 2/32 [00:41<10:20, 20.67s/it]generating images:   9%|▉         | 3/32 [01:02<09:59, 20.67s/it]generating images:  12%|█▎        | 4/32 [01:22<09:38, 20.67s/it]generating images:  16%|█▌        | 5/32 [01:43<09:18, 20.67s/it]generating images:  19%|█▉        | 6/32 [02:04<08:57, 20.67s/it]generating images:  22%|██▏       | 7/32 [02:24<08:36, 20.68s/it]generating images:  25%|██▌       | 8/32 [02:45<08:16, 20.67s/it]generating images:  28%|██▊       | 9/32 [03:06<07:55, 20.67s/it]generating images:  31%|███▏      | 10/32 [03:26<07:34, 20.67s/it]generating images:  34%|███▍      | 11/32 [03:47<07:14, 20.67s/it]generating images:  38%|███▊      | 12/32 [04:08<06:53, 20.67s/it]generating images:  41%|████      | 13/32 [04:28<06:32, 20.67s/it]generating images:  44%|████▍     | 14/32 [04:49<06:12, 20.67s/it]generating images:  47%|████▋     | 15/32 [05:10<05:51, 20.67s/it]generating images:  50%|█████     | 16/32 [05:30<05:30, 20.68s/it]generating images:  53%|█████▎    | 17/32 [05:51<05:10, 20.68s/it]generating images:  56%|█████▋    | 18/32 [06:12<04:49, 20.68s/it]generating images:  59%|█████▉    | 19/32 [06:32<04:28, 20.68s/it]generating images:  62%|██████▎   | 20/32 [06:53<04:08, 20.67s/it]generating images:  66%|██████▌   | 21/32 [07:14<03:47, 20.68s/it]generating images:  69%|██████▉   | 22/32 [07:34<03:26, 20.68s/it]generating images:  72%|███████▏  | 23/32 [07:55<03:06, 20.68s/it]generating images:  75%|███████▌  | 24/32 [08:16<02:45, 20.68s/it]generating images:  78%|███████▊  | 25/32 [08:36<02:24, 20.67s/it]generating images:  81%|████████▏ | 26/32 [08:57<02:04, 20.68s/it]generating images:  84%|████████▍ | 27/32 [09:18<01:43, 20.68s/it]generating images:  88%|████████▊ | 28/32 [09:38<01:22, 20.67s/it]generating images:  91%|█████████ | 29/32 [09:59<01:02, 20.68s/it]generating images:  94%|█████████▍| 30/32 [10:20<00:41, 20.67s/it]generating images:  97%|█████████▋| 31/32 [10:40<00:20, 20.67s/it]generating images: 100%|██████████| 32/32 [10:46<00:00, 16.16s/it]generating images: 100%|██████████| 32/32 [10:46<00:00, 20.20s/it]
+  0%|          | 0/124 [00:00<?, ?it/s]  9%|▉         | 11/124 [00:00<00:01, 108.39it/s] 31%|███▏      | 39/124 [00:00<00:00, 208.28it/s] 54%|█████▍    | 67/124 [00:00<00:00, 240.44it/s] 77%|███████▋  | 95/124 [00:00<00:00, 254.89it/s] 99%|█████████▉| 123/124 [00:00<00:00, 261.78it/s]100%|██████████| 124/124 [00:00<00:00, 217.88it/s]
+  0%|          | 0/125 [00:00<?, ?it/s]  9%|▉         | 11/125 [00:00<00:01, 107.69it/s] 32%|███▏      | 40/125 [00:00<00:00, 212.19it/s] 55%|█████▌    | 69/125 [00:00<00:00, 245.33it/s] 78%|███████▊  | 98/125 [00:00<00:00, 262.48it/s]100%|██████████| 125/125 [00:00<00:00, 223.89it/s]
+2026-03-28 07:31:39,942 [INFO] 📊 FID Score: 0.5000
+2026-03-28 07:31:39,942 [INFO] 📊 FID Score: 0.5000
+2026-03-28 07:31:39,943 [INFO] 🗑️  清空臨時圖片: mycache/gen_images/ffhq128_autoenc_latent_temp_T100
+2026-03-28 07:31:39,943 [INFO] 🗑️  清空臨時圖片: mycache/gen_images/ffhq128_autoenc_latent_temp_T100
+2026-03-28 07:31:39,956 [INFO] ✅ 結果已保存至: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json
+2026-03-28 07:31:39,956 [INFO] ✅ 結果已保存至: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json
+2026-03-28 07:31:39,956 [INFO] ✅ decoder_layer_1: FID=0.5000, Δ=+0.0065
+2026-03-28 07:31:39,956 [INFO] ✅ decoder_layer_1: FID=0.5000, Δ=+0.0065
+2026-03-28 07:31:39,956 [INFO] ==================================================
+2026-03-28 07:31:39,956 [INFO] ==================================================
+2026-03-28 07:31:39,956 [INFO] 🔬 [19/31] 測試 decoder_layer_2 (k=3)
+2026-03-28 07:31:39,956 [INFO] ==================================================
+2026-03-28 07:31:39,956 [INFO] 🔬 [19/31] 測試 decoder_layer_2 (k=3)
+2026-03-28 07:31:39,956 [INFO] ==================================================
+2026-03-28 07:31:39,957 [INFO] ✅ Cache scheduler 已設定
+2026-03-28 07:31:39,957 [INFO] ✅ Cache scheduler 已設定
+2026-03-28 07:31:39,981 [INFO] 開始生成 1000 張圖片並計算 FID...
+2026-03-28 07:31:39,981 [INFO] 輸出目錄: mycache/gen_images/ffhq128_autoenc_latent_temp_T100 (實驗結束後會清空)
+2026-03-28 07:31:39,981 [INFO] 開始生成 1000 張圖片並計算 FID...
+2026-03-28 07:31:39,981 [INFO] 輸出目錄: mycache/gen_images/ffhq128_autoenc_latent_temp_T100 (實驗結束後會清空)
+fid (0): 0.5000333786010742
+copy images:   0%|          | 0/31 [00:00<?, ?it/s]copy images:   3%|▎         | 1/31 [00:00<00:10,  2.93it/s]copy images:   6%|▋         | 2/31 [00:00<00:05,  5.00it/s]copy images:  13%|█▎        | 4/31 [00:00<00:03,  7.30it/s]copy images:  19%|█▉        | 6/31 [00:00<00:02,  8.61it/s]copy images:  26%|██▌       | 8/31 [00:01<00:02,  9.36it/s]copy images:  32%|███▏      | 10/31 [00:01<00:02,  9.82it/s]copy images:  39%|███▊      | 12/31 [00:01<00:01, 10.00it/s]copy images:  45%|████▌     | 14/31 [00:01<00:01, 10.30it/s]copy images:  52%|█████▏    | 16/31 [00:01<00:01, 10.42it/s]copy images:  58%|█████▊    | 18/31 [00:01<00:01, 10.44it/s]copy images:  65%|██████▍   | 20/31 [00:02<00:01, 10.41it/s]copy images:  71%|███████   | 22/31 [00:02<00:00, 10.46it/s]copy images:  77%|███████▋  | 24/31 [00:02<00:00, 10.34it/s]copy images:  84%|████████▍ | 26/31 [00:02<00:00, 10.48it/s]copy images:  90%|█████████ | 28/31 [00:02<00:00, 10.56it/s]copy images:  97%|█████████▋| 30/31 [00:03<00:00, 10.63it/s]copy images: 100%|██████████| 31/31 [00:03<00:00,  9.46it/s]
+batch_size: 32
+generating images:   0%|          | 0/32 [00:00<?, ?it/s]generating images:   3%|▎         | 1/32 [00:20<10:38, 20.58s/it]generating images:   6%|▋         | 2/32 [00:41<10:17, 20.58s/it]generating images:   9%|▉         | 3/32 [01:01<09:57, 20.59s/it]generating images:  12%|█▎        | 4/32 [01:22<09:36, 20.59s/it]generating images:  16%|█▌        | 5/32 [01:42<09:15, 20.59s/it]generating images:  19%|█▉        | 6/32 [02:03<08:55, 20.59s/it]generating images:  22%|██▏       | 7/32 [02:24<08:34, 20.59s/it]generating images:  25%|██▌       | 8/32 [02:44<08:14, 20.59s/it]generating images:  28%|██▊       | 9/32 [03:05<07:53, 20.59s/it]generating images:  31%|███▏      | 10/32 [03:25<07:32, 20.59s/it]generating images:  34%|███▍      | 11/32 [03:46<07:12, 20.59s/it]generating images:  38%|███▊      | 12/32 [04:07<06:51, 20.59s/it]generating images:  41%|████      | 13/32 [04:27<06:31, 20.59s/it]generating images:  44%|████▍     | 14/32 [04:48<06:10, 20.59s/it]generating images:  47%|████▋     | 15/32 [05:08<05:49, 20.59s/it]generating images:  50%|█████     | 16/32 [05:29<05:29, 20.59s/it]generating images:  53%|█████▎    | 17/32 [05:49<05:08, 20.59s/it]generating images:  56%|█████▋    | 18/32 [06:10<04:48, 20.59s/it]generating images:  59%|█████▉    | 19/32 [06:31<04:27, 20.59s/it]generating images:  62%|██████▎   | 20/32 [06:51<04:07, 20.59s/it]generating images:  66%|██████▌   | 21/32 [07:12<03:46, 20.59s/it]generating images:  69%|██████▉   | 22/32 [07:32<03:25, 20.59s/it]generating images:  72%|███████▏  | 23/32 [07:53<03:05, 20.59s/it]generating images:  75%|███████▌  | 24/32 [08:14<02:44, 20.59s/it]generating images:  78%|███████▊  | 25/32 [08:34<02:24, 20.59s/it]generating images:  81%|████████▏ | 26/32 [08:55<02:03, 20.59s/it]generating images:  84%|████████▍ | 27/32 [09:15<01:42, 20.59s/it]generating images:  88%|████████▊ | 28/32 [09:36<01:22, 20.59s/it]generating images:  91%|█████████ | 29/32 [09:57<01:01, 20.59s/it]generating images:  94%|█████████▍| 30/32 [10:17<00:41, 20.59s/it]generating images:  97%|█████████▋| 31/32 [10:38<00:20, 20.59s/it]generating images: 100%|██████████| 32/32 [10:43<00:00, 16.08s/it]generating images: 100%|██████████| 32/32 [10:43<00:00, 20.12s/it]
+  0%|          | 0/124 [00:00<?, ?it/s]  9%|▉         | 11/124 [00:00<00:01, 107.77it/s] 31%|███▏      | 39/124 [00:00<00:00, 207.18it/s] 54%|█████▍    | 67/124 [00:00<00:00, 238.53it/s] 77%|███████▋  | 96/124 [00:00<00:00, 256.56it/s]100%|██████████| 124/124 [00:00<00:00, 220.15it/s]
+  0%|          | 0/125 [00:00<?, ?it/s]  6%|▌         | 7/125 [00:00<00:01, 68.63it/s] 29%|██▉       | 36/125 [00:00<00:00, 194.43it/s] 51%|█████     | 64/125 [00:00<00:00, 232.06it/s] 74%|███████▎  | 92/125 [00:00<00:00, 250.24it/s] 97%|█████████▋| 121/125 [00:00<00:00, 262.68it/s]100%|██████████| 125/125 [00:00<00:00, 214.45it/s]
+2026-03-28 07:42:28,384 [INFO] 📊 FID Score: 0.4785
+2026-03-28 07:42:28,384 [INFO] 📊 FID Score: 0.4785
+2026-03-28 07:42:28,384 [INFO] 🗑️  清空臨時圖片: mycache/gen_images/ffhq128_autoenc_latent_temp_T100
+2026-03-28 07:42:28,384 [INFO] 🗑️  清空臨時圖片: mycache/gen_images/ffhq128_autoenc_latent_temp_T100
+2026-03-28 07:42:28,425 [INFO] ✅ 結果已保存至: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json
+2026-03-28 07:42:28,425 [INFO] ✅ decoder_layer_2: FID=0.4785, Δ=-0.0151
+2026-03-28 07:42:28,425 [INFO] ==================================================
+2026-03-28 07:42:28,425 [INFO] 🔬 [20/31] 測試 decoder_layer_3 (k=3)
+2026-03-28 07:42:28,425 [INFO] ==================================================
+2026-03-28 07:42:28,425 [INFO] ✅ Cache scheduler 已設定
+2026-03-28 07:42:28,426 [INFO] 開始生成 1000 張圖片並計算 FID...
+2026-03-28 07:42:28,426 [INFO] 輸出目錄: mycache/gen_images/ffhq128_autoenc_latent_temp_T100 (實驗結束後會清空)
+2026-03-28 07:42:28,425 [INFO] ✅ 結果已保存至: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json
+2026-03-28 07:42:28,425 [INFO] ✅ decoder_layer_2: FID=0.4785, Δ=-0.0151
+2026-03-28 07:42:28,425 [INFO] ==================================================
+2026-03-28 07:42:28,425 [INFO] 🔬 [20/31] 測試 decoder_layer_3 (k=3)
+2026-03-28 07:42:28,425 [INFO] ==================================================
+2026-03-28 07:42:28,425 [INFO] ✅ Cache scheduler 已設定
+2026-03-28 07:42:28,426 [INFO] 開始生成 1000 張圖片並計算 FID...
+2026-03-28 07:42:28,426 [INFO] 輸出目錄: mycache/gen_images/ffhq128_autoenc_latent_temp_T100 (實驗結束後會清空)
+fid (0): 0.47851377725601196
+copy images:   0%|          | 0/31 [00:00<?, ?it/s]copy images:   3%|▎         | 1/31 [00:00<00:10,  2.93it/s]copy images:  10%|▉         | 3/31 [00:00<00:04,  6.20it/s]copy images:  16%|█▌        | 5/31 [00:00<00:03,  7.88it/s]copy images:  23%|██▎       | 7/31 [00:00<00:02,  8.85it/s]copy images:  29%|██▉       | 9/31 [00:01<00:02,  9.51it/s]copy images:  35%|███▌      | 11/31 [00:01<00:02,  9.83it/s]copy images:  42%|████▏     | 13/31 [00:01<00:01, 10.12it/s]copy images:  48%|████▊     | 15/31 [00:01<00:01, 10.27it/s]copy images:  55%|█████▍    | 17/31 [00:01<00:01, 10.48it/s]copy images:  61%|██████▏   | 19/31 [00:02<00:01, 10.51it/s]copy images:  68%|██████▊   | 21/31 [00:02<00:00, 10.59it/s]copy images:  74%|███████▍  | 23/31 [00:02<00:00, 10.61it/s]copy images:  81%|████████  | 25/31 [00:02<00:00, 10.63it/s]copy images:  87%|████████▋ | 27/31 [00:02<00:00, 10.71it/s]copy images:  94%|█████████▎| 29/31 [00:02<00:00, 10.70it/s]copy images: 100%|██████████| 31/31 [00:03<00:00, 10.56it/s]copy images: 100%|██████████| 31/31 [00:03<00:00,  9.56it/s]
+batch_size: 32
+generating images:   0%|          | 0/32 [00:00<?, ?it/s]generating images:   3%|▎         | 1/32 [00:20<10:39, 20.63s/it]generating images:   6%|▋         | 2/32 [00:41<10:18, 20.63s/it]generating images:   9%|▉         | 3/32 [01:01<09:58, 20.63s/it]generating images:  12%|█▎        | 4/32 [01:22<09:37, 20.63s/it]generating images:  16%|█▌        | 5/32 [01:43<09:17, 20.63s/it]generating images:  19%|█▉        | 6/32 [02:03<08:56, 20.63s/it]generating images:  22%|██▏       | 7/32 [02:24<08:35, 20.63s/it]generating images:  25%|██▌       | 8/32 [02:45<08:15, 20.63s/it]generating images:  28%|██▊       | 9/32 [03:05<07:54, 20.63s/it]generating images:  31%|███▏      | 10/32 [03:26<07:33, 20.63s/it]generating images:  34%|███▍      | 11/32 [03:46<07:13, 20.63s/it]generating images:  38%|███▊      | 12/32 [04:07<06:52, 20.63s/it]generating images:  41%|████      | 13/32 [04:28<06:31, 20.63s/it]generating images:  44%|████▍     | 14/32 [04:48<06:11, 20.63s/it]generating images:  47%|████▋     | 15/32 [05:09<05:50, 20.63s/it]generating images:  50%|█████     | 16/32 [05:30<05:30, 20.63s/it]generating images:  53%|█████▎    | 17/32 [05:50<05:09, 20.63s/it]generating images:  56%|█████▋    | 18/32 [06:11<04:48, 20.63s/it]generating images:  59%|█████▉    | 19/32 [06:31<04:28, 20.63s/it]generating images:  62%|██████▎   | 20/32 [06:52<04:07, 20.63s/it]generating images:  66%|██████▌   | 21/32 [07:13<03:46, 20.63s/it]generating images:  69%|██████▉   | 22/32 [07:33<03:26, 20.63s/it]generating images:  72%|███████▏  | 23/32 [07:54<03:05, 20.63s/it]generating images:  75%|███████▌  | 24/32 [08:15<02:45, 20.63s/it]generating images:  78%|███████▊  | 25/32 [08:35<02:24, 20.63s/it]generating images:  81%|████████▏ | 26/32 [08:56<02:03, 20.63s/it]generating images:  84%|████████▍ | 27/32 [09:17<01:43, 20.63s/it]generating images:  88%|████████▊ | 28/32 [09:37<01:22, 20.63s/it]generating images:  91%|█████████ | 29/32 [09:58<01:01, 20.63s/it]generating images:  94%|█████████▍| 30/32 [10:18<00:41, 20.63s/it]generating images:  97%|█████████▋| 31/32 [10:39<00:20, 20.63s/it]generating images: 100%|██████████| 32/32 [10:45<00:00, 16.12s/it]generating images: 100%|██████████| 32/32 [10:45<00:00, 20.16s/it]
+  0%|          | 0/124 [00:00<?, ?it/s]  9%|▉         | 11/124 [00:00<00:01, 109.45it/s] 32%|███▏      | 40/124 [00:00<00:00, 215.28it/s] 56%|█████▌    | 69/124 [00:00<00:00, 249.26it/s] 79%|███████▉  | 98/124 [00:00<00:00, 261.85it/s]100%|██████████| 124/124 [00:00<00:00, 222.68it/s]
+  0%|          | 0/125 [00:00<?, ?it/s]  7%|▋         | 9/125 [00:00<00:01, 87.36it/s] 30%|███       | 38/125 [00:00<00:00, 202.06it/s] 53%|█████▎    | 66/125 [00:00<00:00, 237.11it/s] 76%|███████▌  | 95/125 [00:00<00:00, 256.97it/s] 99%|█████████▉| 124/125 [00:00<00:00, 267.49it/s]100%|██████████| 125/125 [00:00<00:00, 218.89it/s]
+2026-03-28 07:53:18,109 [INFO] 📊 FID Score: 0.4977
+2026-03-28 07:53:18,109 [INFO] 📊 FID Score: 0.4977
+2026-03-28 07:53:18,109 [INFO] 🗑️  清空臨時圖片: mycache/gen_images/ffhq128_autoenc_latent_temp_T100
+2026-03-28 07:53:18,109 [INFO] 🗑️  清空臨時圖片: mycache/gen_images/ffhq128_autoenc_latent_temp_T100
+2026-03-28 07:53:18,154 [INFO] ✅ 結果已保存至: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json
+2026-03-28 07:53:18,154 [INFO] ✅ decoder_layer_3: FID=0.4977, Δ=+0.0041
+2026-03-28 07:53:18,154 [INFO] ==================================================
+2026-03-28 07:53:18,154 [INFO] 🔬 [21/31] 測試 decoder_layer_4 (k=3)
+2026-03-28 07:53:18,154 [INFO] ==================================================
+2026-03-28 07:53:18,154 [INFO] ✅ Cache scheduler 已設定
+2026-03-28 07:53:18,155 [INFO] 開始生成 1000 張圖片並計算 FID...
+2026-03-28 07:53:18,155 [INFO] 輸出目錄: mycache/gen_images/ffhq128_autoenc_latent_temp_T100 (實驗結束後會清空)
+2026-03-28 07:53:18,154 [INFO] ✅ 結果已保存至: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json
+2026-03-28 07:53:18,154 [INFO] ✅ decoder_layer_3: FID=0.4977, Δ=+0.0041
+2026-03-28 07:53:18,154 [INFO] ==================================================
+2026-03-28 07:53:18,154 [INFO] 🔬 [21/31] 測試 decoder_layer_4 (k=3)
+2026-03-28 07:53:18,154 [INFO] ==================================================
+2026-03-28 07:53:18,154 [INFO] ✅ Cache scheduler 已設定
+2026-03-28 07:53:18,155 [INFO] 開始生成 1000 張圖片並計算 FID...
+2026-03-28 07:53:18,155 [INFO] 輸出目錄: mycache/gen_images/ffhq128_autoenc_latent_temp_T100 (實驗結束後會清空)
+fid (0): 0.49765485525131226
+copy images:   0%|          | 0/31 [00:00<?, ?it/s]copy images:   3%|▎         | 1/31 [00:00<00:10,  2.85it/s]copy images:  10%|▉         | 3/31 [00:00<00:04,  6.03it/s]copy images:  16%|█▌        | 5/31 [00:00<00:03,  7.69it/s]copy images:  23%|██▎       | 7/31 [00:00<00:02,  8.52it/s]copy images:  26%|██▌       | 8/31 [00:01<00:02,  8.82it/s]copy images:  32%|███▏      | 10/31 [00:01<00:02,  9.34it/s]copy images:  35%|███▌      | 11/31 [00:01<00:02,  9.46it/s]copy images:  39%|███▊      | 12/31 [00:01<00:02,  9.38it/s]copy images:  45%|████▌     | 14/31 [00:01<00:01,  9.86it/s]copy images:  52%|█████▏    | 16/31 [00:01<00:01, 10.03it/s]copy images:  58%|█████▊    | 18/31 [00:02<00:01, 10.09it/s]copy images:  65%|██████▍   | 20/31 [00:02<00:01, 10.14it/s]copy images:  71%|███████   | 22/31 [00:02<00:00, 10.27it/s]copy images:  77%|███████▋  | 24/31 [00:02<00:00, 10.24it/s]copy images:  84%|████████▍ | 26/31 [00:02<00:00, 10.29it/s]copy images:  90%|█████████ | 28/31 [00:02<00:00, 10.32it/s]copy images:  97%|█████████▋| 30/31 [00:03<00:00, 10.28it/s]copy images: 100%|██████████| 31/31 [00:03<00:00,  9.11it/s]
+batch_size: 32
+generating images:   0%|          | 0/32 [00:00<?, ?it/s]generating images:   3%|▎         | 1/32 [00:20<10:39, 20.64s/it]generating images:   6%|▋         | 2/32 [00:41<10:19, 20.64s/it]generating images:   9%|▉         | 3/32 [01:01<09:58, 20.64s/it]generating images:  12%|█▎        | 4/32 [01:22<09:37, 20.64s/it]generating images:  16%|█▌        | 5/32 [01:43<09:17, 20.64s/it]generating images:  19%|█▉        | 6/32 [02:03<08:56, 20.63s/it]generating images:  22%|██▏       | 7/32 [02:24<08:35, 20.63s/it]generating images:  25%|██▌       | 8/32 [02:45<08:15, 20.63s/it]generating images:  28%|██▊       | 9/32 [03:05<07:54, 20.64s/it]generating images:  31%|███▏      | 10/32 [03:26<07:33, 20.63s/it]generating images:  34%|███▍      | 11/32 [03:46<07:13, 20.64s/it]generating images:  38%|███▊      | 12/32 [04:07<06:52, 20.64s/it]generating images:  41%|████      | 13/32 [04:28<06:32, 20.63s/it]generating images:  44%|████▍     | 14/32 [04:48<06:11, 20.64s/it]generating images:  47%|████▋     | 15/32 [05:09<05:50, 20.64s/it]generating images:  50%|█████     | 16/32 [05:30<05:30, 20.64s/it]generating images:  53%|█████▎    | 17/32 [05:50<05:09, 20.64s/it]generating images:  56%|█████▋    | 18/32 [06:11<04:48, 20.64s/it]generating images:  59%|█████▉    | 19/32 [06:32<04:28, 20.64s/it]generating images:  62%|██████▎   | 20/32 [06:52<04:07, 20.64s/it]generating images:  66%|██████▌   | 21/32 [07:13<03:46, 20.64s/it]generating images:  69%|██████▉   | 22/32 [07:33<03:26, 20.64s/it]generating images:  72%|███████▏  | 23/32 [07:54<03:05, 20.64s/it]generating images:  75%|███████▌  | 24/32 [08:15<02:45, 20.64s/it]generating images:  78%|███████▊  | 25/32 [08:35<02:24, 20.64s/it]generating images:  81%|████████▏ | 26/32 [08:56<02:03, 20.64s/it]generating images:  84%|████████▍ | 27/32 [09:17<01:43, 20.64s/it]generating images:  88%|████████▊ | 28/32 [09:37<01:22, 20.64s/it]generating images:  91%|█████████ | 29/32 [09:58<01:01, 20.64s/it]generating images:  94%|█████████▍| 30/32 [10:19<00:41, 20.64s/it]generating images:  97%|█████████▋| 31/32 [10:39<00:20, 20.64s/it]generating images: 100%|██████████| 32/32 [10:45<00:00, 16.13s/it]generating images: 100%|██████████| 32/32 [10:45<00:00, 20.17s/it]
+  0%|          | 0/124 [00:00<?, ?it/s]  9%|▉         | 11/124 [00:00<00:01, 107.92it/s] 32%|███▏      | 40/124 [00:00<00:00, 212.86it/s] 56%|█████▋    | 70/124 [00:00<00:00, 249.06it/s] 80%|███████▉  | 99/124 [00:00<00:00, 264.40it/s]100%|██████████| 124/124 [00:00<00:00, 224.65it/s]
+  0%|          | 0/125 [00:00<?, ?it/s] 10%|▉         | 12/125 [00:00<00:00, 116.12it/s] 33%|███▎      | 41/125 [00:00<00:00, 213.45it/s] 56%|█████▌    | 70/125 [00:00<00:00, 244.80it/s] 79%|███████▉  | 99/125 [00:00<00:00, 259.46it/s]100%|██████████| 125/125 [00:00<00:00, 223.97it/s]
+2026-03-28 08:04:08,209 [INFO] 📊 FID Score: 0.4658
+2026-03-28 08:04:08,209 [INFO] 📊 FID Score: 0.4658
+2026-03-28 08:04:08,209 [INFO] 🗑️  清空臨時圖片: mycache/gen_images/ffhq128_autoenc_latent_temp_T100
+2026-03-28 08:04:08,209 [INFO] 🗑️  清空臨時圖片: mycache/gen_images/ffhq128_autoenc_latent_temp_T100
+2026-03-28 08:04:08,251 [INFO] ✅ 結果已保存至: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json
+2026-03-28 08:04:08,251 [INFO] ✅ decoder_layer_4: FID=0.4658, Δ=-0.0278
+2026-03-28 08:04:08,251 [INFO] ==================================================
+2026-03-28 08:04:08,251 [INFO] 🔬 [22/31] 測試 decoder_layer_5 (k=3)
+2026-03-28 08:04:08,251 [INFO] ==================================================
+2026-03-28 08:04:08,252 [INFO] ✅ Cache scheduler 已設定
+2026-03-28 08:04:08,252 [INFO] 開始生成 1000 張圖片並計算 FID...
+2026-03-28 08:04:08,252 [INFO] 輸出目錄: mycache/gen_images/ffhq128_autoenc_latent_temp_T100 (實驗結束後會清空)
+2026-03-28 08:04:08,251 [INFO] ✅ 結果已保存至: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json
+2026-03-28 08:04:08,251 [INFO] ✅ decoder_layer_4: FID=0.4658, Δ=-0.0278
+2026-03-28 08:04:08,251 [INFO] ==================================================
+2026-03-28 08:04:08,251 [INFO] 🔬 [22/31] 測試 decoder_layer_5 (k=3)
+2026-03-28 08:04:08,251 [INFO] ==================================================
+2026-03-28 08:04:08,252 [INFO] ✅ Cache scheduler 已設定
+2026-03-28 08:04:08,252 [INFO] 開始生成 1000 張圖片並計算 FID...
+2026-03-28 08:04:08,252 [INFO] 輸出目錄: mycache/gen_images/ffhq128_autoenc_latent_temp_T100 (實驗結束後會清空)
+fid (0): 0.46579813957214355
+copy images:   0%|          | 0/31 [00:00<?, ?it/s]copy images:   3%|▎         | 1/31 [00:00<00:10,  2.86it/s]copy images:  10%|▉         | 3/31 [00:00<00:04,  6.23it/s]copy images:  16%|█▌        | 5/31 [00:00<00:03,  8.02it/s]copy images:  23%|██▎       | 7/31 [00:00<00:02,  9.02it/s]copy images:  29%|██▉       | 9/31 [00:01<00:02,  9.69it/s]copy images:  35%|███▌      | 11/31 [00:01<00:02,  9.97it/s]copy images:  42%|████▏     | 13/31 [00:01<00:01, 10.24it/s]copy images:  48%|████▊     | 15/31 [00:01<00:01, 10.36it/s]copy images:  55%|█████▍    | 17/31 [00:01<00:01, 10.55it/s]copy images:  61%|██████▏   | 19/31 [00:02<00:01, 10.57it/s]copy images:  68%|██████▊   | 21/31 [00:02<00:00, 10.67it/s]copy images:  74%|███████▍  | 23/31 [00:02<00:00, 10.62it/s]copy images:  81%|████████  | 25/31 [00:02<00:00, 10.58it/s]copy images:  87%|████████▋ | 27/31 [00:02<00:00, 10.62it/s]copy images:  94%|█████████▎| 29/31 [00:02<00:00, 10.67it/s]copy images: 100%|██████████| 31/31 [00:03<00:00, 10.64it/s]copy images: 100%|██████████| 31/31 [00:03<00:00,  9.57it/s]
+batch_size: 32
+generating images:   0%|          | 0/32 [00:00<?, ?it/s]generating images:   3%|▎         | 1/32 [00:20<10:33, 20.44s/it]generating images:   6%|▋         | 2/32 [00:40<10:13, 20.44s/it]generating images:   9%|▉         | 3/32 [01:01<09:52, 20.44s/it]generating images:  12%|█▎        | 4/32 [01:21<09:32, 20.44s/it]generating images:  16%|█▌        | 5/32 [01:42<09:11, 20.44s/it]generating images:  19%|█▉        | 6/32 [02:02<08:51, 20.44s/it]generating images:  22%|██▏       | 7/32 [02:23<08:30, 20.44s/it]generating images:  25%|██▌       | 8/32 [02:43<08:10, 20.44s/it]generating images:  28%|██▊       | 9/32 [03:03<07:50, 20.44s/it]generating images:  31%|███▏      | 10/32 [03:24<07:30, 20.46s/it]generating images:  34%|███▍      | 11/32 [03:44<07:09, 20.47s/it]generating images:  38%|███▊      | 12/32 [04:05<06:49, 20.48s/it]generating images:  41%|████      | 13/32 [04:25<06:29, 20.48s/it]generating images:  44%|████▍     | 14/32 [04:46<06:08, 20.49s/it]generating images:  47%|████▋     | 15/32 [05:06<05:48, 20.49s/it]generating images:  50%|█████     | 16/32 [05:27<05:27, 20.49s/it]generating images:  53%|█████▎    | 17/32 [05:47<05:07, 20.49s/it]generating images:  56%|█████▋    | 18/32 [06:08<04:46, 20.49s/it]generating images:  59%|█████▉    | 19/32 [06:28<04:26, 20.49s/it]generating images:  62%|██████▎   | 20/32 [06:49<04:05, 20.49s/it]generating images:  66%|██████▌   | 21/32 [07:09<03:45, 20.49s/it]generating images:  69%|██████▉   | 22/32 [07:30<03:24, 20.49s/it]generating images:  72%|███████▏  | 23/32 [07:50<03:04, 20.49s/it]generating images:  75%|███████▌  | 24/32 [08:11<02:43, 20.49s/it]generating images:  78%|███████▊  | 25/32 [08:31<02:23, 20.49s/it]generating images:  81%|████████▏ | 26/32 [08:52<02:02, 20.49s/it]generating images:  84%|████████▍ | 27/32 [09:12<01:42, 20.50s/it]generating images:  88%|████████▊ | 28/32 [09:33<01:21, 20.50s/it]generating images:  91%|█████████ | 29/32 [09:53<01:01, 20.49s/it]generating images:  94%|█████████▍| 30/32 [10:14<00:40, 20.50s/it]generating images:  97%|█████████▋| 31/32 [10:34<00:20, 20.50s/it]generating images: 100%|██████████| 32/32 [10:40<00:00, 16.06s/it]generating images: 100%|██████████| 32/32 [10:40<00:00, 20.02s/it]
+  0%|          | 0/124 [00:00<?, ?it/s]  8%|▊         | 10/124 [00:00<00:01, 99.41it/s] 30%|██▉       | 37/124 [00:00<00:00, 199.13it/s] 52%|█████▏    | 65/124 [00:00<00:00, 235.42it/s] 76%|███████▌  | 94/124 [00:00<00:00, 253.30it/s] 98%|█████████▊| 122/124 [00:00<00:00, 259.61it/s]100%|██████████| 124/124 [00:00<00:00, 215.13it/s]
+  0%|          | 0/125 [00:00<?, ?it/s]  9%|▉         | 11/125 [00:00<00:01, 107.03it/s] 30%|███       | 38/125 [00:00<00:00, 201.29it/s] 53%|█████▎    | 66/125 [00:00<00:00, 233.15it/s] 75%|███████▌  | 94/125 [00:00<00:00, 250.76it/s] 98%|█████████▊| 123/125 [00:00<00:00, 262.00it/s]100%|██████████| 125/125 [00:00<00:00, 215.23it/s]
+2026-03-28 08:14:53,400 [INFO] 📊 FID Score: 0.5916
+2026-03-28 08:14:53,400 [INFO] 📊 FID Score: 0.5916
+2026-03-28 08:14:53,400 [INFO] 🗑️  清空臨時圖片: mycache/gen_images/ffhq128_autoenc_latent_temp_T100
+2026-03-28 08:14:53,400 [INFO] 🗑️  清空臨時圖片: mycache/gen_images/ffhq128_autoenc_latent_temp_T100
+2026-03-28 08:14:53,442 [INFO] ✅ 結果已保存至: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json
+2026-03-28 08:14:53,442 [INFO] ✅ decoder_layer_5: FID=0.5916, Δ=+0.0980
+2026-03-28 08:14:53,442 [INFO] ==================================================
+2026-03-28 08:14:53,442 [INFO] 🔬 [23/31] 測試 decoder_layer_6 (k=3)
+2026-03-28 08:14:53,442 [INFO] ==================================================
+2026-03-28 08:14:53,442 [INFO] ✅ Cache scheduler 已設定
+2026-03-28 08:14:53,442 [INFO] ✅ 結果已保存至: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json
+2026-03-28 08:14:53,442 [INFO] ✅ decoder_layer_5: FID=0.5916, Δ=+0.0980
+2026-03-28 08:14:53,442 [INFO] ==================================================
+2026-03-28 08:14:53,442 [INFO] 🔬 [23/31] 測試 decoder_layer_6 (k=3)
+2026-03-28 08:14:53,442 [INFO] ==================================================
+2026-03-28 08:14:53,442 [INFO] ✅ Cache scheduler 已設定
+2026-03-28 08:14:53,443 [INFO] 開始生成 1000 張圖片並計算 FID...
+2026-03-28 08:14:53,443 [INFO] 開始生成 1000 張圖片並計算 FID...
+2026-03-28 08:14:53,443 [INFO] 輸出目錄: mycache/gen_images/ffhq128_autoenc_latent_temp_T100 (實驗結束後會清空)
+2026-03-28 08:14:53,443 [INFO] 輸出目錄: mycache/gen_images/ffhq128_autoenc_latent_temp_T100 (實驗結束後會清空)
+fid (0): 0.5916082262992859
+copy images:   0%|          | 0/31 [00:00<?, ?it/s]copy images:   3%|▎         | 1/31 [00:00<00:10,  2.83it/s]copy images:  10%|▉         | 3/31 [00:00<00:04,  6.17it/s]copy images:  16%|█▌        | 5/31 [00:00<00:03,  7.86it/s]copy images:  23%|██▎       | 7/31 [00:00<00:02,  8.84it/s]copy images:  29%|██▉       | 9/31 [00:01<00:02,  9.47it/s]copy images:  35%|███▌      | 11/31 [00:01<00:02,  9.73it/s]copy images:  42%|████▏     | 13/31 [00:01<00:01,  9.99it/s]copy images:  48%|████▊     | 15/31 [00:01<00:01, 10.12it/s]copy images:  55%|█████▍    | 17/31 [00:01<00:01, 10.15it/s]copy images:  61%|██████▏   | 19/31 [00:02<00:01, 10.07it/s]copy images:  68%|██████▊   | 21/31 [00:02<00:00, 10.08it/s]copy images:  74%|███████▍  | 23/31 [00:02<00:00, 10.09it/s]copy images:  81%|████████  | 25/31 [00:02<00:00, 10.10it/s]copy images:  87%|████████▋ | 27/31 [00:02<00:00, 10.22it/s]copy images:  94%|█████████▎| 29/31 [00:03<00:00, 10.30it/s]copy images: 100%|██████████| 31/31 [00:03<00:00, 10.13it/s]copy images: 100%|██████████| 31/31 [00:03<00:00,  9.16it/s]
+batch_size: 32
+generating images:   0%|          | 0/32 [00:00<?, ?it/s]generating images:   3%|▎         | 1/32 [00:20<10:37, 20.55s/it]generating images:   6%|▋         | 2/32 [00:41<10:16, 20.55s/it]generating images:   9%|▉         | 3/32 [01:01<09:56, 20.55s/it]generating images:  12%|█▎        | 4/32 [01:22<09:35, 20.55s/it]generating images:  16%|█▌        | 5/32 [01:42<09:14, 20.55s/it]generating images:  19%|█▉        | 6/32 [02:03<08:54, 20.55s/it]generating images:  22%|██▏       | 7/32 [02:23<08:33, 20.55s/it]generating images:  25%|██▌       | 8/32 [02:44<08:13, 20.55s/it]generating images:  28%|██▊       | 9/32 [03:04<07:52, 20.55s/it]generating images:  31%|███▏      | 10/32 [03:25<07:32, 20.55s/it]generating images:  34%|███▍      | 11/32 [03:46<07:11, 20.55s/it]generating images:  38%|███▊      | 12/32 [04:06<06:51, 20.55s/it]generating images:  41%|████      | 13/32 [04:27<06:30, 20.55s/it]generating images:  44%|████▍     | 14/32 [04:47<06:09, 20.55s/it]generating images:  47%|████▋     | 15/32 [05:08<05:49, 20.56s/it]generating images:  50%|█████     | 16/32 [05:28<05:28, 20.55s/it]generating images:  53%|█████▎    | 17/32 [05:49<05:08, 20.56s/it]generating images:  56%|█████▋    | 18/32 [06:09<04:47, 20.55s/it]generating images:  59%|█████▉    | 19/32 [06:30<04:27, 20.56s/it]generating images:  62%|██████▎   | 20/32 [06:51<04:06, 20.55s/it]generating images:  66%|██████▌   | 21/32 [07:11<03:46, 20.55s/it]generating images:  69%|██████▉   | 22/32 [07:32<03:25, 20.55s/it]

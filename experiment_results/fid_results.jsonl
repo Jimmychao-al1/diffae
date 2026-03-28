@@ -10,3 +10,10 @@
 {"timestamp": "2026-03-22T22:31:22", "script": "QATcode/quantize_ver2/sample_lora_intmodel_v2.py", "mode": "int", "steps": "20", "k": "5", "eval_samples": "5000", "fid": "19.9087104797", "status": "ok", "return_code": "0"}
 {"timestamp": "2026-03-22T22:31:22", "script": "QATcode/quantize_ver2/sample_lora_intmodel_v2.py", "mode": "float", "steps": "100", "k": "5", "eval_samples": "5000", "fid": "14.947220802307129", "status": "ok", "return_code": "0"}
 {"timestamp": "2026-03-22T22:31:22", "script": "QATcode/quantize_ver2/sample_lora_intmodel_v2.py", "mode": "int", "steps": "100", "k": "5", "eval_samples": "5000", "fid": "14.955325126647", "status": "ok", "return_code": "0"}
+{"20step" : 19.3, "100step" : 15.349808692932129}
+{"best_20" : 19.73, "best_100" : 15.3 , "final_20" : 19.94, "final_100" : 0, "800_grad_conflict":""}
+
+"""python QATcode/quantize_ver2/sample_lora_intmodel_v2.py --mode float --num_steps 20 --eval_samples 5000
+python QATcode/quantize_ver2/sample_lora_intmodel_v2.py --mode float --num_steps 100 --eval_samples 5000
+"""
+
