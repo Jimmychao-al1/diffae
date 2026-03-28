@@ -59,7 +59,7 @@ class TrainingConfig:
     SEED = 0
     
     # 訓練參數 - 按 EfficientDM 設定
-    BATCH_SIZE = 8     # 適中的 batch size
+    BATCH_SIZE = 16     # 適中的 batch size
     NUM_EPOCHS = 160   # 按原作 EfficientDM 設定
     LEARNING_RATE = 1e-4
     LORA_RANK = 32

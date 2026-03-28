@@ -38,6 +38,7 @@ def normalized_fake_quant(x: torch.Tensor, scale: torch.Tensor, eps: float = 1e-
     """
     scale = torch.clamp(scale, min=eps)
     x_norm = differentiable_clamp(x / scale, -1.0, 1.0)
+    #x_norm = torch.clamp(x / scale, -1.0, 1.0)
     x_int = round_ste(x_norm * 127.0)
     #x_int = torch.clamp(x_int, -128.0, 127.0)
     x_q = x_int / 127.0  # normalized output in [-1, 1]

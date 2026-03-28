@@ -1,0 +1,14 @@
+mycache/**
+.ckpt
+QATcode/diffae_*.pth
+QATcode/**.pth
+datasets/**
+EfficientDM/**
+**.ckpt
+checkpoints/**
+*.pkl
+*.toml
+**.jpg
+**.png
+**.pt
+**.log
