@@ -469,6 +469,272 @@ def save_results(results: dict, json_path: str):
     LOGGER.info(f"✅ 結果已保存至: {json_path}")
 
 
+# T=100 分片實驗：固定 93 = 3×31 個 (k, layer)，順序為 k∈{3,4,5} 各掃一遍全部 layer
+T100_SHARD_TOTAL = 93
+MODE_A_T100_COUNT = 26
+MODE_B_T100_START = 26  # 0-based；第 27 個實驗 = index 26
+
+
+def get_t100_task_order() -> List[Tuple[int, str]]:
+    """
+    回傳長度 93 的 (k, layer) 清單，順序與 run_experiment.sh 中
+    for K in 3 4 5: for each layer 一致。
+    """
+    layers = get_all_layer_names()
+    out: List[Tuple[int, str]] = []
+    for k in (3, 4, 5):
+        for layer in layers:
+            out.append((k, layer))
+    assert len(out) == T100_SHARD_TOTAL
+    return out
+
+
+def set_checkpoint_for_num_steps(num_steps: int) -> None:
+    """依 num_steps 設定 CONFIG.BEST_CKPT_PATH（與 __main__ 區塊一致）。"""
+    if num_steps == 100:
+        CONFIG.BEST_CKPT_PATH = "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth"
+    elif num_steps == 20:
+        CONFIG.BEST_CKPT_PATH = "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best_20steps.pth"
+    else:
+        LOGGER.warning(
+            "不支援的 num_steps=%s，使用預設 100-step checkpoint",
+            num_steps,
+        )
+        CONFIG.BEST_CKPT_PATH = "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth"
+
+
+@time_operation
+def load_trained_quant_model(num_steps: int) -> LitModel:
+    """
+    依指定 diffusion steps 載入 Diff-AE + 量化 LoRA + checkpoint（供 mode A/B 分階段重載）。
+    """
+    CONFIG.NUM_DIFFUSION_STEPS = num_steps
+    set_checkpoint_for_num_steps(num_steps)
+
+    LOGGER.info("=" * 50)
+    LOGGER.info("載入模型 (num_steps=%s)", num_steps)
+    LOGGER.info("Checkpoint: %s", CONFIG.BEST_CKPT_PATH)
+    LOGGER.info("=" * 50)
+
+    base_model: LitModel = load_diffae_model()
+    diffusion_model = base_model.ema_model
+
+    quant_model: QuantModel_DiffAE_LoRA = create_float_quantized_model(
+        diffusion_model,
+        num_steps=num_steps,
+        lora_rank=CONFIG.LORA_RANK,
+        mode=CONFIG.MODE,
+    )
+    quant_model.to(CONFIG.DEVICE)
+    quant_model.eval()
+
+    cali_images, cali_t, cali_y = load_calibration_data()
+    quant_model.set_first_last_layer_to_8bit()
+    quant_model.set_quant_state(True, True)
+
+    with torch.no_grad():
+        _ = quant_model(
+            x=cali_images[:4].to(CONFIG.DEVICE),
+            t=cali_t[:4].to(CONFIG.DEVICE),
+            cond=cali_y[:4].to(CONFIG.DEVICE),
+        )
+
+    for name, module in quant_model.named_modules():
+        if isinstance(module, QuantModule_DiffAE_LoRA) and module.ignore_reconstruction is False:
+            device = module.weight.data.device
+            with torch.no_grad():
+                weight_cpu = module.weight.data.detach().cpu()
+                weight_uint8 = weight_cpu.to(torch.uint8)
+                module.weight.data = weight_uint8.to(device)
+
+    ckpt = torch.load(CONFIG.BEST_CKPT_PATH, map_location="cpu", weights_only=False)
+    from QATcode.cache_method.L1_L2_cosine.similarity_calculation import (
+        _load_quant_and_ema_from_ckpt,
+    )
+
+    _load_quant_and_ema_from_ckpt(base_model, quant_model, ckpt)
+
+    base_model.to(CONFIG.DEVICE)
+    base_model.eval()
+    base_model.setup()
+    LOGGER.info("✅ 模型載入與設定完成 (num_steps=%s)", num_steps)
+    return base_model
+
+
+def ensure_baseline_fid(
+    base_model: LitModel,
+    results: dict,
+    results_path: str,
+    num_steps: int,
+) -> float:
+    """若 JSON 尚無該 T 的 baseline_fid 則計算並寫入。"""
+    step_config = f"T{num_steps}"
+    if "results" not in results:
+        results["results"] = {}
+    if step_config not in results["results"]:
+        results["results"][step_config] = {}
+
+    if "baseline_fid" not in results["results"][step_config]:
+        LOGGER.info("⚠️ %s 尚無 baseline_fid，開始計算 baseline...", step_config)
+        baseline_fid = evaluate_fid_with_cache(
+            base_model,
+            cache_scheduler=None,
+            num_steps=num_steps,
+        )
+        results["results"][step_config]["baseline_fid"] = baseline_fid
+        save_results(results, results_path)
+    else:
+        baseline_fid = results["results"][step_config]["baseline_fid"]
+        LOGGER.info("📊 %s Baseline FID (已存在): %.4f", step_config, baseline_fid)
+
+    return float(baseline_fid)
+
+
+def run_one_layer_k_experiment(
+    base_model: LitModel,
+    results: dict,
+    results_path: str,
+    num_steps: int,
+    k_value: int,
+    layer: str,
+) -> None:
+    """單次 cache sensitivity：(k, layer)，寫入 results 並存檔。"""
+    step_config = f"T{num_steps}"
+    if "baseline_fid" not in results["results"].get(step_config, {}):
+        raise RuntimeError(
+            f"{step_config} 缺少 baseline_fid；請先手動跑 --baseline 或讓 mode 流程先寫入 baseline。"
+        )
+    baseline_fid = float(results["results"][step_config]["baseline_fid"])
+
+    k_key = f"k{k_value}"
+    if k_key not in results["results"][step_config]:
+        results["results"][step_config][k_key] = {}
+
+    if should_skip_experiment(results, step_config, k_value, layer):
+        LOGGER.info(
+            "⏭️  跳過 %s %s (k=%s) — 已有結果",
+            step_config,
+            layer,
+            k_value,
+        )
+        return
+
+    LOGGER.info("=" * 50)
+    LOGGER.info("🔬 %s 測試 %s (k=%s)", step_config, layer, k_value)
+    LOGGER.info("=" * 50)
+
+    cache_config = create_simple_cache_config(
+        layer_name=layer,
+        k=k_value,
+        total_steps=num_steps,
+    )
+    fid = evaluate_fid_with_cache(
+        base_model,
+        cache_scheduler=cache_config,
+        num_steps=num_steps,
+    )
+    delta = fid - baseline_fid
+    results["results"][step_config][k_key][layer] = {
+        "fid": fid,
+        "delta": delta,
+    }
+    save_results(results, results_path)
+    LOGGER.info("✅ %s: FID=%.4f, Δ=%+.4f", layer, fid, delta)
+
+
+def run_mode_a() -> None:
+    """
+    模式 A：T=20 全部 (k∈{3,4,5} × 31 layers) + T=100 的前 26 個固定序任務。
+    結果寫入 CONFIG.OUTPUT_DIR / CONFIG.RESULTS_JSON（預設 fid_sensitivity_results.json）。
+    """
+    results_path = os.path.join(CONFIG.OUTPUT_DIR, CONFIG.RESULTS_JSON)
+    results = load_results(results_path)
+
+    LOGGER.info("=" * 50)
+    LOGGER.info("MODE A: T=20 全實驗 + T=100 前 %s 個任務", MODE_A_T100_COUNT)
+    LOGGER.info("結果檔: %s", results_path)
+    LOGGER.info("=" * 50)
+
+    # ---------- T = 20 ----------
+    base_model = load_trained_quant_model(20)
+    try:
+        ensure_baseline_fid(base_model, results, results_path, 20)
+        for k in (3, 4, 5):
+            for layer in get_all_layer_names():
+                run_one_layer_k_experiment(
+                    base_model, results, results_path, 20, k, layer
+                )
+    finally:
+        del base_model
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+
+    # ---------- T = 100（前 26） ----------
+    base_model = load_trained_quant_model(100)
+    try:
+        ensure_baseline_fid(base_model, results, results_path, 100)
+        tasks = get_t100_task_order()[:MODE_A_T100_COUNT]
+        for i, (k, layer) in enumerate(tasks, 1):
+            LOGGER.info(
+                "T100 進度 [%s/%s] (shard A) k=%s layer=%s",
+                i,
+                len(tasks),
+                k,
+                layer,
+            )
+            run_one_layer_k_experiment(
+                base_model, results, results_path, 100, k, layer
+            )
+    finally:
+        del base_model
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+
+    LOGGER.info("🎉 MODE A 全部完成: %s", results_path)
+
+
+def run_mode_b() -> None:
+    """
+    模式 B：僅 T=100，從第 27 個任務到第 93 個（共 67 個），順序同 get_t100_task_order()[26:93]。
+    """
+    results_path = os.path.join(CONFIG.OUTPUT_DIR, CONFIG.RESULTS_JSON)
+    results = load_results(results_path)
+
+    tasks = get_t100_task_order()[MODE_B_T100_START :]
+    assert len(tasks) == T100_SHARD_TOTAL - MODE_B_T100_START
+
+    LOGGER.info("=" * 50)
+    LOGGER.info(
+        "MODE B: T=100 任務 index %s..%s（共 %s 個）",
+        MODE_B_T100_START,
+        T100_SHARD_TOTAL - 1,
+        len(tasks),
+    )
+    LOGGER.info("結果檔: %s", results_path)
+    LOGGER.info("=" * 50)
+
+    base_model = load_trained_quant_model(100)
+    try:
+        ensure_baseline_fid(base_model, results, results_path, 100)
+        for i, (k, layer) in enumerate(tasks, 1):
+            LOGGER.info(
+                "T100 進度 [%s/%s] (shard B) k=%s layer=%s",
+                i,
+                len(tasks),
+                k,
+                layer,
+            )
+            run_one_layer_k_experiment(
+                base_model, results, results_path, 100, k, layer
+            )
+    finally:
+        del base_model
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+
+    LOGGER.info("🎉 MODE B 全部完成: %s", results_path)
+
+
 def should_skip_experiment(results: dict, step_config: str, k: int, layer: str) -> bool:
     """
     檢查該實驗是否已經跑過
@@ -790,11 +1056,21 @@ if __name__ == "__main__":
                         help='結果 JSON 檔案名稱 (預設: fid_sensitivity_results.json)')
     parser.add_argument('--log_file', '--lf', type=str, default=None,
                         help='Log 檔案路徑')
+    parser.add_argument(
+        '--mode',
+        type=str,
+        default=None,
+        choices=['A', 'B'],
+        help=(
+            '分機實驗（兩台同時跑、JSON 路徑相同於各機本機）: '
+            'A = T=20 全實驗 (k×31 layers) + T=100 前 26 個固定序任務; '
+            'B = 僅 T=100，第 27～93 個任務（共 67）。'
+            'T=100 任務順序: k=3 掃完 31 層 → k=4 → k=5。'
+        ),
+    )
     
     args = parser.parse_args()
     
-    # 更新配置
-    CONFIG.NUM_DIFFUSION_STEPS = args.num_steps
     CONFIG.EVAL_SAMPLES = args.eval_samples
     
     if args.output_json is not None:
@@ -802,15 +1078,6 @@ if __name__ == "__main__":
     
     if args.log_file is not None:
         CONFIG.LOG_FILE = args.log_file
-    
-    # 設定 checkpoint 路徑
-    if CONFIG.NUM_DIFFUSION_STEPS == 100:
-        CONFIG.BEST_CKPT_PATH = "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth"
-    elif CONFIG.NUM_DIFFUSION_STEPS == 20:
-        CONFIG.BEST_CKPT_PATH = "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best_20steps.pth"
-    else:
-        print(f"警告: 不支援的 num_steps={CONFIG.NUM_DIFFUSION_STEPS}，使用預設 checkpoint")
-        CONFIG.BEST_CKPT_PATH = "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth"
     
     # 設置環境
     os.makedirs(CONFIG.OUTPUT_DIR, exist_ok=True)
@@ -830,17 +1097,54 @@ if __name__ == "__main__":
     LOGGER.info("=" * 50)
     LOGGER.info("FID Cache Sensitivity Analysis")
     LOGGER.info("=" * 50)
-    LOGGER.info(f"Diffusion steps: {CONFIG.NUM_DIFFUSION_STEPS}")
     LOGGER.info(f"FID evaluation samples: {CONFIG.EVAL_SAMPLES}")
-    LOGGER.info(f"Checkpoint: {CONFIG.BEST_CKPT_PATH}")
     LOGGER.info(f"Output directory: {CONFIG.OUTPUT_DIR}")
     LOGGER.info(f"Results JSON: {CONFIG.RESULTS_JSON}")
     LOGGER.info(f"Log file: {CONFIG.LOG_FILE}")
     
+    # ---------- 分片模式 A / B ----------
+    if args.mode is not None:
+        if args.baseline:
+            LOGGER.error("❌ --mode 與 --baseline 不可並用；baseline 請先單獨跑完再放入 JSON。")
+            sys.exit(1)
+        if args.k is not None or args.layer is not None:
+            LOGGER.warning("⚠️ 已使用 --mode，忽略 --k / --layer")
+        LOGGER.info("=" * 50)
+        LOGGER.info(
+            "分片模式 %s | T=100 任務順序: k=3→k=4→k=5，各層 encoder→middle→decoder",
+            args.mode,
+        )
+        LOGGER.info(
+            "A: T20 全量 + T100 任務 index 0..25 | B: T100 任務 index %s..%s",
+            MODE_B_T100_START,
+            T100_SHARD_TOTAL - 1,
+        )
+        LOGGER.info("=" * 50)
+        if args.mode == "A":
+            run_mode_a()
+        else:
+            run_mode_b()
+        sys.exit(0)
+    
+    # ---------- 單次實驗（舊行為）----------
+    CONFIG.NUM_DIFFUSION_STEPS = args.num_steps
+    
+    # 設定 checkpoint 路徑
+    if CONFIG.NUM_DIFFUSION_STEPS == 100:
+        CONFIG.BEST_CKPT_PATH = "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth"
+    elif CONFIG.NUM_DIFFUSION_STEPS == 20:
+        CONFIG.BEST_CKPT_PATH = "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best_20steps.pth"
+    else:
+        print(f"警告: 不支援的 num_steps={CONFIG.NUM_DIFFUSION_STEPS}，使用預設 checkpoint")
+        CONFIG.BEST_CKPT_PATH = "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth"
+    
+    LOGGER.info(f"Diffusion steps: {CONFIG.NUM_DIFFUSION_STEPS}")
+    LOGGER.info(f"Checkpoint: {CONFIG.BEST_CKPT_PATH}")
+    
     # 參數驗證
     if not args.baseline and args.k is None:
         LOGGER.error("❌ 必須指定 --k (3, 4, 或 5) 或使用 --baseline 模式")
-        exit(1)
+        sys.exit(1)
     
     if args.baseline and args.k is not None:
         LOGGER.warning("⚠️ Baseline 模式下會忽略 --k 參數")
@@ -850,7 +1154,7 @@ if __name__ == "__main__":
         if args.layer not in all_layers:
             LOGGER.error(f"❌ 無效的 layer 名稱: {args.layer}")
             LOGGER.info(f"有效的 layer 名稱: {', '.join(all_layers[:5])} ... (共 {len(all_layers)} 個)")
-            exit(1)
+            sys.exit(1)
     
     LOGGER.info("=" * 50)
     
