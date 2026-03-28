@@ -1,6 +1,11 @@
-mycache
-analysis_simple
-autoresearch
-cache_analysis
-input_status
-retry_logs_similarity
+mycache/
+analysis_simple/
+autoresearch/
+cache_analysis/
+input_status/
+retry_logs_similarity/
+.cursor/
+.pytest_cache/
+.vscode/
+.git/
+.git/**
