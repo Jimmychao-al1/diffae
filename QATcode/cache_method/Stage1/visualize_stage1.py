@@ -1,273 +1,177 @@
 """
-Stage-1 結果可視化
-
-生成：
-1. D_global / D_smooth 曲線 + change points
-2. Zone segmentation 示意圖
-3. K 分佈熱圖 (B x Z)
-4. K 直方圖
+Stage-1 baseline 可視化：global cutting、zones、per-block k 與 expanded_mask。
 """
 
+from __future__ import annotations
+
+import argparse
 import json
-import numpy as np
-import matplotlib.pyplot as plt
 from pathlib import Path
 
-
-def _zone_axis(z: dict):
-    a0 = z.get("axis_start", z.get("t_start"))
-    a1 = z.get("axis_end", z.get("t_end"))
-    if a0 is None or a1 is None:
-        raise KeyError(f"zone 缺少 axis_start/axis_end 或舊版 t_start/t_end: {z}")
-    return int(a0), int(a1)
+import matplotlib.pyplot as plt
+import numpy as np
 
 
-def load_stage1_outputs(output_dir: str):
-    """載入 Stage-1 輸出"""
+def load_stage1(output_dir: str):
     p = Path(output_dir)
-    
-    with open(p / "scheduler_config.json") as f:
+    with open(p / "scheduler_config.json", encoding="utf-8") as f:
         config = json.load(f)
-    
-    with open(p / "scheduler_diagnostics.json") as f:
+    with open(p / "scheduler_diagnostics.json", encoding="utf-8") as f:
         diag = json.load(f)
-    
     return config, diag
 
 
-def plot_drift_and_zones(config, diag, save_path):
-    """Plot 1: D_global/D_smooth 曲線 + zones"""
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 8))
-    
-    D_global = np.array(diag['D_global'])
-    D_smooth = np.array(diag['D_smooth'])
-    Delta = np.array(diag['Delta'])
-    T = len(D_global) + 1  # 100
-    
-    # === Top: D_global + D_smooth ===
-    ax1.plot(D_global, label='D_global (raw)', alpha=0.6, lw=1)
-    ax1.plot(D_smooth, label='D_smooth', lw=2)
-    
-    # Change points（vertical lines）
-    for cp in diag['change_points']:
-        ax1.axvline(cp, color='red', alpha=0.5, ls='--', lw=1)
-    
-    # Zone backgrounds
-    zones = config['zones']
-    colors = plt.cm.tab10(np.linspace(0, 1, len(zones)))
-    for z, color in zip(zones, colors):
-        a0, a1 = _zone_axis(z)
-        ax1.axvspan(a0, a1, alpha=0.15, color=color, label=f"Zone {z['id']}")
-    
-    ax1.set_xlabel('DDIM timestep t') # noise (T-1) -> clear (0) 放在論文圖中說明
-    ax1.set_ylabel('Global Drift')
-    ax1.set_title('FID-weighted Global Drift + Zone Segmentation (per-interval D)')
-    ax1.legend(loc='upper left', fontsize=8, ncol=2)
-    ax1.grid(alpha=0.3)
+def plot_global_cutting(config, diag, save_path: Path):
+    """G（processing order）平滑、Δ、change points、zones（步序 i，i=0 為 t=99）。"""
+    T = int(config["T"])
+    g_raw = np.array(diag["G_processing_order_i0_is_t99"], dtype=np.float64)
+    g_sm = np.array(diag["G_smooth_processing_order"], dtype=np.float64)
+    delta = np.array(diag["Delta_processing_order"], dtype=np.float64)
+    cps = diag.get("change_points_step_index", [])
+    zones = config["shared_zones"]
 
-    # x 軸 tick labels 用 t_curr，不改資料順序
-    j_len = len(D_global)  # expected 99
-    xticks = list(range(0, j_len, 10))
-    if (j_len - 1) not in xticks:
-        xticks.append(j_len - 1)
-    ax1.set_xticks(xticks)
-    ax1.set_xticklabels([str((j_len - 1) - j) for j in xticks])
-    
-    # === Bottom: Delta ===
-    ax2.plot(Delta, label='Δ[t] = |D_smooth[t] - D_smooth[t-1]|', color='purple')
-    
-    for cp in diag['change_points']:
-        ax2.axvline(cp, color='red', alpha=0.5, ls='--', lw=1)
-    
-    ax2.set_xlabel('DDIM timestep t') # noise (T-1) -> clear (0) 放在論文圖中說明
-    ax2.set_ylabel('Change Magnitude Δ')
-    ax2.set_title('Delta (Change Magnitude)')
-    ax2.legend()
-    ax2.grid(alpha=0.3)
+    fig, axes = plt.subplots(2, 1, figsize=(14, 7), sharex=True)
+    x = np.arange(T)
+    axes[0].plot(x, g_raw, alpha=0.5, label="G (raw, proc. order)", lw=1)
+    axes[0].plot(x, g_sm, lw=2, label="G smooth (moving avg)")
+    for cp in cps:
+        axes[0].axvline(cp, color="red", alpha=0.4, ls="--", lw=1)
+    colors = plt.cm.tab10(np.linspace(0, 1, max(len(zones), 1)))
+    for zi, z in enumerate(zones):
+        s0 = (T - 1) - int(z["t_start"])
+        s1 = (T - 1) - int(z["t_end"])
+        lo, hi = min(s0, s1), max(s0, s1)
+        for ax in axes:
+            ax.axvspan(lo, hi, alpha=0.12, color=colors[zi % 10])
+    axes[0].set_ylabel("G")
+    axes[0].set_title("Global cutting signal (FID-weighted I_cut) + smoothing + zones")
+    axes[0].legend(loc="upper right", fontsize=8)
+    axes[0].grid(alpha=0.3)
 
-    j2_len = len(Delta)
-    xticks2 = list(range(0, j2_len, 10))
-    if (j2_len - 1) not in xticks2:
-        xticks2.append(j2_len - 1)
-    ax2.set_xticks(xticks2)
-    ax2.set_xticklabels([str((j2_len - 1) - j) for j in xticks2])
-    
+    axes[1].plot(x, delta, color="purple", lw=1)
+    for cp in cps:
+        axes[1].axvline(cp, color="red", alpha=0.4, ls="--", lw=1)
+    axes[1].set_ylabel("|ΔG|")
+    axes[1].set_xlabel("step index i (i=0 → DDIM t=99)")
+    axes[1].set_title("Adjacent-step delta (on smoothed G)")
+    axes[1].grid(alpha=0.3)
+
     plt.tight_layout()
-    plt.savefig(save_path, dpi=150, bbox_inches='tight')
+    plt.savefig(save_path, dpi=150, bbox_inches="tight")
     plt.close()
-    print(f"✅ 已儲存: {save_path}")
+    print(f"✅ {save_path}")
 
 
-def plot_k_heatmap(config, save_path):
-    """Plot 2: K 分佈熱圖 (B x Z)"""
-    blocks = config['blocks']
+def plot_k_zone_heatmap(config, save_path: Path):
+    blocks = config["blocks"]
+    Z = len(config["shared_zones"])
     B = len(blocks)
-    Z = len(config['zones'])
-    
-    k_matrix = np.zeros((B, Z), dtype=int)
-    block_names = []
-    
-    for b_idx, block in enumerate(blocks):
-        k_matrix[b_idx, :] = block['k_per_zone']
-        # 簡化 block name（太長會顯示不下）
-        name = block['name'].replace('model.', '')
-        block_names.append(name)
-    
-    fig, ax = plt.subplots(figsize=(12, 10))
-    
-    im = ax.imshow(k_matrix, cmap='YlOrRd', aspect='auto', vmin=1, vmax=8)
-    
-    # X-axis: zones
+    mat = np.zeros((B, Z), dtype=np.float64)
+    names = []
+    for bi, b in enumerate(blocks):
+        mat[bi, :] = np.array(b["k_per_zone"], dtype=np.float64)
+        names.append(str(b["name"]).replace("model.", "")[:40])
+
+    fig, ax = plt.subplots(figsize=(max(10, Z * 0.4), max(6, B * 0.2)))
+    im = ax.imshow(mat, aspect="auto", cmap="YlOrRd", vmin=1)
     ax.set_xticks(range(Z))
-    ax.set_xticklabels(
-        [f"Z{z['id']}\n{_zone_axis(z)[0]}..{_zone_axis(z)[1]}" for z in config['zones']],
-        fontsize=8,
-    )
-    ax.set_xlabel('Zones')
-    
-    # Y-axis: blocks
+    zl = [f"z{z['id']}\nt{z['t_start']}→{z['t_end']}" for z in config["shared_zones"]]
+    ax.set_xticklabels(zl, fontsize=7)
     ax.set_yticks(range(B))
-    ax.set_yticklabels(block_names, fontsize=7)
-    ax.set_ylabel('Blocks')
-    
-    # Colorbar
-    cbar = plt.colorbar(im, ax=ax)
-    cbar.set_label('k (cache frequency)', rotation=270, labelpad=20)
-    
-    # 標註數值
-    for b in range(B):
-        for z in range(Z):
-            text = ax.text(z, b, k_matrix[b, z],
-                          ha="center", va="center", color="black", fontsize=7)
-    
-    ax.set_title('K Distribution Heatmap (per Block × Zone)', fontsize=14, pad=20)
+    ax.set_yticklabels(names, fontsize=6)
+    ax.set_xlabel("shared zones")
+    ax.set_ylabel("blocks")
+    ax.set_title("per-block k per shared zone")
+    plt.colorbar(im, ax=ax, label="k")
+    for bi in range(B):
+        for zi in range(Z):
+            ax.text(zi, bi, int(mat[bi, zi]), ha="center", va="center", fontsize=6, color="k")
     plt.tight_layout()
-    plt.savefig(save_path, dpi=150, bbox_inches='tight')
+    plt.savefig(save_path, dpi=150, bbox_inches="tight")
     plt.close()
-    print(f"✅ 已儲存: {save_path}")
+    print(f"✅ {save_path}")
 
 
-def plot_k_histogram(config, save_path):
-    """Plot 3: K 直方圖（整體分佈）"""
-    all_k = []
-    for block in config['blocks']:
-        all_k.extend(block['k_per_zone'])
-    all_k = np.array(all_k)
-    
-    fig, ax = plt.subplots(figsize=(8, 6))
-    
-    bins = np.arange(0.5, 9.5, 1)
-    ax.hist(all_k, bins=bins, edgecolor='black', alpha=0.7, color='steelblue')
-    
-    ax.set_xlabel('Cache period k')
-    ax.set_ylabel('Count')
-    ax.set_title(f'K Distribution Histogram (Total: {len(all_k)} entries)')
-    ax.set_xticks(range(1, 9))
-    ax.grid(alpha=0.3, axis='y')
-    
-    # 統計
-    stats_text = f"Min={all_k.min()}, Max={all_k.max()}, Mean={all_k.mean():.2f}, Median={np.median(all_k):.1f}"
-    ax.text(0.5, 0.95, stats_text, transform=ax.transAxes,
-            ha='center', va='top', fontsize=10,
-            bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
-    
+def plot_expanded_mask_heatmap(config, save_path: Path):
+    T = int(config["T"])
+    blocks = config["blocks"]
+    B = len(blocks)
+    mat = np.zeros((B, T), dtype=np.float64)
+    for bi, b in enumerate(blocks):
+        mat[bi, :] = np.array(b["expanded_mask"], dtype=np.float64)
+    fig, ax = plt.subplots(figsize=(14, max(4, B * 0.18)))
+    im = ax.imshow(mat, aspect="auto", cmap="RdYlGn", vmin=0, vmax=1)
+    ax.set_xlabel("step index i (0=t=99 → T-1=t=0)")
+    ax.set_ylabel("block")
+    ax.set_yticks(range(B))
+    ax.set_yticklabels([str(blocks[i]["name"]).replace("model.", "")[:50] for i in range(B)], fontsize=5)
+    ax.set_title("expanded_mask: F=1 (green) / R=0 (red)")
+    plt.colorbar(im, ax=ax, ticks=[0, 1], label="F=1")
     plt.tight_layout()
-    plt.savefig(save_path, dpi=150, bbox_inches='tight')
+    plt.savefig(save_path, dpi=150, bbox_inches="tight")
     plt.close()
-    print(f"✅ 已儲存: {save_path}")
+    print(f"✅ {save_path}")
 
 
-def plot_zone_risk(config, diag, save_path):
-    """Plot 4: Zone risk + k_max ceiling"""
-    zones = config['zones']
-    R_z = np.array(diag['R_z'])
-    k_max_z = np.array(diag['k_max_z'])
+def plot_candidate_selected_summary(config, diag, save_path: Path):
+    """每 zone：候選 k 數量 + 各 block 選中 k（小 multiples）。"""
+    zones = config["shared_zones"]
+    cands = diag.get("candidate_k_per_zone", [])
     Z = len(zones)
-    
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8))
-    
-    zone_ids = [z['id'] for z in zones]
-    zone_labels = [f"Z{z['id']}\n{_zone_axis(z)[0]}..{_zone_axis(z)[1]}" for z in zones]
-    
-    # === Top: Zone risk R_z ===
-    bars = ax1.bar(zone_ids, R_z, color='coral', edgecolor='black', alpha=0.7)
-    ax1.set_xlabel('Zone z')
-    ax1.set_ylabel('Risk R_z')
-    ax1.set_title('Zone Risk R_z (higher = more risky)')
-    ax1.set_xticks(zone_ids)
-    ax1.set_xticklabels(zone_labels)
-    ax1.grid(alpha=0.3, axis='y')
-    
-    # 標註數值
-    for bar, val in zip(bars, R_z):
-        height = bar.get_height()
-        ax1.text(bar.get_x() + bar.get_width()/2, height,
-                f'{val:.3f}', ha='center', va='bottom', fontsize=9)
-    
-    # === Bottom: k_max ceiling ===
-    bars = ax2.bar(zone_ids, k_max_z, color='steelblue', edgecolor='black', alpha=0.7)
-    ax2.set_xlabel('Zone z')
-    ax2.set_ylabel('k_max ceiling')
-    ax2.set_title('Zone z K Ceiling')
-    ax2.set_xticks(zone_ids)
-    ax2.set_xticklabels(zone_labels)
-    ax2.set_ylim([0, 9])
-    ax2.grid(alpha=0.3, axis='y')
-    
-    # 標註數值
-    for bar, val in zip(bars, k_max_z):
-        height = bar.get_height()
-        ax2.text(bar.get_x() + bar.get_width()/2, height,
-                f'{val}', ha='center', va='bottom', fontsize=10, fontweight='bold')
-    
+    blocks = config["blocks"]
+    B = len(blocks)
+
+    fig, axes = plt.subplots(Z, 1, figsize=(12, min(2.2 * Z, 24)), squeeze=False)
+    for zi, z in enumerate(zones):
+        ax = axes[zi, 0]
+        ks = np.array([blocks[b]["k_per_zone"][zi] for b in range(B)], dtype=int)
+        ax.scatter(range(B), ks, c="steelblue", s=20, label="selected k", zorder=3)
+        if zi < len(cands):
+            ax.text(
+                0.02,
+                0.95,
+                f"|unique k cands| = {len(cands[zi])}",
+                transform=ax.transAxes,
+                va="top",
+                fontsize=8,
+                bbox=dict(boxstyle="round", facecolor="wheat", alpha=0.4),
+            )
+        ax.set_xlim(-0.5, B - 0.5)
+        ax.set_ylabel("k")
+        ax.set_title(f"zone {z['id']}  t=[{z['t_start']},{z['t_end']}]  L={z['length']}")
+        ax.grid(alpha=0.3)
+        if zi == Z - 1:
+            ax.set_xlabel("block index")
+    plt.suptitle("Selected k per block (per zone)", y=1.01)
     plt.tight_layout()
-    plt.savefig(save_path, dpi=150, bbox_inches='tight')
+    plt.savefig(save_path, dpi=150, bbox_inches="tight")
     plt.close()
-    print(f"✅ 已儲存: {save_path}")
+    print(f"✅ {save_path}")
 
 
 def main():
-    import argparse
-    
-    parser = argparse.ArgumentParser(description="Visualize Stage-1 results")
+    parser = argparse.ArgumentParser(description="Visualize Stage-1 baseline")
     parser.add_argument(
         "--stage1_output_dir",
         type=str,
         default="QATcode/cache_method/Stage1/stage1_output",
-        help="Stage-1 output directory"
     )
     parser.add_argument(
         "--output_dir",
         type=str,
         default="QATcode/cache_method/Stage1/stage1_figures",
-        help="Visualization output directory"
     )
-    
     args = parser.parse_args()
-    
-    print("=" * 80)
-    print("Stage-1 結果可視化")
-    print("=" * 80)
-    
-    # 載入資料
-    print(f"\n讀取 Stage-1 輸出: {args.stage1_output_dir}")
-    config, diag = load_stage1_outputs(args.stage1_output_dir)
-    
-    # 創建輸出目錄
-    out_dir = Path(args.output_dir)
-    out_dir.mkdir(parents=True, exist_ok=True)
-    
-    # 生成圖表
-    print("\n生成可視化...")
-    
-    plot_drift_and_zones(config, diag, out_dir / "1_drift_and_zones.png")
-    plot_k_heatmap(config, out_dir / "2_k_heatmap.png")
-    plot_k_histogram(config, out_dir / "3_k_histogram.png")
-    plot_zone_risk(config, diag, out_dir / "4_zone_risk.png")
-    
-    print("\n" + "=" * 80)
-    print(f"✅ 全部完成！圖表已存至: {out_dir}")
-    print("=" * 80)
+
+    out = Path(args.output_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    config, diag = load_stage1(args.stage1_output_dir)
+
+    plot_global_cutting(config, diag, out / "1_global_cutting_and_zones.png")
+    plot_k_zone_heatmap(config, out / "2_k_zone_heatmap.png")
+    plot_expanded_mask_heatmap(config, out / "3_expanded_mask_heatmap.png")
+    plot_candidate_selected_summary(config, diag, out / "4_candidate_selected_k.png")
+    print(f"完成，輸出目錄: {out}")
 
 
 if __name__ == "__main__":

@@ -1,72 +1,66 @@
 #!/usr/bin/env bash
-# ============================================================
-# Stage-1 topK sweep
+# Stage-1 baseline sweep：K（change points 個數）、smooth_window、lambda、k_max
 #
 # 用法：
-#   bash run_stage1_sweep.sh              # 跑預設 topK 列表
-#   bash run_stage1_sweep.sh 4 6 8 10     # 自訂 topK 值
-# ============================================================
-
+#   bash run_stage1_sweep.sh
+# 或覆寫陣列（在腳本内改 K_LIST / SW_LIST / LAM_LIST / KMAX_LIST），或：
+#   STAGE0_DIR=... BASE_OUT=... bash run_stage1_sweep.sh
+#
 set -euo pipefail
-cd "$(git rev-parse --show-toplevel)"   # cd 到 repo root
+cd "$(git rev-parse --show-toplevel)"
 
-STAGE0_DIR="QATcode/cache_method/Stage0/stage0e_output"
-BASE_OUT="QATcode/cache_method/Stage1/stage1_output"
-BASE_FIG="QATcode/cache_method/Stage1/stage1_figures"
+STAGE0_DIR="${STAGE0_DIR:-QATcode/cache_method/Stage0/stage0e_output}"
+BASE_OUT="${BASE_OUT:-QATcode/cache_method/Stage1/stage1_output}"
+BASE_FIG="${BASE_FIG:-QATcode/cache_method/Stage1/stage1_figures}"
 SCHEDULER="QATcode/cache_method/Stage1/stage1_scheduler.py"
 VISUALIZE="QATcode/cache_method/Stage1/visualize_stage1.py"
 VERIFY="QATcode/cache_method/Stage1/verify_scheduler.py"
 
-# 如果有命令列引數就用，否則用預設列表
-if [ $# -gt 0 ]; then
-    TOPK_LIST=("$@")
-else
-    TOPK_LIST=(4 6 8 10 15 20 25 30 35 40 45 50)
-fi
+# 預設掃描範圍（可自行改小以縮短時間）
+K_LIST=(4 8 12)
+SW_LIST=(3 5)
+LAM_LIST=(0.25 0.5 1.0 2.0)
+KMAX_LIST=(4)
 
 echo "================================================================"
-echo "Stage-1 topK sweep"
-echo "topK values: ${TOPK_LIST[*]}"
+echo "Stage-1 baseline sweep"
+echo "STAGE0_DIR=${STAGE0_DIR}"
+echo "K_LIST=( ${K_LIST[*]} )"
+echo "SW_LIST=( ${SW_LIST[*]} )"
+echo "LAM_LIST=( ${LAM_LIST[*]} )"
+echo "KMAX_LIST=( ${KMAX_LIST[*]} )"
 echo "================================================================"
-echo ""
 
-for K in "${TOPK_LIST[@]}"; do
-    OUT_DIR="${BASE_OUT}/topk_${K}"
-    FIG_DIR="${BASE_FIG}/topk_${K}"
+for K in "${K_LIST[@]}"; do
+  for SW in "${SW_LIST[@]}"; do
+    for LAM in "${LAM_LIST[@]}"; do
+      for KMAX in "${KMAX_LIST[@]}"; do
+        TAG="K${K}_sw${SW}_lam${LAM}_kmax${KMAX}"
+        OUT_DIR="${BASE_OUT}/sweep_${TAG}"
+        FIG_DIR="${BASE_FIG}/sweep_${TAG}"
+        mkdir -p "${OUT_DIR}" "${FIG_DIR}"
 
-    echo "────────────────────────────────────────"
-    echo "▶ topK = ${K}"
-    echo "  output : ${OUT_DIR}"
-    echo "  figures: ${FIG_DIR}"
-    echo "────────────────────────────────────────"
+        echo "────────────────────────────────────────"
+        echo "▶ ${TAG}"
+        echo "  output : ${OUT_DIR}"
+        echo "────────────────────────────────────────"
 
-    # 1) 執行 Stage-1
-    python3 "${SCHEDULER}" \
-        --stage0_dir "${STAGE0_DIR}" \
-        --output_dir "${OUT_DIR}" \
-        --cp_method topk \
-        --cp_topk "${K}" \
-        --eta 0.8
+        python3 "${SCHEDULER}" \
+          --stage0_dir "${STAGE0_DIR}" \
+          --output_dir "${OUT_DIR}" \
+          --K "${K}" \
+          --smooth_window "${SW}" \
+          --lambda "${LAM}" \
+          --k_max "${KMAX}"
 
-    # 2) 驗證
-    python3 "${VERIFY}" \
-        --config "${OUT_DIR}/scheduler_config.json"
-
-    # 3) 可視化
-    python3 "${VISUALIZE}" \
-        --stage1_output_dir "${OUT_DIR}" \
-        --output_dir "${FIG_DIR}"
-
-    echo ""
+        python3 "${VERIFY}" --config "${OUT_DIR}/scheduler_config.json"
+        python3 "${VISUALIZE}" --stage1_output_dir "${OUT_DIR}" --output_dir "${FIG_DIR}"
+        echo ""
+      done
+    done
+  done
 done
 
 echo "================================================================"
-echo "✅  全部完成！結果結構："
-echo ""
-for K in "${TOPK_LIST[@]}"; do
-    echo "  topk_${K}/"
-    echo "    config : ${BASE_OUT}/topk_${K}/scheduler_config.json"
-    echo "    diag   : ${BASE_OUT}/topk_${K}/scheduler_diagnostics.json"
-    echo "    figures: ${BASE_FIG}/topk_${K}/"
-done
+echo "✅ sweep 完成。結果：${BASE_OUT}/sweep_*"
 echo "================================================================"

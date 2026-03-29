@@ -1,84 +1,50 @@
-# Stage-1 快速開始
+# Stage-1 快速開始（baseline v1）
 
-**時間軸**：Stage 0/1 的圖與 `scheduler_config` 使用 **analysis axis**（0..99）；接 DDIM 時 **`t_ddim = 99 - axis_idx`**。詳見 `QATcode/docs/cache_time_axis_audit.md`。
+**時間軸**：對外輸出以 **DDIM 99→0** 為準；`expanded_mask[b,i]` 的 **i=0 為 t=99**。interval ↔ reused timestep 對應見 `README.md` 與 `scheduler_diagnostics.json` 的 `mapping_note`。
 
 ## 一鍵執行
 
 ```bash
 cd /home/jimmy/diffae
 
-# 1. 執行 Stage-1（生成 scheduler config）
-python3 QATcode/cache_method/Stage1/stage1_scheduler.py
+python3 QATcode/cache_method/Stage1/stage1_scheduler.py \
+  --stage0_dir QATcode/cache_method/Stage0/stage0e_output \
+  --output_dir QATcode/cache_method/Stage1/stage1_output
 
-# 2. 驗證結果
-python3 QATcode/cache_method/Stage1/verify_scheduler.py
+python3 QATcode/cache_method/Stage1/verify_scheduler.py \
+  --config QATcode/cache_method/Stage1/stage1_output/scheduler_config.json
 
-# 3. 生成可視化
-python3 QATcode/cache_method/Stage1/visualize_stage1.py
+python3 QATcode/cache_method/Stage1/visualize_stage1.py \
+  --stage1_output_dir QATcode/cache_method/Stage1/stage1_output \
+  --output_dir QATcode/cache_method/Stage1/stage1_figures
 ```
 
 ## 輸出位置
 
 ```
-QATcode/cache_method/Stage1/
-├── stage1_output/
-│   ├── scheduler_config.json       ← 主要輸出（供 Stage-2 使用）
-│   └── scheduler_diagnostics.json  ← 診斷資料
-└── stage1_figures/
-    ├── 1_drift_and_zones.png       ← Drift 曲線 + zone 切分
-    ├── 2_k_heatmap.png             ← K 分佈熱圖
-    ├── 3_k_histogram.png           ← K 直方圖
-    └── 4_zone_risk.png             ← Zone risk 分析
+stage1_output/
+├── scheduler_config.json
+├── scheduler_diagnostics.json
+└── verification_summary.json
+
+stage1_figures/
+├── 1_global_cutting_and_zones.png
+├── 2_k_zone_heatmap.png
+├── 3_expanded_mask_heatmap.png
+└── 4_candidate_selected_k.png
 ```
 
-## 關鍵結果（T=100）
+## 常用參數
 
-- **Zones**: 7 個
-  - Zone 0: analysis axis 0..62（大區塊，穩定期）
-  - Zone 1-6: analysis axis 63..99（小區塊，不穩定期）
+- `--K`：top-K change points（內部會與 T 一齊 cap）
+- `--smooth_window`：對 `G`（步序）的 moving average 視窗
+- `--lambda`：`J(b,z,k)` 中 compute penalty 係數（預設 1.0）
+- `--k_min` / `--k_max`：候選 k 範圍（pattern 去重後評估）
 
-- **K 統計**:
-  - 範圍: [3, 8]
-  - 平均: 7.16
-  - 中位數: 7
+Sweep 範例：`bash QATcode/cache_method/Stage1/run_stage1_sweep.sh`（編輯腳本內 `K_LIST` 等陣列）。
 
-- **Cache 節省**: 平均 **83.4%**
-  - 只需 recompute 16.6% 的 analysis-axis indices（長度 T=100）
-  - 每個 block 平均只需重算 16-22 次（out of 100）
-
-## 調整策略
-
-### 更激進的 cache（節省更多計算）
+## Self-test
 
 ```bash
-python3 QATcode/cache_method/Stage1/stage1_scheduler.py \
-  --k_min 2 --k_max 10 \
-  --cp_topk 4  # 較少 zones，更大的 k
+python3 QATcode/cache_method/Stage1/stage1_scheduler.py --self_test
 ```
-
-### 更保守的策略（品質優先）
-
-```bash
-python3 QATcode/cache_method/Stage1/stage1_scheduler.py \
-  --k_min 1 --k_max 5 \
-  --cp_topk 10  # 較多 zones，更小的 k
-```
-
-### 強調 FID sensitivity
-
-```bash
-python3 QATcode/cache_method/Stage1/stage1_scheduler.py \
-  --alpha 0.2 --beta 0.2 --gamma 0.6  # 60% 權重給 FID
-```
-
-## 下一步：Stage-2
-
-Stage-2 將使用 `scheduler_config.json` 來實作 runtime cache scheduler，並在實際 inference 中驗證：
-1. FID degradation
-2. Inference speed-up
-3. Memory usage
-
----
-
-**實作完成時間**: 2026-02-10  
-**執行環境**: T=100 DDIM, FFHQ-128, Q-DiffAE

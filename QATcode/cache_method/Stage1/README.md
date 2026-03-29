@@ -1,248 +1,78 @@
-# Stage-1: Offline Scheduler Synthesis (T=100)
+# Stage-1：Offline Scheduler（baseline v1）
 
-## 目的
+## 定位（新版 baseline）
 
-從 Stage-0 的 tri-evidence（L1/SVD similarity + FID sensitivity）合成**靜態 cache scheduler**：
-- **Zones**: 將 **analysis axis** 上的點索引 **0..99** 分成若干個 zone（shared across all blocks）
-- **k[b,z]**: 每個 block 在每個 zone 的 cache frequency（每隔 k 個 **axis 索引** recompute）
+Stage-1 **不**負責最終 refinement；角色為：
 
-### 時間軸慣例（與 Stage 0、L1_L2_cosine .npz 一致）
+1. 讀入 Stage 0 正式輸出（`l1_interval_norm.npy`、`cosdist_interval_norm.npy`、`svd_interval_norm.npy`、`fid_w_qdiffae_clip.npy`、`block_names.npy`、`axis_interval_def.npy`、`t_curr_interval.npy`）。
+2. 建立 **global / shared temporal skeleton**（同一套 `shared_zones` 給所有 block）。
+3. 在每個 zone 上為每個 block 選初始 `k_{b,z}`（**cost-based**，見下）。
+4. 展開成步級 `F/R` schedule，輸出 **`expanded_mask.shape = [B, T]`**（`True=F`，`False=R`）。
 
-- **analysis axis** `axis_idx ∈ [0,99]`：與 similarity 收集的 step_counter、圖橫軸左→右一致。
-- **DDIM** 進模型的 timestep：**`t_ddim = 99 - axis_idx`**（採樣順序為 t_ddim 從 99→0）。
-- **Interval 陣列**長度 99：第 `j` 欄 = interval j（axis j 與 j+1 之間）⇔ DDIM **(99−j)→(98−j)**。
-- 詳細推導與 audit：**`QATcode/docs/cache_time_axis_audit.md`**
+**相較舊版**：已廢除 `A[b,z] → k` 線性映射、zone risk ceiling、舊 regularization 主路徑；改為 **FID 加權的全域 cutting 信號 `G` → moving average → top-K change points → merge 短 zone**，以及 **每 (block, zone) 對候選 k 最小化 `J(b,z,k)`**。
 
-## 演算法流程
+### 時間軸（唯一正式）
 
-### 1. 載入 Stage-0E 輸出
-- **S_sim[b,t]**: L1-based stability（= 1 - L1_interval_norm）
-- **S_svd[b,t]**: SVD-based stability（= 1 - SVD_interval_norm）
-- **d_norm[b,t]**: SVD drift（= SVD_interval_norm）
-- **FID_sens[b]**: FID sensitivity weight
+- **DDIM 順序 99 → 0**：`expanded_mask[b, i]` 的 **i=0 對應 DDIM t=99（第一步）**，**i=T-1 對應 t=0**。
+- Stage 0 為 **interval-wise**；正式對應：**interval (t+1 → t)** 的證據算在 **reused timestep t** 上（見程式內註解與 `scheduler_diagnostics.json` 的 `mapping_note`）。
 
-語義：
-- S_sim, S_svd: 越大越穩定/越可 cache
-- d_norm: 越大越不穩定
-- FID_sens: 越大越敏感（對 FID 影響大）
+### 核心公式（摘要）
 
-### 2. FID-weighted Global Drift
-```
-D_global[t] = sum_b (w_b * d_norm[b,t]) / sum_b w_b
-D_smooth[t] = moving_avg(D_global, window=5)
-```
-- 用 FID sensitivity 加權，計算全域的 drift
-- 平滑後用於找 change points
-
-### 3. Zone Segmentation
-```
-Δ[t] = |D_smooth[t] - D_smooth[t-1]|
-```
-- 取 Δ 最大的 K=6 個點作為 change points（預設）
-- 切分成 zones（shared across blocks）
-
-### 4. Zone-level Tri-evidence Score
-```
-A[b,z] = α*S_sim[b,z] + β*S_svd[b,z] + γ*(1-FID_sens[b])
-```
-- S_sim[b,z] = zone z 內的平均 L1 stability
-- S_svd[b,z] = zone z 內的平均 SVD stability
-- 1-FID_sens[b] = FID-safe score（越大越可 cache）
-- 預設 α=β=γ=1/3
-
-### 5. Map to k_raw
-```
-k_raw[b,z] = k_min + round(A[b,z] * (k_max - k_min))
-```
-- A[b,z] 越大（越穩定）→ k 越大（越久才重算）
-- 預設 k_min=1, k_max=8
-
-### 6. Zone-level Risk Ceiling
-```
-R_z = mean_{t in zone z} D_smooth[t]
-k_max_z = k_min + round((1 - R_z) * (k_max - k_min))
-k[b,z] = min(k_raw[b,z], k_max_z)
-```
-- Zone 越危險（R_z 越大）→ k_max ceiling 越低
-- 防止在高風險 zone 使用太大的 k
-
-### 7. Regularization
-- **delta1** (預設): 保證 `|k[b,z] - k[b,z-1]| <= 1`（相鄰 zone 不跳太多）
-- **nondecreasing**: 保證 `k[b,z] >= k[b,z-1]`（遞增）
-- **none**: 不正規化
+- `I_sim = 0.7*L1 + 0.3*Cos`（皆為 Stage 0 正規化後之「變化量」通道）
+- `I_cut = (4/9)*I_sim + (5/9)*SVD`
+- `G[t]`：對 `I_cut[b,t]` 用 `fid_w_qdiffae_clip[b]` 做 **block 加權平均**（FID **不**直接加進 `I_cut` 第三項）
+- Zone：`G` 沿 **處理步序**（i=0 為 t=99）做 moving average → 鄰步差分 → **top-K** change points → **min_zone_len=2**，短 zone **預設 merge right**（最後一段則 merge left）
+- `J(b,z,k) = w_b * (1/L_z) * sum_{t in R} I_cut[b,t] + lambda * (|F|/L_z)`，其中 **僅第一項乘 `w_b`**（FID），`lambda` 預設 1.0；候選 k 在 zone 內對 **F/R pattern 去重**
 
 ## 使用方式
 
-### 基本執行
 ```bash
 cd /home/jimmy/diffae
 
 python3 QATcode/cache_method/Stage1/stage1_scheduler.py \
   --stage0_dir QATcode/cache_method/Stage0/stage0e_output \
-  --output_dir QATcode/cache_method/Stage1/stage1_output
-```
-
-### 調整參數
-```bash
-python3 QATcode/cache_method/Stage1/stage1_scheduler.py \
-  --stage0_dir QATcode/cache_method/Stage0/stage0e_output \
   --output_dir QATcode/cache_method/Stage1/stage1_output \
-  --alpha 0.4 --beta 0.4 --gamma 0.2 \
-  --k_min 1 --k_max 10 \
-  --smooth_window 7 \
-  --cp_method topk --cp_topk 8 \
-  --regularize nondecreasing
+  --K 10 \
+  --smooth_window 5 \
+  --lambda 1.0 \
+  --k_min 1 \
+  --k_max 4
 ```
 
-### Self-test（用假資料測試）
+- `--lambda_sweep`：逗號分隔，寫入 `scheduler_diagnostics.json`（各 λ 下若重選 k 的對照）。
+
 ```bash
-python3 QATcode/cache_method/Stage1/stage1_scheduler.py --self_test
+python3 QATcode/cache_method/Stage1/verify_scheduler.py \
+  --config QATcode/cache_method/Stage1/stage1_output/scheduler_config.json
+
+python3 QATcode/cache_method/Stage1/visualize_stage1.py \
+  --stage1_output_dir QATcode/cache_method/Stage1/stage1_output \
+  --output_dir QATcode/cache_method/Stage1/stage1_figures
+```
+
+```bash
+bash QATcode/cache_method/Stage1/run_stage1_sweep.sh
 ```
 
 ## 輸出檔案
 
-### 1. `scheduler_config.json`
-主要配置檔，包含：
-- **zones**: 所有 zones 的定義（**axis_start, axis_end**；舊檔可能僅有 t_start/t_end，語意相同）
-- **axis_convention / ddim_timestep_formula / analysis_axis_order**：與 Stage 0 對齊的元資料
-- **blocks**: 每個 block 的 k_per_zone 列表
-- **params**: 所有演算法參數
-
-格式：
-```json
-{
-  "version": "v_final_stage1",
-  "T": 100,
-  "t_order": "analysis_axis_0_to_99_inclusive",
-  "analysis_axis_order": "analysis_axis_0_to_99_inclusive",
-  "axis_convention": "analysis_axis",
-  "ddim_timestep_formula": "t_ddim = 99 - axis_idx",
-  "params": {
-    "alpha": 0.333,
-    "beta": 0.333,
-    "gamma": 0.334,
-    "k_min": 1,
-    "k_max": 8,
-    "smooth_window": 5,
-    "cp_method": "topk",
-    "cp_topk": 6,
-    "regularize": "delta1"
-  },
-  "zones": [
-    {"id": 0, "axis_start": 0, "axis_end": 62, "t_start": 0, "t_end": 62},
-    {"id": 1, "axis_start": 63, "axis_end": 67, "t_start": 63, "t_end": 67},
-    ...
-  ],
-  "blocks": [
-    {
-      "id": 0,
-      "name": "model.input_blocks.0",
-      "k_per_zone": [6, 5, 6, 5, 5, 5, 5]
-    },
-    ...
-  ]
-}
-```
-
-### 2. `scheduler_diagnostics.json`
-診斷資料，包含：
-- **D_global**, **D_smooth**: 全域 drift 曲線
-- **Delta**: 變化幅度
-- **change_points**: 找到的切分點（timestep）
-- **R_z**, **k_max_z**: zone-level risk 和 ceiling
-- **A_stats**, **k_raw_stats**, **k_final_stats**: 統計摘要
-
-## 可視化
-
-生成 Stage-1 結果的圖表：
-```bash
-python3 QATcode/cache_method/Stage1/visualize_stage1.py
-```
-
-輸出（存至 `stage1_figures/`）：
-1. **1_drift_and_zones.png**: D_global/D_smooth 曲線 + zone 切分 + change points
-2. **2_k_heatmap.png**: K 分佈熱圖（B × Z）
-3. **3_k_histogram.png**: K 值直方圖
-4. **4_zone_risk.png**: Zone risk R_z + k_max ceiling
-
-## 數值檢查
-
-當前結果（T=100, B=31）：
-- **Zones**: 7 個（Zone 0 很長 [0..62]，後期 [63..99] 分成 6 個小 zone）
-- **K 範圍**: [3, 8]，mean=7.16，median=7
-- **K 分佈**: 主要集中在 7-8（高 cache frequency）
-- **Zone risk**: Zone 0-4 較低（<0.07），Zone 5-6 較高（~0.2）
-- **Recompute 比例**: 以 Block 0 為例，100 個 timestep 中只需 recompute 20 次（節省 80%）
-
-## 參數建議
-
-### Tri-evidence 權重（α, β, γ）
-- **預設**: α=β=γ=1/3（平衡）
-- **強調 FID**: α=0.2, β=0.2, γ=0.6（優先考慮 FID-sensitive blocks）
-- **強調 temporal stability**: α=0.5, β=0.4, γ=0.1（優先考慮時序穩定性）
-
-### k 範圍（k_min, k_max）
-- **預設**: [1, 8]
-- **更激進 cache**: [2, 10]（節省更多計算，但可能略降品質）
-- **更保守**: [1, 5]（品質優先）
-
-### Change point 檢測
-- **topk=6** (預設): 適中的 zone 數量（5-8 個）
-- **topk=4**: 較少 zone（大區塊，k 變化較少）
-- **topk=10**: 較多 zone（細粒度，k 更 adaptive）
-
-### Regularization
-- **delta1** (預設): 平滑但不強制遞增（允許 k 略降）
-- **nondecreasing**: 強制 k 遞增（保守，適合需要單調性的場景）
-- **none**: 不限制（可能出現大跳躍）
-
-## 後續使用
-
-Stage-2 將使用 `scheduler_config.json` 來：
-1. 實作 runtime cache scheduler
-2. 在 inference 時決定哪些 timestep recompute、哪些用 cache
-3. 驗證 FID/quality 和 speed-up
+| 檔案 | 說明 |
+|------|------|
+| `scheduler_config.json` | `version`, `T`, `time_order=ddim_99_to_0`, `stage1_baseline_params`, `shared_zones`, `blocks`（含 `k_per_zone`, `expanded_mask`） |
+| `scheduler_diagnostics.json` | `I_sim`/`I_cut` 統計、`G_ddim`、平滑曲線、change points、zones、候選 k、cost 表、`lambda_sweep` 對照等 |
+| `verification_summary.json` | zone 邊界、每 block 的 k、`#F`/`#R`、total cost、每 zone 候選 k 與選後摘要 |
 
 ## 檔案結構
 
 ```
 QATcode/cache_method/Stage1/
-├── __init__.py
-├── stage1_scheduler.py          # 主程式
-├── visualize_stage1.py           # 可視化腳本
-├── README.md                     # 本文件
-├── stage1_output/                # 輸出目錄
-│   ├── scheduler_config.json
-│   └── scheduler_diagnostics.json
-└── stage1_figures/               # 圖表
-    ├── 1_drift_and_zones.png
-    ├── 2_k_heatmap.png
-    ├── 3_k_histogram.png
-    └── 4_zone_risk.png
+├── stage1_scheduler.py
+├── verify_scheduler.py
+├── visualize_stage1.py
+├── run_stage1_sweep.sh
+├── README.md
+├── stage1_output/
+└── stage1_figures/
 ```
 
-## 設計特點
-
-1. **Data-driven**: 完全基於 Stage-0 的量化指標，無 hand-crafted heuristics
-2. **Zone-based**: Shared zones 讓所有 blocks 共用時序切分，簡化 scheduling
-3. **Risk-aware**: Zone-level ceiling 防止在高風險區域過度 cache
-4. **Smooth**: Regularization 避免 k 劇烈跳躍，保持穩定性
-5. **可調**: 所有參數可透過 CLI 調整，支援不同策略（激進 vs 保守）
-
-## 限制與改進方向
-
-### 當前限制
-1. **固定 T=100**: 只支援 DDIM-100，未泛化到其他 T
-2. **Interval-wise**: 使用 (T-1) 個 interval，最後一個 timestep 沒有 transition
-3. **單一策略**: 所有 blocks 用相同的 tri-evidence formula
-
-### 可能改進
-1. **支援多種 T**: T=20, T=50, T=100 的統一 pipeline
-2. **Per-block 策略**: 某些 blocks 可能更重視 FID，某些更重視 similarity
-3. **Dynamic adjustment**: Runtime 根據前幾步的實際 drift 微調 k
-4. **更細粒度**: 支援 per-timestep k（不一定需要 zones）
-
----
-
-**實作日期**: 2026-02-10  
-**版本**: v_final_stage1
+**版本**：`stage1_baseline_v1`（見 `scheduler_config.json` 的 `version`）

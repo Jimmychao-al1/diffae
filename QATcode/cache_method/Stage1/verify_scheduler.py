@@ -1,272 +1,153 @@
 """
-驗證 scheduler_config.json 的正確性。
+驗證新版 Stage-1：shared_zones + k_per_zone + expanded_mask（DDIM 步序 99→0）。
 
-索引語意：zones 與 recompute mask 使用 **analysis axis** 0..T-1（與 Stage 0 / Stage 1 圖一致）；
-DDIM timestep **t_ddim = 99 - axis_idx**（T=100）。新 JSON 使用 axis_start/axis_end；舊檔可僅有 t_start/t_end。
-
-檢查：
-1. Zones 是否完整覆蓋 analysis axis 0..T-1
-2. K 是否在 [k_min, k_max]
-3. Recompute mask 的合理性
-4. 統計資訊
+步序 i：i=0 為 t=99（第一步），i=T-1 為 t=0。
+expanded_mask[b,i]==True 為 full compute (F)，False 為 reuse (R)。
 """
 
+from __future__ import annotations
+
+import argparse
 import json
-import numpy as np
 from pathlib import Path
+from typing import Any, Dict, List
+
+import numpy as np
 
 
-def zone_axis_range(z: dict):
-    """讀取 zone 的 analysis axis 範圍；支援新鍵 axis_* 或舊鍵 t_*。"""
-    a0 = z.get("axis_start", z.get("t_start"))
-    a1 = z.get("axis_end", z.get("t_end"))
-    if a0 is None or a1 is None:
-        raise KeyError(f"Zone 缺少 axis_start/axis_end（或舊版 t_start/t_end）: {z}")
-    return int(a0), int(a1)
-
-
-def load_config(config_path: str):
-    """載入 config"""
-    with open(config_path) as f:
+def load_config(path: str) -> Dict[str, Any]:
+    with open(path, encoding="utf-8") as f:
         return json.load(f)
 
 
-def check_zone_coverage(config):
-    """檢查 zones 是否完整覆蓋 analysis axis 0..T-1（與 Stage 0 圖橫軸一致；DDIM: t_ddim=99-axis_idx）"""
-    T = config['T']
-    zones = config['zones']
-    
-    covered = set()
-    for z in zones:
-        a0, a1 = zone_axis_range(z)
-        covered.update(range(a0, a1 + 1))
-    
-    expected = set(range(T))
-    
-    if covered == expected:
-        print(f"✅ Zones 完整覆蓋 analysis axis 0..{T-1}")
-        return True
-    else:
-        missing = expected - covered
-        overlap = covered - expected
-        if missing:
-            print(f"❌ 缺少 axis indices: {sorted(missing)}")
-        if overlap:
-            print(f"❌ 多餘 axis indices: {sorted(overlap)}")
+def expand_zone_mask_ddim(
+    t_start: int, t_end: int, k: int, T: int
+) -> np.ndarray:
+    """與 stage1_scheduler 一致：回傳 (T,) bool，索引為步序 i（i=0 -> t=99）。"""
+    L = t_start - t_end + 1
+    mask_step = np.zeros(T, dtype=bool)
+    for p in range(L):
+        t = t_start - p
+        is_f = p % k == 0
+        i = (T - 1) - t
+        mask_step[i] = is_f
+    return mask_step
+
+
+def rebuild_mask(
+    shared_zones: List[Dict[str, Any]], k_per_zone: List[int], T: int
+) -> np.ndarray:
+    m = np.zeros(T, dtype=bool)
+    for z, k in zip(shared_zones, k_per_zone):
+        m |= expand_zone_mask_ddim(int(z["t_start"]), int(z["t_end"]), int(k), T)
+    m[0] = True
+    return m
+
+
+def check_shared_zones_cover_ddim(shared_zones: List[Dict[str, Any]], T: int) -> bool:
+    """每個 DDIM timestep t ∈ [0,T-1] 恰落在一個 zone [t_start,t_end]（t_start >= t_end）。"""
+    covered = np.zeros(T, dtype=bool)
+    for z in shared_zones:
+        ts, te = int(z["t_start"]), int(z["t_end"])
+        if ts < te:
+            print(f"❌ zone id={z.get('id')} 需 t_start >= t_end，收到 t_start={ts}, t_end={te}")
+            return False
+        for t in range(te, ts + 1):
+            if covered[t]:
+                print(f"❌ DDIM t={t} 被多個 zone 覆蓋")
+                return False
+            covered[t] = True
+    if not covered.all():
+        print(f"❌ 未覆蓋的 DDIM t: {np.where(~covered)[0].tolist()}")
         return False
-
-
-def check_k_range(config):
-    """檢查 k 是否在合法範圍"""
-    k_min = config['params']['k_min']
-    k_max = config['params']['k_max']
-    
-    all_k = []
-    for block in config['blocks']:
-        all_k.extend(block['k_per_zone'])
-    all_k = np.array(all_k)
-    
-    valid = (all_k >= k_min).all() and (all_k <= k_max).all()
-    
-    if valid:
-        print(f"✅ 所有 k 在 [{k_min}, {k_max}] 範圍內")
-        print(f"   實際範圍: [{all_k.min()}, {all_k.max()}]")
-        return True
-    else:
-        out_of_range = all_k[(all_k < k_min) | (all_k > k_max)]
-        print(f"❌ {len(out_of_range)} 個 k 超出範圍: {out_of_range}")
-        return False
-
-
-def build_recompute_mask(T, zones, k_per_zone):
-    """從 zones + k 建立 recompute mask（索引為 analysis axis；DDIM 對照 t_ddim=99-idx）"""
-    mask = np.zeros(T, dtype=bool)
-    
-    for zone, k in zip(zones, k_per_zone):
-        a0, a1 = zone_axis_range(zone)
-        t = a0
-        while t <= a1:
-            if t < T:
-                mask[t] = True
-            t += k
-    
-    return mask
-
-
-def analyze_recompute_patterns(config):
-    """分析 recompute patterns"""
-    T = config['T']
-    zones = config['zones']
-    blocks = config['blocks']
-    
-    print(f"\n📊 Recompute 統計 (T={T}):")
-    print(f"   Blocks: {len(blocks)}")
-    print(f"   Zones: {len(zones)}")
-    print()
-    
-    # Per-block recompute count
-    recompute_counts = []
-    for block in blocks:
-        mask = build_recompute_mask(T, zones, block['k_per_zone'])
-        count = mask.sum()
-        recompute_counts.append(count)
-    
-    recompute_counts = np.array(recompute_counts)
-    
-    print(f"   Recompute count per block:")
-    print(f"     Min: {recompute_counts.min()}/{T} ({recompute_counts.min()/T*100:.1f}%)")
-    print(f"     Max: {recompute_counts.max()}/{T} ({recompute_counts.max()/T*100:.1f}%)")
-    print(f"     Mean: {recompute_counts.mean():.1f}/{T} ({recompute_counts.mean()/T*100:.1f}%)")
-    print(f"     Median: {np.median(recompute_counts):.0f}/{T} ({np.median(recompute_counts)/T*100:.1f}%)")
-    print()
-    
-    # 平均 cache 節省
-    avg_save = 1 - recompute_counts.mean() / T
-    print(f"   平均 cache 節省: {avg_save*100:.1f}%（只需重算 {(1-avg_save)*100:.1f}%）")
-    print()
-    
-    # Sample blocks
-    print(f"   Sample recompute patterns (前 3 個 blocks):")
-    for i in range(min(3, len(blocks))):
-        block = blocks[i]
-        mask = build_recompute_mask(T, zones, block['k_per_zone'])
-        recompute_t = np.where(mask)[0]
-        print(f"     Block {i} ({block['name']}):")
-        print(f"       k_per_zone: {block['k_per_zone']}")
-        print(f"       Recompute at: {recompute_t.tolist()[:20]}..." if len(recompute_t) > 20 else f"       Recompute at: {recompute_t.tolist()}")
-        print(f"       Total: {mask.sum()}/{T} ({mask.sum()/T*100:.1f}%)")
-    
+    print("✅ shared_zones 完整、不重疊覆蓋所有 DDIM timestep")
     return True
 
 
-def check_zone_start_recompute(config):
-    """檢查每個 zone 的起點是否 recompute"""
-    T = config['T']
-    zones = config['zones']
-    blocks = config['blocks']
-    
-    all_ok = True
-    for block in blocks:
-        mask = build_recompute_mask(T, zones, block['k_per_zone'])
-        for z in zones:
-            a0, _ = zone_axis_range(z)
-            if not mask[a0]:
-                print(f"❌ Block {block['id']} Zone {z['id']} 起點 axis={a0} 未 recompute")
-                all_ok = False
-    
-    if all_ok:
-        print(f"✅ 所有 zone 起點都會 recompute")
-    
-    return all_ok
-
-
-def check_regularization(config):
-    """檢查 regularization 是否生效"""
-    regularize = config['params']['regularize']
-    blocks = config['blocks']
-    
-    violations = []
-    
-    for block in blocks:
-        k_list = block['k_per_zone']
-        if len(k_list) < 2:
-            continue
-        
-        for i in range(1, len(k_list)):
-            diff = k_list[i] - k_list[i - 1]
-            
-            if regularize == "delta1":
-                if abs(diff) > 1:
-                    violations.append((block['id'], i, diff))
-            elif regularize == "nondecreasing":
-                if diff < 0:
-                    violations.append((block['id'], i, diff))
-    
-    if violations:
-        print(f"❌ Regularization ({regularize}) 違規 {len(violations)} 次:")
-        for bid, zi, diff in violations[:5]:
-            print(f"   Block {bid}, Zone {zi}: diff={diff}")
-        return False
-    else:
-        print(f"✅ Regularization ({regularize}) 全部通過")
-        return True
-
-
 def main():
-    import argparse
-    
-    parser = argparse.ArgumentParser(description="Verify scheduler config")
+    parser = argparse.ArgumentParser(description="Verify Stage-1 baseline scheduler JSON")
     parser.add_argument(
         "--config",
         type=str,
         default="QATcode/cache_method/Stage1/stage1_output/scheduler_config.json",
-        help="Path to scheduler_config.json"
     )
-    
     args = parser.parse_args()
-    
-    print("=" * 80)
-    print("Scheduler Config 驗證")
-    print("=" * 80)
-    
-    config_path = Path(args.config)
-    if not config_path.exists():
-        print(f"❌ Config 檔案不存在: {config_path}")
+
+    path = Path(args.config)
+    if not path.exists():
+        print(f"❌ 找不到 {path}")
         return
-    
-    print(f"\n載入: {config_path}")
-    config = load_config(config_path)
-    
-    print(f"\nVersion: {config['version']}")
-    print(f"T: {config['T']}")
-    print(f"Params: {config['params']}")
-    print()
-    
-    # 執行檢查
-    print("=" * 80)
-    print("開始驗證...")
-    print("=" * 80)
-    
-    checks = [
-        ("Zone coverage", check_zone_coverage),
-        ("K range", check_k_range),
-        ("Zone start recompute", check_zone_start_recompute),
-        ("Regularization", check_regularization),
-    ]
-    
-    results = []
-    for name, func in checks:
-        print(f"\n[{name}]")
-        try:
-            ok = func(config)
-            results.append((name, ok))
-        except Exception as e:
-            print(f"❌ 檢查失敗: {e}")
-            results.append((name, False))
-    
-    # Recompute analysis（不算作 pass/fail，只是資訊）
-    print("\n[Recompute patterns]")
-    analyze_recompute_patterns(config)
-    
-    # 總結
-    print("\n" + "=" * 80)
-    print("驗證總結")
-    print("=" * 80)
-    
-    passed = sum(1 for _, ok in results if ok)
-    total = len(results)
-    
-    for name, ok in results:
-        status = "✅ PASS" if ok else "❌ FAIL"
-        print(f"{status}: {name}")
-    
-    print()
-    if passed == total:
-        print(f"🎉 全部通過！({passed}/{total})")
+
+    cfg = load_config(str(path))
+    T = int(cfg["T"])
+    shared_zones = cfg["shared_zones"]
+    params = cfg.get("stage1_baseline_params", {})
+    k_min = int(params.get("k_min", 1))
+    k_max = int(params.get("k_max", 4))
+
+    print("=" * 72)
+    print("Stage-1 baseline 驗證")
+    print("=" * 72)
+    print(f"time_order: {cfg.get('time_order')}")
+    print(f"T={T}, |shared_zones|={len(shared_zones)}, blocks={len(cfg['blocks'])}")
+
+    all_ok = True
+    all_ok &= check_shared_zones_cover_ddim(shared_zones, T)
+
+    exp_all = np.array([b["expanded_mask"] for b in cfg["blocks"]], dtype=bool)
+    if exp_all.shape[1] != T:
+        print(f"❌ expanded_mask 寬度 {exp_all.shape[1]} != T={T}")
+        all_ok = False
+
+    if not exp_all[:, 0].all():
+        print("❌ 所有 block 在步序 i=0（DDIM t=99）必須為 F（True）")
+        all_ok = False
     else:
-        print(f"⚠️  部分失敗：{passed}/{total} 通過")
-    
-    print("=" * 80)
+        print("✅ 所有 block：步序 i=0（t=99）為 F")
+
+    zone_start_ok = True
+    for z in shared_zones:
+        ts = int(z["t_start"])
+        i0 = (T - 1) - ts
+        if not exp_all[:, i0].all():
+            print(f"❌ zone id={z['id']} 起點 t={ts}（步序 i={i0}）須全為 F")
+            zone_start_ok = False
+            all_ok = False
+    if zone_start_ok:
+        print("✅ 每個 zone 在該區第一步（DDIM t=t_start）為 F")
+
+    for block in cfg["blocks"]:
+        bid = block["id"]
+        kz = block["k_per_zone"]
+        if len(kz) != len(shared_zones):
+            print(f"❌ block {bid} k_per_zone 長度 {len(kz)} != {len(shared_zones)}")
+            all_ok = False
+            continue
+        arr = np.array(kz, dtype=int)
+        if (arr < k_min).any() or (arr > k_max).any():
+            print(f"❌ block {bid} k 超出 [{k_min}, {k_max}]: {kz}")
+            all_ok = False
+
+    if all_ok:
+        print(f"✅ 所有 k 在 [{k_min}, {k_max}]")
+
+    for b, block in enumerate(cfg["blocks"]):
+        recon = rebuild_mask(shared_zones, block["k_per_zone"], T)
+        if not np.array_equal(exp_all[b], recon):
+            diff = np.where(exp_all[b] != recon)[0]
+            print(f"❌ block {b} expanded_mask 與重建不符，相異步序（前 30 個）: {diff[:30].tolist()}")
+            all_ok = False
+    if all_ok:
+        print("✅ 每個 block 的 expanded_mask 與 shared_zones + k_per_zone 重建一致")
+
+    nF = exp_all.sum(axis=1)
+    nR = T - nF
+    print("\n📊 每 block #F / #R:")
+    for b in range(len(cfg["blocks"])):
+        print(f"   block {b} ({cfg['blocks'][b].get('name', '')}): F={int(nF[b])}, R={int(nR[b])}")
+
+    print("\n" + ("🎉 全部通過" if all_ok else "⚠️ 有項目失敗"))
+    print("=" * 72)
 
 
 if __name__ == "__main__":
