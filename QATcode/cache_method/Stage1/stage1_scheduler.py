@@ -3,18 +3,20 @@ Stage-1 baseline（新版）：global shared zones + cost-based per-block k + ex
 
 時間軸（唯一正式）：
 - DDIM 採樣順序 99 → 0：第一步對應單步 timestep t=99，最後一步 t=0。
-- **expanded_mask[b, i]** 的索引 i ∈ [0, T-1] 與「步序」一致：i=0 為 t=99，i=T-1 為 t=0。
-  即 **ddim_t = (T - 1) - i**。
+- expanded_mask[b, i] 的索引 i ∈ [0, T-1] 與「步序」一致：i=0 為 t=99，i=T-1 為 t=0。
+  即 ddim_t = (T - 1) - i。
 
 Interval ↔ reused timestep（Stage 0 為 interval-wise evidence）：
 - Stage 0 第 j 欄（j=0..T-2）對應 analysis interval j，顯示標籤 t_curr=(T-2)-j。
-- 正式語義：**interval (t+1 → t)** 的不穩定度算在 **reused timestep t**（reuse 發生在該步）。
-- 故欄位 j 對應 reused DDIM timestep **t = (T-2) - j**（t=0..T-2）。
-- **t=T-1（此處 t=99）** 沒有對應 interval 欄位；全域仍強制該步 full compute，
+- 正式語義：interval (t+1 → t) 的不穩定度算在 reused timestep t（reuse 發生在該步）。
+- 故欄位 j 對應 reused DDIM timestep t = (T-2) - j（t=0..T-2）。
+- t=T-1（此處 t=99）沒有對應 interval 欄位；全域仍強制該步 full compute，
   cutting 信號上 **I_cut[b, T-1] = 0**（不參與 interval 證據）。
 
 相較舊版：已移除 A[b,z]→k 線性映射、zone risk ceiling、舊 regularization；
-改為 **G[t] 上 smoothing + top-K change points → shared zones**，以及 **J(b,z,k)** 選 k。
+改為 G[t] 上 smoothing + top-K change points → shared zones，以及 J(b,z,k)* 選 k。
+
+命名：I_l1cos = L1/Cos 變化量分支加權（非 stability / similarity）；診斷鍵 `I_l1cos_stats`。
 """
 
 from __future__ import annotations
@@ -33,8 +35,9 @@ logging.basicConfig(
 LOGGER = logging.getLogger("Stage1Scheduler")
 
 # --- 固定係數（規格）---
-W_L1_SIM = 0.7
-W_COS_SIM = 0.3
+# L1/Cos 分支加權（輸入為 Stage 0 正規化「變化量」，非 stability score）
+W_L1_BRANCH = 0.7
+W_COS_BRANCH = 0.3
 ALPHA_ICUT = 4.0 / 9.0
 BETA_ICUT = 5.0 / 9.0
 assert abs(ALPHA_ICUT + BETA_ICUT - 1.0) < 1e-9
@@ -100,6 +103,18 @@ def load_stage0_formal(
     if len(t_curr) != Tm1:
         raise ValueError(f"t_curr_interval len {len(t_curr)} != T-1={Tm1}")
 
+    expected_t_curr = np.arange(T - 2, -1, -1, dtype=np.int32)
+    t_curr_cmp = np.asarray(t_curr).astype(np.int32).reshape(-1)
+    if not np.array_equal(t_curr_cmp, expected_t_curr):
+        n_show = min(8, len(t_curr_cmp), len(expected_t_curr))
+        raise ValueError(
+            "t_curr_interval.npy does not match the expected Stage-0 layout "
+            f"np.arange(T-2,-1,-1) for T={T}. "
+            "Stage 0 vs Stage 1 interval-to-reused-timestep convention may be inconsistent.\n"
+            f"  got (first {n_show}): {t_curr_cmp[:n_show].tolist()}\n"
+            f"  expected (first {n_show}): {expected_t_curr[:n_show].tolist()}"
+        )
+
     def clip01(a: np.ndarray, name: str) -> np.ndarray:
         if a.min() < 0 or a.max() > 1:
             LOGGER.warning("%s 超出 [0,1]，已 clip", name)
@@ -112,37 +127,120 @@ def load_stage0_formal(
     fid_w = clip01(fid_w.astype(np.float64), "fid_w")
 
     axis_str = str(axis_def) if np.ndim(axis_def) == 0 else str(axis_def.item())
-    return block_names, l1, cos, svd, fid_w, axis_str, t_curr.astype(np.int32)
+    if axis_str is None or (
+        isinstance(axis_str, str) and (axis_str.strip() == "" or axis_str.strip() == "None")
+    ):
+        LOGGER.warning(
+            "axis_interval_def is empty, None, or missing; cannot verify interval definition from file. "
+            "Proceeding, but Stage 0 / Stage 1 convention audits should not rely on this field."
+        )
+
+    return block_names, l1, cos, svd, fid_w, axis_str, t_curr_cmp
 
 
-def build_I_sim_I_cut_per_ddim_t(
+def build_I_l1cos_I_cut_per_ddim_t(
     l1: np.ndarray,
     cos: np.ndarray,
     svd: np.ndarray,
     T: int,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
-    I_sim[b,t], I_cut[b,t]，t 為 DDIM timestep 0..T-1。
-    t=T-1 無 interval：填 0。
+    I_l1cos[b,t], I_cut[b,t]，t 為 DDIM timestep 0..T-1。
+
+    I_l1cos is NOT a "similarity" or stability score: it is a combined change / drift
+    score from Stage-0 normalized L1 and cosine distance channels (variation magnitudes).
+    t=T-1 has no interval column; both arrays are zero there.
     """
     B = l1.shape[0]
-    I_sim = np.zeros((B, T), dtype=np.float64)
+    I_l1cos = np.zeros((B, T), dtype=np.float64)
     I_cut = np.zeros((B, T), dtype=np.float64)
     for j in range(T - 1):
         t = interval_j_to_reused_ddim_t(j, T)
-        I_sim[:, t] = W_L1_SIM * l1[:, j] + W_COS_SIM * cos[:, j]
-        I_cut[:, t] = ALPHA_ICUT * I_sim[:, t] + BETA_ICUT * svd[:, j]
-    I_sim[:, T - 1] = 0.0
+        I_l1cos[:, t] = W_L1_BRANCH * l1[:, j] + W_COS_BRANCH * cos[:, j]
+        I_cut[:, t] = ALPHA_ICUT * I_l1cos[:, t] + BETA_ICUT * svd[:, j]
+    I_l1cos[:, T - 1] = 0.0
     I_cut[:, T - 1] = 0.0
-    return I_sim, I_cut
+    return I_l1cos, I_cut
 
 
 def global_cutting_signal_G(I_cut: np.ndarray, fid_w: np.ndarray) -> np.ndarray:
-    """G[t] = sum_b w_b I_cut[b,t] / sum_b w_b；w_b = fid_w_qdiffae_clip[b]。"""
+    """
+    G[t] = sum_b w_b I_cut[b,t] with normalized weights w_b.
+
+    If fid_w is all ~0, weights fall back to uniform 1/B (explicit; logged).
+    Otherwise w is proportional to fid_w (L1-normalized with eps for stability).
+    """
+    B = I_cut.shape[0]
     eps = 1e-12
-    w = fid_w + eps
-    wsum = w.sum()
-    return (w[:, None] * I_cut).sum(axis=0) / wsum
+    if np.allclose(fid_w, 0.0):
+        LOGGER.warning(
+            "fid_w_qdiffae_clip is all ~0: using uniform block weights (1/B) for G[t]. "
+            "FID-based weighting is disabled for the global cutting signal."
+        )
+        w = np.full(B, 1.0 / B, dtype=np.float64)
+    else:
+        wsum = float(np.sum(fid_w) + eps)
+        w = (fid_w + eps) / wsum
+        LOGGER.debug("G[t]: using FID weights (normalized, eps=%s).", eps)
+    return (w[:, None] * I_cut).sum(axis=0)
+
+
+def validate_shared_zones_ddim(shared_zones: List[Dict[str, Any]], T: int) -> None:
+    """
+    Fail-fast: partition of DDIM timesteps 0..T-1, ordered zones, no overlap,
+    t_start >= t_end, length sum == T.
+    """
+    covered = np.zeros(T, dtype=bool)
+    total_len = 0
+    for z in shared_zones:
+        zid = z.get("id", "?")
+        ts, te = int(z["t_start"]), int(z["t_end"])
+        if ts < te:
+            raise ValueError(
+                f"shared_zones id={zid}: require t_start >= t_end (DDIM order), got t_start={ts}, t_end={te}"
+            )
+        L = ts - te + 1
+        if L < 1:
+            raise ValueError(f"shared_zones id={zid}: invalid length L={L}")
+        total_len += L
+        for t in range(te, ts + 1):
+            if not (0 <= t < T):
+                raise ValueError(f"shared_zones id={zid}: timestep t={t} out of [0,{T-1}]")
+            if covered[t]:
+                raise ValueError(
+                    f"shared_zones: overlap at DDIM timestep t={t} (zone id={zid}); "
+                    "zones must partition 0..T-1 without overlap."
+                )
+            covered[t] = True
+    if total_len != T:
+        raise ValueError(
+            f"shared_zones: sum of zone lengths is {total_len}, expected T={T} "
+            "(full coverage of DDIM timesteps)."
+        )
+    if not bool(np.all(covered)):
+        missing = np.where(~covered)[0].tolist()
+        raise ValueError(
+            f"shared_zones: missing DDIM timesteps (not covered): first missing indices {missing[:32]}..."
+        )
+
+
+def or_expanded_with_zone_mask(
+    expanded_row: np.ndarray,
+    ms: np.ndarray,
+    block_id: int,
+    zone_id: int,
+    max_show: int = 32,
+) -> None:
+    """In-place OR with overlap check (shared_zones should be disjoint in step space)."""
+    overlap = expanded_row & ms
+    if np.any(overlap):
+        idx = np.where(overlap)[0][:max_show]
+        raise ValueError(
+            "expanded_mask overlap when merging zones: "
+            f"block_id={block_id}, zone_id={zone_id}, "
+            f"overlapping step indices (first {len(idx)}): {idx.tolist()}"
+        )
+    expanded_row |= ms
 
 
 def moving_average(x: np.ndarray, window: int) -> np.ndarray:
@@ -177,7 +275,7 @@ def topk_change_point_indices(
     candidate_hi: int,
 ) -> List[int]:
     """
-    在 [candidate_lo, candidate_hi] 內取 Delta 最大的 K 個 **邊界索引 i**
+    在 [candidate_lo, candidate_hi] 內取 Delta 最大的 K 個 邊界索引 i
     （表示新 zone 從 step index i 開始）。tie-break：索引較大者優先（與 argsort 穩定性配合）。
     """
     cand = list(range(candidate_lo, candidate_hi + 1))
@@ -340,7 +438,7 @@ def run_stage1_synthesis(
     B = l1.shape[0]
     T = l1.shape[1] + 1
 
-    I_sim, I_cut = build_I_sim_I_cut_per_ddim_t(l1, cos, svd, T)
+    I_l1cos, I_cut = build_I_l1cos_I_cut_per_ddim_t(l1, cos, svd, T)
     G_ddim = global_cutting_signal_G(I_cut, fid_w)
     G_proc = processing_order_series(G_ddim, T)
     G_smooth = moving_average(G_proc, smooth_window)
@@ -364,6 +462,8 @@ def run_stage1_synthesis(
                 "length": ts - te + 1,
             }
         )
+
+    validate_shared_zones_ddim(shared_zones, T)
 
     Z = len(shared_zones)
 
@@ -418,7 +518,7 @@ def run_stage1_synthesis(
             ms, _, _ = expand_zone_mask_ddim(
                 zd["t_start"], zd["t_end"], int(k_chosen[b, zi]), T
             )
-            expanded[b, :] |= ms
+            or_expanded_with_zone_mask(expanded[b, :], ms, block_id=b, zone_id=int(zd["id"]))
     # 強制 t=99（i=0）為 F
     expanded[:, 0] = True
 
@@ -461,11 +561,15 @@ def run_stage1_synthesis(
         "k_min": int(k_min),
         "k_max": int(k_max),
         "min_zone_len": int(min_zone_len),
-        "W_L1_sim": W_L1_SIM,
-        "W_COS_sim": W_COS_SIM,
+        "W_L1_branch": W_L1_BRANCH,
+        "W_COS_branch": W_COS_BRANCH,
         "ALPHA_ICUT": ALPHA_ICUT,
         "BETA_ICUT": BETA_ICUT,
-        "I_cut_formula": "I_cut = (4/9)*I_sim + (5/9)*SVD; I_sim = 0.7*L1 + 0.3*Cos (interval mapped to reused t)",
+        "I_cut_formula": (
+            "I_cut = (4/9)*I_l1cos + (5/9)*SVD; "
+            "I_l1cos = 0.7*L1_norm + 0.3*Cos_norm (change magnitudes, not stability); "
+            "interval columns mapped to reused DDIM t"
+        ),
     }
 
     config: Dict[str, Any] = {
@@ -502,7 +606,7 @@ def run_stage1_synthesis(
         "stage0_axis_interval_def": axis_def_str,
         "t_curr_interval": t_curr_arr.tolist(),
         "mapping_note": "interval j -> reused DDIM t = (T-2)-j; I_cut[:,T-1]=0; expanded_mask[i] step maps to t=(T-1)-i",
-        "I_sim_stats": stats_dict(I_sim),
+        "I_l1cos_stats": stats_dict(I_l1cos),
         "I_cut_stats": stats_dict(I_cut),
         "G_ddim": G_ddim.tolist(),
         "G_processing_order_i0_is_t99": G_proc.tolist(),
@@ -577,11 +681,51 @@ def rebuild_expanded_mask_from_config(config: Dict[str, Any]) -> np.ndarray:
     B = len(config["blocks"])
     m = np.zeros((B, T), dtype=bool)
     for b, block in enumerate(config["blocks"]):
+        bid = int(block.get("id", b))
         for z, k in zip(zones, block["k_per_zone"]):
             ms, _, _ = expand_zone_mask_ddim(z["t_start"], z["t_end"], int(k), T)
-            m[b, :] |= ms
+            or_expanded_with_zone_mask(m[b, :], ms, block_id=bid, zone_id=int(z["id"]))
         m[b, 0] = True
     return m
+
+
+def _self_test_fid_zero_uniform_G() -> None:
+    """fid_w 全 0 時 G 為 block 平均（uniform weights）。"""
+    B, T = 4, 100
+    I_cut = np.arange(B * T, dtype=np.float64).reshape(B, T)
+    fid = np.zeros(B, dtype=np.float64)
+    G = global_cutting_signal_G(I_cut, fid)
+    exp = I_cut.mean(axis=0)
+    assert np.allclose(G, exp), (G[:5], exp[:5])
+
+
+def _self_test_t_curr_mismatch_raises(tmp: Path, B: int, T: int) -> None:
+    tmp.mkdir(parents=True, exist_ok=True)
+    Tm1 = T - 1
+    np.save(tmp / "block_names.npy", np.array([f"b{i}" for i in range(B)], dtype=object))
+    np.save(tmp / "l1_interval_norm.npy", np.zeros((B, Tm1)))
+    np.save(tmp / "cosdist_interval_norm.npy", np.zeros((B, Tm1)))
+    np.save(tmp / "svd_interval_norm.npy", np.zeros((B, Tm1)))
+    np.save(tmp / "fid_w_qdiffae_clip.npy", np.ones(B))
+    np.save(tmp / "t_curr_interval.npy", np.zeros(Tm1, dtype=np.int32))  # wrong layout
+    np.save(tmp / "axis_interval_def.npy", np.array("ok", dtype=object))
+    try:
+        load_stage0_formal(str(tmp))
+    except ValueError as e:
+        assert "t_curr_interval" in str(e) or "expected" in str(e).lower()
+        return
+    raise AssertionError("expected ValueError for bad t_curr_interval")
+
+
+def _self_test_merge_zones_cover_T() -> None:
+    """merge_short_zones_step 後仍完整覆蓋 step 0..T-1。"""
+    T = 100
+    raw = [(i, i) for i in range(T)]  # T singletons
+    merged = merge_short_zones_step(raw, T, min_len=2)
+    covered = np.zeros(T, dtype=bool)
+    for s0, s1 in merged:
+        covered[s0 : s1 + 1] = True
+    assert covered.all() and len(merged) >= 1
 
 
 def self_test():
@@ -590,6 +734,11 @@ def self_test():
     Tm1 = T - 1
     tmp = Path("/tmp/stage1_self_test_new")
     tmp.mkdir(parents=True, exist_ok=True)
+
+    _self_test_fid_zero_uniform_G()
+    _self_test_t_curr_mismatch_raises(tmp / "bad_tcurr", B, T)
+    _self_test_merge_zones_cover_T()
+
     np.save(tmp / "block_names.npy", np.array([f"b{i}" for i in range(B)], dtype=object))
     rng = np.random.default_rng(0)
     np.save(tmp / "l1_interval_norm.npy", rng.random((B, Tm1)).astype(np.float64))
@@ -610,6 +759,7 @@ def self_test():
         lambda_base=1.0,
         k_max=4,
     )
+    validate_shared_zones_ddim(cfg["shared_zones"], T)
     recon = rebuild_expanded_mask_from_config(cfg)
     stacked = np.array([cfg["blocks"][b]["expanded_mask"] for b in range(B)], dtype=bool)
     assert np.array_equal(recon, stacked)

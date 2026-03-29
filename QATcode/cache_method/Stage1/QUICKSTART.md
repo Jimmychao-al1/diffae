@@ -2,6 +2,8 @@
 
 **時間軸**：對外輸出以 **DDIM 99→0** 為準；`expanded_mask[b,i]` 的 **i=0 為 t=99**。interval ↔ reused timestep 對應見 `README.md` 與 `scheduler_diagnostics.json` 的 `mapping_note`。
 
+**載入**：`t_curr_interval.npy` 須與 Stage 0 正式定義 `arange(T-2,-1,-1)` 一致，否則排程器會直接報錯。**FID 全零**時 `G[t]` 會改為 block **均匀加權**（log warning）。合成階段會 **fail-fast** 檢查 zones 分割與 mask 合併（見 `README`）。
+
 ## 一鍵執行
 
 ```bash
