@@ -2,7 +2,7 @@
 Stage-0E Visualization
 
 讀取 Stage-0E 的 .npy 輸出，繪製：
-1. 代表性 block 的三條曲線（L1 step mean / cosine distance / SVD interval distance）
+1. 每個 block 的三條曲線（L1 step mean / cosine distance / SVD interval distance）
 2. 所有 block 的 FID weight bar chart
 3. 全局 heatmap（B × T-1）
 
@@ -388,9 +388,6 @@ def select_representative_blocks(
 def main(
     input_dir: str,
     output_dir: str,
-    n_top: int = 3,
-    n_bottom: int = 2,
-    extra_blocks: Optional[List[str]] = None,
 ):
     """
     Stage-0E 可視化主流程。
@@ -398,9 +395,8 @@ def main(
     Args:
         input_dir: Stage-0E 的 .npy 輸出目錄
         output_dir: 圖片輸出目錄
-        n_top: 繪製 FID weight 最高的幾個 block
-        n_bottom: 繪製 FID weight 最低的幾個 block
-        extra_blocks: 額外指定要繪製的 block 名稱
+
+    對 **所有** block 產生 per-block 曲線與 combined overview（不再只畫代表性子集）。
     """
     out = Path(output_dir)
     out.mkdir(parents=True, exist_ok=True)
@@ -416,12 +412,10 @@ def main(
     print(f"    B={B}, T-1={T_minus_1}")
     print(f"    axis: {axis_def}")
 
-    # 2. 選出代表性 block
-    print("\n[2] 選出代表性 block...")
-    indices = select_representative_blocks(
-        block_names, fid_w, n_top=n_top, n_bottom=n_bottom, extra=extra_blocks,
-    )
-    print(f"    選出 {len(indices)} 個 block:")
+    # 2. 使用全部 block（per-block 曲線與 overview）
+    print("\n[2] 使用全部 block 繪圖...")
+    indices = list(range(B))
+    print(f"    共 {len(indices)} 個 block")
     for idx in indices:
         tag = "HIGH" if fid_w[idx] > 0.1 else ("LOW" if fid_w[idx] == 0 else "MID")
         print(f"      [{idx:2d}] {block_names[idx]:35s}  w={fid_w[idx]:.4f}  ({tag})")
@@ -475,7 +469,4 @@ if __name__ == "__main__":
     main(
         input_dir=os.path.join(project_root, "QATcode/cache_method/Stage0/stage0e_output"),
         output_dir=os.path.join(project_root, "QATcode/cache_method/Stage0/stage0e_figures"),
-        n_top=3,
-        n_bottom=2,
-        extra_blocks=["model.middle_block", "model.input_blocks.7"],
     )
