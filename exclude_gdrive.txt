@@ -9,3 +9,5 @@ retry_logs_similarity/
 .vscode/
 .git/
 .git/**
+__pycache__/
+__pycache__/**
