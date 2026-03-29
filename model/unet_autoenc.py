@@ -129,6 +129,7 @@ class BeatGANsAutoencModel(BeatGANsUNetModel):
                 t_cond=None,
                 cached_data=None,
                 cached_scheduler=None,
+                cache_debug_collector=None,
                 **kwargs):
         """
         Apply the model to an input batch.
@@ -139,6 +140,8 @@ class BeatGANsAutoencModel(BeatGANsUNetModel):
             noise: random noise (to predict the cond)
             cached_data: Dict to store cached layer outputs (created in ddim_sample_loop_progressive)
             cached_scheduler: List indicating which layers should recompute
+            cache_debug_collector: Optional callable(layer_key, h, *, recompute, t) for Stage2 diagnostics.
+                預設 None；recompute=True 為該步 forward 計算，False 為讀取 cached_data 重用。
         """
 
         if t_cond is None:
@@ -213,6 +216,8 @@ class BeatGANsAutoencModel(BeatGANsUNetModel):
             cached_data = kwargs.get('cached_data', None)
         if cached_scheduler is None:
             cached_scheduler = kwargs.get('cached_scheduler', None)
+        if cache_debug_collector is None:
+            cache_debug_collector = kwargs.pop('cache_debug_collector', None)
         activate_cache = cached_data is not None and cached_scheduler is not None
         
         # 如果啟用 cache 但 cached_data 為 None，初始化它
@@ -221,6 +226,11 @@ class BeatGANsAutoencModel(BeatGANsUNetModel):
         
         # 初始化 layer_count（用於索引 cached_scheduler）
         layer_count = 0
+
+        def _cache_dbg(layer_key: str, h, recompute: bool):
+            if cache_debug_collector is None:
+                return
+            cache_debug_collector(layer_key, h, recompute=recompute, t=t)
 
         if x is not None:
             h = x.type(self.dtype)
@@ -239,20 +249,24 @@ class BeatGANsAutoencModel(BeatGANsUNetModel):
                                                      cond=enc_cond_emb)
                             # 存入 cache
                             cached_data[f'encoder_layer_{k}'] = h
+                            _cache_dbg(f'encoder_layer_{k}', h, True)
                         elif layer_count < len(cached_scheduler) and cached_scheduler[layer_count] == 0:
                             # 使用 cache
                             h = cached_data[f'encoder_layer_{k}']
+                            _cache_dbg(f'encoder_layer_{k}', h, False)
                         else:
                             # layer_count 超出範圍，默認重新計算
                             h = self.input_blocks[k](h,
                                                      emb=enc_time_emb,
                                                      cond=enc_cond_emb)
                             cached_data[f'encoder_layer_{k}'] = h
+                            _cache_dbg(f'encoder_layer_{k}', h, True)
                     else:
                         # 不使用 cache，正常計算
                         h = self.input_blocks[k](h,
                                                  emb=enc_time_emb,
                                                  cond=enc_cond_emb)
+                        _cache_dbg(f'encoder_layer_{k}', h, True)
 
                     # print(i, j, h.shape)
                     hs[i].append(h)
@@ -266,15 +280,19 @@ class BeatGANsAutoencModel(BeatGANsUNetModel):
                 if layer_count < len(cached_scheduler) and cached_scheduler[layer_count] == 1:
                     h = self.middle_block(h, emb=mid_time_emb, cond=mid_cond_emb)
                     cached_data['middle_layer'] = h
+                    _cache_dbg('middle_layer', h, True)
                 elif layer_count < len(cached_scheduler) and cached_scheduler[layer_count] == 0:
                     h = cached_data['middle_layer']
+                    _cache_dbg('middle_layer', h, False)
                 else:
                     # layer_count 超出範圍，默認重新計算
                     h = self.middle_block(h, emb=mid_time_emb, cond=mid_cond_emb)
                     cached_data['middle_layer'] = h
+                    _cache_dbg('middle_layer', h, True)
                 layer_count += 1
             else:
                 h = self.middle_block(h, emb=mid_time_emb, cond=mid_cond_emb)
+                _cache_dbg('middle_layer', h, True)
         else:
             # no lateral connections
             # happens when training only the autonecoder
@@ -301,8 +319,10 @@ class BeatGANsAutoencModel(BeatGANsUNetModel):
                                                   cond=dec_cond_emb,
                                                   lateral=lateral)
                         cached_data[f'decoder_layer_{k}'] = h
+                        _cache_dbg(f'decoder_layer_{k}', h, True)
                     elif layer_count < len(cached_scheduler) and cached_scheduler[layer_count] == 0:
                         h = cached_data[f'decoder_layer_{k}']
+                        _cache_dbg(f'decoder_layer_{k}', h, False)
                     else:
                         # layer_count 超出範圍，默認重新計算
                         h = self.output_blocks[k](h,
@@ -310,12 +330,14 @@ class BeatGANsAutoencModel(BeatGANsUNetModel):
                                                   cond=dec_cond_emb,
                                                   lateral=lateral)
                         cached_data[f'decoder_layer_{k}'] = h
+                        _cache_dbg(f'decoder_layer_{k}', h, True)
                     layer_count += 1
                 else:
                     h = self.output_blocks[k](h,
                                               emb=dec_time_emb,
                                               cond=dec_cond_emb,
                                               lateral=lateral)
+                    _cache_dbg(f'decoder_layer_{k}', h, True)
                 k += 1
 
         pred = self.out(h)

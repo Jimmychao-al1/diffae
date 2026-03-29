@@ -43,22 +43,25 @@ Stage2 負責：
 | 檔案 | 用途 |
 |------|------|
 | `stage2_scheduler_adapter.py` | `load_stage1_scheduler_config`、`validate_stage1_scheduler_config`、`stage1_mask_to_runtime_cache_scheduler`、`stage1_block_to_runtime_block` |
-| `stage2_error_collector.py` | 31 層 hook，baseline/cache 兩趟收集，輸出 `per_block_step_error`、`per_block_zone_error`、`global_summary` |
+| `stage2_error_collector.py` | 透過 UNet 可選 `cache_debug_collector` 回呼，baseline/cache 兩趟收集（含 **reuse 步** 從 cache 取出的 tensor），輸出 `per_block_step_error`、`per_block_zone_error`、`global_summary` |
 | `stage2_runtime_refine.py` | 載入模型、兩趟採樣、診斷、單輪 refinement、寫入三個 JSON |
-| `verify_stage2.py` | 檢查 refined config：`T`、zones 分割、`expanded_mask` 維度、第一步 full、`k≥1` |
+| `verify_stage2.py` | `time_order`、31 blocks、`k` 長度、`expanded_mask[0]`、**mask ⊇ rebuild(k)**（允許 peak 多開） |
 
 ## Refinement 規則（第一版，單輪）
 
-1. **Zone 層級**：若某 **(block, zone)** 的 **mean L1**（在該 zone 涵蓋的 DDIM timestep 上平均）**>** `zone_l1_threshold`，則該 block 的 **`k_per_zone[zone_id]` 減 1**，且 **不得小於 1**。
-2. **Peak 層級**：若某 **(block, DDIM timestep i)** 的 **L1** **>** `peak_l1_threshold`，則將該 block 的 **`expanded_mask[(T−1)−i]`** 強制設為 **`True`**。
-3. 最後 **強制第一步 full compute**：若 **`expanded_mask[0]`** 仍為 `False`，改為 `True`（**`step_idx=0` ↔ DDIM `i=T−1`**）。
+1. **Zone 層級**：若某 **(block, zone)** 的 **mean L1** **>** `zone_l1_threshold`，則該 block 的 **`k_per_zone[zone_id]` 減 1**（下限 1），接著用 **`rebuild_expanded_mask_from_shared_zones_and_k_per_zone`** 依 **新 k** 重建 **`expanded_mask`**（與 Stage1 時間軸一致）。  
+   → Runtime 實際吃的是由 **`expanded_mask` 推導的 `cache_scheduler`**，因此必須在改 k 後重建 mask，調整才會生效。
+2. **Peak 層級**：在 **診斷已含 reuse 步** 的前提下，若某 **(block, DDIM timestep i)** 的 **L1** **>** `peak_l1_threshold`，則將 **`expanded_mask[(T−1)−i]`** 設為 **`True`**（含「原本是 reuse、被強制改為 recompute」的情況）。`stage2_refinement_summary.json` 會記錄 **`was_reuse_before_peak_repair`**。
+3. **強制第一步 full compute**：**`expanded_mask[0] == True`**（**`step_idx=0` ↔ DDIM `i=T−1`**）。
+
+**最終 refined `scheduler_config`**：`k_per_zone`、**`expanded_mask`**（zone 基底 ∪ peak 額外開啟）、以及診斷內 **`refined_cache_scheduler`**（由最終 mask 推導）三者一致對齊。
 
 ## 輸出檔案（`stage2_runtime_refine.py`）
 
-在 `--output_dir` 下：
+在 `--output_dir` 下**僅此三個 JSON**（不寫 `.pt` / `.npy` / 圖片等大檔）：
 
 - `stage2_refined_scheduler_config.json`：refined 設定（`version` 標為 `stage2_refined_v1`）；
-- `stage2_runtime_diagnostics.json`：特徵誤差與 `cache_scheduler`（list 形式）；
+- `stage2_runtime_diagnostics.json`：特徵誤差、輸入 `cache_scheduler`，以及 **`refined_cache_scheduler`**（與最終 mask 對齊）；
 - `stage2_refinement_summary.json`：threshold、k/mask 調整紀錄、依 DDIM timestep 聚合的 L1 摘要。
 
 ## 如何執行
@@ -86,11 +89,11 @@ python QATcode/cache_method/Stage2/verify_stage2.py QATcode/cache_method/Stage2/
 - 採樣沿用 **`renderer.render_uncondition`** → `sampler.sample(..., cache_scheduler=...)`，**不重寫 sampler**。
 - 預設 **batch=1**（`eval_num_images=1`）以降低 31×T 層特徵的記憶體壓力；若需更穩定統計可之後改為多張圖平均（非本版範圍）。
 
-### 特徵誤差統計的限制（第一版）
+### Reuse 步的誤差比較
 
-在 **cache 模式**下，若某層在某 DDIM 步為 **reuse**（`cached_scheduler=0`），`model/unet_autoenc.py` 會 **跳過該層 forward**，因此 `TimestepEmbedSequential` 的 **hook 不會執行**。  
-本版 `stage2_error_collector.py` 只在 **baseline 與 cache 兩邊都實際 forward 到該層** 的 `(block, timestep)` 上計算 L1/L2/cosine；reuse 步不納入逐點誤差。若要對 reuse 步比較「快取值 vs 全算值」，需改動 UNet（例如在讀取 `cached_data` 時取樣）或另行設計，**不在本版範圍**。
+先前若只在 **forward** 路徑掛 hook，**reuse** 時不會進入該層 forward，逐點誤差會漏掉。  
+修正後：`model/unet_autoenc.py` 在 **recompute 與 reuse** 兩條路都會呼叫可選的 **`cache_debug_collector`**（預設 `None`，不影響既有 sampling）。Stage2 用此回呼取得 **baseline 特徵** 與 **cache 路徑上取出的 `cached_data` 特徵**，在 **所有 timestep（含 reuse）** 對齊比較。
 
-### Hook 掃描
+### 層覆蓋範圍
 
-`stage2_error_collector` 會排除 **`model.encoder.input_blocks.*`**（影像 encoder），只鎖定 UNet 的 `model.input_blocks.*` / `model.middle_block` / `model.output_blocks.*`。
+診斷對齊 UNet 31 個 runtime 層（`encoder_layer_0..14`、`middle_layer`、`decoder_layer_0..14`），不含影像 encoder。

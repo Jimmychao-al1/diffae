@@ -201,11 +201,13 @@ class GaussianDiffusionBeatGans:
                clip_denoised=True,
                model_kwargs=None,
                progress=False,
-               cache_scheduler=None):
+               cache_scheduler=None,
+               cache_debug_collector=None):
         """
         Args:
             x_start: given for the autoencoder
             cache_scheduler: Cache scheduler dict for caching layers
+            cache_debug_collector: optional Stage2 / debug hook (see unet_autoenc.forward)
         """
         if model_kwargs is None:
             model_kwargs = {}
@@ -227,7 +229,8 @@ class GaussianDiffusionBeatGans:
                                          clip_denoised=clip_denoised,
                                          model_kwargs=model_kwargs,
                                          progress=progress,
-                                         cache_scheduler=cache_scheduler)
+                                         cache_scheduler=cache_scheduler,
+                                         cache_debug_collector=cache_debug_collector)
         else:
             raise NotImplementedError()
 
@@ -296,7 +299,8 @@ class GaussianDiffusionBeatGans:
                         denoised_fn=None,
                         model_kwargs=None,
                         cached_data=None,
-                        cached_scheduler=None):
+                        cached_scheduler=None,
+                        cache_debug_collector=None):
         """
         Apply the model to get p(x_{t-1} | x_t), as well as a prediction of
         the initial x, x_0.
@@ -333,6 +337,7 @@ class GaussianDiffusionBeatGans:
                                           t=self._scale_timesteps(t),
                                           cached_data=cached_data,
                                           cached_scheduler=cached_scheduler,
+                                          cache_debug_collector=cache_debug_collector,
                                           **model_kwargs)
         model_output = model_forward.pred
 
@@ -626,6 +631,7 @@ class GaussianDiffusionBeatGans:
         eta=0.0,
         cached_data=None,
         cached_scheduler=None,
+        cache_debug_collector=None,
     ):
         """
         Sample x_{t-1} from the model using DDIM.
@@ -642,6 +648,7 @@ class GaussianDiffusionBeatGans:
             model_kwargs=model_kwargs,
             cached_data=cached_data,
             cached_scheduler=cached_scheduler,
+            cache_debug_collector=cache_debug_collector,
         )
         if cond_fn is not None:
             print("cond_fn")
@@ -765,6 +772,7 @@ class GaussianDiffusionBeatGans:
         progress=False,
         eta=0.0,
         cache_scheduler=None,
+        cache_debug_collector=None,
     ):
         """
         Generate samples from the model using DDIM.
@@ -784,6 +792,7 @@ class GaussianDiffusionBeatGans:
                 progress=progress,
                 eta=eta,
                 cache_scheduler=cache_scheduler,
+                cache_debug_collector=cache_debug_collector,
         ):
             final = sample
         return final["sample"]
@@ -801,6 +810,7 @@ class GaussianDiffusionBeatGans:
         progress=False,
         eta=0.0,
         cache_scheduler=None,
+        cache_debug_collector=None,
     ):
         """
         Use DDIM to sample from the model and yield intermediate samples from
@@ -876,6 +886,7 @@ class GaussianDiffusionBeatGans:
                     eta=eta,
                     cached_data=cached_data if activate_cache else None,
                     cached_scheduler=cached_scheduler,
+                    cache_debug_collector=cache_debug_collector,
                 )
                 out['t'] = t
                 

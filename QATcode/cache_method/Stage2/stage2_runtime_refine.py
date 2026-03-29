@@ -1,10 +1,10 @@
 """
 Stage2 主流程：載入 Stage1 scheduler_config.json → baseline 與 cache 各跑一次 DDIM →
-特徵誤差診斷 → 單輪保守 refinement → 輸出 refined JSON。
+特徵誤差診斷 → zone（更新 k 並重建 mask）→ peak 修 mask → 輸出 refined JSON。
 
-時間軸（expanded_mask 與 diffusion 迴圈）：
-- Stage1 expanded_mask[b, step_idx]：step_idx=0 對應第一步 DDIM i=T-1；step_idx=T-1 對應 i=0。
-- refinement 若某 DDIM timestep i 觸發 peak，將 expanded_mask[b, (T-1)-i] 強制為 True。
+時間軸（expanded_mask）：
+- step_idx=0 對應第一步 DDIM i=T-1；step_idx=T-1 對應 i=0。
+- peak repair：expanded_mask[(T-1)-i] 設為 True；was_reuse = 該步在修復前 mask 為 False。
 """
 
 from __future__ import annotations
@@ -22,7 +22,6 @@ from typing import Any, Dict, List, Optional, Set
 import numpy as np
 import torch
 
-# repo root
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
@@ -38,6 +37,7 @@ from QATcode.cache_method.Stage2.stage2_scheduler_adapter import (
     cache_scheduler_to_jsonable,
     ddim_timestep_to_step_index,
     load_stage1_scheduler_config,
+    rebuild_expanded_mask_from_shared_zones_and_k_per_zone,
     stage1_block_to_runtime_block,
     stage1_mask_to_runtime_cache_scheduler,
     validate_stage1_scheduler_config,
@@ -75,30 +75,35 @@ def _load_quant_model_for_sampling(
     calib_path: str,
     device: torch.device,
 ) -> LitModel:
-    """與 sample_lora / FID 類似：last.ckpt + 量化包裝 + QAT ckpt。"""
+    """與正式 sampling 一致：對 base_model.ema_model 做 Quant 包裝。"""
     mp = model_path if os.path.isabs(model_path) else str(repo_root / model_path)
     bp = best_ckpt_path if os.path.isabs(best_ckpt_path) else str(repo_root / best_ckpt_path)
     cp = calib_path if os.path.isabs(calib_path) else str(repo_root / calib_path)
     QAT_CONFIG.CALIB_DATA_PATH = cp
 
-    base_model = load_diffae_model(mp)
-    quant_model = create_float_quantized_model(base_model.model)
-    quant_model.to(device)
+    base_model: LitModel = load_diffae_model(mp)
+    quant_model = create_float_quantized_model(base_model.ema_model)
+    quant_model.to(QAT_CONFIG.DEVICE)
+
     cali_images, cali_t, cali_y = load_calibration_data()
     quant_model.set_quant_state(True, True)
     if hasattr(quant_model, "set_runtime_mode"):
         quant_model.set_runtime_mode(mode="train", use_cached_aw=False, clear_cached_aw=True)
+
     with torch.no_grad():
         _ = quant_model(
-            x=cali_images[:32].to(device),
-            t=cali_t[:32].to(device),
-            cond=cali_y[:32].to(device),
+            x=cali_images[:32].to(QAT_CONFIG.DEVICE),
+            t=cali_t[:32].to(QAT_CONFIG.DEVICE),
+            cond=cali_y[:32].to(QAT_CONFIG.DEVICE),
         )
+
     ckpt = torch.load(bp, map_location="cpu", weights_only=False)
     _load_quant_and_ema_from_ckpt(base_model, quant_model, ckpt)
+
     if hasattr(base_model.ema_model, "set_runtime_mode"):
         base_model.ema_model.set_runtime_mode(mode="infer", use_cached_aw=True, clear_cached_aw=True)
-    base_model.to(device)
+
+    base_model.to(QAT_CONFIG.DEVICE)
     base_model.eval()
     base_model.setup()
     try:
@@ -115,7 +120,6 @@ def _run_single_render(
     sampler,
     latent_sampler,
     x_T: torch.Tensor,
-    latent_noise: torch.Tensor,
     conds_mean: torch.Tensor,
     conds_std: torch.Tensor,
     cache_scheduler: Optional[Dict[str, Set[int]]],
@@ -125,10 +129,6 @@ def _run_single_render(
         c.cache_scheduler = None
     else:
         c.cache_scheduler = cache_scheduler
-    # render_uncondition 內部會用 latent_noise；與 pred_xstart 腳本對齊：手動指定 cond 需改 renderer —
-    # 目前用 conf.seed + 固定 tensor 不可直接傳 latent_noise。改為設定 generator seed 兩次相同，
-    # 或複製 renderer 邏輯。此處採用：在 conf 上設定 clip_latent_noise=False，
-    # 並在呼叫前 torch.manual_seed，使兩次若 seed 相同則 noise 相同。
     _ = render_uncondition(
         conf=c,
         model=model,
@@ -139,6 +139,32 @@ def _run_single_render(
         conds_std=conds_std,
         clip_latent_noise=False,
     )
+
+
+def _json_safe(obj: Any) -> Any:
+    import math
+
+    if obj is None:
+        return None
+    if isinstance(obj, float):
+        if math.isnan(obj) or math.isinf(obj):
+            return None
+        return obj
+    if isinstance(obj, dict):
+        return {str(k): _json_safe(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [_json_safe(x) for x in obj]
+    if isinstance(obj, set):
+        return sorted(_json_safe(x) for x in obj)
+    if isinstance(obj, (np.floating,)):
+        return _json_safe(float(obj))
+    if isinstance(obj, (np.integer,)):
+        return int(obj)
+    if isinstance(obj, np.bool_):
+        return bool(obj)
+    if isinstance(obj, np.ndarray):
+        return _json_safe(obj.tolist())
+    return obj
 
 
 def run_stage2_refine(
@@ -163,10 +189,9 @@ def run_stage2_refine(
     T = int(cfg["T"])
     shared_zones: List[Dict[str, Any]] = cfg["shared_zones"]
 
-    # TemporalActivationQuantizer / QAT 包裝的 num_steps 必須與 Stage1 T 一致
     QAT_CONFIG.NUM_DIFFUSION_STEPS = T
 
-    cache_sched = stage1_mask_to_runtime_cache_scheduler(cfg)
+    cache_sched_input = stage1_mask_to_runtime_cache_scheduler(cfg)
 
     base_model = _load_quant_model_for_sampling(
         repo_root=_REPO_ROOT,
@@ -177,21 +202,19 @@ def run_stage2_refine(
     )
     conf = base_model.conf.clone()
     conf.eval_num_images = 1
-    # 與 T 對齊（Stage1 config 的擴散步數）
     sampler = base_model.conf._make_diffusion_conf(T=T).make_sampler()
     latent_sampler = base_model.conf._make_latent_diffusion_conf(T=T).make_sampler()
 
     g = torch.Generator(device=device)
     g.manual_seed(seed)
     x_T = torch.randn((1, 3, conf.img_size, conf.img_size), generator=g, device=device)
-    # 與 renderer 一致：latent diffusion 時 latent_noise 在 render_uncondition 內新建；
-    # 為使 baseline / cache 使用相同 noise，固定 conf.seed 並在兩次呼叫前設相同 seed。
     conf.seed = seed
 
     collector = Stage2ErrorCollector(T=T, device=device)
-    collector.register_hooks(base_model.ema_model)
+    cb = collector.make_cache_debug_callback()
 
     try:
+        conf.cache_debug_collector = cb
         collector.set_run("baseline")
         torch.manual_seed(seed)
         if torch.cuda.is_available():
@@ -202,7 +225,6 @@ def run_stage2_refine(
             sampler=sampler,
             latent_sampler=latent_sampler,
             x_T=x_T,
-            latent_noise=torch.empty(0),
             conds_mean=base_model.conds_mean,
             conds_std=base_model.conds_std,
             cache_scheduler=None,
@@ -218,16 +240,15 @@ def run_stage2_refine(
             sampler=sampler,
             latent_sampler=latent_sampler,
             x_T=x_T,
-            latent_noise=torch.empty(0),
             conds_mean=base_model.conds_mean,
             conds_std=base_model.conds_std,
-            cache_scheduler=cache_sched,
+            cache_scheduler=cache_sched_input,
         )
     finally:
-        collector.remove_hooks()
+        conf.cache_debug_collector = None
 
     diagnostics = collector.compute_diagnostics(shared_zones)
-    diagnostics["cache_scheduler_used"] = cache_scheduler_to_jsonable(cache_sched)
+    diagnostics["cache_scheduler_input"] = cache_scheduler_to_jsonable(cache_sched_input)
     diagnostics["scheduler_config_path"] = str(Path(scheduler_config_path).resolve())
 
     per_block_step = diagnostics["per_block_step_error"]
@@ -242,9 +263,9 @@ def run_stage2_refine(
         "seed": seed,
     }
 
-    # --- refinement: k_per_zone ---
     k_touch: List[Dict[str, Any]] = []
     blocks = sorted(refined["blocks"], key=lambda b: int(b["id"]))
+
     for b in blocks:
         rt = stage1_block_to_runtime_block(str(b["name"]))
         kz = [int(x) for x in b["k_per_zone"]]
@@ -258,22 +279,46 @@ def run_stage2_refine(
                 old = kz[zid]
                 kz[zid] = max(1, old - 1)
                 k_touch.append(
-                    {"block_id": b["id"], "runtime": rt, "zone_id": zid, "k_before": old, "k_after": kz[zid]}
+                    {
+                        "block_id": b["id"],
+                        "runtime": rt,
+                        "zone_id": zid,
+                        "k_before": old,
+                        "k_after": kz[zid],
+                    }
                 )
         b["k_per_zone"] = kz
 
-    # --- peak mask ---
+    for b in blocks:
+        bid = int(b["id"])
+        b["expanded_mask"] = rebuild_expanded_mask_from_shared_zones_and_k_per_zone(
+            shared_zones,
+            [int(x) for x in b["k_per_zone"]],
+            T,
+            block_id=bid,
+        )
+
     mask_touch: List[Dict[str, Any]] = []
     for b in blocks:
         rt = stage1_block_to_runtime_block(str(b["name"]))
         row = list(b["expanded_mask"])
         for ti_str, m in per_block_step.get(rt, {}).items():
             ddim_i = int(ti_str)
-            if float(m["l1"]) > peak_l1_threshold:
-                si = ddim_timestep_to_step_index(ddim_i, T)
-                if not row[si]:
-                    row[si] = True
-                    mask_touch.append({"block_id": b["id"], "ddim_timestep": ddim_i, "step_index": si})
+            if float(m["l1"]) <= peak_l1_threshold:
+                continue
+            si = ddim_timestep_to_step_index(ddim_i, T)
+            was_reuse = not bool(row[si])
+            row[si] = True
+            mask_touch.append(
+                {
+                    "block_id": b["id"],
+                    "runtime": rt,
+                    "ddim_timestep": ddim_i,
+                    "step_index": si,
+                    "was_reuse_before_peak_repair": was_reuse,
+                    "expanded_mask_after": True,
+                }
+            )
         b["expanded_mask"] = row
 
     if T >= 1:
@@ -282,8 +327,15 @@ def run_stage2_refine(
             if not bool(em[0]):
                 em[0] = True
                 mask_touch.append(
-                    {"block_id": b["id"], "note": "enforce first step full compute (step_idx=0 -> DDIM i=T-1)"}
+                    {
+                        "block_id": b["id"],
+                        "note": "enforce first step full compute (step_idx=0 -> DDIM i=T-1)",
+                        "expanded_mask_after": True,
+                    }
                 )
+
+    refined_cache_sched = stage1_mask_to_runtime_cache_scheduler(refined)
+    diagnostics["refined_cache_scheduler"] = cache_scheduler_to_jsonable(refined_cache_sched)
 
     summary = {
         "zone_k_adjustments": k_touch,
@@ -300,23 +352,17 @@ def run_stage2_refine(
         json.dump(_json_safe(summary), f, indent=2, ensure_ascii=False)
 
     LOGGER.info("寫入 %s", out)
-    return {"output_dir": str(out), "diagnostics": diagnostics, "summary": summary, "refined_config": refined}
 
+    collector.clear_storage()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
 
-def _json_safe(obj: Any) -> Any:
-    if isinstance(obj, dict):
-        return {str(k): _json_safe(v) for k, v in obj.items()}
-    if isinstance(obj, (list, tuple)):
-        return [_json_safe(x) for x in obj]
-    if isinstance(obj, set):
-        return sorted(obj)
-    if isinstance(obj, (np.floating,)):
-        return float(obj)
-    if isinstance(obj, (np.integer,)):
-        return int(obj)
-    if isinstance(obj, np.bool_):
-        return bool(obj)
-    return obj
+    return {
+        "output_dir": str(out),
+        "diagnostics": diagnostics,
+        "summary": summary,
+        "refined_config": refined,
+    }
 
 
 def main() -> None:

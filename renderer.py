@@ -43,7 +43,8 @@ def render_uncondition(conf: TrainConfig,
             model=model, 
             noise=x_T, 
             cond=cond,
-            cache_scheduler=getattr(conf, 'cache_scheduler', None)
+            cache_scheduler=getattr(conf, 'cache_scheduler', None),
+            cache_debug_collector=getattr(conf, 'cache_debug_collector', None),
         )
     else:
         raise NotImplementedError()

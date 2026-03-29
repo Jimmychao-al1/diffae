@@ -19,8 +19,19 @@ from typing import Any, Dict, List, Set, Tuple
 
 import numpy as np
 
+from QATcode.cache_method.Stage1.stage1_scheduler import (
+    expand_zone_mask_ddim,
+    or_expanded_with_zone_mask,
+)
+
 EXPECTED_NUM_BLOCKS = 31
 TIME_ORDER_EXPECTED = "ddim_99_to_0"
+
+# 與 diffusion/base.py layer_keys 順序一致：encoder 0..14 → middle → decoder 0..14
+RUNTIME_LAYER_NAMES: Tuple[str, ...] = tuple(
+    [f"encoder_layer_{i}" for i in range(15)] + ["middle_layer"] + [f"decoder_layer_{i}" for i in range(15)]
+)
+assert len(RUNTIME_LAYER_NAMES) == EXPECTED_NUM_BLOCKS
 
 
 def load_stage1_scheduler_config(path: str | Path) -> Dict[str, Any]:
@@ -156,3 +167,40 @@ def ddim_timestep_to_step_index(i: int, T: int) -> int:
 def step_index_to_ddim_timestep(step_idx: int, T: int) -> int:
     """expanded_mask 列索引 → DDIM timestep i。"""
     return (T - 1) - step_idx
+
+
+def rebuild_expanded_mask_from_shared_zones_and_k_per_zone(
+    shared_zones: List[Dict[str, Any]],
+    k_per_zone: List[int],
+    T: int,
+    *,
+    block_id: int = 0,
+) -> List[bool]:
+    """
+    由 shared_zones + k_per_zone 重建單一 block 的 expanded_mask（長度 T），
+    規則與 Stage1 `rebuild_expanded_mask_from_config` / `expand_zone_mask_ddim` 相同。
+
+    step_idx=0 對應 DDIM i=T-1；強制 expanded_mask[0]=True。
+    """
+    if len(k_per_zone) != len(shared_zones):
+        raise ValueError(f"k_per_zone len {len(k_per_zone)} != shared_zones len {len(shared_zones)}")
+    row = np.zeros(T, dtype=bool)
+    for z, k in zip(shared_zones, k_per_zone):
+        ms, _, _ = expand_zone_mask_ddim(int(z["t_start"]), int(z["t_end"]), int(k), T)
+        or_expanded_with_zone_mask(row, ms, block_id=block_id, zone_id=int(z["id"]))
+    row[0] = True
+    return row.tolist()
+
+
+def config_block_expanded_mask_consistent_with_k(
+    expanded_mask: List[bool],
+    k_per_zone: List[int],
+    shared_zones: List[Dict[str, Any]],
+    T: int,
+    block_id: int,
+) -> bool:
+    """驗證 expanded_mask 是否等於由 k_per_zone 重建的結果。"""
+    rebuilt = rebuild_expanded_mask_from_shared_zones_and_k_per_zone(
+        shared_zones, k_per_zone, T, block_id=block_id
+    )
+    return list(expanded_mask) == rebuilt
