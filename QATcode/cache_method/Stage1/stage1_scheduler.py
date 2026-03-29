@@ -14,7 +14,7 @@ Interval ↔ reused timestep（Stage 0 為 interval-wise evidence）：
   cutting 信號上 **I_cut[b, T-1] = 0**（不參與 interval 證據）。
 
 相較舊版：已移除 A[b,z]→k 線性映射、zone risk ceiling、舊 regularization；
-改為 G[t] 上 smoothing + top-K change points → shared zones，以及 J(b,z,k)* 選 k。
+改為 G[t] 上 smoothing + top-K change points → shared zones，以及 J(b,z,k) 選 k。
 
 命名：I_l1cos = L1/Cos 變化量分支加權（非 stability / similarity）；診斷鍵 `I_l1cos_stats`。
 """
@@ -179,8 +179,9 @@ def global_cutting_signal_G(I_cut: np.ndarray, fid_w: np.ndarray) -> np.ndarray:
         )
         w = np.full(B, 1.0 / B, dtype=np.float64)
     else:
-        wsum = float(np.sum(fid_w) + eps)
-        w = (fid_w + eps) / wsum
+        w = fid_w.astype(np.float64)
+        w = w + eps
+        w = w / w.sum()
         LOGGER.debug("G[t]: using FID weights (normalized, eps=%s).", eps)
     return (w[:, None] * I_cut).sum(axis=0)
 
