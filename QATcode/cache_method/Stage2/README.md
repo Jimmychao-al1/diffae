@@ -44,15 +44,32 @@ Stage2 負責：
 |------|------|
 | `stage2_scheduler_adapter.py` | `load_stage1_scheduler_config`、`validate_stage1_scheduler_config`、`stage1_mask_to_runtime_cache_scheduler`、`stage1_block_to_runtime_block` |
 | `stage2_error_collector.py` | 透過 UNet 可選 `cache_debug_collector` 回呼，baseline/cache 兩趟收集（含 **reuse 步** 從 cache 取出的 tensor），輸出 `per_block_step_error`、`per_block_zone_error`、`global_summary` |
-| `stage2_runtime_refine.py` | 載入模型、兩趟採樣、診斷、單輪 refinement、寫入三個 JSON |
-| `verify_stage2.py` | `time_order`、31 blocks、`k` 長度、`expanded_mask[0]`、**mask ⊇ rebuild(k)**（允許 peak 多開） |
+| `stage2_runtime_refine.py` | 載入模型、兩趟採樣、診斷、單輪 refinement、寫入三個 JSON；可選 `--threshold-config` 載入 per-block quantile 門檻 |
+| `build_blockwise_thresholds.py` | 由 `stage2_runtime_diagnostics.json` 產生 `stage2_thresholds_blockwise.json`（純 quantile + 弱相對約束） |
+| `verify_stage2.py` | `time_order`、31 blocks、`k` 長度、`expanded_mask[0]`、**mask ⊇ rebuild(k)**（允許 peak 多開）；可選 `--threshold-config` 驗證 blockwise threshold JSON |
 
 ## Refinement 規則（第一版，單輪）
 
-1. **Zone 層級**：若某 **(block, zone)** 的 **mean L1** **>** `zone_l1_threshold`，則該 block 的 **`k_per_zone[zone_id]` 減 1**（下限 1），接著用 **`rebuild_expanded_mask_from_shared_zones_and_k_per_zone`** 依 **新 k** 重建 **`expanded_mask`**（與 Stage1 時間軸一致）。  
+### Global threshold（預設，向後相容）
+
+1. **Zone 層級**：若某 **(block, zone)** 的 **mean L1** **>** 全域 `zone_l1_threshold`，則該 block 的 **`k_per_zone[zone_id]` 減 1**（下限 1），接著用 **`rebuild_expanded_mask_from_shared_zones_and_k_per_zone`** 依 **新 k** 重建 **`expanded_mask`**（與 Stage1 時間軸一致）。  
    → Runtime 實際吃的是由 **`expanded_mask` 推導的 `cache_scheduler`**，因此必須在改 k 後重建 mask，調整才會生效。
-2. **Peak 層級**：在 **診斷已含 reuse 步** 的前提下，若某 **(block, DDIM timestep i)** 的 **L1** **>** `peak_l1_threshold`，則將 **`expanded_mask[(T−1)−i]`** 設為 **`True`**（含「原本是 reuse、被強制改為 recompute」的情況）。`stage2_refinement_summary.json` 會記錄 **`was_reuse_before_peak_repair`**。
+2. **Peak 層級**：在 **診斷已含 reuse 步** 的前提下，若某 **(block, DDIM timestep i)** 的 **L1** **>** 全域 `peak_l1_threshold`，則將 **`expanded_mask[(T−1)−i]`** 設為 **`True`**（含「原本是 reuse、被強制改為 recompute」的情況）。`stage2_refinement_summary.json` 會記錄 **`was_reuse_before_peak_repair`**。
 3. **強制第一步 full compute**：**`expanded_mask[0] == True`**（**`step_idx=0` ↔ DDIM `i=T−1`**）。
+
+### 為何不建議只依賴「單一 global threshold」
+
+`stage2_runtime_diagnostics.json` 的 **`per_block_step_error`** / **`per_block_zone_error`** 顯示：**不同 UNet block 的 L1 尺度差異很大**。若用**同一組**全域 `zone_l1_threshold` / `peak_l1_threshold` 去套所有 block，尺度較小的 block 可能幾乎永遠不觸發、較大的 block 則過敏；**per-block threshold** 才能讓 refinement 對每層公平。
+
+### Block-wise quantile threshold（可選）
+
+- **設計**：各 block 的 **`zone_l1_threshold[b]`** 由該 block 的 **zone mean_l1** 分布取 quantile；**`peak_l1_threshold[b]`** 由該 block 的 **per-step l1** 分布取 quantile。  
+- **不用固定** `zone_min` / `zone_max` / `peak_min` / `peak_max` 這類硬式上下界去 clip；**只**保留弱約束：`peak_l1_threshold[b] >= peak_over_zone_ratio_min * zone_l1_threshold[b]`（預設 `peak_over_zone_ratio_min = 1.5`）。  
+- **若 quantile 得到 NaN / inf / ≤0**：工具與 runtime 皆**直接報錯**，不以固定 min/max 蓋掉。  
+- **與 L1_L2_cosine similarity 圖的關係**：similarity 圖適合**觀察** block 間尺度差異；**Stage2 正式 threshold 數值**仍只來自 **cache-vs-full 的 diagnostics**（`build_blockwise_thresholds.py` 只吃 `stage2_runtime_diagnostics.json`），**不**把 similarity 圖上的數值直接當 threshold。
+
+工具：`build_blockwise_thresholds.py` 讀取診斷 JSON，產生 **`stage2_thresholds_blockwise.json`**（含每 block 的 `block_id`、`canonical_name`、`runtime_name`、樣本數與兩個 threshold）。  
+第二趟 Stage2 以 **`--threshold-config`** 載入後，zone / peak 判斷改為**逐 block** 使用自己的門檻；**未指定時**仍走 **global** CLI 門檻，行為與舊版一致。
 
 **最終 refined `scheduler_config`**：`k_per_zone`、**`expanded_mask`**（zone 基底 ∪ peak 額外開啟）、以及診斷內 **`refined_cache_scheduler`**（由最終 mask 推導）三者一致對齊。
 
@@ -66,7 +83,9 @@ Stage2 負責：
 
 ## 如何執行
 
-於 **repo 根目錄**，並已能 import `torch` 與專案依賴：
+於 **repo 根目錄**，並已能 import `torch` 與專案依賴。
+
+### A. 僅 global threshold（與舊版相同）
 
 ```bash
 python QATcode/cache_method/Stage2/stage2_runtime_refine.py \
@@ -77,11 +96,52 @@ python QATcode/cache_method/Stage2/stage2_runtime_refine.py \
   --peak_l1_threshold 0.08
 ```
 
+### B. 完整流程：先跑一輪拿 diagnostics → 產生 blockwise threshold → 再跑 Stage2
+
+1. **第一輪**（可用任意合法 global 門檻，僅為了產生 `stage2_runtime_diagnostics.json`）：
+
+```bash
+python QATcode/cache_method/Stage2/stage2_runtime_refine.py \
+  --scheduler_config .../scheduler_config.json \
+  --output_dir QATcode/cache_method/Stage2/stage2_output/run1 \
+  --seed 0 \
+  --zone_l1_threshold 0.02 \
+  --peak_l1_threshold 0.08
+```
+
+2. **由診斷產生 per-block quantile 門檻**（預設 `q_zone=0.75`、`q_peak=0.95`、`peak_over_zone_ratio_min=1.5`）：
+
+```bash
+python QATcode/cache_method/Stage2/build_blockwise_thresholds.py \
+  --diagnostics QATcode/cache_method/Stage2/stage2_output/run1/stage2_runtime_diagnostics.json \
+  --output QATcode/cache_method/Stage2/stage2_output/run1/stage2_thresholds_blockwise.json
+```
+
+3. **第二輪** refinement（使用 blockwise 門檻；`--zone_l1_threshold` / `--peak_l1_threshold` 仍保留在 CLI 作為記錄與向後相容，**refinement 以 threshold-config 為準**）：
+
+```bash
+python QATcode/cache_method/Stage2/stage2_runtime_refine.py \
+  --scheduler_config .../scheduler_config.json \
+  --output_dir QATcode/cache_method/Stage2/stage2_output/run2 \
+  --seed 0 \
+  --zone_l1_threshold 0.02 \
+  --peak_l1_threshold 0.08 \
+  --threshold-config QATcode/cache_method/Stage2/stage2_output/run1/stage2_thresholds_blockwise.json
+```
+
 驗證 refined 設定：
 
 ```bash
-python QATcode/cache_method/Stage2/verify_stage2.py QATcode/cache_method/Stage2/stage2_output/run1/stage2_refined_scheduler_config.json
+python QATcode/cache_method/Stage2/verify_stage2.py QATcode/cache_method/Stage2/stage2_output/run2/stage2_refined_scheduler_config.json
 ```
+
+驗證 blockwise threshold JSON：
+
+```bash
+python QATcode/cache_method/Stage2/verify_stage2.py --threshold-config QATcode/cache_method/Stage2/stage2_output/run1/stage2_thresholds_blockwise.json
+```
+
+`stage2_runtime_diagnostics.json` 會多 **`stage2_threshold_meta`**；`stage2_refinement_summary.json` 會含 **`threshold_mode`**、`per_block_thresholds`（精簡列表）以及每筆 adjustment 上的 **`zone_l1_threshold_used` / `peak_l1_threshold_used`**。
 
 ## 依賴與注意
 

@@ -17,7 +17,7 @@ import math
 import os
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 import numpy as np
 import torch
@@ -34,6 +34,7 @@ from QATcode.cache_method.Stage2.stage2_error_collector import (
     aggregate_per_timestep,
 )
 from QATcode.cache_method.Stage2.stage2_scheduler_adapter import (
+    EXPECTED_NUM_BLOCKS,
     cache_scheduler_to_jsonable,
     ddim_timestep_to_step_index,
     load_stage1_scheduler_config,
@@ -42,6 +43,7 @@ from QATcode.cache_method.Stage2.stage2_scheduler_adapter import (
     stage1_mask_to_runtime_cache_scheduler,
     validate_stage1_scheduler_config,
 )
+from QATcode.cache_method.Stage2.verify_stage2 import verify_blockwise_threshold_config_dict
 from QATcode.quantize_ver2.sample_lora_intmodel_v2 import (
     CONFIG as QAT_CONFIG,
     create_float_quantized_model,
@@ -162,6 +164,25 @@ def _run_single_render(
     )
 
 
+def _load_blockwise_threshold_config(path: str) -> Tuple[Dict[int, Dict[str, Any]], Dict[str, Any]]:
+    """讀取 build_blockwise_thresholds.py 產生的 JSON；回傳 (block_id -> entry, 完整根物件供 meta)。"""
+    p = Path(path)
+    if not p.is_file():
+        raise FileNotFoundError(f"threshold config not found: {p}")
+    with open(p, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    verify_blockwise_threshold_config_dict(data)
+    by_id: Dict[int, Dict[str, Any]] = {}
+    for entry in data["per_block"]:
+        bid = int(entry["block_id"])
+        by_id[bid] = entry
+    if set(by_id.keys()) != set(range(EXPECTED_NUM_BLOCKS)):
+        raise ValueError(
+            f"threshold config must contain exactly block_id 0..{EXPECTED_NUM_BLOCKS - 1}, got {sorted(by_id.keys())}"
+        )
+    return by_id, data
+
+
 def _json_safe(obj: Any) -> Any:
     import math
 
@@ -199,6 +220,7 @@ def run_stage2_refine(
     best_ckpt_path: str = "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth",
     calib_path: str = "QATcode/quantize_ver2/calibration_diffae.pth",
     device: Optional[torch.device] = None,
+    threshold_config_path: Optional[str] = None,
 ) -> Dict[str, Any]:
     _configure_stage2_logging()
     device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -284,12 +306,43 @@ def run_stage2_refine(
         per_block_zone = diagnostics["per_block_zone_error"]
         per_t = aggregate_per_timestep(per_block_step)
 
+        blockwise_by_id: Optional[Dict[int, Dict[str, Any]]] = None
+        threshold_mode = "global"
+        threshold_meta_diag: Dict[str, Any] = {
+            "threshold_mode": "global",
+            "global_zone_l1": zone_l1_threshold,
+            "global_peak_l1": peak_l1_threshold,
+            "note": (
+                "Single global zone/peak thresholds (CLI). "
+                "Per-block quantile thresholds 請用 build_blockwise_thresholds.py 產生 JSON 後以 --threshold-config 指定。"
+            ),
+        }
+        if threshold_config_path:
+            blockwise_by_id, tc_doc = _load_blockwise_threshold_config(threshold_config_path)
+            threshold_mode = "blockwise_quantile"
+            threshold_meta_diag = {
+                "threshold_mode": threshold_mode,
+                "threshold_config_path": str(Path(threshold_config_path).resolve()),
+                "method": tc_doc.get("method"),
+                "source_diagnostics_path": tc_doc.get("source_diagnostics_path"),
+                "q_zone": tc_doc.get("q_zone"),
+                "q_peak": tc_doc.get("q_peak"),
+                "peak_over_zone_ratio_min": tc_doc.get("peak_over_zone_ratio_min"),
+                "note": (
+                    "各 block 的 zone/peak threshold 來自診斷內 per-block 分布的 quantile（見 threshold_config）。"
+                    "Similarity 圖僅能說明 block 間尺度差異；正式數值以 cache-vs-full diagnostics 為準。"
+                ),
+            }
+        diagnostics["stage2_threshold_meta"] = threshold_meta_diag
+
         refined = copy.deepcopy(cfg)
         refined["version"] = "stage2_refined_v1"
         refined["stage2_meta"] = {
             "zone_l1_threshold": zone_l1_threshold,
             "peak_l1_threshold": peak_l1_threshold,
             "seed": seed,
+            "threshold_mode": threshold_mode,
+            "threshold_config_path": str(Path(threshold_config_path).resolve()) if threshold_config_path else None,
         }
 
         k_touch: List[Dict[str, Any]] = []
@@ -297,12 +350,20 @@ def run_stage2_refine(
 
         for b in blocks:
             rt = stage1_block_to_runtime_block(str(b["name"]))
+            bid = int(b["id"])
+            if blockwise_by_id is not None and bid not in blockwise_by_id:
+                raise RuntimeError(f"threshold config missing block_id {bid} (runtime {rt})")
+            zone_thr_used = (
+                float(blockwise_by_id[bid]["zone_l1_threshold"])
+                if blockwise_by_id is not None
+                else zone_l1_threshold
+            )
             kz = [int(x) for x in b["k_per_zone"]]
             for z in shared_zones:
                 zid = int(z["id"])
                 st = per_block_zone.get(rt, {}).get(str(zid), {})
                 ml1 = float(st.get("mean_l1", 0.0))
-                if not math.isnan(ml1) and ml1 > zone_l1_threshold:
+                if not math.isnan(ml1) and ml1 > zone_thr_used:
                     if zid < 0 or zid >= len(kz):
                         raise RuntimeError(f"block {b['id']}: bad zone id {zid}")
                     old = kz[zid]
@@ -314,6 +375,8 @@ def run_stage2_refine(
                             "zone_id": zid,
                             "k_before": old,
                             "k_after": kz[zid],
+                            "threshold_mode": threshold_mode,
+                            "zone_l1_threshold_used": zone_thr_used,
                         }
                     )
             b["k_per_zone"] = kz
@@ -330,10 +393,16 @@ def run_stage2_refine(
         mask_touch: List[Dict[str, Any]] = []
         for b in blocks:
             rt = stage1_block_to_runtime_block(str(b["name"]))
+            bid = int(b["id"])
+            peak_thr_used = (
+                float(blockwise_by_id[bid]["peak_l1_threshold"])
+                if blockwise_by_id is not None
+                else peak_l1_threshold
+            )
             row = list(b["expanded_mask"])
             for ti_str, m in per_block_step.get(rt, {}).items():
                 ddim_i = int(ti_str)
-                if float(m["l1"]) <= peak_l1_threshold:
+                if float(m["l1"]) <= peak_thr_used:
                     continue
                 si = ddim_timestep_to_step_index(ddim_i, T)
                 was_reuse = not bool(row[si])
@@ -346,6 +415,8 @@ def run_stage2_refine(
                         "step_index": si,
                         "was_reuse_before_peak_repair": was_reuse,
                         "expanded_mask_after": True,
+                        "threshold_mode": threshold_mode,
+                        "peak_l1_threshold_used": peak_thr_used,
                     }
                 )
             b["expanded_mask"] = row
@@ -355,20 +426,44 @@ def run_stage2_refine(
                 em = b["expanded_mask"]
                 if not bool(em[0]):
                     em[0] = True
+                    bid = int(b["id"])
+                    peak_thr_used = (
+                        float(blockwise_by_id[bid]["peak_l1_threshold"])
+                        if blockwise_by_id is not None
+                        else peak_l1_threshold
+                    )
                     mask_touch.append(
                         {
                             "block_id": b["id"],
                             "note": "enforce first step full compute (step_idx=0 -> DDIM i=T-1)",
                             "expanded_mask_after": True,
+                            "threshold_mode": threshold_mode,
+                            "peak_l1_threshold_used": peak_thr_used,
                         }
                     )
 
         refined_cache_sched = stage1_mask_to_runtime_cache_scheduler(refined)
         diagnostics["refined_cache_scheduler"] = cache_scheduler_to_jsonable(refined_cache_sched)
 
+        per_block_thr_summary: Optional[List[Dict[str, Any]]] = None
+        if blockwise_by_id is not None:
+            per_block_thr_summary = [
+                {
+                    "block_id": int(blockwise_by_id[i]["block_id"]),
+                    "canonical_name": blockwise_by_id[i]["canonical_name"],
+                    "runtime_name": blockwise_by_id[i]["runtime_name"],
+                    "zone_l1_threshold": float(blockwise_by_id[i]["zone_l1_threshold"]),
+                    "peak_l1_threshold": float(blockwise_by_id[i]["peak_l1_threshold"]),
+                }
+                for i in range(EXPECTED_NUM_BLOCKS)
+            ]
+
         summary = {
             "zone_k_adjustments": k_touch,
             "peak_mask_adjustments": mask_touch,
+            "threshold_mode": threshold_mode,
+            "global_thresholds": {"zone_l1": zone_l1_threshold, "peak_l1": peak_l1_threshold},
+            "per_block_thresholds": per_block_thr_summary,
             "thresholds": {"zone_l1": zone_l1_threshold, "peak_l1": peak_l1_threshold},
             "aggregate_per_ddim_timestep_l1": per_t,
         }
@@ -407,6 +502,12 @@ def main() -> None:
     p.add_argument("--model_path", type=str, default="checkpoints/ffhq128_autoenc_latent/last.ckpt")
     p.add_argument("--best_ckpt", type=str, default="QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth")
     p.add_argument("--calib", type=str, default="QATcode/quantize_ver2/calibration_diffae.pth")
+    p.add_argument(
+        "--threshold-config",
+        type=str,
+        default=None,
+        help="Optional: stage2_thresholds_blockwise.json（build_blockwise_thresholds.py）；若省略則用 --zone_l1_threshold / --peak_l1_threshold",
+    )
     args = p.parse_args()
     _configure_stage2_logging()
     LOGGER.info(
@@ -425,6 +526,7 @@ def main() -> None:
         model_path=args.model_path,
         best_ckpt_path=args.best_ckpt,
         calib_path=args.calib,
+        threshold_config_path=args.threshold_config,
     )
 
 

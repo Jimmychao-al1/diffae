@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import sys
 from pathlib import Path
 from typing import Any, Dict
@@ -30,6 +31,7 @@ from QATcode.cache_method.Stage2.stage2_scheduler_adapter import (
     EXPECTED_NUM_BLOCKS,
     TIME_ORDER_EXPECTED,
     rebuild_expanded_mask_from_shared_zones_and_k_per_zone,
+    RUNTIME_LAYER_NAMES,
 )
 
 
@@ -107,10 +109,88 @@ def verify_refined_scheduler_config(cfg: Dict[str, Any]) -> None:
             )
 
 
+def verify_blockwise_threshold_config_dict(data: Dict[str, Any], *, eps: float = 1e-9) -> None:
+    """
+    驗證 `build_blockwise_thresholds.py` 產生的 stage2_thresholds_blockwise.json。
+
+    檢查：31 blocks、id 0..30、zone/peak > 0、peak >= ratio * zone（允許浮點誤差）。
+    """
+    if not isinstance(data, dict):
+        raise TypeError("threshold config root must be a dict")
+    method = data.get("method")
+    if not isinstance(method, str) or not method:
+        raise ValueError("threshold config must have non-empty string 'method'")
+    ratio_min = float(data.get("peak_over_zone_ratio_min", 0.0))
+    if not (ratio_min > 0.0) or math.isnan(ratio_min) or math.isinf(ratio_min):
+        raise ValueError(f"peak_over_zone_ratio_min must be finite and > 0, got {ratio_min!r}")
+
+    blocks = data.get("per_block")
+    if not isinstance(blocks, list) or len(blocks) != EXPECTED_NUM_BLOCKS:
+        raise ValueError(
+            f"per_block must be a list of length {EXPECTED_NUM_BLOCKS}, got {len(blocks) if isinstance(blocks, list) else type(blocks)}"
+        )
+
+    seen_ids: set[int] = set()
+    for entry in blocks:
+        if not isinstance(entry, dict):
+            raise TypeError("each per_block entry must be a dict")
+        bid = int(entry["block_id"])
+        if bid < 0 or bid >= EXPECTED_NUM_BLOCKS:
+            raise ValueError(f"invalid block_id {bid}")
+        if bid in seen_ids:
+            raise ValueError(f"duplicate block_id {bid}")
+        seen_ids.add(bid)
+
+        rt = str(entry.get("runtime_name", ""))
+        if rt != RUNTIME_LAYER_NAMES[bid]:
+            raise ValueError(
+                f"block_id {bid}: runtime_name must be {RUNTIME_LAYER_NAMES[bid]!r}, got {rt!r}"
+            )
+        cn = str(entry.get("canonical_name", ""))
+        if not cn.startswith("model."):
+            raise ValueError(f"block_id {bid}: bad canonical_name {cn!r}")
+
+        zt = float(entry["zone_l1_threshold"])
+        pt = float(entry["peak_l1_threshold"])
+        if math.isnan(zt) or math.isinf(zt) or zt <= 0.0:
+            raise ValueError(f"block_id {bid}: zone_l1_threshold must be finite and > 0, got {zt!r}")
+        if math.isnan(pt) or math.isinf(pt) or pt <= 0.0:
+            raise ValueError(f"block_id {bid}: peak_l1_threshold must be finite and > 0, got {pt!r}")
+        if pt + eps < ratio_min * zt:
+            raise ValueError(
+                f"block_id {bid}: need peak_l1_threshold >= peak_over_zone_ratio_min * zone_l1_threshold "
+                f"({pt} < {ratio_min} * {zt})"
+            )
+
+    if seen_ids != set(range(EXPECTED_NUM_BLOCKS)):
+        raise ValueError(f"block_id set must be 0..{EXPECTED_NUM_BLOCKS - 1} exactly once, got {sorted(seen_ids)}")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("config_path", type=str, help="scheduler_config.json (refined or Stage1)")
+    ap.add_argument(
+        "config_path",
+        type=str,
+        nargs="?",
+        default=None,
+        help="scheduler_config.json (refined or Stage1)",
+    )
+    ap.add_argument(
+        "--threshold-config",
+        type=str,
+        default=None,
+        help="若指定，改為驗證 stage2_thresholds_blockwise.json（blockwise quantile 輸出）",
+    )
     args = ap.parse_args()
+    if args.threshold_config:
+        p = Path(args.threshold_config)
+        with open(p, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        verify_blockwise_threshold_config_dict(data)
+        print(f"OK (threshold config): {p.resolve()}")
+        return
+    if not args.config_path:
+        ap.error("需要 config_path，或使用 --threshold-config")
     p = Path(args.config_path)
     with open(p, "r", encoding="utf-8") as f:
         cfg = json.load(f)

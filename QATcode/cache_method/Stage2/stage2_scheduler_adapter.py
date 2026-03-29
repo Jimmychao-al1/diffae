@@ -94,6 +94,24 @@ def validate_stage1_scheduler_config(cfg: Dict[str, Any]) -> None:
             )
 
 
+def runtime_block_to_stage1_name(runtime: str) -> str:
+    """
+    Runtime 名稱 → Stage1 `blocks[].name`（canonical JSON 字串）。
+
+    與 `stage1_block_to_runtime_block` 互為反函數（在 31 層命名空間內）。
+    """
+    s = runtime.strip()
+    m = re.match(r"^encoder_layer_(\d+)$", s)
+    if m:
+        return f"model.input_blocks.{int(m.group(1))}"
+    if s == "middle_layer":
+        return "model.middle_block"
+    m = re.match(r"^decoder_layer_(\d+)$", s)
+    if m:
+        return f"model.output_blocks.{int(m.group(1))}"
+    raise ValueError(f"unrecognized runtime block name: {runtime!r}")
+
+
 def stage1_block_to_runtime_block(stage1_name: str) -> str:
     """
     Stage1 block name（JSON）→ diffusion / unet_autoenc 使用的 runtime 名稱。
