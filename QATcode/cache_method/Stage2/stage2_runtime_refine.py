@@ -50,10 +50,26 @@ from QATcode.quantize_ver2.sample_lora_intmodel_v2 import (
 )
 from experiment import LitModel
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] [Stage2] %(message)s",
-)
+_STAGE2_DIR = Path(__file__).resolve().parent
+_STAGE2_LOG_FILE = _STAGE2_DIR / "stage2_runtime_refine.log"
+_LOG_FMT = logging.Formatter("%(asctime)s [%(levelname)s] [Stage2] %(message)s")
+
+
+def _configure_stage2_logging() -> None:
+    """Console + append to QATcode/cache_method/Stage2/stage2_runtime_refine.log"""
+    lg = logging.getLogger("Stage2RuntimeRefine")
+    if lg.handlers:
+        return
+    lg.setLevel(logging.INFO)
+    h_err = logging.StreamHandler(sys.stderr)
+    h_err.setFormatter(_LOG_FMT)
+    lg.addHandler(h_err)
+    h_file = logging.FileHandler(_STAGE2_LOG_FILE, mode="a", encoding="utf-8")
+    h_file.setFormatter(_LOG_FMT)
+    lg.addHandler(h_file)
+    lg.propagate = False
+
+
 LOGGER = logging.getLogger("Stage2RuntimeRefine")
 
 
@@ -129,6 +145,11 @@ def _run_single_render(
         c.cache_scheduler = None
     else:
         c.cache_scheduler = cache_scheduler
+    # deepcopy(conf) 會深拷貝 bound method 的 __self__，變成另一個 Stage2ErrorCollector 在收資料；
+    # 外層持有的 collector 仍為空。必須沿用原 conf 上的同一個 callback。
+    cb = getattr(conf, "cache_debug_collector", None)
+    if cb is not None:
+        c.cache_debug_collector = cb
     _ = render_uncondition(
         conf=c,
         model=model,
@@ -179,6 +200,7 @@ def run_stage2_refine(
     calib_path: str = "QATcode/quantize_ver2/calibration_diffae.pth",
     device: Optional[torch.device] = None,
 ) -> Dict[str, Any]:
+    _configure_stage2_logging()
     device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
     _seed_all(seed)
     out = Path(output_dir)
@@ -233,6 +255,7 @@ def run_stage2_refine(
                 conds_std=base_model.conds_std,
                 cache_scheduler=None,
             )
+            LOGGER.info("%s", collector.debug_snapshot_line("after_baseline"))
 
             collector.set_run("cache")
             torch.manual_seed(seed)
@@ -248,9 +271,11 @@ def run_stage2_refine(
                 conds_std=base_model.conds_std,
                 cache_scheduler=cache_sched_input,
             )
+            LOGGER.info("%s", collector.debug_snapshot_line("after_cache"))
         finally:
             conf.cache_debug_collector = None
 
+        LOGGER.info("%s", collector.debug_snapshot_line("before_compute_diagnostics"))
         diagnostics = collector.compute_diagnostics(shared_zones)
         diagnostics["cache_scheduler_input"] = cache_scheduler_to_jsonable(cache_sched_input)
         diagnostics["scheduler_config_path"] = str(Path(scheduler_config_path).resolve())
@@ -383,6 +408,14 @@ def main() -> None:
     p.add_argument("--best_ckpt", type=str, default="QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth")
     p.add_argument("--calib", type=str, default="QATcode/quantize_ver2/calibration_diffae.pth")
     args = p.parse_args()
+    _configure_stage2_logging()
+    LOGGER.info(
+        "----- Stage2 run start | log_file=%s | scheduler_config=%s | output_dir=%s | seed=%s -----",
+        _STAGE2_LOG_FILE,
+        args.scheduler_config,
+        args.output_dir,
+        args.seed,
+    )
     run_stage2_refine(
         scheduler_config_path=args.scheduler_config,
         output_dir=args.output_dir,

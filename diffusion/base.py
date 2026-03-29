@@ -300,7 +300,8 @@ class GaussianDiffusionBeatGans:
                         model_kwargs=None,
                         cached_data=None,
                         cached_scheduler=None,
-                        cache_debug_collector=None):
+                        cache_debug_collector=None,
+                        cache_debug_t=None):
         """
         Apply the model to get p(x_{t-1} | x_t), as well as a prediction of
         the initial x, x_0.
@@ -317,6 +318,8 @@ class GaussianDiffusionBeatGans:
             pass to the model. This can be used for conditioning.
         :param cached_data: Dict to store cached layer outputs
         :param cached_scheduler: List indicating which layers should recompute
+        :param cache_debug_t: optional raw DDIM timestep tensor for Stage2 (same indexing as loop);
+            if None, uses ``t``. Prefer passing from ``ddim_sample`` as captured before this call.
         :return: a dict with the following keys:
                  - 'mean': the model mean output.
                  - 'variance': the model variance output.
@@ -329,7 +332,9 @@ class GaussianDiffusionBeatGans:
 
         B, C = x.shape[:2]
         assert t.shape == (B, )
-        
+        # Stage2：與 DDIM 迴圈一致的 raw 索引；預設等於 t（訓練/p_sample 等路徑）。DDIM 由 ddim_sample 顯式傳入。
+        _cache_debug_t = t if cache_debug_t is None else cache_debug_t
+
         with autocast(self.conf.fp16):
             #model_kwargs['_capture_calib'] = True # for calibration
             # 將 cache 相關參數作為顯式參數傳遞，而不是通過 model_kwargs
@@ -338,6 +343,7 @@ class GaussianDiffusionBeatGans:
                                           cached_data=cached_data,
                                           cached_scheduler=cached_scheduler,
                                           cache_debug_collector=cache_debug_collector,
+                                          cache_debug_t=_cache_debug_t,
                                           **model_kwargs)
         model_output = model_forward.pred
 
@@ -638,7 +644,8 @@ class GaussianDiffusionBeatGans:
 
         Same usage as p_sample().
         """
-        
+        # 在進入 p_mean_variance 前擷取與迴圈一致的 raw timestep（供 Stage2；內層 model 仍用 scale/wrap 後的 t）
+        raw_t = t
         out = self.p_mean_variance(
             model,
             x,
@@ -649,6 +656,7 @@ class GaussianDiffusionBeatGans:
             cached_data=cached_data,
             cached_scheduler=cached_scheduler,
             cache_debug_collector=cache_debug_collector,
+            cache_debug_t=raw_t,
         )
         if cond_fn is not None:
             print("cond_fn")

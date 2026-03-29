@@ -142,6 +142,7 @@ class BeatGANsAutoencModel(BeatGANsUNetModel):
             cached_scheduler: List indicating which layers should recompute
             cache_debug_collector: Optional callable(layer_key, h, *, recompute, t) for Stage2 diagnostics.
                 預設 None；recompute=True 為該步 forward 計算，False 為讀取 cached_data 重用。
+                傳入 callback 的 t 應為 cache_debug_t（raw DDIM），見 kwargs cache_debug_t。
         """
 
         if t_cond is None:
@@ -218,6 +219,12 @@ class BeatGANsAutoencModel(BeatGANsUNetModel):
             cached_scheduler = kwargs.get('cached_scheduler', None)
         if cache_debug_collector is None:
             cache_debug_collector = kwargs.pop('cache_debug_collector', None)
+        # raw DDIM loop index（0..T-1）；由 diffusion p_mean_variance 傳入。若缺省則 fallback 為本層收到的 t
+        #（例如未經 wrap 時與 raw 相同；經 SpacedDiffusion/_WrappedModel 時 t 可能已 map+rescale，必須顯式傳 cache_debug_t）
+        cache_debug_t = kwargs.pop("cache_debug_t", None)
+        if cache_debug_t is None:
+            cache_debug_t = t
+
         activate_cache = cached_data is not None and cached_scheduler is not None
         
         # 如果啟用 cache 但 cached_data 為 None，初始化它
@@ -230,7 +237,7 @@ class BeatGANsAutoencModel(BeatGANsUNetModel):
         def _cache_dbg(layer_key: str, h, recompute: bool):
             if cache_debug_collector is None:
                 return
-            cache_debug_collector(layer_key, h, recompute=recompute, t=t)
+            cache_debug_collector(layer_key, h, recompute=recompute, t=cache_debug_t)
 
         if x is not None:
             h = x.type(self.dtype)

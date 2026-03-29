@@ -20,6 +20,8 @@ import torch.nn.functional as F
 from QATcode.cache_method.Stage2.stage2_scheduler_adapter import RUNTIME_LAYER_NAMES
 
 LOGGER = logging.getLogger("Stage2ErrorCollector")
+# 與 stage2_runtime_refine 同一 file handler（logger 名 Stage2RuntimeRefine），便於寫入 stage2_runtime_refine.log
+_LOG_T = logging.getLogger("Stage2RuntimeRefine")
 
 
 def _flatten_cosine(a: torch.Tensor, b: torch.Tensor) -> torch.Tensor:
@@ -55,6 +57,7 @@ class Stage2ErrorCollector:
         self.T = int(T)
         self.device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self._run_name = "baseline"
+        self._debug_write_count = 0
         self._feats: Dict[str, Dict[str, Dict[int, torch.Tensor]]] = {
             "baseline": {},
             "cache": {},
@@ -68,19 +71,61 @@ class Stage2ErrorCollector:
     def clear_storage(self) -> None:
         """釋放收集到的 tensor（run 結束後呼叫）。"""
         self._feats = {"baseline": {}, "cache": {}}
+        self._debug_write_count = 0
 
     def make_cache_debug_callback(self) -> Callable[..., None]:
         """傳給 conf.cache_debug_collector / BeatGANsAutoencModel.forward。"""
         return self.on_layer_output
 
     def on_layer_output(self, layer_key: str, h: torch.Tensor, *, recompute: bool, t: torch.Tensor) -> None:
-        """與 unet_autoenc._cache_dbg 簽名一致；recompute 僅供除錯，不比對用。"""
-        step_idx = (self.T - 1) - int(t[0].item())
-        if not (0 <= step_idx < self.T):
+        """與 unet_autoenc._cache_dbg 簽名一致；recompute 僅供除錯，不比對用。
+
+        參數 t 必須為 raw DDIM timestep i（0..T-1），與 ddim 迴圈及 cache_scheduler 一致；
+        不可為 SpacedDiffusion/_WrappedModel 映過或 _scale_timesteps 後的值（由 base 傳 cache_debug_t 保證）。
+        """
+        t0 = float(t[0].item())
+        raw_i = int(t0)
+        step_idx_if_ok = (self.T - 1) - raw_i if 0 <= raw_i < self.T else None
+        #_LOG_T.info(
+        #    "[collector t] run=%s layer=%s recompute=%s T=%s t.shape=%s t[0]=%s dtype=%s device=%s "
+        #    "-> raw_i=%s step_idx=%s in_range=%s",
+        #    self._run_name,
+        #    layer_key,
+        #    recompute,
+        #    self.T,
+        #    tuple(t.shape),
+        #    t0,
+        #    t.dtype,
+        #    t.device,
+        #    raw_i,
+        #    step_idx_if_ok,
+        #    0 <= raw_i < self.T,
+        #)
+        if not (0 <= raw_i < self.T):
+            LOGGER.warning(
+                "[Stage2] on_layer_output: expected raw DDIM timestep in [0, %s); got t[0]=%s (layer=%s). "
+                "Skipping; check cache_debug_t from diffusion/base.py.",
+                self.T,
+                raw_i,
+                layer_key,
+            )
             return
+        step_idx = int((self.T - 1) - raw_i)
         x = h.detach().float().cpu()
         bucket = self._feats[self._run_name].setdefault(layer_key, {})
         bucket[step_idx] = x
+        self._debug_write_count += 1
+
+    def debug_snapshot_line(self, phase: str) -> str:
+        """單行摘要：確認同一 collector 實例與 _feats 是否已有資料（供 Stage2 除錯）。"""
+        b = self._feats["baseline"]
+        c = self._feats["cache"]
+        n0b = len(b.get("encoder_layer_0", {}))
+        n0c = len(c.get("encoder_layer_0", {}))
+        return (
+            f"[collector debug] phase={phase} id={id(self)} writes={self._debug_write_count} "
+            f"baseline_layers={len(b)} enc0_steps={n0b} cache_layers={len(c)} enc0_steps={n0c}"
+        )
 
     def compute_diagnostics(
         self,

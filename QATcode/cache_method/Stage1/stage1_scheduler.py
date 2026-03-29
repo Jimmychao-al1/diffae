@@ -82,7 +82,7 @@ def load_stage0_formal(
     for f in required:
         if not (p / f).exists():
             raise FileNotFoundError(f"缺少 Stage 0 正式檔案: {p / f}")
-
+    
     block_names = np.load(p / "block_names.npy", allow_pickle=True)
     l1 = np.load(p / "l1_interval_norm.npy")
     cos = np.load(p / "cosdist_interval_norm.npy")
@@ -90,7 +90,7 @@ def load_stage0_formal(
     fid_w = np.load(p / "fid_w_qdiffae_clip.npy")
     axis_def = np.load(p / "axis_interval_def.npy", allow_pickle=True)
     t_curr = np.load(p / "t_curr_interval.npy")
-
+    
     B = len(block_names)
     Tm1 = l1.shape[1] if l1.ndim == 2 else len(l1)
     T = Tm1 + 1
@@ -341,7 +341,7 @@ def merge_short_zones_step(
                 zlist[i][1] = zlist[i + 1][1]
                 zlist.pop(i + 1)
                 changed = True
-            else:
+        else:
                 zlist[i - 1][1] = zlist[i][1]
                 zlist.pop(i)
                 changed = True
@@ -588,7 +588,7 @@ def run_stage1_synthesis(
     for lam in lambda_sweep:
         key = str(lam)
         sweep_report[key] = {"per_block_k": []}
-        for b in range(B):
+    for b in range(B):
             k_z = []
             for zi, zd in enumerate(shared_zones):
                 Lz = zd["length"]
@@ -770,7 +770,7 @@ def self_test():
 
 def main():
     import argparse
-
+    
     p = argparse.ArgumentParser(description="Stage-1 baseline scheduler")
     p.add_argument("--stage0_dir", type=str, default="QATcode/cache_method/Stage0/stage0e_output")
     p.add_argument("--output_dir", type=str, default="QATcode/cache_method/Stage1/stage1_output")
@@ -788,11 +788,11 @@ def main():
     p.add_argument("--min_zone_len", type=int, default=2)
     p.add_argument("--self_test", action="store_true")
     args = p.parse_args()
-
+    
     if args.self_test:
         self_test()
         return
-
+    
     sweep = tuple(float(x.strip()) for x in args.lambda_sweep.split(",") if x.strip())
     run_stage1_synthesis(
         args.stage0_dir,

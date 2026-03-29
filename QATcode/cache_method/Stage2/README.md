@@ -93,7 +93,8 @@ python QATcode/cache_method/Stage2/verify_stage2.py QATcode/cache_method/Stage2/
 ### Reuse 步的誤差比較
 
 先前若只在 **forward** 路徑掛 hook，**reuse** 時不會進入該層 forward，逐點誤差會漏掉。  
-修正後：`model/unet_autoenc.py` 在 **recompute 與 reuse** 兩條路都會呼叫可選的 **`cache_debug_collector`**（預設 `None`，不影響既有 sampling）。Stage2 用此回呼取得 **baseline 特徵** 與 **cache 路徑上取出的 `cached_data` 特徵**，在 **所有 timestep（含 reuse）** 對齊比較。
+修正後：`model/unet_autoenc.py` 在 **recompute 與 reuse** 兩條路都會呼叫可選的 **`cache_debug_collector`**（預設 `None`，不影響既有 sampling）。Stage2 用此回呼取得 **baseline 特徵** 與 **cache 路徑上取出的 `cached_data` 特徵**，在 **所有 timestep（含 reuse）** 對齊比較。  
+回呼的 `t` 為 **`diffusion/base.py` 傳入的 `cache_debug_t`（raw DDIM 索引）**；經 `SpacedDiffusion`/`_WrappedModel` 時 inner model 的 `t` 已 map/rescale，與 Stage1 的 `cache_scheduler` 步序不同，故必須分開。
 
 ### 層覆蓋範圍
 
