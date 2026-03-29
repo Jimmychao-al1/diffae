@@ -30,6 +30,8 @@ QATcode/cache_method/SVD/correlation/**.json
 QATcode/cache_method/SVD/svd_metrics/**.json
 QATcode/cache_method/SVD/logs
 QATcode/cache_method/SVD/correlation
+QATcode/cache_method/Stage1/stage1_output/**
+QATcode/cache_method/Stage1/stage1_figures/**
 QATcode/cache_method/**/*.png
 QATcode/cache_method/**/*.pdf
 QATcode/cache_method/**/*.jpg
