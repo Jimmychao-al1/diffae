@@ -88,6 +88,7 @@ python QATcode/cache_method/Stage2/verify_stage2.py QATcode/cache_method/Stage2/
 - 模型載入流程對齊 `sample_lora_intmodel_v2` + `similarity_calculation._load_quant_and_ema_from_ckpt`（QAT checkpoint）。
 - 採樣沿用 **`renderer.render_uncondition`** → `sampler.sample(..., cache_scheduler=...)`，**不重寫 sampler**。
 - 預設 **batch=1**（`eval_num_images=1`）以降低 31×T 層特徵的記憶體壓力；若需更穩定統計可之後改為多張圖平均（非本版範圍）。
+- `run_stage2_refine` 的 `device` 會用於量化模型與 calibration；結束時（含中途失敗）會在 `finally` 清除 `cache_debug_collector`、清空 collector 暫存並可選呼叫 `torch.cuda.empty_cache()`。
 
 ### Reuse 步的誤差比較
 

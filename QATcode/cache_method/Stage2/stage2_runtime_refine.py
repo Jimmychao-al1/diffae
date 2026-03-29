@@ -83,7 +83,7 @@ def _load_quant_model_for_sampling(
 
     base_model: LitModel = load_diffae_model(mp)
     quant_model = create_float_quantized_model(base_model.ema_model)
-    quant_model.to(QAT_CONFIG.DEVICE)
+    quant_model.to(device)
 
     cali_images, cali_t, cali_y = load_calibration_data()
     quant_model.set_quant_state(True, True)
@@ -92,9 +92,9 @@ def _load_quant_model_for_sampling(
 
     with torch.no_grad():
         _ = quant_model(
-            x=cali_images[:32].to(QAT_CONFIG.DEVICE),
-            t=cali_t[:32].to(QAT_CONFIG.DEVICE),
-            cond=cali_y[:32].to(QAT_CONFIG.DEVICE),
+            x=cali_images[:32].to(device),
+            t=cali_t[:32].to(device),
+            cond=cali_y[:32].to(device),
         )
 
     ckpt = torch.load(bp, map_location="cpu", weights_only=False)
@@ -103,7 +103,7 @@ def _load_quant_model_for_sampling(
     if hasattr(base_model.ema_model, "set_runtime_mode"):
         base_model.ema_model.set_runtime_mode(mode="infer", use_cached_aw=True, clear_cached_aw=True)
 
-    base_model.to(QAT_CONFIG.DEVICE)
+    base_model.to(device)
     base_model.eval()
     base_model.setup()
     try:
@@ -184,185 +184,192 @@ def run_stage2_refine(
     out = Path(output_dir)
     out.mkdir(parents=True, exist_ok=True)
 
-    cfg = load_stage1_scheduler_config(scheduler_config_path)
-    validate_stage1_scheduler_config(cfg)
-    T = int(cfg["T"])
-    shared_zones: List[Dict[str, Any]] = cfg["shared_zones"]
-
-    QAT_CONFIG.NUM_DIFFUSION_STEPS = T
-
-    cache_sched_input = stage1_mask_to_runtime_cache_scheduler(cfg)
-
-    base_model = _load_quant_model_for_sampling(
-        repo_root=_REPO_ROOT,
-        model_path=model_path,
-        best_ckpt_path=best_ckpt_path,
-        calib_path=calib_path,
-        device=device,
-    )
-    conf = base_model.conf.clone()
-    conf.eval_num_images = 1
-    sampler = base_model.conf._make_diffusion_conf(T=T).make_sampler()
-    latent_sampler = base_model.conf._make_latent_diffusion_conf(T=T).make_sampler()
-
-    g = torch.Generator(device=device)
-    g.manual_seed(seed)
-    x_T = torch.randn((1, 3, conf.img_size, conf.img_size), generator=g, device=device)
-    conf.seed = seed
-
-    collector = Stage2ErrorCollector(T=T, device=device)
-    cb = collector.make_cache_debug_callback()
+    conf = None
+    collector: Optional[Stage2ErrorCollector] = None
 
     try:
-        conf.cache_debug_collector = cb
-        collector.set_run("baseline")
-        torch.manual_seed(seed)
-        if torch.cuda.is_available():
-            torch.cuda.manual_seed_all(seed)
-        _run_single_render(
-            conf=conf,
-            model=base_model.ema_model,
-            sampler=sampler,
-            latent_sampler=latent_sampler,
-            x_T=x_T,
-            conds_mean=base_model.conds_mean,
-            conds_std=base_model.conds_std,
-            cache_scheduler=None,
+        cfg = load_stage1_scheduler_config(scheduler_config_path)
+        validate_stage1_scheduler_config(cfg)
+        T = int(cfg["T"])
+        shared_zones: List[Dict[str, Any]] = cfg["shared_zones"]
+
+        QAT_CONFIG.NUM_DIFFUSION_STEPS = T
+
+        cache_sched_input = stage1_mask_to_runtime_cache_scheduler(cfg)
+
+        base_model = _load_quant_model_for_sampling(
+            repo_root=_REPO_ROOT,
+            model_path=model_path,
+            best_ckpt_path=best_ckpt_path,
+            calib_path=calib_path,
+            device=device,
         )
+        conf = base_model.conf.clone()
+        conf.eval_num_images = 1
+        sampler = base_model.conf._make_diffusion_conf(T=T).make_sampler()
+        latent_sampler = base_model.conf._make_latent_diffusion_conf(T=T).make_sampler()
 
-        collector.set_run("cache")
-        torch.manual_seed(seed)
-        if torch.cuda.is_available():
-            torch.cuda.manual_seed_all(seed)
-        _run_single_render(
-            conf=conf,
-            model=base_model.ema_model,
-            sampler=sampler,
-            latent_sampler=latent_sampler,
-            x_T=x_T,
-            conds_mean=base_model.conds_mean,
-            conds_std=base_model.conds_std,
-            cache_scheduler=cache_sched_input,
-        )
-    finally:
-        conf.cache_debug_collector = None
+        g = torch.Generator(device=device)
+        g.manual_seed(seed)
+        x_T = torch.randn((1, 3, conf.img_size, conf.img_size), generator=g, device=device)
+        conf.seed = seed
 
-    diagnostics = collector.compute_diagnostics(shared_zones)
-    diagnostics["cache_scheduler_input"] = cache_scheduler_to_jsonable(cache_sched_input)
-    diagnostics["scheduler_config_path"] = str(Path(scheduler_config_path).resolve())
+        collector = Stage2ErrorCollector(T=T, device=device)
+        cb = collector.make_cache_debug_callback()
 
-    per_block_step = diagnostics["per_block_step_error"]
-    per_block_zone = diagnostics["per_block_zone_error"]
-    per_t = aggregate_per_timestep(per_block_step)
-
-    refined = copy.deepcopy(cfg)
-    refined["version"] = "stage2_refined_v1"
-    refined["stage2_meta"] = {
-        "zone_l1_threshold": zone_l1_threshold,
-        "peak_l1_threshold": peak_l1_threshold,
-        "seed": seed,
-    }
-
-    k_touch: List[Dict[str, Any]] = []
-    blocks = sorted(refined["blocks"], key=lambda b: int(b["id"]))
-
-    for b in blocks:
-        rt = stage1_block_to_runtime_block(str(b["name"]))
-        kz = [int(x) for x in b["k_per_zone"]]
-        for z in shared_zones:
-            zid = int(z["id"])
-            st = per_block_zone.get(rt, {}).get(str(zid), {})
-            ml1 = float(st.get("mean_l1", 0.0))
-            if not math.isnan(ml1) and ml1 > zone_l1_threshold:
-                if zid < 0 or zid >= len(kz):
-                    raise RuntimeError(f"block {b['id']}: bad zone id {zid}")
-                old = kz[zid]
-                kz[zid] = max(1, old - 1)
-                k_touch.append(
-                    {
-                        "block_id": b["id"],
-                        "runtime": rt,
-                        "zone_id": zid,
-                        "k_before": old,
-                        "k_after": kz[zid],
-                    }
-                )
-        b["k_per_zone"] = kz
-
-    for b in blocks:
-        bid = int(b["id"])
-        b["expanded_mask"] = rebuild_expanded_mask_from_shared_zones_and_k_per_zone(
-            shared_zones,
-            [int(x) for x in b["k_per_zone"]],
-            T,
-            block_id=bid,
-        )
-
-    mask_touch: List[Dict[str, Any]] = []
-    for b in blocks:
-        rt = stage1_block_to_runtime_block(str(b["name"]))
-        row = list(b["expanded_mask"])
-        for ti_str, m in per_block_step.get(rt, {}).items():
-            ddim_i = int(ti_str)
-            if float(m["l1"]) <= peak_l1_threshold:
-                continue
-            si = ddim_timestep_to_step_index(ddim_i, T)
-            was_reuse = not bool(row[si])
-            row[si] = True
-            mask_touch.append(
-                {
-                    "block_id": b["id"],
-                    "runtime": rt,
-                    "ddim_timestep": ddim_i,
-                    "step_index": si,
-                    "was_reuse_before_peak_repair": was_reuse,
-                    "expanded_mask_after": True,
-                }
+        try:
+            conf.cache_debug_collector = cb
+            collector.set_run("baseline")
+            torch.manual_seed(seed)
+            if torch.cuda.is_available():
+                torch.cuda.manual_seed_all(seed)
+            _run_single_render(
+                conf=conf,
+                model=base_model.ema_model,
+                sampler=sampler,
+                latent_sampler=latent_sampler,
+                x_T=x_T,
+                conds_mean=base_model.conds_mean,
+                conds_std=base_model.conds_std,
+                cache_scheduler=None,
             )
-        b["expanded_mask"] = row
 
-    if T >= 1:
+            collector.set_run("cache")
+            torch.manual_seed(seed)
+            if torch.cuda.is_available():
+                torch.cuda.manual_seed_all(seed)
+            _run_single_render(
+                conf=conf,
+                model=base_model.ema_model,
+                sampler=sampler,
+                latent_sampler=latent_sampler,
+                x_T=x_T,
+                conds_mean=base_model.conds_mean,
+                conds_std=base_model.conds_std,
+                cache_scheduler=cache_sched_input,
+            )
+        finally:
+            conf.cache_debug_collector = None
+
+        diagnostics = collector.compute_diagnostics(shared_zones)
+        diagnostics["cache_scheduler_input"] = cache_scheduler_to_jsonable(cache_sched_input)
+        diagnostics["scheduler_config_path"] = str(Path(scheduler_config_path).resolve())
+
+        per_block_step = diagnostics["per_block_step_error"]
+        per_block_zone = diagnostics["per_block_zone_error"]
+        per_t = aggregate_per_timestep(per_block_step)
+
+        refined = copy.deepcopy(cfg)
+        refined["version"] = "stage2_refined_v1"
+        refined["stage2_meta"] = {
+            "zone_l1_threshold": zone_l1_threshold,
+            "peak_l1_threshold": peak_l1_threshold,
+            "seed": seed,
+        }
+
+        k_touch: List[Dict[str, Any]] = []
+        blocks = sorted(refined["blocks"], key=lambda b: int(b["id"]))
+
         for b in blocks:
-            em = b["expanded_mask"]
-            if not bool(em[0]):
-                em[0] = True
+            rt = stage1_block_to_runtime_block(str(b["name"]))
+            kz = [int(x) for x in b["k_per_zone"]]
+            for z in shared_zones:
+                zid = int(z["id"])
+                st = per_block_zone.get(rt, {}).get(str(zid), {})
+                ml1 = float(st.get("mean_l1", 0.0))
+                if not math.isnan(ml1) and ml1 > zone_l1_threshold:
+                    if zid < 0 or zid >= len(kz):
+                        raise RuntimeError(f"block {b['id']}: bad zone id {zid}")
+                    old = kz[zid]
+                    kz[zid] = max(1, old - 1)
+                    k_touch.append(
+                        {
+                            "block_id": b["id"],
+                            "runtime": rt,
+                            "zone_id": zid,
+                            "k_before": old,
+                            "k_after": kz[zid],
+                        }
+                    )
+            b["k_per_zone"] = kz
+
+        for b in blocks:
+            bid = int(b["id"])
+            b["expanded_mask"] = rebuild_expanded_mask_from_shared_zones_and_k_per_zone(
+                shared_zones,
+                [int(x) for x in b["k_per_zone"]],
+                T,
+                block_id=bid,
+            )
+
+        mask_touch: List[Dict[str, Any]] = []
+        for b in blocks:
+            rt = stage1_block_to_runtime_block(str(b["name"]))
+            row = list(b["expanded_mask"])
+            for ti_str, m in per_block_step.get(rt, {}).items():
+                ddim_i = int(ti_str)
+                if float(m["l1"]) <= peak_l1_threshold:
+                    continue
+                si = ddim_timestep_to_step_index(ddim_i, T)
+                was_reuse = not bool(row[si])
+                row[si] = True
                 mask_touch.append(
                     {
                         "block_id": b["id"],
-                        "note": "enforce first step full compute (step_idx=0 -> DDIM i=T-1)",
+                        "runtime": rt,
+                        "ddim_timestep": ddim_i,
+                        "step_index": si,
+                        "was_reuse_before_peak_repair": was_reuse,
                         "expanded_mask_after": True,
                     }
                 )
+            b["expanded_mask"] = row
 
-    refined_cache_sched = stage1_mask_to_runtime_cache_scheduler(refined)
-    diagnostics["refined_cache_scheduler"] = cache_scheduler_to_jsonable(refined_cache_sched)
+        if T >= 1:
+            for b in blocks:
+                em = b["expanded_mask"]
+                if not bool(em[0]):
+                    em[0] = True
+                    mask_touch.append(
+                        {
+                            "block_id": b["id"],
+                            "note": "enforce first step full compute (step_idx=0 -> DDIM i=T-1)",
+                            "expanded_mask_after": True,
+                        }
+                    )
 
-    summary = {
-        "zone_k_adjustments": k_touch,
-        "peak_mask_adjustments": mask_touch,
-        "thresholds": {"zone_l1": zone_l1_threshold, "peak_l1": peak_l1_threshold},
-        "aggregate_per_ddim_timestep_l1": per_t,
-    }
+        refined_cache_sched = stage1_mask_to_runtime_cache_scheduler(refined)
+        diagnostics["refined_cache_scheduler"] = cache_scheduler_to_jsonable(refined_cache_sched)
 
-    with open(out / "stage2_runtime_diagnostics.json", "w", encoding="utf-8") as f:
-        json.dump(_json_safe(diagnostics), f, indent=2, ensure_ascii=False)
-    with open(out / "stage2_refined_scheduler_config.json", "w", encoding="utf-8") as f:
-        json.dump(_json_safe(refined), f, indent=2, ensure_ascii=False)
-    with open(out / "stage2_refinement_summary.json", "w", encoding="utf-8") as f:
-        json.dump(_json_safe(summary), f, indent=2, ensure_ascii=False)
+        summary = {
+            "zone_k_adjustments": k_touch,
+            "peak_mask_adjustments": mask_touch,
+            "thresholds": {"zone_l1": zone_l1_threshold, "peak_l1": peak_l1_threshold},
+            "aggregate_per_ddim_timestep_l1": per_t,
+        }
 
-    LOGGER.info("寫入 %s", out)
+        with open(out / "stage2_runtime_diagnostics.json", "w", encoding="utf-8") as f:
+            json.dump(_json_safe(diagnostics), f, indent=2, ensure_ascii=False)
+        with open(out / "stage2_refined_scheduler_config.json", "w", encoding="utf-8") as f:
+            json.dump(_json_safe(refined), f, indent=2, ensure_ascii=False)
+        with open(out / "stage2_refinement_summary.json", "w", encoding="utf-8") as f:
+            json.dump(_json_safe(summary), f, indent=2, ensure_ascii=False)
 
-    collector.clear_storage()
-    if torch.cuda.is_available():
-        torch.cuda.empty_cache()
+        LOGGER.info("寫入 %s", out)
 
-    return {
-        "output_dir": str(out),
-        "diagnostics": diagnostics,
-        "summary": summary,
-        "refined_config": refined,
-    }
+        return {
+            "output_dir": str(out),
+            "diagnostics": diagnostics,
+            "summary": summary,
+            "refined_config": refined,
+        }
+    finally:
+        if conf is not None:
+            conf.cache_debug_collector = None
+        if collector is not None:
+            collector.clear_storage()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
 
 
 def main() -> None:
