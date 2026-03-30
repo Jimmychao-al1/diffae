@@ -2394,6 +2394,8 @@ def main_pred_xstart_quantile_analysis(
         num_steps=num_steps,
         run_ff=True,
         run_ft=True,
+        run_tt=True,
+        run_baseline=True,
         run_compare=True,
         enable_distance_to_final=True,
     )
@@ -2429,8 +2431,18 @@ if __name__ == "__main__":
     parser.add_argument("--num_steps", "--n", type=int, default=100)
     parser.add_argument("--run_ff", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--run_ft", action=argparse.BooleanOptionalAction, default=True)
-    parser.add_argument("--run_tt", action=argparse.BooleanOptionalAction, default=False)
-    parser.add_argument("--run_baseline", action=argparse.BooleanOptionalAction, default=False)
+    parser.add_argument(
+        "--run_tt",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="collect TT under models/TT and ff_vs_tt; required with --run_baseline for comparisons/baseline_vs_tt",
+    )
+    parser.add_argument(
+        "--run_baseline",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="collect BASELINE and pairwise baseline_vs_ff|ft|tt (needs each target mode's stats, e.g. --run_tt for TT)",
+    )
     parser.add_argument("--run_compare", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--enable_distance_to_final", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--save_quantile_band_overlay", action=argparse.BooleanOptionalAction, default=True)

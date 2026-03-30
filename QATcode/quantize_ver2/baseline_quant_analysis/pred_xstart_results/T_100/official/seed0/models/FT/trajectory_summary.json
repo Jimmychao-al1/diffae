@@ -1,0 +1,37 @@
+{
+  "meta": {
+    "mode": "FT",
+    "T": 100,
+    "boundary_nan_policy": "first_step_or_last_step_has_no_adjacent_comparison",
+    "nan_when_adjacent_count_zero": true,
+    "note": "Adjacent delta compares pred_xstart at t with previous yielded timestep; the first yielded step per chunk has no neighbor."
+  },
+  "self_trajectory_delta": {
+    "mean_L1_all_t": 0.021685400946569074,
+    "mean_L2_all_t": 0.028598120588940953,
+    "mean_cosine_all_t": 0.9955437341422746,
+    "mean_L1_high_noise": 0.0551289833674673,
+    "mean_L2_high_noise": 0.0727553927063127,
+    "mean_cosine_high_noise": 0.986522585619241,
+    "max_L1": 0.15121698752045631,
+    "argmax_L1_timestep": 95,
+    "max_L2": 0.19961214810609818,
+    "argmax_L2_timestep": 95,
+    "min_cosine": 0.9319107681512833,
+    "argmin_cosine_timestep": 95
+  },
+  "distance_to_final": {
+    "mean_L1_all_t": 0.07931631575978827,
+    "mean_L2_all_t": 0.10692733837167566,
+    "mean_cosine_all_t": 0.9634000186622143,
+    "mean_L1_high_noise": 0.15962920970085895,
+    "mean_L1_middle": 0.0564544060103157,
+    "mean_L1_low_noise": 0.02255811671211356,
+    "mean_L2_high_noise": 0.20772323136528334,
+    "mean_L2_middle": 0.08185091277803569,
+    "mean_L2_low_noise": 0.031967762656363724,
+    "mean_cosine_high_noise": 0.906650188294324,
+    "mean_cosine_middle": 0.9855020922773025,
+    "mean_cosine_low_noise": 0.9973780156084986
+  }
+}

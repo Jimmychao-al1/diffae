@@ -1,0 +1,106 @@
+{
+  "meta": {
+    "T": 100,
+    "high_noise_zone": "upper third of timestep indices t (t >= ceil(2T/3)); higher t = more noise in this DDIM ordering"
+  },
+  "per_model_high_noise_means": {
+    "BASELINE": {
+      "mean_q50_high_noise_zone": -0.12672180416647136,
+      "mean_std_high_noise_zone": 0.4985328728491786,
+      "mean_abs_max_high_noise_zone": 1.0,
+      "mean_q99_high_noise_zone": 0.9564961641566093,
+      "mean_saturation_ratio_abs_ge_099_high_noise_zone": 0.009642345736725162,
+      "mean_positive_ratio_high_noise_zone": 0.41765978360416917,
+      "mean_negative_ratio_high_noise_zone": 0.582338328313346
+    },
+    "FF": {
+      "mean_q50_high_noise_zone": -0.009872869429755512,
+      "mean_std_high_noise_zone": 0.5484818429458729,
+      "mean_abs_max_high_noise_zone": 1.0,
+      "mean_q99_high_noise_zone": 0.995705640586906,
+      "mean_saturation_ratio_abs_ge_099_high_noise_zone": 0.09202955226705532,
+      "mean_positive_ratio_high_noise_zone": 0.48531840545962557,
+      "mean_negative_ratio_high_noise_zone": 0.5146802073777322
+    },
+    "FT": {
+      "mean_q50_high_noise_zone": -0.10405883002371964,
+      "mean_std_high_noise_zone": 0.5288873774928727,
+      "mean_abs_max_high_noise_zone": 1.0,
+      "mean_q99_high_noise_zone": 0.9781737276997626,
+      "mean_saturation_ratio_abs_ge_099_high_noise_zone": 0.04841351749921086,
+      "mean_positive_ratio_high_noise_zone": 0.4354285760359331,
+      "mean_negative_ratio_high_noise_zone": 0.5645694154681582
+    },
+    "TT": {
+      "mean_q50_high_noise_zone": -0.11050976495744184,
+      "mean_std_high_noise_zone": 0.5239529850229592,
+      "mean_abs_max_high_noise_zone": 1.0,
+      "mean_q99_high_noise_zone": 0.9746206414625974,
+      "mean_saturation_ratio_abs_ge_099_high_noise_zone": 0.04251534529406615,
+      "mean_positive_ratio_high_noise_zone": 0.431124114026927,
+      "mean_negative_ratio_high_noise_zone": 0.5688739449086816
+    }
+  },
+  "pairwise_mean_diffs": {
+    "baseline_vs_ff": {
+      "pair": "baseline_vs_ff",
+      "mean_diff_q50_high_noise": 0.11684893473671584,
+      "mean_diff_std_high_noise": 0.0499489700966943,
+      "mean_diff_abs_max_high_noise": 0.0,
+      "mean_diff_q99_high_noise": 0.03920947643029671,
+      "mean_diff_sat099_high_noise": 0.08238720653033016,
+      "mean_diff_pos_ratio_high_noise": 0.0676586218554564,
+      "mean_diff_neg_ratio_high_noise": -0.06765812093561374
+    },
+    "baseline_vs_ft": {
+      "pair": "baseline_vs_ft",
+      "mean_diff_q50_high_noise": 0.022662974142751716,
+      "mean_diff_std_high_noise": 0.030354504643694158,
+      "mean_diff_abs_max_high_noise": 0.0,
+      "mean_diff_q99_high_noise": 0.02167756354315331,
+      "mean_diff_sat099_high_noise": 0.0387711717624857,
+      "mean_diff_pos_ratio_high_noise": 0.017768792431763936,
+      "mean_diff_neg_ratio_high_noise": -0.01776891284518778
+    },
+    "baseline_vs_tt": {
+      "pair": "baseline_vs_tt",
+      "mean_diff_q50_high_noise": 0.016212039209029513,
+      "mean_diff_std_high_noise": 0.025420112173780596,
+      "mean_diff_abs_max_high_noise": 0.0,
+      "mean_diff_q99_high_noise": 0.018124477305988096,
+      "mean_diff_sat099_high_noise": 0.032872999557340986,
+      "mean_diff_pos_ratio_high_noise": 0.013464330422757853,
+      "mean_diff_neg_ratio_high_noise": -0.013464383404664382
+    },
+    "ff_vs_ft": {
+      "pair": "ff_vs_ft",
+      "mean_diff_q50_high_noise": -0.09418596059396413,
+      "mean_diff_std_high_noise": -0.019594465453000143,
+      "mean_diff_abs_max_high_noise": 0.0,
+      "mean_diff_q99_high_noise": -0.017531912887143397,
+      "mean_diff_sat099_high_noise": -0.04361603476784446,
+      "mean_diff_pos_ratio_high_noise": -0.04988982942369247,
+      "mean_diff_neg_ratio_high_noise": 0.04988920809042596
+    },
+    "ff_vs_tt": {
+      "pair": "ff_vs_tt",
+      "mean_diff_q50_high_noise": -0.10063689552768633,
+      "mean_diff_std_high_noise": -0.024528857922913705,
+      "mean_diff_abs_max_high_noise": 0.0,
+      "mean_diff_q99_high_noise": -0.021084999124308612,
+      "mean_diff_sat099_high_noise": -0.04951420697298917,
+      "mean_diff_pos_ratio_high_noise": -0.05419429143269855,
+      "mean_diff_neg_ratio_high_noise": 0.05419373753094936
+    },
+    "ft_vs_tt": {
+      "pair": "ft_vs_tt",
+      "mean_diff_q50_high_noise": -0.006450934933722202,
+      "mean_diff_std_high_noise": -0.004934392469913562,
+      "mean_diff_abs_max_high_noise": 0.0,
+      "mean_diff_q99_high_noise": -0.003553086237165215,
+      "mean_diff_sat099_high_noise": -0.005898172205144714,
+      "mean_diff_pos_ratio_high_noise": -0.0043044620090060826,
+      "mean_diff_neg_ratio_high_noise": 0.004304529440523397
+    }
+  }
+}
