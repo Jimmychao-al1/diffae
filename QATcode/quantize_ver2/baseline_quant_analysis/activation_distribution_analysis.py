@@ -62,6 +62,19 @@ def _resolve_device(spec: str) -> torch.device:
     return torch.device(spec)
 
 
+def _to_bool(v: Any, default: bool = False) -> bool:
+    if v is None:
+        return default
+    if isinstance(v, bool):
+        return v
+    s = str(v).strip().lower()
+    if s in {"1", "true", "t", "yes", "y", "on"}:
+        return True
+    if s in {"0", "false", "f", "no", "n", "off"}:
+        return False
+    return default
+
+
 def _json_safe(x: Any) -> Any:
     if isinstance(x, dict):
         return {str(k): _json_safe(v) for k, v in x.items()}
@@ -87,14 +100,48 @@ def _json_safe(x: Any) -> Any:
     return x
 
 
+def _mean_safe(vals: List[float]) -> float:
+    if not vals:
+        return float("nan")
+    arr = np.array(vals, dtype=np.float64)
+    if arr.size == 0:
+        return float("nan")
+    return float(np.nanmean(arr))
+
+
+def _effect_summary_from_metrics(
+    *,
+    mean_q999_ratio: float,
+    mean_std_ratio: float,
+    mean_abs_max_ratio: float,
+    mean_zero_ratio_delta: float,
+) -> str:
+    # Lightweight heuristic for quick first-pass interpretation.
+    if np.isfinite(mean_q999_ratio) and np.isfinite(mean_std_ratio):
+        if (mean_q999_ratio < 0.95 and mean_std_ratio < 0.97) or (
+            mean_abs_max_ratio < 0.95 and mean_std_ratio < 0.97
+        ):
+            return "tail_compression"
+        if mean_std_ratio < 0.97 and abs(mean_q999_ratio - 1.0) < 0.08:
+            return "variance_reduction"
+        if (
+            abs(mean_q999_ratio - 1.0) < 0.03
+            and abs(mean_std_ratio - 1.0) < 0.03
+            and abs(mean_abs_max_ratio - 1.0) < 0.05
+            and abs(mean_zero_ratio_delta) < 0.01
+        ):
+            return "minimal_change"
+    return "mixed_effect"
+
+
 def _is_target_module_name(name: str) -> bool:
-    # Keep only UNet-core modules as requested.
+    # Keep only UNet-core modules for this analysis.
+    # NOTE: time_embed is intentionally excluded (user requested).
     allow_prefixes = (
         "model.input_blocks.",
         "model.middle_block.",
         "model.output_blocks.",
         "model.out.",
-        "model.time_embed.",
     )
     return name.startswith(allow_prefixes)
 
@@ -387,7 +434,6 @@ def _save_mode_outputs(
     selected_layers: List[Dict[str, Any]],
     out_dir: Path,
     save_per_timestep_npz: bool,
-    save_plots: bool,
     T: int,
 ) -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -416,29 +462,7 @@ def _save_mode_outputs(
             arrs = {k: np.array([t_map[int(t)].get(k, np.nan) for t in ts], dtype=np.float64) for k in keys}
             np.savez_compressed(npz_dir / f"layer_{safe}_{mode}.npz", t=ts, **arrs)
 
-    if save_plots:
-        plot_dir = out_dir / "plots"
-        plot_dir.mkdir(parents=True, exist_ok=True)
-        metrics = ["std", "abs_max", "q999", "q99", "zero_ratio"]
-        for li in selected_layers:
-            name = li["full_module_name"]
-            safe = li["safe_name"]
-            t_map = layer_stats.get(name, {})
-            if not t_map:
-                continue
-            ts = np.array(sorted(t_map.keys()), dtype=np.int32)
-            for m in metrics:
-                ys = np.array([t_map[int(t)].get(m, np.nan) for t in ts], dtype=np.float64)
-                plt.figure(figsize=(8, 4))
-                plt.plot(ts, ys, linewidth=1.8)
-                plt.gca().invert_xaxis()
-                plt.grid(True, alpha=0.25)
-                plt.xlabel("DDIM timestep t")
-                plt.ylabel(m)
-                plt.title(f"{mode} | {name} | {m}")
-                plt.tight_layout()
-                plt.savefig(plot_dir / f"layer_{safe}_{m}_curve.png", dpi=180)
-                plt.close()
+    # Intentionally no per-mode plots in FF/FT dirs for formal version.
 
 
 def _build_compare_summary(
@@ -449,13 +473,15 @@ def _build_compare_summary(
     T: int,
     seed: int,
     num_samples: int,
+    mode_a: str = "FF",
+    mode_b: str = "FT",
 ) -> Dict[str, Any]:
     out: Dict[str, Any] = {
         "meta": {
             "T": int(T),
             "seed": int(seed),
             "num_samples": int(num_samples),
-            "modes": ["FF", "FT"],
+            "modes": [mode_a, mode_b],
             "weight_effective": "w_plus_lora",
             "comparison_focus": "activation_quant_effect",
         },
@@ -478,93 +504,358 @@ def _build_compare_summary(
         std_ratios: List[float] = []
         abs_max_ratios: List[float] = []
         q999_ratios: List[float] = []
+        q99_ratios: List[float] = []
+        q95_ratios: List[float] = []
+        zero_ratio_deltas: List[float] = []
         for t in t_keys:
             ff = ff_t[t]
             ft = ft_t[t]
             dr = calc_delta_and_ratio(ff, ft)
+            delta_q99 = float(ft.get("q99", np.nan) - ff.get("q99", np.nan))
+            delta_q95 = float(ft.get("q95", np.nan) - ff.get("q95", np.nan))
+            delta_zero = float(ft.get("zero_ratio", np.nan) - ff.get("zero_ratio", np.nan))
+            ratio_q99 = float(ft.get("q99", np.nan) / (ff.get("q99", np.nan) + 1e-12))
+            ratio_q95 = float(ft.get("q95", np.nan) / (ff.get("q95", np.nan) + 1e-12))
             layer_entry["timesteps"][str(int(t))] = {
-                "FF": ff,
-                "FT": ft,
-                "delta": dr["delta"],
-                "ratio": dr["ratio"],
+                mode_a: ff,
+                mode_b: ft,
+                "delta": {
+                    **dr["delta"],
+                    "delta_q99": delta_q99,
+                    "delta_q95": delta_q95,
+                    "delta_zero_ratio": delta_zero,
+                },
+                "ratio": {
+                    **dr["ratio"],
+                    "q99_ratio": ratio_q99,
+                    "q95_ratio": ratio_q95,
+                },
             }
             std_ratios.append(float(dr["ratio"]["std_ratio"]))
             abs_max_ratios.append(float(dr["ratio"]["abs_max_ratio"]))
             q999_ratios.append(float(dr["ratio"]["q999_ratio"]))
+            q99_ratios.append(ratio_q99)
+            q95_ratios.append(ratio_q95)
+            zero_ratio_deltas.append(delta_zero)
+        mean_std_ratio = _mean_safe(std_ratios)
+        mean_absmax_ratio = _mean_safe(abs_max_ratios)
+        mean_q999_ratio = _mean_safe(q999_ratios)
+        mean_q99_ratio = _mean_safe(q99_ratios)
+        mean_q95_ratio = _mean_safe(q95_ratios)
+        mean_zero_ratio_delta = _mean_safe(zero_ratio_deltas)
         layer_entry["global_summary"] = {
-            "mean_std_ratio": float(np.nanmean(std_ratios)),
-            "mean_abs_max_ratio": float(np.nanmean(abs_max_ratios)),
-            "mean_q999_ratio": float(np.nanmean(q999_ratios)),
+            "mean_std_ratio": mean_std_ratio,
+            "mean_abs_max_ratio": mean_absmax_ratio,
+            "mean_q999_ratio": mean_q999_ratio,
+            "mean_q99_ratio": mean_q99_ratio,
+            "mean_q95_ratio": mean_q95_ratio,
+            "mean_zero_ratio_delta": mean_zero_ratio_delta,
+            "max_abs_std_ratio_deviation": float(np.nanmax(np.abs(np.array(std_ratios, dtype=np.float64) - 1.0))) if std_ratios else float("nan"),
+            "max_abs_q999_ratio_deviation": float(np.nanmax(np.abs(np.array(q999_ratios, dtype=np.float64) - 1.0))) if q999_ratios else float("nan"),
+            "effect_summary": _effect_summary_from_metrics(
+                mean_q999_ratio=mean_q999_ratio,
+                mean_std_ratio=mean_std_ratio,
+                mean_abs_max_ratio=mean_absmax_ratio,
+                mean_zero_ratio_delta=mean_zero_ratio_delta,
+            ),
         }
         out["layers"][name] = layer_entry
     return out
 
 
-def _save_compare_plots(compare_summary: Dict[str, Any], selected_layers: List[Dict[str, Any]], out_dir: Path) -> None:
+def _build_block_summary(compare_summary: Dict[str, Any], topk: int = 3) -> Dict[str, Any]:
+    grouped: Dict[str, List[Tuple[str, Dict[str, Any]]]] = {}
+    for lname, lentry in compare_summary.get("layers", {}).items():
+        bname = lentry.get("block_name", "unknown")
+        grouped.setdefault(bname, []).append((lname, lentry))
+
+    out = {"meta": dict(compare_summary.get("meta", {})), "blocks": {}}
+    for bname, items in grouped.items():
+        num_layers = len(items)
+        ltype_counts: Dict[str, int] = {}
+        stds: List[float] = []
+        absmaxs: List[float] = []
+        q999s: List[float] = []
+        q99s: List[float] = []
+        zero_ds: List[float] = []
+        changed: List[Tuple[float, str]] = []
+        for lname, lentry in items:
+            gs = lentry.get("global_summary", {})
+            lt = lentry.get("logical_module_type", "unknown")
+            ltype_counts[lt] = ltype_counts.get(lt, 0) + 1
+            stds.append(float(gs.get("mean_std_ratio", np.nan)))
+            absmaxs.append(float(gs.get("mean_abs_max_ratio", np.nan)))
+            q999 = float(gs.get("mean_q999_ratio", np.nan))
+            q99 = float(gs.get("mean_q99_ratio", np.nan))
+            q999s.append(q999)
+            q99s.append(q99)
+            zero_ds.append(float(gs.get("mean_zero_ratio_delta", np.nan)))
+            score = np.nanmax(
+                [
+                    abs(float(gs.get("mean_q999_ratio", np.nan)) - 1.0),
+                    abs(float(gs.get("mean_std_ratio", np.nan)) - 1.0),
+                ]
+            )
+            changed.append((float(score), lname))
+        m_std = _mean_safe(stds)
+        m_absmax = _mean_safe(absmaxs)
+        m_q999 = _mean_safe(q999s)
+        m_q99 = _mean_safe(q99s)
+        m_zero_d = _mean_safe(zero_ds)
+        out["blocks"][bname] = {
+            "num_layers": num_layers,
+            "logical_type_counts": ltype_counts,
+            "mean_std_ratio": m_std,
+            "mean_abs_max_ratio": m_absmax,
+            "mean_q999_ratio": m_q999,
+            "mean_q99_ratio": m_q99,
+            "mean_zero_ratio_delta": m_zero_d,
+            "top_changed_layers": [n for _s, n in sorted(changed, key=lambda x: x[0], reverse=True)[:topk]],
+            "effect_summary": _effect_summary_from_metrics(
+                mean_q999_ratio=m_q999,
+                mean_std_ratio=m_std,
+                mean_abs_max_ratio=m_absmax,
+                mean_zero_ratio_delta=m_zero_d,
+            ),
+        }
+    return out
+
+
+def _make_rankings(compare_summary: Dict[str, Any], block_summary: Dict[str, Any], topk: int = 10) -> Dict[str, Any]:
+    layers = compare_summary.get("layers", {})
+    blocks = block_summary.get("blocks", {})
+
+    def _layer_entry(name: str, e: Dict[str, Any]) -> Dict[str, Any]:
+        gs = e.get("global_summary", {})
+        return {
+            "name": name,
+            "block_name": e.get("block_name"),
+            "logical_module_type": e.get("logical_module_type"),
+            "mean_std_ratio": gs.get("mean_std_ratio"),
+            "mean_abs_max_ratio": gs.get("mean_abs_max_ratio"),
+            "mean_q999_ratio": gs.get("mean_q999_ratio"),
+            "mean_zero_ratio_delta": gs.get("mean_zero_ratio_delta"),
+            "effect_summary": gs.get("effect_summary"),
+        }
+
+    layer_items = [(n, _layer_entry(n, e)) for n, e in layers.items()]
+    top_layers_by_q999 = sorted(
+        layer_items,
+        key=lambda x: abs(float(x[1].get("mean_q999_ratio", np.nan)) - 1.0),
+        reverse=True,
+    )[:topk]
+    top_layers_by_std = sorted(
+        layer_items,
+        key=lambda x: abs(float(x[1].get("mean_std_ratio", np.nan)) - 1.0),
+        reverse=True,
+    )[:topk]
+    top_layers_by_absmax = sorted(
+        layer_items,
+        key=lambda x: abs(float(x[1].get("mean_abs_max_ratio", np.nan)) - 1.0),
+        reverse=True,
+    )[:topk]
+
+    def _block_entry(name: str, e: Dict[str, Any]) -> Dict[str, Any]:
+        return {
+            "name": name,
+            "mean_std_ratio": e.get("mean_std_ratio"),
+            "mean_abs_max_ratio": e.get("mean_abs_max_ratio"),
+            "mean_q999_ratio": e.get("mean_q999_ratio"),
+            "mean_zero_ratio_delta": e.get("mean_zero_ratio_delta"),
+            "effect_summary": e.get("effect_summary"),
+        }
+
+    block_items = [(n, _block_entry(n, e)) for n, e in blocks.items()]
+    top_blocks_by_q999 = sorted(
+        block_items,
+        key=lambda x: abs(float(x[1].get("mean_q999_ratio", np.nan)) - 1.0),
+        reverse=True,
+    )[:topk]
+    top_blocks_by_std = sorted(
+        block_items,
+        key=lambda x: abs(float(x[1].get("mean_std_ratio", np.nan)) - 1.0),
+        reverse=True,
+    )[:topk]
+    return {
+        "top_layers_by_q999_change": [x[1] for x in top_layers_by_q999],
+        "top_layers_by_std_change": [x[1] for x in top_layers_by_std],
+        "top_layers_by_absmax_change": [x[1] for x in top_layers_by_absmax],
+        "top_blocks_by_q999_change": [x[1] for x in top_blocks_by_q999],
+        "top_blocks_by_std_change": [x[1] for x in top_blocks_by_std],
+    }
+
+
+def _pick_representative_layers(rankings: Dict[str, Any], topk: int) -> List[str]:
+    order_keys = [
+        "top_layers_by_q999_change",
+        "top_layers_by_std_change",
+        "top_layers_by_absmax_change",
+    ]
+    out: List[str] = []
+    seen = set()
+    for k in order_keys:
+        for e in rankings.get(k, [])[:topk]:
+            n = e.get("name")
+            if n and n not in seen:
+                out.append(n)
+                seen.add(n)
+            if len(out) >= max(5, topk):
+                return out
+    return out[: max(5, topk)]
+
+
+def _plot_block_bars(block_summary: Dict[str, Any], out_dir: Path) -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
-    for li in selected_layers:
-        name = li["full_module_name"]
-        safe = li["safe_name"]
-        layer = compare_summary["layers"].get(name)
+    blocks = block_summary.get("blocks", {})
+    if not blocks:
+        return
+    names = list(blocks.keys())
+    for metric, fn in [
+        ("mean_q999_ratio", "block_mean_q999_ratio_bar.png"),
+        ("mean_std_ratio", "block_mean_std_ratio_bar.png"),
+        ("mean_abs_max_ratio", "block_mean_absmax_ratio_bar.png"),
+    ]:
+        vals = np.array([blocks[n].get(metric, np.nan) for n in names], dtype=np.float64)
+        if vals.size == 0:
+            continue
+        order = np.argsort(np.abs(vals - 1.0))[::-1]
+        show_n = min(20, len(order))
+        idx = order[:show_n]
+        plt.figure(figsize=(max(8, show_n * 0.45), 4.5))
+        plt.bar(np.arange(show_n), vals[idx])
+        plt.axhline(1.0, color="gray", linestyle="--", linewidth=1.0)
+        plt.xticks(np.arange(show_n), [names[i] for i in idx], rotation=60, ha="right")
+        plt.ylabel(metric)
+        plt.title(metric)
+        plt.grid(axis="y", alpha=0.25)
+        plt.tight_layout()
+        plt.savefig(out_dir / fn, dpi=180)
+        plt.close()
+
+
+def _plot_compare_curves_for_layers(
+    compare_summary: Dict[str, Any],
+    selected_layers: List[Dict[str, Any]],
+    target_layer_names: List[str],
+    out_dir: Path,
+) -> None:
+    out_dir.mkdir(parents=True, exist_ok=True)
+    meta_map = {x["full_module_name"]: x for x in selected_layers}
+    modes = compare_summary.get("meta", {}).get("modes", ["FF", "FT"])
+    mode_a = str(modes[0]) if len(modes) >= 1 else "FF"
+    mode_b = str(modes[1]) if len(modes) >= 2 else "FT"
+    for name in target_layer_names:
+        layer = compare_summary.get("layers", {}).get(name)
         if layer is None:
+            LOGGER.warning("representative layer missing in compare summary: %s", name)
             continue
-        t_keys = sorted(int(x) for x in layer["timesteps"].keys())
+        t_keys = sorted(int(x) for x in layer.get("timesteps", {}).keys())
         if not t_keys:
+            LOGGER.warning("no timestep data for representative layer: %s", name)
             continue
+        safe = meta_map.get(name, {}).get("safe_name", safe_layer_name(name))
 
         def _series(path: List[str]) -> np.ndarray:
             vals = []
             for t in t_keys:
                 cur: Any = layer["timesteps"][str(t)]
                 for p in path:
+                    if p not in cur:
+                        cur = np.nan
+                        break
                     cur = cur[p]
                 vals.append(cur)
             return np.array(vals, dtype=np.float64)
 
-        # A: FF vs FT overlay curves
         for metric in ["std", "abs_max", "q999", "q99", "zero_ratio"]:
-            ff = _series(["FF", metric])
-            ft = _series(["FT", metric])
+            ff = _series([mode_a, metric])
+            ft = _series([mode_b, metric])
             plt.figure(figsize=(8, 4))
-            plt.plot(t_keys, ff, label="FF", linewidth=1.8)
-            plt.plot(t_keys, ft, label="FT", linewidth=1.8)
+            plt.plot(t_keys, ff, label=mode_a, linewidth=1.8)
+            plt.plot(t_keys, ft, label=mode_b, linewidth=1.8)
             plt.gca().invert_xaxis()
             plt.grid(True, alpha=0.25)
             plt.xlabel("DDIM timestep t")
             plt.ylabel(metric)
-            plt.title(f"{name} | {metric} (FF vs FT)")
+            plt.title(f"{name} | {metric} ({mode_a} vs {mode_b})")
             plt.legend(loc="best")
             plt.tight_layout()
-            plt.savefig(out_dir / f"layer_{safe}_{metric}_curve_ff_vs_ft.png", dpi=180)
+            plt.savefig(out_dir / f"layer_{safe}_{metric}_curve_{mode_a.lower()}_vs_{mode_b.lower()}.png", dpi=180)
             plt.close()
 
-        # B: ratio curves
-        for metric in ["std_ratio", "abs_max_ratio", "q999_ratio"]:
-            ys = _series(["ratio", metric])
-            plt.figure(figsize=(8, 4))
-            plt.plot(t_keys, ys, linewidth=1.8)
-            plt.axhline(1.0, color="gray", linestyle="--", linewidth=1.0)
-            plt.gca().invert_xaxis()
-            plt.grid(True, alpha=0.25)
-            plt.xlabel("DDIM timestep t")
-            plt.ylabel(metric)
-            plt.title(f"{name} | {metric}")
-            plt.tight_layout()
-            plt.savefig(out_dir / f"layer_{safe}_{metric}_curve.png", dpi=180)
-            plt.close()
 
-        # C: simple summary bar
-        gs = layer["global_summary"]
-        labels = ["mean_std_ratio", "mean_abs_max_ratio", "mean_q999_ratio"]
-        vals = [gs[k] for k in labels]
-        plt.figure(figsize=(7, 4))
-        plt.bar(np.arange(len(labels)), vals)
-        plt.xticks(np.arange(len(labels)), labels, rotation=20)
-        plt.grid(axis="y", alpha=0.25)
-        plt.title(f"{name} | global ratio summary")
-        plt.tight_layout()
-        plt.savefig(out_dir / f"layer_{safe}_global_ratio_summary.png", dpi=180)
-        plt.close()
+def _generate_md_report(
+    *,
+    report_path: Path,
+    compare_summary: Dict[str, Any],
+    block_summary: Dict[str, Any],
+    rankings: Dict[str, Any],
+    selected_layers: List[Dict[str, Any]],
+    output_base: Path,
+) -> None:
+    def _fmt(v: Any) -> str:
+        try:
+            fv = float(v)
+            if np.isnan(fv) or np.isinf(fv):
+                return "nan"
+            return f"{fv:.4f}"
+        except Exception:
+            return "nan"
+
+    conv_n = sum(1 for x in selected_layers if x.get("logical_module_type") == "Conv2d")
+    linear_n = sum(1 for x in selected_layers if x.get("logical_module_type") == "Linear")
+    meta = compare_summary.get("meta", {})
+    top_layers = rankings.get("top_layers_by_q999_change", [])[:5]
+    top_blocks = rankings.get("top_blocks_by_q999_change", [])[:5]
+    effect_counts: Dict[str, int] = {}
+    for _lname, e in compare_summary.get("layers", {}).items():
+        ef = e.get("global_summary", {}).get("effect_summary", "mixed_effect")
+        effect_counts[ef] = effect_counts.get(ef, 0) + 1
+    dom_effect = sorted(effect_counts.items(), key=lambda x: x[1], reverse=True)[0][0] if effect_counts else "unknown"
+    lines: List[str] = []
+    lines.append("# Activation Distribution Analysis")
+    lines.append("")
+    lines.append("## Analysis goal")
+    lines.append("- Compare `FF` vs `FT` under identical `w + lora` to study activation quant effect on layer-input distributions.")
+    lines.append("")
+    lines.append("## Experiment setup")
+    lines.append(f"- T: {meta.get('T')}")
+    lines.append(f"- seed: {meta.get('seed')}")
+    lines.append(f"- num_samples: {meta.get('num_samples')}")
+    lines.append(f"- compared modes: {meta.get('modes')}")
+    lines.append(f"- effective weight: {meta.get('weight_effective')}")
+    lines.append("")
+    lines.append("## Layer-level summary")
+    lines.append(f"- selected layers: {len(selected_layers)}")
+    lines.append(f"- Conv2d layers: {conv_n}")
+    lines.append(f"- Linear layers: {linear_n}")
+    lines.append("- top changed layers (by q999 ratio deviation):")
+    for e in top_layers:
+        lines.append(
+            f"  - `{e.get('name')}` | block={e.get('block_name')} | q999_ratio={_fmt(e.get('mean_q999_ratio'))} | std_ratio={_fmt(e.get('mean_std_ratio'))}"
+        )
+    lines.append("")
+    lines.append("## Block-level summary")
+    lines.append("- top changed blocks (by q999 ratio deviation):")
+    for e in top_blocks:
+        lines.append(
+            f"  - `{e.get('name')}` | q999_ratio={_fmt(e.get('mean_q999_ratio'))} | std_ratio={_fmt(e.get('mean_std_ratio'))}"
+        )
+    lines.append("")
+    lines.append("## Initial findings")
+    lines.append(f"- dominant effect label across layers: `{dom_effect}`")
+    lines.append("- differences are typically concentrated in a subset of layers/blocks ranked above.")
+    lines.append("- use representative plots + block bars to inspect whether changes align with tail compression or variance reduction patterns.")
+    lines.append("")
+    lines.append("## Output artifact paths")
+    lines.append(f"- compare summary: `{output_base / 'FF_vs_FT' / 'activation_compare_summary.json'}`")
+    lines.append(f"- block summary: `{output_base / 'FF_vs_FT' / 'block_compare_summary.json'}`")
+    lines.append(f"- rankings: `{output_base / 'FF_vs_FT' / 'rankings.json'}`")
+    lines.append(f"- representative layers: `{output_base / 'FF_vs_FT' / 'representative_layers.json'}`")
+    lines.append(f"- representative plots: `{output_base / 'FF_vs_FT' / 'representative_plots'}`")
+    lines.append(f"- block plots: `{output_base / 'FF_vs_FT' / 'block_plots'}`")
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    report_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
 def _resolve_official_dirs(root: Path, T: int, seed: int) -> Dict[str, Path]:
@@ -639,6 +930,7 @@ def run_analysis(args: argparse.Namespace) -> Dict[str, Any]:
         raise RuntimeError("No target layers selected. 請檢查 --target-module-types / --target-name-patterns。")
 
     modes = [m.strip().upper() for m in args.collect_modes.split(",") if m.strip()]
+    compare_modes = [m.strip().upper() for m in args.compare_modes.split(",") if m.strip()]
     per_mode_stats: Dict[str, Dict[str, Dict[int, Dict[str, float]]]] = {}
     for mode in modes:
         layer_stats = _collect_mode_stats(
@@ -668,31 +960,80 @@ def run_analysis(args: argparse.Namespace) -> Dict[str, Any]:
             selected_layers=selected_layers,
             out_dir=md,
             save_per_timestep_npz=bool(args.save_per_timestep_npz),
-            save_plots=bool(args.save_plots),
             T=int(args.T),
         )
 
-    if "FF" not in per_mode_stats or "FT" not in per_mode_stats:
-        LOGGER.warning("collect-modes does not include both FF and FT; compare summary skipped.")
+    if len(compare_modes) < 2:
+        LOGGER.warning("compare-modes requires at least two modes; compare summary skipped.")
+        return {"selected_layers": selected_layers, "per_mode": list(per_mode_stats.keys())}
+    mode_a, mode_b = compare_modes[0], compare_modes[1]
+    if mode_a not in per_mode_stats or mode_b not in per_mode_stats:
+        LOGGER.warning("compare-modes (%s,%s) not fully present in collected modes; compare summary skipped.", mode_a, mode_b)
         return {"selected_layers": selected_layers, "per_mode": list(per_mode_stats.keys())}
 
     compare = _build_compare_summary(
-        ff_stats=per_mode_stats["FF"],
-        ft_stats=per_mode_stats["FT"],
+        ff_stats=per_mode_stats[mode_a],
+        ft_stats=per_mode_stats[mode_b],
         selected_layers=selected_layers,
         T=int(args.T),
         seed=int(args.seed),
         num_samples=num_samples,
+        mode_a=mode_a,
+        mode_b=mode_b,
     )
     with open(dirs["CMP"] / "activation_compare_summary.json", "w", encoding="utf-8") as f:
         json.dump(_json_safe(compare), f, indent=2, ensure_ascii=False)
-    if args.save_plots:
-        _save_compare_plots(compare, selected_layers, dirs["CMP"])
+    if _to_bool(args.generate_block_summary, True):
+        block_summary = _build_block_summary(compare, topk=max(3, int(args.representative_topk)))
+        with open(dirs["CMP"] / "block_compare_summary.json", "w", encoding="utf-8") as f:
+            json.dump(_json_safe(block_summary), f, indent=2, ensure_ascii=False)
+    else:
+        block_summary = {"meta": compare.get("meta", {}), "blocks": {}}
+
+    if _to_bool(args.generate_rankings, True):
+        rankings = _make_rankings(compare, block_summary, topk=max(10, int(args.representative_topk)))
+        with open(dirs["CMP"] / "rankings.json", "w", encoding="utf-8") as f:
+            json.dump(_json_safe(rankings), f, indent=2, ensure_ascii=False)
+    else:
+        rankings = {}
+
+    representative_layers = _pick_representative_layers(rankings, int(args.representative_topk)) if rankings else []
+    with open(dirs["CMP"] / "representative_layers.json", "w", encoding="utf-8") as f:
+        json.dump(_json_safe({"layers": representative_layers}), f, indent=2, ensure_ascii=False)
+
+    if _to_bool(args.save_representative_plots, True):
+        _plot_compare_curves_for_layers(
+            compare_summary=compare,
+            selected_layers=selected_layers,
+            target_layer_names=representative_layers,
+            out_dir=dirs["CMP"] / "representative_plots",
+        )
+    if _to_bool(args.save_all_layer_plots, False):
+        all_names = [x["full_module_name"] for x in selected_layers]
+        _plot_compare_curves_for_layers(
+            compare_summary=compare,
+            selected_layers=selected_layers,
+            target_layer_names=all_names,
+            out_dir=dirs["CMP"] / "all_layer_plots",
+        )
+    if _to_bool(args.save_block_plots, True):
+        _plot_block_bars(block_summary, dirs["CMP"] / "block_plots")
+
+    if _to_bool(args.generate_md_report, True):
+        _generate_md_report(
+            report_path=Path(args.output_root) / "ACTIVATION_ANALYSIS.md",
+            compare_summary=compare,
+            block_summary=block_summary,
+            rankings=rankings,
+            selected_layers=selected_layers,
+            output_base=dirs["base"],
+        )
 
     return {
         "selected_layers": selected_layers,
         "layer_selection_summary": layer_pick_stat,
         "modes": modes,
+        "compare_modes": [mode_a, mode_b],
         "output_root": str(dirs["base"]),
     }
 
@@ -722,7 +1063,13 @@ def build_argparser() -> argparse.ArgumentParser:
         "--collect-modes",
         type=str,
         default="FF,FT",
-        help="Comma-separated quant modes (from {FF,FT,TF,TT}); first version compare focuses FF/FT.",
+        help="Comma-separated quant modes to collect stats (e.g., FF,FT,TF).",
+    )
+    p.add_argument(
+        "--compare-modes",
+        type=str,
+        default="FF,FT",
+        help="Comma-separated compare pair, default FF,FT (first two modes used).",
     )
     p.add_argument(
         "--target-module-types",
@@ -737,10 +1084,18 @@ def build_argparser() -> argparse.ArgumentParser:
         help="optional regex/substring list separated by comma",
     )
     p.add_argument("--save-per-timestep-npz", action="store_true")
-    p.add_argument("--save-plots", action="store_true")
+    p.add_argument("--save-plots", action="store_true", help="(deprecated) kept for compatibility; compare plots are controlled by specific flags below.")
     p.add_argument("--max-layers", type=int, default=None)
     p.add_argument("--max-batches", type=int, default=None)
     p.add_argument("--quantile-sample-cap", type=int, default=4096)
+    p.add_argument("--generate-block-summary", type=str, default="true")
+    p.add_argument("--generate-rankings", type=str, default="true")
+    p.add_argument("--generate-md-report", type=str, default="true")
+    p.add_argument("--representative-topk", type=int, default=5)
+    p.add_argument("--block-aggregation-metric", type=str, default="mean", choices=["mean"])
+    p.add_argument("--save-all-layer-plots", type=str, default="false")
+    p.add_argument("--save-representative-plots", type=str, default="true")
+    p.add_argument("--save-block-plots", type=str, default="true")
     return p
 
 
