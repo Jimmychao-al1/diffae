@@ -14,7 +14,7 @@
 ## 資料來源（正式路徑）
 
 ```text
-Similarity: QATcode/cache_method/L1_L2_cosine/T_100/v2_latest/result_npz/*.npz
+Similarity: QATcode/cache_method/a_L1_L2_cosine/T_100/v2_latest/result_npz/*.npz
 SVD:        QATcode/cache_method/SVD/svd_metrics/*.json
 FID:        QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json
 ```
@@ -52,7 +52,7 @@ python3 QATcode/cache_method/Stage0/stage0e_normalization.py
 from QATcode.cache_method.Stage0.stage0e_normalization import run_stage0e
 
 run_stage0e(
-    l1_cos_dir="QATcode/cache_method/L1_L2_cosine/T_100/v2_latest/result_npz",
+    l1_cos_dir="QATcode/cache_method/a_L1_L2_cosine/T_100/v2_latest/result_npz",
     svd_dir="QATcode/cache_method/SVD/svd_metrics",
     fid_json_path="QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json",
     output_dir="QATcode/cache_method/Stage0/stage0e_output",

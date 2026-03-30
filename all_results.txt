@@ -3,7 +3,7 @@
 
 ============================================================
 檢查 Block: model_input_blocks_0
-數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_input_blocks_0.npz
+數據來源: QATcode/cache_method/a_L1_L2_cosine/T_100/Res/result_npz/model_input_blocks_0.npz
 ============================================================
 [Compare] L1rel vs L1rel Rate
 Pearson  : 0.9960
@@ -21,7 +21,7 @@ Percentile-95 agreement (largest): 0.9992
 
 ============================================================
 檢查 Block: model_input_blocks_1
-數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_input_blocks_1.npz
+數據來源: QATcode/cache_method/a_L1_L2_cosine/T_100/Res/result_npz/model_input_blocks_1.npz
 ============================================================
 [Compare] L1rel vs L1rel Rate
 Pearson  : 0.9932
@@ -39,7 +39,7 @@ Percentile-95 agreement (largest): 0.9902
 
 ============================================================
 檢查 Block: model_input_blocks_10
-數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_input_blocks_10.npz
+數據來源: QATcode/cache_method/a_L1_L2_cosine/T_100/Res/result_npz/model_input_blocks_10.npz
 ============================================================
 [Compare] L1rel vs L1rel Rate
 Pearson  : 0.9969
@@ -57,7 +57,7 @@ Percentile-95 agreement (largest): 0.9934
 
 ============================================================
 檢查 Block: model_input_blocks_11
-數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_input_blocks_11.npz
+數據來源: QATcode/cache_method/a_L1_L2_cosine/T_100/Res/result_npz/model_input_blocks_11.npz
 ============================================================
 [Compare] L1rel vs L1rel Rate
 Pearson  : 0.9968
@@ -75,7 +75,7 @@ Percentile-95 agreement (largest): 0.9876
 
 ============================================================
 檢查 Block: model_input_blocks_12
-數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_input_blocks_12.npz
+數據來源: QATcode/cache_method/a_L1_L2_cosine/T_100/Res/result_npz/model_input_blocks_12.npz
 ============================================================
 [Compare] L1rel vs L1rel Rate
 Pearson  : 0.9966
@@ -93,7 +93,7 @@ Percentile-95 agreement (largest): 0.9818
 
 ============================================================
 檢查 Block: model_input_blocks_13
-數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_input_blocks_13.npz
+數據來源: QATcode/cache_method/a_L1_L2_cosine/T_100/Res/result_npz/model_input_blocks_13.npz
 ============================================================
 [Compare] L1rel vs L1rel Rate
 Pearson  : 0.9949
@@ -111,7 +111,7 @@ Percentile-95 agreement (largest): 0.9768
 
 ============================================================
 檢查 Block: model_input_blocks_14
-數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_input_blocks_14.npz
+數據來源: QATcode/cache_method/a_L1_L2_cosine/T_100/Res/result_npz/model_input_blocks_14.npz
 ============================================================
 [Compare] L1rel vs L1rel Rate
 Pearson  : 0.9943
@@ -129,7 +129,7 @@ Percentile-95 agreement (largest): 0.9720
 
 ============================================================
 檢查 Block: model_input_blocks_2
-數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_input_blocks_2.npz
+數據來源: QATcode/cache_method/a_L1_L2_cosine/T_100/Res/result_npz/model_input_blocks_2.npz
 ============================================================
 [Compare] L1rel vs L1rel Rate
 Pearson  : 0.9979
@@ -147,7 +147,7 @@ Percentile-95 agreement (largest): 0.9938
 
 ============================================================
 檢查 Block: model_input_blocks_3
-數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_input_blocks_3.npz
+數據來源: QATcode/cache_method/a_L1_L2_cosine/T_100/Res/result_npz/model_input_blocks_3.npz
 ============================================================
 [Compare] L1rel vs L1rel Rate
 Pearson  : 0.9983
@@ -165,7 +165,7 @@ Percentile-95 agreement (largest): 0.9952
 
 ============================================================
 檢查 Block: model_input_blocks_4
-數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_input_blocks_4.npz
+數據來源: QATcode/cache_method/a_L1_L2_cosine/T_100/Res/result_npz/model_input_blocks_4.npz
 ============================================================
 [Compare] L1rel vs L1rel Rate
 Pearson  : 0.9982
@@ -183,7 +183,7 @@ Percentile-95 agreement (largest): 0.9938
 
 ============================================================
 檢查 Block: model_input_blocks_5
-數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_input_blocks_5.npz
+數據來源: QATcode/cache_method/a_L1_L2_cosine/T_100/Res/result_npz/model_input_blocks_5.npz
 ============================================================
 [Compare] L1rel vs L1rel Rate
 Pearson  : 0.9940
@@ -201,7 +201,7 @@ Percentile-95 agreement (largest): 0.9966
 
 ============================================================
 檢查 Block: model_input_blocks_6
-數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_input_blocks_6.npz
+數據來源: QATcode/cache_method/a_L1_L2_cosine/T_100/Res/result_npz/model_input_blocks_6.npz
 ============================================================
 [Compare] L1rel vs L1rel Rate
 Pearson  : 0.9933
@@ -219,7 +219,7 @@ Percentile-95 agreement (largest): 0.9974
 
 ============================================================
 檢查 Block: model_input_blocks_7
-數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_input_blocks_7.npz
+數據來源: QATcode/cache_method/a_L1_L2_cosine/T_100/Res/result_npz/model_input_blocks_7.npz
 ============================================================
 [Compare] L1rel vs L1rel Rate
 Pearson  : 0.9919
@@ -237,7 +237,7 @@ Percentile-95 agreement (largest): 0.9960
 
 ============================================================
 檢查 Block: model_input_blocks_8
-數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_input_blocks_8.npz
+數據來源: QATcode/cache_method/a_L1_L2_cosine/T_100/Res/result_npz/model_input_blocks_8.npz
 ============================================================
 [Compare] L1rel vs L1rel Rate
 Pearson  : 0.9892
@@ -255,7 +255,7 @@ Percentile-95 agreement (largest): 0.9966
 
 ============================================================
 檢查 Block: model_input_blocks_9
-數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_input_blocks_9.npz
+數據來源: QATcode/cache_method/a_L1_L2_cosine/T_100/Res/result_npz/model_input_blocks_9.npz
 ============================================================
 [Compare] L1rel vs L1rel Rate
 Pearson  : 0.9915
@@ -273,7 +273,7 @@ Percentile-95 agreement (largest): 0.9960
 
 ============================================================
 檢查 Block: model_middle_block
-數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_middle_block.npz
+數據來源: QATcode/cache_method/a_L1_L2_cosine/T_100/Res/result_npz/model_middle_block.npz
 ============================================================
 [Compare] L1rel vs L1rel Rate
 Pearson  : 0.9936
@@ -291,7 +291,7 @@ Percentile-95 agreement (largest): 0.9704
 
 ============================================================
 檢查 Block: model_output_blocks_0
-數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_output_blocks_0.npz
+數據來源: QATcode/cache_method/a_L1_L2_cosine/T_100/Res/result_npz/model_output_blocks_0.npz
 ============================================================
 [Compare] L1rel vs L1rel Rate
 Pearson  : 0.9917
@@ -309,7 +309,7 @@ Percentile-95 agreement (largest): 0.9680
 
 ============================================================
 檢查 Block: model_output_blocks_1
-數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_output_blocks_1.npz
+數據來源: QATcode/cache_method/a_L1_L2_cosine/T_100/Res/result_npz/model_output_blocks_1.npz
 ============================================================
 [Compare] L1rel vs L1rel Rate
 Pearson  : 0.9897
@@ -327,7 +327,7 @@ Percentile-95 agreement (largest): 0.9646
 
 ============================================================
 檢查 Block: model_output_blocks_10
-數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_output_blocks_10.npz
+數據來源: QATcode/cache_method/a_L1_L2_cosine/T_100/Res/result_npz/model_output_blocks_10.npz
 ============================================================
 [Compare] L1rel vs L1rel Rate
 Pearson  : 0.9902
@@ -345,7 +345,7 @@ Percentile-95 agreement (largest): 0.9836
 
 ============================================================
 檢查 Block: model_output_blocks_11
-數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_output_blocks_11.npz
+數據來源: QATcode/cache_method/a_L1_L2_cosine/T_100/Res/result_npz/model_output_blocks_11.npz
 ============================================================
 [Compare] L1rel vs L1rel Rate
 Pearson  : 0.9977
@@ -363,7 +363,7 @@ Percentile-95 agreement (largest): 0.9936
 
 ============================================================
 檢查 Block: model_output_blocks_12
-數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_output_blocks_12.npz
+數據來源: QATcode/cache_method/a_L1_L2_cosine/T_100/Res/result_npz/model_output_blocks_12.npz
 ============================================================
 [Compare] L1rel vs L1rel Rate
 Pearson  : 0.9980
@@ -381,7 +381,7 @@ Percentile-95 agreement (largest): 0.9980
 
 ============================================================
 檢查 Block: model_output_blocks_13
-數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_output_blocks_13.npz
+數據來源: QATcode/cache_method/a_L1_L2_cosine/T_100/Res/result_npz/model_output_blocks_13.npz
 ============================================================
 [Compare] L1rel vs L1rel Rate
 Pearson  : 0.9958
@@ -399,7 +399,7 @@ Percentile-95 agreement (largest): 0.9950
 
 ============================================================
 檢查 Block: model_output_blocks_14
-數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_output_blocks_14.npz
+數據來源: QATcode/cache_method/a_L1_L2_cosine/T_100/Res/result_npz/model_output_blocks_14.npz
 ============================================================
 [Compare] L1rel vs L1rel Rate
 Pearson  : 0.9881
@@ -417,7 +417,7 @@ Percentile-95 agreement (largest): 0.9972
 
 ============================================================
 檢查 Block: model_output_blocks_2
-數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_output_blocks_2.npz
+數據來源: QATcode/cache_method/a_L1_L2_cosine/T_100/Res/result_npz/model_output_blocks_2.npz
 ============================================================
 [Compare] L1rel vs L1rel Rate
 Pearson  : 0.9899
@@ -435,7 +435,7 @@ Percentile-95 agreement (largest): 0.9696
 
 ============================================================
 檢查 Block: model_output_blocks_3
-數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_output_blocks_3.npz
+數據來源: QATcode/cache_method/a_L1_L2_cosine/T_100/Res/result_npz/model_output_blocks_3.npz
 ============================================================
 [Compare] L1rel vs L1rel Rate
 Pearson  : 0.9942
@@ -453,7 +453,7 @@ Percentile-95 agreement (largest): 0.9774
 
 ============================================================
 檢查 Block: model_output_blocks_4
-數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_output_blocks_4.npz
+數據來源: QATcode/cache_method/a_L1_L2_cosine/T_100/Res/result_npz/model_output_blocks_4.npz
 ============================================================
 [Compare] L1rel vs L1rel Rate
 Pearson  : 0.9956
@@ -471,7 +471,7 @@ Percentile-95 agreement (largest): 0.9804
 
 ============================================================
 檢查 Block: model_output_blocks_5
-數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_output_blocks_5.npz
+數據來源: QATcode/cache_method/a_L1_L2_cosine/T_100/Res/result_npz/model_output_blocks_5.npz
 ============================================================
 [Compare] L1rel vs L1rel Rate
 Pearson  : 0.9907
@@ -489,7 +489,7 @@ Percentile-95 agreement (largest): 0.9736
 
 ============================================================
 檢查 Block: model_output_blocks_6
-數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_output_blocks_6.npz
+數據來源: QATcode/cache_method/a_L1_L2_cosine/T_100/Res/result_npz/model_output_blocks_6.npz
 ============================================================
 [Compare] L1rel vs L1rel Rate
 Pearson  : 0.9885
@@ -507,7 +507,7 @@ Percentile-95 agreement (largest): 0.9724
 
 ============================================================
 檢查 Block: model_output_blocks_7
-數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_output_blocks_7.npz
+數據來源: QATcode/cache_method/a_L1_L2_cosine/T_100/Res/result_npz/model_output_blocks_7.npz
 ============================================================
 [Compare] L1rel vs L1rel Rate
 Pearson  : 0.9876
@@ -525,7 +525,7 @@ Percentile-95 agreement (largest): 0.9708
 
 ============================================================
 檢查 Block: model_output_blocks_8
-數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_output_blocks_8.npz
+數據來源: QATcode/cache_method/a_L1_L2_cosine/T_100/Res/result_npz/model_output_blocks_8.npz
 ============================================================
 [Compare] L1rel vs L1rel Rate
 Pearson  : 0.9874
@@ -543,7 +543,7 @@ Percentile-95 agreement (largest): 0.9820
 
 ============================================================
 檢查 Block: model_output_blocks_9
-數據來源: QATcode/cache_method/L1_L2_cosine/T_100/Res/result_npz/model_output_blocks_9.npz
+數據來源: QATcode/cache_method/a_L1_L2_cosine/T_100/Res/result_npz/model_output_blocks_9.npz
 ============================================================
 [Compare] L1rel vs L1rel Rate
 Pearson  : 0.9850

@@ -25,7 +25,7 @@ input_stats/
 *.npz
 *.log
 QATcode/cache_method/pred_xstart_quantile_analysis/**.npz
-QATcode/cache_method/L1_L2_cosine/T_100/
+QATcode/cache_method/a_L1_L2_cosine/T_100/
 QATcode/cache_method/SVD/correlation/**.json
 QATcode/cache_method/SVD/svd_metrics/**.json
 QATcode/cache_method/SVD/logs

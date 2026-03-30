@@ -66,7 +66,7 @@ Stage2 負責：
 - **設計**：各 block 的 **`zone_l1_threshold[b]`** 由該 block 的 **zone mean_l1** 分布取 quantile；**`peak_l1_threshold[b]`** 由該 block 的 **per-step l1** 分布取 quantile。  
 - **不用固定** `zone_min` / `zone_max` / `peak_min` / `peak_max` 這類硬式上下界去 clip；**只**保留弱約束：`peak_l1_threshold[b] >= peak_over_zone_ratio_min * zone_l1_threshold[b]`（預設 `peak_over_zone_ratio_min = 1.5`）。  
 - **若 quantile 得到 NaN / inf / ≤0**：工具與 runtime 皆**直接報錯**，不以固定 min/max 蓋掉。  
-- **與 L1_L2_cosine similarity 圖的關係**：similarity 圖適合**觀察** block 間尺度差異；**Stage2 正式 threshold 數值**仍只來自 **cache-vs-full 的 diagnostics**（`build_blockwise_thresholds.py` 只吃 `stage2_runtime_diagnostics.json`），**不**把 similarity 圖上的數值直接當 threshold。
+- **與 a_L1_L2_cosine similarity 圖的關係**：similarity 圖適合**觀察** block 間尺度差異；**Stage2 正式 threshold 數值**仍只來自 **cache-vs-full 的 diagnostics**（`build_blockwise_thresholds.py` 只吃 `stage2_runtime_diagnostics.json`），**不**把 similarity 圖上的數值直接當 threshold。
 
 工具：`build_blockwise_thresholds.py` 讀取診斷 JSON，產生 **`stage2_thresholds_blockwise.json`**（含每 block 的 `block_id`、`canonical_name`、`runtime_name`、樣本數與兩個 threshold）。  
 第二趟 Stage2 以 **`--threshold-config`** 載入後，zone / peak 判斷改為**逐 block** 使用自己的門檻；**未指定時**仍走 **global** CLI 門檻，行為與舊版一致。

@@ -2,13 +2,13 @@
 由 stage2_runtime_diagnostics.json 的 per-block 誤差分布，以**純 quantile** 產生每 block 的
 `zone_l1_threshold` / `peak_l1_threshold`。
 
-說明（與 L1_L2_cosine similarity 圖的關係）：
-- Similarity 圖可用來**觀察**各 UNet block 之間 error **尺度差異很大**。
-- 本工具產生的 Stage2 **正式 threshold 數值**僅來自**本診斷檔**中 cache-vs-full 的
+說明（與 a_L1_L2_cosine similarity 圖的關係）：
+- Similarity 圖可用來觀察各 UNet block 之間 error 尺度差異很大。
+- 本工具產生的 Stage2 正式 threshold 數值僅來自本診斷檔中 cache-vs-full 的
   `per_block_zone_error` / `per_block_step_error`（baseline vs cache 特徵 L1），
   **不**把 similarity 圖上的數值直接當 threshold。
 
-**不**使用固定 zone_min / zone_max / peak_min / peak_max；僅
+不使用固定 zone_min / zone_max / peak_min / peak_max；僅
 `quantile(分布, q)` + 弱相對約束 `peak >= peak_over_zone_ratio_min * zone`。
 若 quantile 結果為 NaN / inf / <=0，直接報錯（不以固定上下界蓋掉）。
 """

@@ -462,7 +462,7 @@ def main_int_model():
 
         # --- load QAT checkpoint ---
         ckpt = torch.load(CONFIG.BEST_CKPT_PATH, map_location='cpu', weights_only=False)
-        from QATcode.cache_method.L1_L2_cosine.similarity_calculation import _load_quant_and_ema_from_ckpt
+        from QATcode.cache_method.a_L1_L2_cosine.similarity_calculation import _load_quant_and_ema_from_ckpt
         _load_quant_and_ema_from_ckpt(base_model, quant_model, ckpt)
         if hasattr(base_model.ema_model, 'set_runtime_mode'):
             base_model.ema_model.set_runtime_mode(mode='infer', use_cached_aw=True, clear_cached_aw=True)
@@ -574,7 +574,7 @@ def main_float_model():
             _ = quant_model(x=cali_images[:32].to(device), t=cali_t[:32].to(device), cond=cali_y[:32].to(device))
 
         ckpt = torch.load(CONFIG.BEST_CKPT_PATH, map_location='cpu', weights_only=False)
-        from QATcode.cache_method.L1_L2_cosine.similarity_calculation import _load_quant_and_ema_from_ckpt
+        from QATcode.cache_method.a_L1_L2_cosine.similarity_calculation import _load_quant_and_ema_from_ckpt
         _load_quant_and_ema_from_ckpt(base_model, quant_model, ckpt)
         if hasattr(base_model.ema_model, 'set_runtime_mode'):
             # final sampling stage can reuse cached a_w

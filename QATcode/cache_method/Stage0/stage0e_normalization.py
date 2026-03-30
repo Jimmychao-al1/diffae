@@ -4,7 +4,7 @@ Stage-0E: Loader + Normalization for Cache Scheduler
 此模組讀取 Stage-0 的原始實驗資料（T=100）並產生正規化的 interval-wise 指標。
 
 資料來源：
-1. L1 / Cosine: QATcode/cache_method/L1_L2_cosine/T_100/v2_latest/result_npz/*.npz
+1. L1 / Cosine: QATcode/cache_method/a_L1_L2_cosine/T_100/v2_latest/result_npz/*.npz
 2. SVD drift: QATcode/cache_method/SVD/svd_metrics/*.json
 3. FID sensitivity: QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json
 
@@ -42,7 +42,7 @@ def load_interval_metrics(
     掃描兩個資料夾，讀取所有 block 的 L1 step mean / cosine distance / SVD interval distance。
     
     Args:
-        l1_cos_dir: L1/Cosine npz 檔案目錄，例如 "QATcode/cache_method/L1_L2_cosine/T_100/v2_latest/result_npz"
+        l1_cos_dir: L1/Cosine npz 檔案目錄，例如 "QATcode/cache_method/a_L1_L2_cosine/T_100/v2_latest/result_npz"
         svd_dir: SVD metrics JSON 目錄，例如 "QATcode/cache_method/SVD/svd_metrics"
         strict: 若為 True，任一 block 載入失敗時最終會 raise RuntimeError
     
@@ -54,7 +54,7 @@ def load_interval_metrics(
         source_keys: Dict[str, str]，記錄實際使用的來源 key
         failed_blocks: List[str]，載入失敗或被跳過的 block
     
-    Interval mapping（與 similarity_calculation / L1_L2_cosine .npz 一致）：
+    Interval mapping（與 similarity_calculation / a_L1_L2_cosine .npz 一致）：
     - 欄位索引 j ∈ [0..T-2]：**interval j** = 沿 **analysis axis** 在點 j 與 j+1 之間的變化
     - 與 DDIM 進模型 timestep：**該區間對應 t_ddim 由 (99−j) 變到 (98−j)**（T=100）
     - 勿將 j 誤解為「DDIM 張量上的 t=j→t=j+1」；兩者索引方向相反，見 cache_time_axis_audit.md
@@ -669,7 +669,7 @@ if __name__ == "__main__":
     project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.."))
     
     run_stage0e(
-        l1_cos_dir=os.path.join(project_root, "QATcode/cache_method/L1_L2_cosine/T_100/v2_latest/result_npz"),
+        l1_cos_dir=os.path.join(project_root, "QATcode/cache_method/a_L1_L2_cosine/T_100/v2_latest/result_npz"),
         svd_dir=os.path.join(project_root, "QATcode/cache_method/SVD/svd_metrics"),
         fid_json_path=os.path.join(project_root, "QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json"),
         output_dir=os.path.join(project_root, "QATcode/cache_method/Stage0/stage0e_output"),

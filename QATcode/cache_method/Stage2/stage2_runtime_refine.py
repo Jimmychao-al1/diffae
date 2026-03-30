@@ -28,7 +28,7 @@ if str(_REPO_ROOT) not in sys.path:
 
 from renderer import render_uncondition
 
-from QATcode.cache_method.L1_L2_cosine.similarity_calculation import _load_quant_and_ema_from_ckpt
+from QATcode.cache_method.a_L1_L2_cosine.similarity_calculation import _load_quant_and_ema_from_ckpt
 from QATcode.cache_method.Stage2.stage2_error_collector import (
     Stage2ErrorCollector,
     aggregate_per_timestep,
