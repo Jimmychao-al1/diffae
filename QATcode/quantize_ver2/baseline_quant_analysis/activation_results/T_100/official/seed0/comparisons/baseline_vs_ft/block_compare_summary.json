@@ -1,0 +1,621 @@
+{
+  "meta": {
+    "T": 100,
+    "seed": 0,
+    "num_samples": 32,
+    "modes": [
+      "BASELINE",
+      "FT"
+    ],
+    "weight_effective": "w_plus_lora",
+    "comparison_focus": "baseline_vs_quantized",
+    "note": "BASELINE uses original float ema from --ckpt; other side uses QAT graph + --lora-ckpt. Module paths align with quant wrappers; interpret ratios as structural alignment, not identical weights."
+  },
+  "blocks": {
+    "model.input_blocks.0": {
+      "num_layers": 1,
+      "logical_type_counts": {
+        "Conv2d": 1
+      },
+      "mean_std_ratio": 1.0099702418038152,
+      "mean_abs_max_ratio": 1.019060190471888,
+      "mean_q999_ratio": 1.0220814574086154,
+      "mean_q99_ratio": 1.0070091979117324,
+      "mean_zero_ratio_delta": 0.0,
+      "top_changed_layers": [
+        "model.input_blocks.0.0"
+      ],
+      "effect_summary": "minimal_change"
+    },
+    "model.input_blocks.1": {
+      "num_layers": 4,
+      "logical_type_counts": {
+        "Conv2d": 2,
+        "Linear": 2
+      },
+      "mean_std_ratio": 1.0029568770483526,
+      "mean_abs_max_ratio": 0.9978682139229261,
+      "mean_q999_ratio": 1.000140812263536,
+      "mean_q99_ratio": 1.0211843635814886,
+      "mean_zero_ratio_delta": -6.140120327472688e-05,
+      "top_changed_layers": [
+        "model.input_blocks.1.0.cond_emb_layers.1",
+        "model.input_blocks.1.0.in_layers.2",
+        "model.input_blocks.1.0.out_layers.3",
+        "model.input_blocks.1.0.emb_layers.1"
+      ],
+      "effect_summary": "minimal_change"
+    },
+    "model.input_blocks.2": {
+      "num_layers": 4,
+      "logical_type_counts": {
+        "Conv2d": 2,
+        "Linear": 2
+      },
+      "mean_std_ratio": 1.0054685116000563,
+      "mean_abs_max_ratio": 1.0141559020441582,
+      "mean_q999_ratio": 1.0135804845614742,
+      "mean_q99_ratio": 1.0291588355978072,
+      "mean_zero_ratio_delta": 3.5163015127182006e-06,
+      "top_changed_layers": [
+        "model.input_blocks.2.0.out_layers.3",
+        "model.input_blocks.2.0.cond_emb_layers.1",
+        "model.input_blocks.2.0.emb_layers.1",
+        "model.input_blocks.2.0.in_layers.2"
+      ],
+      "effect_summary": "minimal_change"
+    },
+    "model.input_blocks.3": {
+      "num_layers": 4,
+      "logical_type_counts": {
+        "Conv2d": 2,
+        "Linear": 2
+      },
+      "mean_std_ratio": 1.0081260560764804,
+      "mean_abs_max_ratio": 0.9962531901505527,
+      "mean_q999_ratio": 1.015258258049978,
+      "mean_q99_ratio": 1.018635626076462,
+      "mean_zero_ratio_delta": 2.3841261863708497e-05,
+      "top_changed_layers": [
+        "model.input_blocks.3.0.out_layers.3",
+        "model.input_blocks.3.0.cond_emb_layers.1",
+        "model.input_blocks.3.0.in_layers.2",
+        "model.input_blocks.3.0.emb_layers.1"
+      ],
+      "effect_summary": "minimal_change"
+    },
+    "model.input_blocks.4": {
+      "num_layers": 4,
+      "logical_type_counts": {
+        "Conv2d": 2,
+        "Linear": 2
+      },
+      "mean_std_ratio": 1.0085930903428328,
+      "mean_abs_max_ratio": 1.012532298472183,
+      "mean_q999_ratio": 1.017431969621293,
+      "mean_q99_ratio": 1.0285609954007324,
+      "mean_zero_ratio_delta": 8.45193862915039e-06,
+      "top_changed_layers": [
+        "model.input_blocks.4.0.out_layers.3",
+        "model.input_blocks.4.0.cond_emb_layers.1",
+        "model.input_blocks.4.0.emb_layers.1",
+        "model.input_blocks.4.0.in_layers.2"
+      ],
+      "effect_summary": "minimal_change"
+    },
+    "model.input_blocks.5": {
+      "num_layers": 4,
+      "logical_type_counts": {
+        "Conv2d": 2,
+        "Linear": 2
+      },
+      "mean_std_ratio": 1.011966437843495,
+      "mean_abs_max_ratio": 1.0112192844476302,
+      "mean_q999_ratio": 1.0357530179033725,
+      "mean_q99_ratio": 1.032919551762312,
+      "mean_zero_ratio_delta": 1.4439225196838378e-06,
+      "top_changed_layers": [
+        "model.input_blocks.5.0.out_layers.3",
+        "model.input_blocks.5.0.cond_emb_layers.1",
+        "model.input_blocks.5.0.in_layers.2",
+        "model.input_blocks.5.0.emb_layers.1"
+      ],
+      "effect_summary": "mixed_effect"
+    },
+    "model.input_blocks.6": {
+      "num_layers": 4,
+      "logical_type_counts": {
+        "Conv2d": 2,
+        "Linear": 2
+      },
+      "mean_std_ratio": 1.0087793056311478,
+      "mean_abs_max_ratio": 0.9657138070284452,
+      "mean_q999_ratio": 1.0126044648208334,
+      "mean_q99_ratio": 1.0324809240534039,
+      "mean_zero_ratio_delta": -1.6464591026306153e-05,
+      "top_changed_layers": [
+        "model.input_blocks.6.0.out_layers.3",
+        "model.input_blocks.6.0.emb_layers.1",
+        "model.input_blocks.6.0.cond_emb_layers.1",
+        "model.input_blocks.6.0.in_layers.2"
+      ],
+      "effect_summary": "minimal_change"
+    },
+    "model.input_blocks.7": {
+      "num_layers": 4,
+      "logical_type_counts": {
+        "Conv2d": 2,
+        "Linear": 2
+      },
+      "mean_std_ratio": 1.0077505449446982,
+      "mean_abs_max_ratio": 1.0044170851325631,
+      "mean_q999_ratio": 1.0273549665772257,
+      "mean_q99_ratio": 1.0144355088650645,
+      "mean_zero_ratio_delta": -7.88465142250061e-05,
+      "top_changed_layers": [
+        "model.input_blocks.7.0.out_layers.3",
+        "model.input_blocks.7.0.emb_layers.1",
+        "model.input_blocks.7.0.cond_emb_layers.1",
+        "model.input_blocks.7.0.in_layers.2"
+      ],
+      "effect_summary": "minimal_change"
+    },
+    "model.input_blocks.8": {
+      "num_layers": 4,
+      "logical_type_counts": {
+        "Conv2d": 2,
+        "Linear": 2
+      },
+      "mean_std_ratio": 1.0160974509544618,
+      "mean_abs_max_ratio": 1.0284593330804241,
+      "mean_q999_ratio": 1.0256071958004096,
+      "mean_q99_ratio": 1.0359851536709295,
+      "mean_zero_ratio_delta": 1.621931791305542e-05,
+      "top_changed_layers": [
+        "model.input_blocks.8.0.out_layers.3",
+        "model.input_blocks.8.0.in_layers.2",
+        "model.input_blocks.8.0.cond_emb_layers.1",
+        "model.input_blocks.8.0.emb_layers.1"
+      ],
+      "effect_summary": "minimal_change"
+    },
+    "model.input_blocks.9": {
+      "num_layers": 4,
+      "logical_type_counts": {
+        "Conv2d": 2,
+        "Linear": 2
+      },
+      "mean_std_ratio": 1.0091651239505746,
+      "mean_abs_max_ratio": 1.0266977823311287,
+      "mean_q999_ratio": 1.0198445557944527,
+      "mean_q99_ratio": 1.0278150277185774,
+      "mean_zero_ratio_delta": 5.328178405761719e-05,
+      "top_changed_layers": [
+        "model.input_blocks.9.0.out_layers.3",
+        "model.input_blocks.9.0.emb_layers.1",
+        "model.input_blocks.9.0.in_layers.2",
+        "model.input_blocks.9.0.cond_emb_layers.1"
+      ],
+      "effect_summary": "minimal_change"
+    },
+    "model.input_blocks.10": {
+      "num_layers": 4,
+      "logical_type_counts": {
+        "Conv2d": 2,
+        "Linear": 2
+      },
+      "mean_std_ratio": 1.0040908771527621,
+      "mean_abs_max_ratio": 1.0082403506433553,
+      "mean_q999_ratio": 1.0215001469507945,
+      "mean_q99_ratio": 1.013235434686786,
+      "mean_zero_ratio_delta": 0.00011492172876993813,
+      "top_changed_layers": [
+        "model.input_blocks.10.0.out_layers.3",
+        "model.input_blocks.10.0.emb_layers.1",
+        "model.input_blocks.10.0.cond_emb_layers.1",
+        "model.input_blocks.10.0.in_layers.2"
+      ],
+      "effect_summary": "minimal_change"
+    },
+    "model.input_blocks.11": {
+      "num_layers": 4,
+      "logical_type_counts": {
+        "Conv2d": 2,
+        "Linear": 2
+      },
+      "mean_std_ratio": 1.0065926807345198,
+      "mean_abs_max_ratio": 1.0140262072530164,
+      "mean_q999_ratio": 1.0327104076667224,
+      "mean_q99_ratio": 1.0223895742939622,
+      "mean_zero_ratio_delta": -6.702343622843425e-05,
+      "top_changed_layers": [
+        "model.input_blocks.11.0.out_layers.3",
+        "model.input_blocks.11.0.in_layers.2",
+        "model.input_blocks.11.0.emb_layers.1",
+        "model.input_blocks.11.0.cond_emb_layers.1"
+      ],
+      "effect_summary": "mixed_effect"
+    },
+    "model.input_blocks.12": {
+      "num_layers": 4,
+      "logical_type_counts": {
+        "Conv2d": 2,
+        "Linear": 2
+      },
+      "mean_std_ratio": 1.0068539818437798,
+      "mean_abs_max_ratio": 0.9874390672473115,
+      "mean_q999_ratio": 1.0084493368190641,
+      "mean_q99_ratio": 1.026758059119048,
+      "mean_zero_ratio_delta": 6.357828776041655e-07,
+      "top_changed_layers": [
+        "model.input_blocks.12.0.cond_emb_layers.1",
+        "model.input_blocks.12.0.emb_layers.1",
+        "model.input_blocks.12.0.in_layers.2",
+        "model.input_blocks.12.0.out_layers.3"
+      ],
+      "effect_summary": "minimal_change"
+    },
+    "model.input_blocks.13": {
+      "num_layers": 4,
+      "logical_type_counts": {
+        "Conv2d": 2,
+        "Linear": 2
+      },
+      "mean_std_ratio": 1.0035041337336488,
+      "mean_abs_max_ratio": 0.9622711740065032,
+      "mean_q999_ratio": 1.0100984356940605,
+      "mean_q99_ratio": 1.0079620639907418,
+      "mean_zero_ratio_delta": -2.6681423187255862e-05,
+      "top_changed_layers": [
+        "model.input_blocks.13.0.emb_layers.1",
+        "model.input_blocks.13.0.out_layers.3",
+        "model.input_blocks.13.0.cond_emb_layers.1",
+        "model.input_blocks.13.0.in_layers.2"
+      ],
+      "effect_summary": "minimal_change"
+    },
+    "model.input_blocks.14": {
+      "num_layers": 4,
+      "logical_type_counts": {
+        "Conv2d": 2,
+        "Linear": 2
+      },
+      "mean_std_ratio": 1.0059480771563813,
+      "mean_abs_max_ratio": 1.0268996451108474,
+      "mean_q999_ratio": 1.0204037381372701,
+      "mean_q99_ratio": 1.0234306212788464,
+      "mean_zero_ratio_delta": 4.7588348388671874e-05,
+      "top_changed_layers": [
+        "model.input_blocks.14.0.out_layers.3",
+        "model.input_blocks.14.0.in_layers.2",
+        "model.input_blocks.14.0.cond_emb_layers.1",
+        "model.input_blocks.14.0.emb_layers.1"
+      ],
+      "effect_summary": "minimal_change"
+    },
+    "model.middle_block": {
+      "num_layers": 8,
+      "logical_type_counts": {
+        "Conv2d": 4,
+        "Linear": 4
+      },
+      "mean_std_ratio": 1.0024466946014048,
+      "mean_abs_max_ratio": 1.0504469193846175,
+      "mean_q999_ratio": 1.006183326543097,
+      "mean_q99_ratio": 1.012809526799731,
+      "mean_zero_ratio_delta": -2.0354986190795902e-05,
+      "top_changed_layers": [
+        "model.middle_block.0.out_layers.3",
+        "model.middle_block.2.out_layers.3",
+        "model.middle_block.0.emb_layers.1",
+        "model.middle_block.0.cond_emb_layers.1",
+        "model.middle_block.2.cond_emb_layers.1"
+      ],
+      "effect_summary": "mixed_effect"
+    },
+    "model.output_blocks.0": {
+      "num_layers": 4,
+      "logical_type_counts": {
+        "Conv2d": 2,
+        "Linear": 2
+      },
+      "mean_std_ratio": 0.9874509280754236,
+      "mean_abs_max_ratio": 0.9882788763124091,
+      "mean_q999_ratio": 0.9860075166788861,
+      "mean_q99_ratio": 0.9993797811052805,
+      "mean_zero_ratio_delta": 2.9859542846679686e-05,
+      "top_changed_layers": [
+        "model.output_blocks.0.0.out_layers.3",
+        "model.output_blocks.0.0.emb_layers.1",
+        "model.output_blocks.0.0.cond_emb_layers.1",
+        "model.output_blocks.0.0.in_layers.2"
+      ],
+      "effect_summary": "minimal_change"
+    },
+    "model.output_blocks.1": {
+      "num_layers": 4,
+      "logical_type_counts": {
+        "Conv2d": 2,
+        "Linear": 2
+      },
+      "mean_std_ratio": 0.99130210769418,
+      "mean_abs_max_ratio": 1.0021603722147459,
+      "mean_q999_ratio": 0.9922400468589351,
+      "mean_q99_ratio": 0.9846814801420656,
+      "mean_zero_ratio_delta": 3.417015075683594e-05,
+      "top_changed_layers": [
+        "model.output_blocks.1.0.out_layers.3",
+        "model.output_blocks.1.0.in_layers.2",
+        "model.output_blocks.1.0.cond_emb_layers.1",
+        "model.output_blocks.1.0.emb_layers.1"
+      ],
+      "effect_summary": "minimal_change"
+    },
+    "model.output_blocks.2": {
+      "num_layers": 8,
+      "logical_type_counts": {
+        "Conv2d": 4,
+        "Linear": 4
+      },
+      "mean_std_ratio": 0.9999683582469262,
+      "mean_abs_max_ratio": 1.009158183700006,
+      "mean_q999_ratio": 1.0261743123706772,
+      "mean_q99_ratio": 1.0126560833541998,
+      "mean_zero_ratio_delta": -2.5228091648646737e-06,
+      "top_changed_layers": [
+        "model.output_blocks.2.0.in_layers.2",
+        "model.output_blocks.2.0.out_layers.3",
+        "model.output_blocks.2.1.in_layers.2",
+        "model.output_blocks.2.1.out_layers.3",
+        "model.output_blocks.2.0.emb_layers.1"
+      ],
+      "effect_summary": "minimal_change"
+    },
+    "model.output_blocks.3": {
+      "num_layers": 4,
+      "logical_type_counts": {
+        "Conv2d": 2,
+        "Linear": 2
+      },
+      "mean_std_ratio": 0.9972715070388816,
+      "mean_abs_max_ratio": 1.1386332432550286,
+      "mean_q999_ratio": 1.0155472460043926,
+      "mean_q99_ratio": 0.9988419266755023,
+      "mean_zero_ratio_delta": -1.1768341064453127e-05,
+      "top_changed_layers": [
+        "model.output_blocks.3.0.in_layers.2",
+        "model.output_blocks.3.0.out_layers.3",
+        "model.output_blocks.3.0.emb_layers.1",
+        "model.output_blocks.3.0.cond_emb_layers.1"
+      ],
+      "effect_summary": "mixed_effect"
+    },
+    "model.output_blocks.4": {
+      "num_layers": 4,
+      "logical_type_counts": {
+        "Conv2d": 2,
+        "Linear": 2
+      },
+      "mean_std_ratio": 0.9975938380098596,
+      "mean_abs_max_ratio": 0.9942425053619454,
+      "mean_q999_ratio": 0.9961459617930924,
+      "mean_q99_ratio": 1.002119174804084,
+      "mean_zero_ratio_delta": -1.159946123758952e-05,
+      "top_changed_layers": [
+        "model.output_blocks.4.0.cond_emb_layers.1",
+        "model.output_blocks.4.0.in_layers.2",
+        "model.output_blocks.4.0.out_layers.3",
+        "model.output_blocks.4.0.emb_layers.1"
+      ],
+      "effect_summary": "minimal_change"
+    },
+    "model.output_blocks.5": {
+      "num_layers": 8,
+      "logical_type_counts": {
+        "Conv2d": 4,
+        "Linear": 4
+      },
+      "mean_std_ratio": 0.9949604604916147,
+      "mean_abs_max_ratio": 1.042495390615004,
+      "mean_q999_ratio": 1.0008161386417938,
+      "mean_q99_ratio": 1.0089791471851774,
+      "mean_zero_ratio_delta": -2.7543028195699055e-05,
+      "top_changed_layers": [
+        "model.output_blocks.5.0.emb_layers.1",
+        "model.output_blocks.5.2.emb_layers.1",
+        "model.output_blocks.5.2.out_layers.3",
+        "model.output_blocks.5.0.cond_emb_layers.1",
+        "model.output_blocks.5.2.in_layers.2"
+      ],
+      "effect_summary": "minimal_change"
+    },
+    "model.output_blocks.6": {
+      "num_layers": 4,
+      "logical_type_counts": {
+        "Conv2d": 2,
+        "Linear": 2
+      },
+      "mean_std_ratio": 0.9915116984762579,
+      "mean_abs_max_ratio": 0.9962755625059121,
+      "mean_q999_ratio": 0.9899872507378211,
+      "mean_q99_ratio": 1.008121445713065,
+      "mean_zero_ratio_delta": -3.0054450035095216e-05,
+      "top_changed_layers": [
+        "model.output_blocks.6.0.out_layers.3",
+        "model.output_blocks.6.0.cond_emb_layers.1",
+        "model.output_blocks.6.0.emb_layers.1",
+        "model.output_blocks.6.0.in_layers.2"
+      ],
+      "effect_summary": "minimal_change"
+    },
+    "model.output_blocks.7": {
+      "num_layers": 4,
+      "logical_type_counts": {
+        "Conv2d": 2,
+        "Linear": 2
+      },
+      "mean_std_ratio": 0.9957441595699569,
+      "mean_abs_max_ratio": 0.9869147171575228,
+      "mean_q999_ratio": 0.9986215206658096,
+      "mean_q99_ratio": 1.004939287511382,
+      "mean_zero_ratio_delta": 4.452839493751526e-05,
+      "top_changed_layers": [
+        "model.output_blocks.7.0.out_layers.3",
+        "model.output_blocks.7.0.in_layers.2",
+        "model.output_blocks.7.0.cond_emb_layers.1",
+        "model.output_blocks.7.0.emb_layers.1"
+      ],
+      "effect_summary": "minimal_change"
+    },
+    "model.output_blocks.8": {
+      "num_layers": 8,
+      "logical_type_counts": {
+        "Conv2d": 4,
+        "Linear": 4
+      },
+      "mean_std_ratio": 0.9958605137224902,
+      "mean_abs_max_ratio": 1.0004862904567808,
+      "mean_q999_ratio": 1.0140039804794307,
+      "mean_q99_ratio": 1.0102346024877118,
+      "mean_zero_ratio_delta": -1.4317234357198079e-05,
+      "top_changed_layers": [
+        "model.output_blocks.8.0.out_layers.3",
+        "model.output_blocks.8.0.emb_layers.1",
+        "model.output_blocks.8.1.emb_layers.1",
+        "model.output_blocks.8.1.out_layers.3",
+        "model.output_blocks.8.0.cond_emb_layers.1"
+      ],
+      "effect_summary": "minimal_change"
+    },
+    "model.output_blocks.9": {
+      "num_layers": 4,
+      "logical_type_counts": {
+        "Conv2d": 2,
+        "Linear": 2
+      },
+      "mean_std_ratio": 1.000812769958972,
+      "mean_abs_max_ratio": 0.9674098960663853,
+      "mean_q999_ratio": 1.0200110339107555,
+      "mean_q99_ratio": 1.035101117371838,
+      "mean_zero_ratio_delta": 7.180223862330119e-06,
+      "top_changed_layers": [
+        "model.output_blocks.9.0.emb_layers.1",
+        "model.output_blocks.9.0.out_layers.3",
+        "model.output_blocks.9.0.cond_emb_layers.1",
+        "model.output_blocks.9.0.in_layers.2"
+      ],
+      "effect_summary": "minimal_change"
+    },
+    "model.output_blocks.10": {
+      "num_layers": 4,
+      "logical_type_counts": {
+        "Conv2d": 2,
+        "Linear": 2
+      },
+      "mean_std_ratio": 1.0011399091090019,
+      "mean_abs_max_ratio": 0.9483114784613313,
+      "mean_q999_ratio": 1.0112816763992232,
+      "mean_q99_ratio": 1.0118234010969402,
+      "mean_zero_ratio_delta": 7.373839616775513e-07,
+      "top_changed_layers": [
+        "model.output_blocks.10.0.emb_layers.1",
+        "model.output_blocks.10.0.out_layers.3",
+        "model.output_blocks.10.0.in_layers.2",
+        "model.output_blocks.10.0.cond_emb_layers.1"
+      ],
+      "effect_summary": "mixed_effect"
+    },
+    "model.output_blocks.11": {
+      "num_layers": 8,
+      "logical_type_counts": {
+        "Conv2d": 4,
+        "Linear": 4
+      },
+      "mean_std_ratio": 1.0002795527849497,
+      "mean_abs_max_ratio": 0.994280178654959,
+      "mean_q999_ratio": 1.0141693842200517,
+      "mean_q99_ratio": 1.0153084021152852,
+      "mean_zero_ratio_delta": -2.2628549486398698e-05,
+      "top_changed_layers": [
+        "model.output_blocks.11.1.out_layers.3",
+        "model.output_blocks.11.0.out_layers.3",
+        "model.output_blocks.11.0.cond_emb_layers.1",
+        "model.output_blocks.11.1.cond_emb_layers.1",
+        "model.output_blocks.11.1.emb_layers.1"
+      ],
+      "effect_summary": "minimal_change"
+    },
+    "model.output_blocks.12": {
+      "num_layers": 4,
+      "logical_type_counts": {
+        "Conv2d": 2,
+        "Linear": 2
+      },
+      "mean_std_ratio": 1.0751393610756816,
+      "mean_abs_max_ratio": 1.0237155194989025,
+      "mean_q999_ratio": 1.054925959421176,
+      "mean_q99_ratio": 1.0299868057347945,
+      "mean_zero_ratio_delta": -3.576800227165222e-06,
+      "top_changed_layers": [
+        "model.output_blocks.12.0.out_layers.3",
+        "model.output_blocks.12.0.in_layers.2",
+        "model.output_blocks.12.0.emb_layers.1",
+        "model.output_blocks.12.0.cond_emb_layers.1"
+      ],
+      "effect_summary": "mixed_effect"
+    },
+    "model.output_blocks.13": {
+      "num_layers": 4,
+      "logical_type_counts": {
+        "Conv2d": 2,
+        "Linear": 2
+      },
+      "mean_std_ratio": 1.0240629295715717,
+      "mean_abs_max_ratio": 1.0887442502687528,
+      "mean_q999_ratio": 1.049379981677422,
+      "mean_q99_ratio": 1.0373118010983382,
+      "mean_zero_ratio_delta": -6.106650456786156e-05,
+      "top_changed_layers": [
+        "model.output_blocks.13.0.out_layers.3",
+        "model.output_blocks.13.0.emb_layers.1",
+        "model.output_blocks.13.0.cond_emb_layers.1",
+        "model.output_blocks.13.0.in_layers.2"
+      ],
+      "effect_summary": "mixed_effect"
+    },
+    "model.output_blocks.14": {
+      "num_layers": 4,
+      "logical_type_counts": {
+        "Conv2d": 2,
+        "Linear": 2
+      },
+      "mean_std_ratio": 1.0010167690258396,
+      "mean_abs_max_ratio": 0.997714881952711,
+      "mean_q999_ratio": 0.9937859566896194,
+      "mean_q99_ratio": 1.0013466479568542,
+      "mean_zero_ratio_delta": 2.1039135754108433e-06,
+      "top_changed_layers": [
+        "model.output_blocks.14.0.cond_emb_layers.1",
+        "model.output_blocks.14.0.in_layers.2",
+        "model.output_blocks.14.0.emb_layers.1",
+        "model.output_blocks.14.0.out_layers.3"
+      ],
+      "effect_summary": "minimal_change"
+    },
+    "model.out": {
+      "num_layers": 1,
+      "logical_type_counts": {
+        "Conv2d": 1
+      },
+      "mean_std_ratio": 0.9985932862729244,
+      "mean_abs_max_ratio": 1.0096666236743284,
+      "mean_q999_ratio": 0.9929208011942557,
+      "mean_q99_ratio": 0.9992376321745899,
+      "mean_zero_ratio_delta": 5.751848220825195e-08,
+      "top_changed_layers": [
+        "model.out.2"
+      ],
+      "effect_summary": "minimal_change"
+    }
+  }
+}

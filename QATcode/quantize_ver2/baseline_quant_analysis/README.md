@@ -119,19 +119,21 @@
 ---
 
 ### `activation_results/`
-存放 activation distribution 分析結果。
+存放 activation distribution 分析結果（目錄層級與 `pred_xstart_results` 對齊）。
 
-目前已落地第一版（`T_100/official/seed0`）：
-- `FF/`：FF 模式單獨統計（json/npz/plots）
-- `FT/`：FT 模式單獨統計（json/npz/plots）
-- `FF_vs_FT/`：比較摘要與比較圖
-- `selected_layers.json`
+每輪 run：`T_<T>/<images_mode>/seed<N>/`
+- `models/BASELINE|FF|FT|TT/`：各模式 `*_activation_summary.json`（可選 per-layer npz）
+  - **BASELINE**：`--ckpt` 的原始 float `ema`（不載入 `--lora-ckpt`）；hook 會將量化圖上的 `model.<unet>...` 對應到原圖的 `<unet>...`（無外層 `model.` 前綴），以便掛在原生 Conv2d/Linear 上。
+  - **FF/FT/TT**：與 QAT 相同圖、同一 `w+lora`（`--lora-ckpt`）
+- `comparisons/<a>_vs_<b>/`：`activation_compare_summary.json`、`block_compare_summary.json`、`rankings.json`、`representative_layers.json`
+  - 預設 CLI 仍為單一 `ff_vs_ft`；若要 **baseline vs FT / baseline vs TT** 一併輸出：  
+    `--collect-modes BASELINE,FF,FT,TT --compare-pairs ff_vs_ft,baseline_vs_ft,baseline_vs_tt`
+- `plots/pairwise/`：代表層曲線與 block bar 圖，檔名帶前綴（例如 `baseline_vs_ft_…`）
+- `selected_layers.json`、`ACTIVATION_ANALYSIS.md`（run 根目錄）
+- **向後相容**：成功時可建立 symlink `FF`→`models/FF`、`FF_vs_FT`→`comparisons/ff_vs_ft`（Unix）
 
 分析主程式：
-- `activation_distribution_analysis.py`
-
-分析摘要模板：
-- `activation_results/ACTIVATION_ANALYSIS.md`
+- `activation_distribution_analysis.py`（`--compare-pairs`、`--images-mode`、`--collect-modes`）
 
 ---
 

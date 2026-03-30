@@ -1,10 +1,10 @@
 """
-Activation input distribution analysis for FF vs FT (T=100 default).
+Activation input distribution analysis (T=100 default).
 
 Goal:
 - Analyze module forward *input* activations for Conv2d/Linear during DDIM sampling.
-- Compare FF (weight off, act off) vs FT (weight off, act on), with identical w+lora.
-- Output per-mode stats and FF_vs_FT deltas/ratios + plots.
+- Per-mode stats under models/<MODE>/ (BASELINE = original Diff-AE ema, no QAT ckpt; FF/FT/TT = same w+lora quant graph).
+- Pairwise deltas/ratios under comparisons/<a>_vs_<b>/ plus plots under plots/pairwise/.
 """
 
 from __future__ import annotations
@@ -60,6 +60,78 @@ def _resolve_device(spec: str) -> torch.device:
     if spec == "auto":
         return torch.device("cuda" if torch.cuda.is_available() else "cpu")
     return torch.device(spec)
+
+
+def _load_baseline_lit_model(*, model_path: str, device: torch.device) -> Tuple[Any, nn.Module]:
+    """Original Diff-AE LitModel + float ema (no QAT / no LoRA ckpt merge)."""
+    base_model = load_diffae_model(model_path)
+    base_model.to(device)
+    base_model.eval()
+    base_model.setup()
+    base_model.train_dataloader()
+    return base_model, base_model.ema_model
+
+
+def _parse_mode_token(tok: str) -> str:
+    t = tok.strip().lower()
+    if t == "baseline":
+        return "BASELINE"
+    return t.upper()
+
+
+def _parse_compare_pairs(s: str) -> List[Tuple[str, str, str]]:
+    """
+    Parse e.g. 'ff_vs_ft,baseline_vs_ft,baseline_vs_tt' ->
+    list of (folder_name_lowercase, mode_a, mode_b).
+    """
+    out: List[Tuple[str, str, str]] = []
+    for part in s.split(","):
+        part = part.strip()
+        if not part:
+            continue
+        p = part.lower()
+        if "_vs_" not in p:
+            LOGGER.warning("skip invalid compare pair (expected a_vs_b): %s", part)
+            continue
+        a, b = p.split("_vs_", 1)
+        ma, mb = _parse_mode_token(a), _parse_mode_token(b)
+        out.append((p, ma, mb))
+    return out
+
+
+def _resolve_run_dirs(root: Path, T: int, seed: int, images_mode: str) -> Dict[str, Path]:
+    """Align with pred_xstart_results: T_<T>/<images_mode>/seed<N>/{models,comparisons,plots}."""
+    base = root / f"T_{T}" / images_mode / f"seed{seed}"
+    return {
+        "base": base,
+        "models": base / "models",
+        "comparisons": base / "comparisons",
+        "plots_pairwise": base / "plots" / "pairwise",
+        "plots_summary": base / "plots" / "summary",
+        "LOG": root / "logs",
+    }
+
+
+def _ensure_activation_legacy_symlinks(out_root: Path, models_root: Path, comparisons_root: Path) -> None:
+    """Backward compat: seed dir/FF -> models/FF, seed dir/FF_vs_FT -> comparisons/ff_vs_ft."""
+    legacy_models = [("FF", "FF"), ("FT", "FT"), ("TT", "TT"), ("BASELINE", "BASELINE")]
+    for legacy_name, sub in legacy_models:
+        src = models_root / sub
+        dst = out_root / legacy_name
+        if not src.exists() or dst.exists() or dst.is_symlink():
+            continue
+        try:
+            dst.symlink_to(f"models/{sub}", target_is_directory=True)
+        except OSError:
+            LOGGER.warning("Could not symlink %s -> models/%s", dst, sub)
+
+    cmp_src = comparisons_root / "ff_vs_ft"
+    cmp_dst = out_root / "FF_vs_FT"
+    if cmp_src.exists() and not cmp_dst.exists() and not cmp_dst.is_symlink():
+        try:
+            cmp_dst.symlink_to("comparisons/ff_vs_ft", target_is_directory=True)
+        except OSError:
+            LOGGER.warning("Could not symlink FF_vs_FT -> comparisons/ff_vs_ft")
 
 
 def _to_bool(v: Any, default: bool = False) -> bool:
@@ -286,21 +358,53 @@ def _build_quant_model(
     return base_model, base_model.ema_model
 
 
+def _resolve_hook_module_name_for_baseline(
+    layer_name: str,
+    name_to_module: Dict[str, nn.Module],
+) -> Optional[str]:
+    """
+    Quantized graph uses paths like `model.input_blocks...` (QuantModel_DiffAE_LoRA.model = UNet).
+    Original BeatGANsAutoencModel has the same UNet at top level: `input_blocks...` (no leading `model.`).
+    Keep canonical layer_name (quant path) as dict keys for FF/FT compare; only hook target differs.
+    """
+    if layer_name in name_to_module:
+        return layer_name
+    if layer_name.startswith("model."):
+        stripped = layer_name[len("model.") :]
+        if stripped in name_to_module:
+            return stripped
+    return None
+
+
 def _register_input_hooks(
     model: nn.Module,
     selected_layers: List[Dict[str, Any]],
     acc_map: Dict[str, Dict[int, TimestepActivationAccumulator]],
     current_t_ref: Dict[str, int],
     sample_cap_per_t: int,
+    *,
+    baseline_unet_path_mapping: bool = False,
 ) -> List[Any]:
     name_to_module = dict(model.named_modules())
     handles: List[Any] = []
 
     for li in selected_layers:
         layer_name = li["full_module_name"]
-        module = name_to_module.get(layer_name)
+        resolved = (
+            _resolve_hook_module_name_for_baseline(layer_name, name_to_module)
+            if baseline_unet_path_mapping
+            else (layer_name if layer_name in name_to_module else None)
+        )
+        if resolved is None:
+            resolved = layer_name
+        module = name_to_module.get(resolved)
         if module is None:
-            LOGGER.warning("layer missing at hook registration: %s", layer_name)
+            LOGGER.warning(
+                "layer missing at hook registration: %s (resolved=%s, baseline_mapping=%s)",
+                layer_name,
+                resolved,
+                baseline_unet_path_mapping,
+            )
             continue
 
         def _make_hook(name_key: str):
@@ -357,9 +461,13 @@ def _collect_mode_stats(
     max_batches: Optional[int],
     sample_cap_per_t: int,
 ) -> Dict[str, Dict[int, Dict[str, float]]]:
-    wq, aq = quant_state_from_mode(mode)
-    model.set_quant_state(wq, aq)
-    LOGGER.info("[mode=%s] set_quant_state(weight=%s, act=%s)", mode, wq, aq)
+    mode_u = mode.strip().upper()
+    if mode_u == "BASELINE":
+        LOGGER.info("[mode=BASELINE] original float ema (no quant_state)")
+    else:
+        wq, aq = quant_state_from_mode(mode)
+        model.set_quant_state(wq, aq)
+        LOGGER.info("[mode=%s] set_quant_state(weight=%s, act=%s)", mode, wq, aq)
 
     acc_map: Dict[str, Dict[int, TimestepActivationAccumulator]] = {}
     current_t_ref = {"t": -1}
@@ -369,6 +477,7 @@ def _collect_mode_stats(
         acc_map=acc_map,
         current_t_ref=current_t_ref,
         sample_cap_per_t=sample_cap_per_t,
+        baseline_unet_path_mapping=(mode_u == "BASELINE"),
     )
     original_forward, _wrapped = _patch_timestep_tracking(model, current_t_ref)
     try:
@@ -704,7 +813,7 @@ def _pick_representative_layers(rankings: Dict[str, Any], topk: int) -> List[str
     return out[: max(5, topk)]
 
 
-def _plot_block_bars(block_summary: Dict[str, Any], out_dir: Path) -> None:
+def _plot_block_bars(block_summary: Dict[str, Any], out_dir: Path, *, filename_prefix: str = "") -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
     blocks = block_summary.get("blocks", {})
     if not blocks:
@@ -729,7 +838,7 @@ def _plot_block_bars(block_summary: Dict[str, Any], out_dir: Path) -> None:
         plt.title(metric)
         plt.grid(axis="y", alpha=0.25)
         plt.tight_layout()
-        plt.savefig(out_dir / fn, dpi=180)
+        plt.savefig(out_dir / f"{filename_prefix}{fn}", dpi=180)
         plt.close()
 
 
@@ -738,6 +847,8 @@ def _plot_compare_curves_for_layers(
     selected_layers: List[Dict[str, Any]],
     target_layer_names: List[str],
     out_dir: Path,
+    *,
+    filename_prefix: str = "",
 ) -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
     meta_map = {x["full_module_name"]: x for x in selected_layers}
@@ -780,18 +891,19 @@ def _plot_compare_curves_for_layers(
             plt.title(f"{name} | {metric} ({mode_a} vs {mode_b})")
             plt.legend(loc="best")
             plt.tight_layout()
-            plt.savefig(out_dir / f"layer_{safe}_{metric}_curve_{mode_a.lower()}_vs_{mode_b.lower()}.png", dpi=180)
+            plt.savefig(
+                out_dir / f"{filename_prefix}layer_{safe}_{metric}_curve_{mode_a.lower()}_vs_{mode_b.lower()}.png",
+                dpi=180,
+            )
             plt.close()
 
 
 def _generate_md_report(
     *,
     report_path: Path,
-    compare_summary: Dict[str, Any],
-    block_summary: Dict[str, Any],
-    rankings: Dict[str, Any],
     selected_layers: List[Dict[str, Any]],
     output_base: Path,
+    pair_sections: List[Dict[str, Any]],
 ) -> None:
     def _fmt(v: Any) -> str:
         try:
@@ -804,69 +916,66 @@ def _generate_md_report(
 
     conv_n = sum(1 for x in selected_layers if x.get("logical_module_type") == "Conv2d")
     linear_n = sum(1 for x in selected_layers if x.get("logical_module_type") == "Linear")
-    meta = compare_summary.get("meta", {})
-    top_layers = rankings.get("top_layers_by_q999_change", [])[:5]
-    top_blocks = rankings.get("top_blocks_by_q999_change", [])[:5]
-    effect_counts: Dict[str, int] = {}
-    for _lname, e in compare_summary.get("layers", {}).items():
-        ef = e.get("global_summary", {}).get("effect_summary", "mixed_effect")
-        effect_counts[ef] = effect_counts.get(ef, 0) + 1
-    dom_effect = sorted(effect_counts.items(), key=lambda x: x[1], reverse=True)[0][0] if effect_counts else "unknown"
     lines: List[str] = []
     lines.append("# Activation Distribution Analysis")
     lines.append("")
     lines.append("## Analysis goal")
-    lines.append("- Compare `FF` vs `FT` under identical `w + lora` to study activation quant effect on layer-input distributions.")
+    lines.append(
+        "- Per-layer input activation statistics during DDIM sampling; pairwise ratio/delta under `comparisons/<a>_vs_<b>/`."
+    )
+    lines.append("- `BASELINE`: original Diff-AE `ema` (no QAT/LoRA ckpt). FF/FT/TT: quantized graph with shared `w+lora` from `--lora-ckpt`."
+    )
     lines.append("")
-    lines.append("## Experiment setup")
-    lines.append(f"- T: {meta.get('T')}")
-    lines.append(f"- seed: {meta.get('seed')}")
-    lines.append(f"- num_samples: {meta.get('num_samples')}")
-    lines.append(f"- compared modes: {meta.get('modes')}")
-    lines.append(f"- effective weight: {meta.get('weight_effective')}")
-    lines.append("")
-    lines.append("## Layer-level summary")
+    lines.append("## Layer selection")
     lines.append(f"- selected layers: {len(selected_layers)}")
     lines.append(f"- Conv2d layers: {conv_n}")
     lines.append(f"- Linear layers: {linear_n}")
-    lines.append("- top changed layers (by q999 ratio deviation):")
-    for e in top_layers:
-        lines.append(
-            f"  - `{e.get('name')}` | block={e.get('block_name')} | q999_ratio={_fmt(e.get('mean_q999_ratio'))} | std_ratio={_fmt(e.get('mean_std_ratio'))}"
-        )
     lines.append("")
-    lines.append("## Block-level summary")
-    lines.append("- top changed blocks (by q999 ratio deviation):")
-    for e in top_blocks:
-        lines.append(
-            f"  - `{e.get('name')}` | q999_ratio={_fmt(e.get('mean_q999_ratio'))} | std_ratio={_fmt(e.get('mean_std_ratio'))}"
-        )
+    lines.append("## Output layout")
+    lines.append(f"- run root: `{output_base}`")
+    lines.append(f"- per-mode: `{output_base / 'models'}`")
+    lines.append(f"- pairwise json: `{output_base / 'comparisons'}`")
+    lines.append(f"- curves / block bars (prefixed): `{output_base / 'plots' / 'pairwise'}`")
     lines.append("")
-    lines.append("## Initial findings")
-    lines.append(f"- dominant effect label across layers: `{dom_effect}`")
-    lines.append("- differences are typically concentrated in a subset of layers/blocks ranked above.")
-    lines.append("- use representative plots + block bars to inspect whether changes align with tail compression or variance reduction patterns.")
-    lines.append("")
-    lines.append("## Output artifact paths")
-    lines.append(f"- compare summary: `{output_base / 'FF_vs_FT' / 'activation_compare_summary.json'}`")
-    lines.append(f"- block summary: `{output_base / 'FF_vs_FT' / 'block_compare_summary.json'}`")
-    lines.append(f"- rankings: `{output_base / 'FF_vs_FT' / 'rankings.json'}`")
-    lines.append(f"- representative layers: `{output_base / 'FF_vs_FT' / 'representative_layers.json'}`")
-    lines.append(f"- representative plots: `{output_base / 'FF_vs_FT' / 'representative_plots'}`")
-    lines.append(f"- block plots: `{output_base / 'FF_vs_FT' / 'block_plots'}`")
+
+    for sec in pair_sections:
+        pair_name = sec.get("pair_name", "pair")
+        compare_summary = sec.get("compare_summary", {})
+        rankings = sec.get("rankings", {})
+        meta = compare_summary.get("meta", {})
+        top_layers = rankings.get("top_layers_by_q999_change", [])[:5]
+        top_blocks = rankings.get("top_blocks_by_q999_change", [])[:5]
+        effect_counts: Dict[str, int] = {}
+        for _lname, e in compare_summary.get("layers", {}).items():
+            ef = e.get("global_summary", {}).get("effect_summary", "mixed_effect")
+            effect_counts[ef] = effect_counts.get(ef, 0) + 1
+        dom_effect = sorted(effect_counts.items(), key=lambda x: x[1], reverse=True)[0][0] if effect_counts else "unknown"
+        cmp_rel = sec.get("cmp_rel", "")
+        plots_prefix = sec.get("plots_prefix", "")
+
+        lines.append(f"## Pair: `{pair_name}`")
+        lines.append(f"- modes: {meta.get('modes')}")
+        lines.append(f"- T / seed / num_samples: {meta.get('T')} / {meta.get('seed')} / {meta.get('num_samples')}")
+        lines.append(f"- dominant effect label (layer vote): `{dom_effect}`")
+        lines.append("")
+        lines.append("- top changed layers (by q999 ratio deviation):")
+        for e in top_layers:
+            lines.append(
+                f"  - `{e.get('name')}` | block={e.get('block_name')} | q999_ratio={_fmt(e.get('mean_q999_ratio'))} | std_ratio={_fmt(e.get('mean_std_ratio'))}"
+            )
+        lines.append("")
+        lines.append("- top changed blocks:")
+        for e in top_blocks:
+            lines.append(
+                f"  - `{e.get('name')}` | q999_ratio={_fmt(e.get('mean_q999_ratio'))} | std_ratio={_fmt(e.get('mean_std_ratio'))}"
+            )
+        lines.append("")
+        lines.append(f"- artifacts: `{output_base / cmp_rel}`" if cmp_rel else "- artifacts: (see comparisons directory)")
+        if plots_prefix:
+            lines.append(f"- plot filename prefix: `{plots_prefix}` under `plots/pairwise/`")
+        lines.append("")
     report_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
-
-
-def _resolve_official_dirs(root: Path, T: int, seed: int) -> Dict[str, Path]:
-    base = root / f"T_{T}" / "official" / f"seed{seed}"
-    return {
-        "base": base,
-        "FF": base / "FF",
-        "FT": base / "FT",
-        "CMP": base / "FF_vs_FT",
-        "LOG": root / "logs",
-    }
 
 
 def run_analysis(args: argparse.Namespace) -> Dict[str, Any]:
@@ -878,11 +987,12 @@ def run_analysis(args: argparse.Namespace) -> Dict[str, Any]:
     CONFIG.NUM_DIFFUSION_STEPS = int(args.T)
 
     out_root = Path(args.output_root)
-    dirs = _resolve_official_dirs(out_root, int(args.T), int(args.seed))
-    for p in dirs.values():
-        p.mkdir(parents=True, exist_ok=True)
+    images_mode = str(getattr(args, "images_mode", "official") or "official")
+    dirs = _resolve_run_dirs(out_root, int(args.T), int(args.seed), images_mode)
+    for key in ("base", "models", "comparisons", "plots_pairwise", "plots_summary", "LOG"):
+        dirs[key].mkdir(parents=True, exist_ok=True)
 
-    # Build model once; FF/FT share exactly the same w+lora.
+    # Quantized w+lora graph (FF/FT/TT)
     base_model, eval_model = _build_quant_model(
         ckpt_path=args.lora_ckpt if args.lora_ckpt else args.ckpt,
         model_path=args.ckpt,
@@ -930,116 +1040,185 @@ def run_analysis(args: argparse.Namespace) -> Dict[str, Any]:
         raise RuntimeError("No target layers selected. 請檢查 --target-module-types / --target-name-patterns。")
 
     modes = [m.strip().upper() for m in args.collect_modes.split(",") if m.strip()]
-    compare_modes = [m.strip().upper() for m in args.compare_modes.split(",") if m.strip()]
+    compare_pairs = _parse_compare_pairs(str(getattr(args, "compare_pairs", "") or "").strip())
+    if not compare_pairs:
+        compare_modes = [m.strip().upper() for m in args.compare_modes.split(",") if m.strip()]
+        if len(compare_modes) >= 2:
+            a, b = compare_modes[0], compare_modes[1]
+            compare_pairs = [(f"{a.lower()}_vs_{b.lower()}", a, b)]
+
+    need_baseline = "BASELINE" in modes or any(
+        ma == "BASELINE" or mb == "BASELINE" for _f, ma, mb in compare_pairs
+    )
+    baseline_lit: Any = None
+    baseline_model: Optional[nn.Module] = None
+    if need_baseline:
+        baseline_lit, baseline_model = _load_baseline_lit_model(model_path=str(args.ckpt), device=device)
+
     per_mode_stats: Dict[str, Dict[str, Dict[int, Dict[str, float]]]] = {}
     for mode in modes:
-        layer_stats = _collect_mode_stats(
-            mode=mode,
-            model=eval_model,
-            sampler=sampler,
-            latent_sampler=latent_sampler,
-            conf=conf,
-            x_T_bank=x_T_bank,
-            latent_noise_bank=latent_noise_bank,
-            conds_mean=base_model.conds_mean,
-            conds_std=base_model.conds_std,
-            chunk_batch=batch_size,
-            device=device,
-            selected_layers=selected_layers,
-            max_batches=args.max_batches,
-            sample_cap_per_t=int(args.quantile_sample_cap),
-        )
-        per_mode_stats[mode] = layer_stats
-        if mode in dirs:
-            md = dirs[mode]
+        if mode == "BASELINE":
+            if baseline_model is None:
+                baseline_lit, baseline_model = _load_baseline_lit_model(model_path=str(args.ckpt), device=device)
+            layer_stats = _collect_mode_stats(
+                mode="BASELINE",
+                model=baseline_model,
+                sampler=sampler,
+                latent_sampler=latent_sampler,
+                conf=conf,
+                x_T_bank=x_T_bank,
+                latent_noise_bank=latent_noise_bank,
+                conds_mean=baseline_lit.conds_mean,
+                conds_std=baseline_lit.conds_std,
+                chunk_batch=batch_size,
+                device=device,
+                selected_layers=selected_layers,
+                max_batches=args.max_batches,
+                sample_cap_per_t=int(args.quantile_sample_cap),
+            )
         else:
-            md = dirs["base"] / mode
+            layer_stats = _collect_mode_stats(
+                mode=mode,
+                model=eval_model,
+                sampler=sampler,
+                latent_sampler=latent_sampler,
+                conf=conf,
+                x_T_bank=x_T_bank,
+                latent_noise_bank=latent_noise_bank,
+                conds_mean=base_model.conds_mean,
+                conds_std=base_model.conds_std,
+                chunk_batch=batch_size,
+                device=device,
+                selected_layers=selected_layers,
+                max_batches=args.max_batches,
+                sample_cap_per_t=int(args.quantile_sample_cap),
+            )
+        per_mode_stats[mode] = layer_stats
+        out_dir = dirs["models"] / mode
         _save_mode_outputs(
             mode=mode,
             layer_stats=layer_stats,
             selected_layers=selected_layers,
-            out_dir=md,
+            out_dir=out_dir,
             save_per_timestep_npz=bool(args.save_per_timestep_npz),
             T=int(args.T),
         )
 
-    if len(compare_modes) < 2:
-        LOGGER.warning("compare-modes requires at least two modes; compare summary skipped.")
-        return {"selected_layers": selected_layers, "per_mode": list(per_mode_stats.keys())}
-    mode_a, mode_b = compare_modes[0], compare_modes[1]
-    if mode_a not in per_mode_stats or mode_b not in per_mode_stats:
-        LOGGER.warning("compare-modes (%s,%s) not fully present in collected modes; compare summary skipped.", mode_a, mode_b)
-        return {"selected_layers": selected_layers, "per_mode": list(per_mode_stats.keys())}
+    if not compare_pairs:
+        LOGGER.warning("No compare pairs (--compare-pairs or --compare-modes); pairwise outputs skipped.")
+        _ensure_activation_legacy_symlinks(dirs["base"], dirs["models"], dirs["comparisons"])
+        return {"selected_layers": selected_layers, "per_mode": list(per_mode_stats.keys()), "output_root": str(dirs["base"])}
 
-    compare = _build_compare_summary(
-        ff_stats=per_mode_stats[mode_a],
-        ft_stats=per_mode_stats[mode_b],
-        selected_layers=selected_layers,
-        T=int(args.T),
-        seed=int(args.seed),
-        num_samples=num_samples,
-        mode_a=mode_a,
-        mode_b=mode_b,
-    )
-    with open(dirs["CMP"] / "activation_compare_summary.json", "w", encoding="utf-8") as f:
-        json.dump(_json_safe(compare), f, indent=2, ensure_ascii=False)
-    if _to_bool(args.generate_block_summary, True):
-        block_summary = _build_block_summary(compare, topk=max(3, int(args.representative_topk)))
-        with open(dirs["CMP"] / "block_compare_summary.json", "w", encoding="utf-8") as f:
-            json.dump(_json_safe(block_summary), f, indent=2, ensure_ascii=False)
-    else:
-        block_summary = {"meta": compare.get("meta", {}), "blocks": {}}
+    pair_sections: List[Dict[str, Any]] = []
+    completed_pairs: List[str] = []
 
-    if _to_bool(args.generate_rankings, True):
-        rankings = _make_rankings(compare, block_summary, topk=max(10, int(args.representative_topk)))
-        with open(dirs["CMP"] / "rankings.json", "w", encoding="utf-8") as f:
-            json.dump(_json_safe(rankings), f, indent=2, ensure_ascii=False)
-    else:
-        rankings = {}
+    for folder_name, mode_a, mode_b in compare_pairs:
+        if mode_a not in per_mode_stats or mode_b not in per_mode_stats:
+            LOGGER.warning(
+                "skip pair %s: missing collected stats for %s or %s (have: %s)",
+                folder_name,
+                mode_a,
+                mode_b,
+                list(per_mode_stats.keys()),
+            )
+            continue
+        cmp_dir = dirs["comparisons"] / folder_name
+        cmp_dir.mkdir(parents=True, exist_ok=True)
+        plots_prefix = f"{folder_name}_"
 
-    representative_layers = _pick_representative_layers(rankings, int(args.representative_topk)) if rankings else []
-    with open(dirs["CMP"] / "representative_layers.json", "w", encoding="utf-8") as f:
-        json.dump(_json_safe({"layers": representative_layers}), f, indent=2, ensure_ascii=False)
-
-    if _to_bool(args.save_representative_plots, True):
-        _plot_compare_curves_for_layers(
-            compare_summary=compare,
+        compare = _build_compare_summary(
+            ff_stats=per_mode_stats[mode_a],
+            ft_stats=per_mode_stats[mode_b],
             selected_layers=selected_layers,
-            target_layer_names=representative_layers,
-            out_dir=dirs["CMP"] / "representative_plots",
+            T=int(args.T),
+            seed=int(args.seed),
+            num_samples=num_samples,
+            mode_a=mode_a,
+            mode_b=mode_b,
         )
-    if _to_bool(args.save_all_layer_plots, False):
-        all_names = [x["full_module_name"] for x in selected_layers]
-        _plot_compare_curves_for_layers(
-            compare_summary=compare,
-            selected_layers=selected_layers,
-            target_layer_names=all_names,
-            out_dir=dirs["CMP"] / "all_layer_plots",
-        )
-    if _to_bool(args.save_block_plots, True):
-        _plot_block_bars(block_summary, dirs["CMP"] / "block_plots")
+        if "BASELINE" in (mode_a, mode_b):
+            compare.setdefault("meta", {})["comparison_focus"] = "baseline_vs_quantized"
+            compare["meta"]["note"] = (
+                "BASELINE uses original float ema from --ckpt; other side uses QAT graph + --lora-ckpt. "
+                "Module paths align with quant wrappers; interpret ratios as structural alignment, not identical weights."
+            )
+        else:
+            compare.setdefault("meta", {})["comparison_focus"] = "activation_quant_effect_within_quant_graph"
 
-    if _to_bool(args.generate_md_report, True):
+        with open(cmp_dir / "activation_compare_summary.json", "w", encoding="utf-8") as f:
+            json.dump(_json_safe(compare), f, indent=2, ensure_ascii=False)
+
+        if _to_bool(args.generate_block_summary, True):
+            block_summary = _build_block_summary(compare, topk=max(3, int(args.representative_topk)))
+            with open(cmp_dir / "block_compare_summary.json", "w", encoding="utf-8") as f:
+                json.dump(_json_safe(block_summary), f, indent=2, ensure_ascii=False)
+        else:
+            block_summary = {"meta": compare.get("meta", {}), "blocks": {}}
+
+        if _to_bool(args.generate_rankings, True):
+            rankings = _make_rankings(compare, block_summary, topk=max(10, int(args.representative_topk)))
+            with open(cmp_dir / "rankings.json", "w", encoding="utf-8") as f:
+                json.dump(_json_safe(rankings), f, indent=2, ensure_ascii=False)
+        else:
+            rankings = {}
+
+        representative_layers = _pick_representative_layers(rankings, int(args.representative_topk)) if rankings else []
+        with open(cmp_dir / "representative_layers.json", "w", encoding="utf-8") as f:
+            json.dump(_json_safe({"layers": representative_layers}), f, indent=2, ensure_ascii=False)
+
+        if _to_bool(args.save_representative_plots, True):
+            _plot_compare_curves_for_layers(
+                compare_summary=compare,
+                selected_layers=selected_layers,
+                target_layer_names=representative_layers,
+                out_dir=dirs["plots_pairwise"],
+                filename_prefix=plots_prefix,
+            )
+        if _to_bool(args.save_all_layer_plots, False):
+            all_names = [x["full_module_name"] for x in selected_layers]
+            all_dir = cmp_dir / "all_layer_plots"
+            _plot_compare_curves_for_layers(
+                compare_summary=compare,
+                selected_layers=selected_layers,
+                target_layer_names=all_names,
+                out_dir=all_dir,
+                filename_prefix="",
+            )
+        if _to_bool(args.save_block_plots, True):
+            _plot_block_bars(block_summary, dirs["plots_pairwise"], filename_prefix=plots_prefix)
+
+        pair_sections.append(
+            {
+                "pair_name": folder_name,
+                "compare_summary": compare,
+                "rankings": rankings,
+                "cmp_rel": Path("comparisons") / folder_name,
+                "plots_prefix": plots_prefix,
+            }
+        )
+        completed_pairs.append(folder_name)
+
+    if _to_bool(args.generate_md_report, True) and pair_sections:
         _generate_md_report(
-            report_path=Path(args.output_root) / "ACTIVATION_ANALYSIS.md",
-            compare_summary=compare,
-            block_summary=block_summary,
-            rankings=rankings,
+            report_path=dirs["base"] / "ACTIVATION_ANALYSIS.md",
             selected_layers=selected_layers,
             output_base=dirs["base"],
+            pair_sections=pair_sections,
         )
+
+    _ensure_activation_legacy_symlinks(dirs["base"], dirs["models"], dirs["comparisons"])
 
     return {
         "selected_layers": selected_layers,
         "layer_selection_summary": layer_pick_stat,
         "modes": modes,
-        "compare_modes": [mode_a, mode_b],
+        "compare_pairs": completed_pairs,
         "output_root": str(dirs["base"]),
     }
 
 
 def build_argparser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(description="Activation input distribution analysis (FF vs FT)")
+    p = argparse.ArgumentParser(description="Activation input distribution analysis (multi-mode / multi-pair)")
     p.add_argument("--run", action="store_true", help="required flag to execute")
     p.add_argument("--ckpt", type=str, default="checkpoints/ffhq128_autoenc_latent/last.ckpt")
     p.add_argument(
@@ -1060,16 +1239,33 @@ def build_argparser() -> argparse.ArgumentParser:
         default="QATcode/quantize_ver2/baseline_quant_analysis/activation_results",
     )
     p.add_argument(
+        "--images-mode",
+        type=str,
+        default="official",
+        choices=["debug", "v1", "official"],
+        help="Subfolder under T_<T>/ (align with pred_xstart_results).",
+    )
+    p.add_argument(
         "--collect-modes",
         type=str,
         default="FF,FT",
-        help="Comma-separated quant modes to collect stats (e.g., FF,FT,TF).",
+        help="Comma-separated modes: BASELINE (float ema from --ckpt only), FF, FT, TT, TF, ...",
     )
     p.add_argument(
         "--compare-modes",
         type=str,
         default="FF,FT",
-        help="Comma-separated compare pair, default FF,FT (first two modes used).",
+        help="Legacy: if --compare-pairs is empty, first two modes become one pair (e.g. ff_vs_ft).",
+    )
+    p.add_argument(
+        "--compare-pairs",
+        type=str,
+        default="ff_vs_ft",
+        help=(
+            "Comma-separated pairs as a_vs_b (lowercase). "
+            "For baseline_vs_ft / baseline_vs_tt also pass e.g. "
+            "--collect-modes BASELINE,FF,FT,TT --compare-pairs ff_vs_ft,baseline_vs_ft,baseline_vs_tt"
+        ),
     )
     p.add_argument(
         "--target-module-types",
@@ -1105,7 +1301,7 @@ if __name__ == "__main__":
     if not args.run:
         parser.print_help()
         raise SystemExit(0)
-    dirs = _resolve_official_dirs(Path(args.output_root), int(args.T), int(args.seed))
+    dirs = _resolve_run_dirs(Path(args.output_root), int(args.T), int(args.seed), str(args.images_mode))
     log_file = dirs["LOG"] / f"activation_distribution_T{int(args.T)}_seed{int(args.seed)}.log"
     _setup_logging(str(log_file))
     LOGGER.info("Start activation distribution analysis")

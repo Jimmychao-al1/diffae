@@ -43,6 +43,14 @@ QATcode/cache_method/**/*.ico
 QATcode/cache_method/**/*.webp
 QATcode/cache_method/**/*.svg
 QATcode/cache_method/**/*.eps
+QATcode/quantize_ver2/baseline_quant_analysis/**.json
+QATcode/quantize_ver2/baseline_quant_analysis/**.npz
+QATcode/quantize_ver2/baseline_quant_analysis/**.png
+QATcode/quantize_ver2/baseline_quant_analysis/**.pdf
+QATcode/quantize_ver2/baseline_quant_analysis/**.jpg
+QATcode/quantize_ver2/baseline_quant_analysis/**.jpeg
+QATcode/quantize_ver2/baseline_quant_analysis/**.gif
+QATcode/quantize_ver2/baseline_quant_analysis/**.bmp
 QATcode/**/*.png
 QATcode/quantize_ver2/tb_runs
 QATcode/quantize_ver2/quant_diag_runs
