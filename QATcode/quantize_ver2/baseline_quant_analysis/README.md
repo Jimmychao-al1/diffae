@@ -138,11 +138,32 @@
 ### `pred_xstart_results/`
 存放 `pred_xstart` / trajectory 分析結果。
 
-建議內容：
-- 各 timestep 的 quantile / histogram
-- baseline vs quant overlay 圖
-- 各種統計摘要
-- 分析摘要 md
+主程式：
+- `pred_xstart_quantile_analysis.py`（已升級為完整 Pred-xstart / Trajectory Analysis）
+
+目前輸出重點（`FF/`、`FT/`、`FF_vs_FT/`）：
+- per-timestep 分布統計：`mean/std/min/max/abs_mean/abs_max/q001~q999`
+- 邊界飽和比率：`|x|>=0.95`、`|x|>=0.99`
+- same-t cross-model delta（FF vs FT）：
+  - L1 / L2 / cosine
+- self trajectory delta（各模式相鄰 timestep）：
+  - L1 / L2 / cosine
+- distance-to-final（可選）：
+  - 每個 timestep 與最終 `t=0` 的 L1 / L2 / cosine
+- 摘要圖：
+  - q50/std/abs_max/q99 overlay
+  - same-t delta 曲線
+  - self-delta 比較曲線
+  - distance-to-final 比較曲線（若啟用）
+
+指標意義：
+- `q50`：中心趨勢
+- `q99`：高尾端變化（tail behavior）
+- `abs_max`：極值幅度
+- `std`：整體離散程度
+- same-t delta：同一時刻 FF 與 FT 的直接偏差
+- self trajectory delta：單一模型在相鄰步的軌跡變化強度
+- distance-to-final：各步到最終輸出的收斂路徑
 
 ---
 
