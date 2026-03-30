@@ -1,0 +1,146 @@
+[
+  {
+    "layer_index": 0,
+    "full_module_name": "model.input_blocks.1.0.in_layers.2.loraA",
+    "module_type": "Conv2d",
+    "safe_name": "model.input_blocks.1.0.in_layers.2.loraA"
+  },
+  {
+    "layer_index": 1,
+    "full_module_name": "model.input_blocks.1.0.in_layers.2.loraB",
+    "module_type": "Conv2d",
+    "safe_name": "model.input_blocks.1.0.in_layers.2.loraB"
+  },
+  {
+    "layer_index": 2,
+    "full_module_name": "model.input_blocks.1.0.emb_layers.1.loraA",
+    "module_type": "Linear",
+    "safe_name": "model.input_blocks.1.0.emb_layers.1.loraA"
+  },
+  {
+    "layer_index": 3,
+    "full_module_name": "model.input_blocks.1.0.emb_layers.1.loraB",
+    "module_type": "Linear",
+    "safe_name": "model.input_blocks.1.0.emb_layers.1.loraB"
+  },
+  {
+    "layer_index": 4,
+    "full_module_name": "model.input_blocks.1.0.cond_emb_layers.1.loraA",
+    "module_type": "Linear",
+    "safe_name": "model.input_blocks.1.0.cond_emb_layers.1.loraA"
+  },
+  {
+    "layer_index": 5,
+    "full_module_name": "model.input_blocks.1.0.cond_emb_layers.1.loraB",
+    "module_type": "Linear",
+    "safe_name": "model.input_blocks.1.0.cond_emb_layers.1.loraB"
+  },
+  {
+    "layer_index": 6,
+    "full_module_name": "model.input_blocks.1.0.out_layers.3.loraA",
+    "module_type": "Conv2d",
+    "safe_name": "model.input_blocks.1.0.out_layers.3.loraA"
+  },
+  {
+    "layer_index": 7,
+    "full_module_name": "model.input_blocks.1.0.out_layers.3.loraB",
+    "module_type": "Conv2d",
+    "safe_name": "model.input_blocks.1.0.out_layers.3.loraB"
+  },
+  {
+    "layer_index": 8,
+    "full_module_name": "model.input_blocks.2.0.in_layers.2.loraA",
+    "module_type": "Conv2d",
+    "safe_name": "model.input_blocks.2.0.in_layers.2.loraA"
+  },
+  {
+    "layer_index": 9,
+    "full_module_name": "model.input_blocks.2.0.in_layers.2.loraB",
+    "module_type": "Conv2d",
+    "safe_name": "model.input_blocks.2.0.in_layers.2.loraB"
+  },
+  {
+    "layer_index": 10,
+    "full_module_name": "model.input_blocks.2.0.emb_layers.1.loraA",
+    "module_type": "Linear",
+    "safe_name": "model.input_blocks.2.0.emb_layers.1.loraA"
+  },
+  {
+    "layer_index": 11,
+    "full_module_name": "model.input_blocks.2.0.emb_layers.1.loraB",
+    "module_type": "Linear",
+    "safe_name": "model.input_blocks.2.0.emb_layers.1.loraB"
+  },
+  {
+    "layer_index": 12,
+    "full_module_name": "model.input_blocks.2.0.cond_emb_layers.1.loraA",
+    "module_type": "Linear",
+    "safe_name": "model.input_blocks.2.0.cond_emb_layers.1.loraA"
+  },
+  {
+    "layer_index": 13,
+    "full_module_name": "model.input_blocks.2.0.cond_emb_layers.1.loraB",
+    "module_type": "Linear",
+    "safe_name": "model.input_blocks.2.0.cond_emb_layers.1.loraB"
+  },
+  {
+    "layer_index": 14,
+    "full_module_name": "model.input_blocks.2.0.out_layers.3.loraA",
+    "module_type": "Conv2d",
+    "safe_name": "model.input_blocks.2.0.out_layers.3.loraA"
+  },
+  {
+    "layer_index": 15,
+    "full_module_name": "model.input_blocks.2.0.out_layers.3.loraB",
+    "module_type": "Conv2d",
+    "safe_name": "model.input_blocks.2.0.out_layers.3.loraB"
+  },
+  {
+    "layer_index": 16,
+    "full_module_name": "model.input_blocks.3.0.in_layers.2.loraA",
+    "module_type": "Conv2d",
+    "safe_name": "model.input_blocks.3.0.in_layers.2.loraA"
+  },
+  {
+    "layer_index": 17,
+    "full_module_name": "model.input_blocks.3.0.in_layers.2.loraB",
+    "module_type": "Conv2d",
+    "safe_name": "model.input_blocks.3.0.in_layers.2.loraB"
+  },
+  {
+    "layer_index": 18,
+    "full_module_name": "model.input_blocks.3.0.emb_layers.1.loraA",
+    "module_type": "Linear",
+    "safe_name": "model.input_blocks.3.0.emb_layers.1.loraA"
+  },
+  {
+    "layer_index": 19,
+    "full_module_name": "model.input_blocks.3.0.emb_layers.1.loraB",
+    "module_type": "Linear",
+    "safe_name": "model.input_blocks.3.0.emb_layers.1.loraB"
+  },
+  {
+    "layer_index": 20,
+    "full_module_name": "model.input_blocks.3.0.cond_emb_layers.1.loraA",
+    "module_type": "Linear",
+    "safe_name": "model.input_blocks.3.0.cond_emb_layers.1.loraA"
+  },
+  {
+    "layer_index": 21,
+    "full_module_name": "model.input_blocks.3.0.cond_emb_layers.1.loraB",
+    "module_type": "Linear",
+    "safe_name": "model.input_blocks.3.0.cond_emb_layers.1.loraB"
+  },
+  {
+    "layer_index": 22,
+    "full_module_name": "model.input_blocks.3.0.out_layers.3.loraA",
+    "module_type": "Conv2d",
+    "safe_name": "model.input_blocks.3.0.out_layers.3.loraA"
+  },
+  {
+    "layer_index": 23,
+    "full_module_name": "model.input_blocks.3.0.out_layers.3.loraB",
+    "module_type": "Conv2d",
+    "safe_name": "model.input_blocks.3.0.out_layers.3.loraB"
+  }
+]
