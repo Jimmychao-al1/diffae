@@ -1,146 +1,194 @@
 [
   {
     "layer_index": 0,
-    "full_module_name": "model.input_blocks.1.0.in_layers.2.loraA",
-    "module_type": "Conv2d",
-    "safe_name": "model.input_blocks.1.0.in_layers.2.loraA"
+    "full_module_name": "model.time_embed.time_embed.0",
+    "wrapper_module_type": "QuantModule",
+    "logical_module_type": "Linear",
+    "block_name": "model.time_embed",
+    "safe_name": "model.time_embed.time_embed.0"
   },
   {
     "layer_index": 1,
-    "full_module_name": "model.input_blocks.1.0.in_layers.2.loraB",
-    "module_type": "Conv2d",
-    "safe_name": "model.input_blocks.1.0.in_layers.2.loraB"
+    "full_module_name": "model.time_embed.time_embed.2",
+    "wrapper_module_type": "QuantModule",
+    "logical_module_type": "Linear",
+    "block_name": "model.time_embed",
+    "safe_name": "model.time_embed.time_embed.2"
   },
   {
     "layer_index": 2,
-    "full_module_name": "model.input_blocks.1.0.emb_layers.1.loraA",
-    "module_type": "Linear",
-    "safe_name": "model.input_blocks.1.0.emb_layers.1.loraA"
+    "full_module_name": "model.input_blocks.0.0",
+    "wrapper_module_type": "QuantModule",
+    "logical_module_type": "Conv2d",
+    "block_name": "model.input_blocks.0",
+    "safe_name": "model.input_blocks.0.0"
   },
   {
     "layer_index": 3,
-    "full_module_name": "model.input_blocks.1.0.emb_layers.1.loraB",
-    "module_type": "Linear",
-    "safe_name": "model.input_blocks.1.0.emb_layers.1.loraB"
+    "full_module_name": "model.input_blocks.1.0.in_layers.2",
+    "wrapper_module_type": "QuantModule_DiffAE_LoRA",
+    "logical_module_type": "Conv2d",
+    "block_name": "model.input_blocks.1",
+    "safe_name": "model.input_blocks.1.0.in_layers.2"
   },
   {
     "layer_index": 4,
-    "full_module_name": "model.input_blocks.1.0.cond_emb_layers.1.loraA",
-    "module_type": "Linear",
-    "safe_name": "model.input_blocks.1.0.cond_emb_layers.1.loraA"
+    "full_module_name": "model.input_blocks.1.0.emb_layers.1",
+    "wrapper_module_type": "QuantModule_DiffAE_LoRA",
+    "logical_module_type": "Linear",
+    "block_name": "model.input_blocks.1",
+    "safe_name": "model.input_blocks.1.0.emb_layers.1"
   },
   {
     "layer_index": 5,
-    "full_module_name": "model.input_blocks.1.0.cond_emb_layers.1.loraB",
-    "module_type": "Linear",
-    "safe_name": "model.input_blocks.1.0.cond_emb_layers.1.loraB"
+    "full_module_name": "model.input_blocks.1.0.cond_emb_layers.1",
+    "wrapper_module_type": "QuantModule_DiffAE_LoRA",
+    "logical_module_type": "Linear",
+    "block_name": "model.input_blocks.1",
+    "safe_name": "model.input_blocks.1.0.cond_emb_layers.1"
   },
   {
     "layer_index": 6,
-    "full_module_name": "model.input_blocks.1.0.out_layers.3.loraA",
-    "module_type": "Conv2d",
-    "safe_name": "model.input_blocks.1.0.out_layers.3.loraA"
+    "full_module_name": "model.input_blocks.1.0.out_layers.3",
+    "wrapper_module_type": "QuantModule_DiffAE_LoRA",
+    "logical_module_type": "Conv2d",
+    "block_name": "model.input_blocks.1",
+    "safe_name": "model.input_blocks.1.0.out_layers.3"
   },
   {
     "layer_index": 7,
-    "full_module_name": "model.input_blocks.1.0.out_layers.3.loraB",
-    "module_type": "Conv2d",
-    "safe_name": "model.input_blocks.1.0.out_layers.3.loraB"
+    "full_module_name": "model.input_blocks.2.0.in_layers.2",
+    "wrapper_module_type": "QuantModule_DiffAE_LoRA",
+    "logical_module_type": "Conv2d",
+    "block_name": "model.input_blocks.2",
+    "safe_name": "model.input_blocks.2.0.in_layers.2"
   },
   {
     "layer_index": 8,
-    "full_module_name": "model.input_blocks.2.0.in_layers.2.loraA",
-    "module_type": "Conv2d",
-    "safe_name": "model.input_blocks.2.0.in_layers.2.loraA"
+    "full_module_name": "model.input_blocks.2.0.emb_layers.1",
+    "wrapper_module_type": "QuantModule_DiffAE_LoRA",
+    "logical_module_type": "Linear",
+    "block_name": "model.input_blocks.2",
+    "safe_name": "model.input_blocks.2.0.emb_layers.1"
   },
   {
     "layer_index": 9,
-    "full_module_name": "model.input_blocks.2.0.in_layers.2.loraB",
-    "module_type": "Conv2d",
-    "safe_name": "model.input_blocks.2.0.in_layers.2.loraB"
+    "full_module_name": "model.input_blocks.2.0.cond_emb_layers.1",
+    "wrapper_module_type": "QuantModule_DiffAE_LoRA",
+    "logical_module_type": "Linear",
+    "block_name": "model.input_blocks.2",
+    "safe_name": "model.input_blocks.2.0.cond_emb_layers.1"
   },
   {
     "layer_index": 10,
-    "full_module_name": "model.input_blocks.2.0.emb_layers.1.loraA",
-    "module_type": "Linear",
-    "safe_name": "model.input_blocks.2.0.emb_layers.1.loraA"
+    "full_module_name": "model.input_blocks.2.0.out_layers.3",
+    "wrapper_module_type": "QuantModule_DiffAE_LoRA",
+    "logical_module_type": "Conv2d",
+    "block_name": "model.input_blocks.2",
+    "safe_name": "model.input_blocks.2.0.out_layers.3"
   },
   {
     "layer_index": 11,
-    "full_module_name": "model.input_blocks.2.0.emb_layers.1.loraB",
-    "module_type": "Linear",
-    "safe_name": "model.input_blocks.2.0.emb_layers.1.loraB"
+    "full_module_name": "model.input_blocks.3.0.in_layers.2",
+    "wrapper_module_type": "QuantModule_DiffAE_LoRA",
+    "logical_module_type": "Conv2d",
+    "block_name": "model.input_blocks.3",
+    "safe_name": "model.input_blocks.3.0.in_layers.2"
   },
   {
     "layer_index": 12,
-    "full_module_name": "model.input_blocks.2.0.cond_emb_layers.1.loraA",
-    "module_type": "Linear",
-    "safe_name": "model.input_blocks.2.0.cond_emb_layers.1.loraA"
+    "full_module_name": "model.input_blocks.3.0.emb_layers.1",
+    "wrapper_module_type": "QuantModule_DiffAE_LoRA",
+    "logical_module_type": "Linear",
+    "block_name": "model.input_blocks.3",
+    "safe_name": "model.input_blocks.3.0.emb_layers.1"
   },
   {
     "layer_index": 13,
-    "full_module_name": "model.input_blocks.2.0.cond_emb_layers.1.loraB",
-    "module_type": "Linear",
-    "safe_name": "model.input_blocks.2.0.cond_emb_layers.1.loraB"
+    "full_module_name": "model.input_blocks.3.0.cond_emb_layers.1",
+    "wrapper_module_type": "QuantModule_DiffAE_LoRA",
+    "logical_module_type": "Linear",
+    "block_name": "model.input_blocks.3",
+    "safe_name": "model.input_blocks.3.0.cond_emb_layers.1"
   },
   {
     "layer_index": 14,
-    "full_module_name": "model.input_blocks.2.0.out_layers.3.loraA",
-    "module_type": "Conv2d",
-    "safe_name": "model.input_blocks.2.0.out_layers.3.loraA"
+    "full_module_name": "model.input_blocks.3.0.out_layers.3",
+    "wrapper_module_type": "QuantModule_DiffAE_LoRA",
+    "logical_module_type": "Conv2d",
+    "block_name": "model.input_blocks.3",
+    "safe_name": "model.input_blocks.3.0.out_layers.3"
   },
   {
     "layer_index": 15,
-    "full_module_name": "model.input_blocks.2.0.out_layers.3.loraB",
-    "module_type": "Conv2d",
-    "safe_name": "model.input_blocks.2.0.out_layers.3.loraB"
+    "full_module_name": "model.input_blocks.4.0.in_layers.2",
+    "wrapper_module_type": "QuantModule_DiffAE_LoRA",
+    "logical_module_type": "Conv2d",
+    "block_name": "model.input_blocks.4",
+    "safe_name": "model.input_blocks.4.0.in_layers.2"
   },
   {
     "layer_index": 16,
-    "full_module_name": "model.input_blocks.3.0.in_layers.2.loraA",
-    "module_type": "Conv2d",
-    "safe_name": "model.input_blocks.3.0.in_layers.2.loraA"
+    "full_module_name": "model.input_blocks.4.0.emb_layers.1",
+    "wrapper_module_type": "QuantModule_DiffAE_LoRA",
+    "logical_module_type": "Linear",
+    "block_name": "model.input_blocks.4",
+    "safe_name": "model.input_blocks.4.0.emb_layers.1"
   },
   {
     "layer_index": 17,
-    "full_module_name": "model.input_blocks.3.0.in_layers.2.loraB",
-    "module_type": "Conv2d",
-    "safe_name": "model.input_blocks.3.0.in_layers.2.loraB"
+    "full_module_name": "model.input_blocks.4.0.cond_emb_layers.1",
+    "wrapper_module_type": "QuantModule_DiffAE_LoRA",
+    "logical_module_type": "Linear",
+    "block_name": "model.input_blocks.4",
+    "safe_name": "model.input_blocks.4.0.cond_emb_layers.1"
   },
   {
     "layer_index": 18,
-    "full_module_name": "model.input_blocks.3.0.emb_layers.1.loraA",
-    "module_type": "Linear",
-    "safe_name": "model.input_blocks.3.0.emb_layers.1.loraA"
+    "full_module_name": "model.input_blocks.4.0.out_layers.3",
+    "wrapper_module_type": "QuantModule_DiffAE_LoRA",
+    "logical_module_type": "Conv2d",
+    "block_name": "model.input_blocks.4",
+    "safe_name": "model.input_blocks.4.0.out_layers.3"
   },
   {
     "layer_index": 19,
-    "full_module_name": "model.input_blocks.3.0.emb_layers.1.loraB",
-    "module_type": "Linear",
-    "safe_name": "model.input_blocks.3.0.emb_layers.1.loraB"
+    "full_module_name": "model.input_blocks.5.0.in_layers.2",
+    "wrapper_module_type": "QuantModule_DiffAE_LoRA",
+    "logical_module_type": "Conv2d",
+    "block_name": "model.input_blocks.5",
+    "safe_name": "model.input_blocks.5.0.in_layers.2"
   },
   {
     "layer_index": 20,
-    "full_module_name": "model.input_blocks.3.0.cond_emb_layers.1.loraA",
-    "module_type": "Linear",
-    "safe_name": "model.input_blocks.3.0.cond_emb_layers.1.loraA"
+    "full_module_name": "model.input_blocks.5.0.emb_layers.1",
+    "wrapper_module_type": "QuantModule_DiffAE_LoRA",
+    "logical_module_type": "Linear",
+    "block_name": "model.input_blocks.5",
+    "safe_name": "model.input_blocks.5.0.emb_layers.1"
   },
   {
     "layer_index": 21,
-    "full_module_name": "model.input_blocks.3.0.cond_emb_layers.1.loraB",
-    "module_type": "Linear",
-    "safe_name": "model.input_blocks.3.0.cond_emb_layers.1.loraB"
+    "full_module_name": "model.input_blocks.5.0.cond_emb_layers.1",
+    "wrapper_module_type": "QuantModule_DiffAE_LoRA",
+    "logical_module_type": "Linear",
+    "block_name": "model.input_blocks.5",
+    "safe_name": "model.input_blocks.5.0.cond_emb_layers.1"
   },
   {
     "layer_index": 22,
-    "full_module_name": "model.input_blocks.3.0.out_layers.3.loraA",
-    "module_type": "Conv2d",
-    "safe_name": "model.input_blocks.3.0.out_layers.3.loraA"
+    "full_module_name": "model.input_blocks.5.0.out_layers.3",
+    "wrapper_module_type": "QuantModule_DiffAE_LoRA",
+    "logical_module_type": "Conv2d",
+    "block_name": "model.input_blocks.5",
+    "safe_name": "model.input_blocks.5.0.out_layers.3"
   },
   {
     "layer_index": 23,
-    "full_module_name": "model.input_blocks.3.0.out_layers.3.loraB",
-    "module_type": "Conv2d",
-    "safe_name": "model.input_blocks.3.0.out_layers.3.loraB"
+    "full_module_name": "model.input_blocks.6.0.in_layers.2",
+    "wrapper_module_type": "QuantModule_DiffAE_LoRA",
+    "logical_module_type": "Conv2d",
+    "block_name": "model.input_blocks.6",
+    "safe_name": "model.input_blocks.6.0.in_layers.2"
   }
 ]

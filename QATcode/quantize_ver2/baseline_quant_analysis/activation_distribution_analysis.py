@@ -21,6 +21,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 sys.path.append(".")
 sys.path.append("./model")
@@ -44,6 +45,11 @@ from QATcode.quantize_ver2.baseline_quant_analysis.pred_xstart_quantile_analysis
     create_float_quantized_model,
     load_calibration_data,
     load_diffae_model,
+)
+from QATcode.quantize_ver2.quant_layer_v2 import QuantModule
+from QATcode.quantize_ver2.quant_model_lora_v2 import (
+    INT_QuantModule_DiffAE_LoRA,
+    QuantModule_DiffAE_LoRA,
 )
 
 
@@ -93,33 +99,104 @@ def _is_target_module_name(name: str) -> bool:
     return name.startswith(allow_prefixes)
 
 
+def _is_internal_aux_submodule(name: str) -> bool:
+    aux_suffixes = (
+        ".loraA",
+        ".loraB",
+        ".weight_quantizer",
+        ".act_quantizer",
+        ".lora_dropout_layer",
+    )
+    return name.endswith(aux_suffixes)
+
+
+def _is_quant_wrapper_module(module: nn.Module) -> bool:
+    return isinstance(module, (QuantModule_DiffAE_LoRA, QuantModule, INT_QuantModule_DiffAE_LoRA))
+
+
+def _infer_logical_module_type(module: nn.Module) -> str:
+    fwd_func = getattr(module, "fwd_func", None)
+    if fwd_func is F.conv2d:
+        return "Conv2d"
+    if fwd_func is F.linear:
+        return "Linear"
+    ori_shape = getattr(module, "ori_shape", None)
+    if isinstance(ori_shape, (tuple, list)):
+        if len(ori_shape) == 4:
+            return "Conv2d"
+        if len(ori_shape) == 2:
+            return "Linear"
+    cls_name = module.__class__.__name__
+    return cls_name
+
+
+def _infer_block_name(full_module_name: str) -> str:
+    parts = full_module_name.split(".")
+    if len(parts) >= 3 and parts[0] == "model":
+        if parts[1] == "input_blocks" and len(parts) >= 3:
+            return ".".join(parts[:3])
+        if parts[1] == "output_blocks" and len(parts) >= 3:
+            return ".".join(parts[:3])
+        if parts[1] == "middle_block":
+            return "model.middle_block"
+        if parts[1] == "time_embed":
+            return "model.time_embed"
+        if parts[1] == "out":
+            return "model.out"
+    return ".".join(parts[:2]) if len(parts) >= 2 else full_module_name
+
+
 def _pick_target_layers(
     model: nn.Module,
     target_module_types: Iterable[str],
     target_name_patterns: Iterable[str],
     max_layers: Optional[int],
-) -> List[Dict[str, Any]]:
-    type_set = set(target_module_types)
+) -> Tuple[List[Dict[str, Any]], Dict[str, int]]:
+    logical_type_set = set(target_module_types)
     selected: List[Dict[str, Any]] = []
+    stat = {
+        "total_named_modules": 0,
+        "total_quant_wrappers_found": 0,
+        "skipped_internal_aux_submodules": 0,
+        "selected_conv2d_wrappers": 0,
+        "selected_linear_wrappers": 0,
+        "selected_other_wrappers": 0,
+    }
     for name, module in model.named_modules():
-        module_type = module.__class__.__name__
-        if module_type not in type_set:
+        stat["total_named_modules"] += 1
+        if _is_internal_aux_submodule(name):
+            stat["skipped_internal_aux_submodules"] += 1
             continue
+        if not _is_quant_wrapper_module(module):
+            continue
+        stat["total_quant_wrappers_found"] += 1
         if not _is_target_module_name(name):
+            continue
+        logical_module_type = _infer_logical_module_type(module)
+        if logical_module_type not in logical_type_set:
             continue
         if not match_any_pattern(name, target_name_patterns):
             continue
+        wrapper_module_type = module.__class__.__name__
         selected.append(
             {
                 "layer_index": len(selected),
                 "full_module_name": name,
-                "module_type": module_type,
+                "wrapper_module_type": wrapper_module_type,
+                "logical_module_type": logical_module_type,
+                "block_name": _infer_block_name(name),
                 "safe_name": safe_layer_name(name),
             }
         )
+        if logical_module_type == "Conv2d":
+            stat["selected_conv2d_wrappers"] += 1
+        elif logical_module_type == "Linear":
+            stat["selected_linear_wrappers"] += 1
+        else:
+            stat["selected_other_wrappers"] += 1
         if max_layers is not None and max_layers > 0 and len(selected) >= max_layers:
             break
-    return selected
+    return selected, stat
 
 
 def _build_quant_model(
@@ -393,7 +470,9 @@ def _build_compare_summary(
             LOGGER.warning("no common timestep for compare layer=%s", name)
             continue
         layer_entry: Dict[str, Any] = {
-            "module_type": li["module_type"],
+            "wrapper_module_type": li["wrapper_module_type"],
+            "logical_module_type": li["logical_module_type"],
+            "block_name": li["block_name"],
             "timesteps": {},
         }
         std_ratios: List[float] = []
@@ -536,7 +615,7 @@ def run_analysis(args: argparse.Namespace) -> Dict[str, Any]:
 
     target_types = parse_module_types(args.target_module_types)
     target_patterns = parse_target_patterns(args.target_name_patterns)
-    selected_layers = _pick_target_layers(
+    selected_layers, layer_pick_stat = _pick_target_layers(
         model=eval_model,
         target_module_types=target_types,
         target_name_patterns=target_patterns,
@@ -544,7 +623,18 @@ def run_analysis(args: argparse.Namespace) -> Dict[str, Any]:
     )
     with open(dirs["base"] / "selected_layers.json", "w", encoding="utf-8") as f:
         json.dump(_json_safe(selected_layers), f, indent=2, ensure_ascii=False)
-    LOGGER.info("selected layers: %d", len(selected_layers))
+    LOGGER.info(
+        "layer selection summary | total_named_modules=%d total_wrappers_found=%d "
+        "selected_total=%d selected_conv2d=%d selected_linear=%d selected_other=%d "
+        "skipped_internal_aux_submodules=%d",
+        layer_pick_stat["total_named_modules"],
+        layer_pick_stat["total_quant_wrappers_found"],
+        len(selected_layers),
+        layer_pick_stat["selected_conv2d_wrappers"],
+        layer_pick_stat["selected_linear_wrappers"],
+        layer_pick_stat["selected_other_wrappers"],
+        layer_pick_stat["skipped_internal_aux_submodules"],
+    )
     if len(selected_layers) == 0:
         raise RuntimeError("No target layers selected. 請檢查 --target-module-types / --target-name-patterns。")
 
@@ -601,6 +691,7 @@ def run_analysis(args: argparse.Namespace) -> Dict[str, Any]:
 
     return {
         "selected_layers": selected_layers,
+        "layer_selection_summary": layer_pick_stat,
         "modes": modes,
         "output_root": str(dirs["base"]),
     }
@@ -633,7 +724,12 @@ def build_argparser() -> argparse.ArgumentParser:
         default="FF,FT",
         help="Comma-separated quant modes (from {FF,FT,TF,TT}); first version compare focuses FF/FT.",
     )
-    p.add_argument("--target-module-types", type=str, default="Conv2d,Linear")
+    p.add_argument(
+        "--target-module-types",
+        type=str,
+        default="Conv2d,Linear",
+        help="Logical layer types represented by quant wrappers (e.g., Conv2d,Linear).",
+    )
     p.add_argument(
         "--target-name-patterns",
         type=str,

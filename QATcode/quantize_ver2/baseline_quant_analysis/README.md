@@ -18,13 +18,24 @@
 
 ---
 
+## 命名規則（統一）
+
+- `FF`：weight quant off, act quant off
+- `TF`：weight quant on,  act quant off
+- `FT`：weight quant off, act quant on
+- `TT`：weight quant on,  act quant on
+
+註：本資料夾一律使用大寫命名；歷史檔案若有 `tf/ft/tt` 視為同義。
+
+---
+
 ## 目前分析主線
 
 本資料夾的分析分為三條主線：
 
 ### 1. Activation Distribution Analysis
 目的：
-- 比較 `FF` 與 `ft` 的 activation 分布差異
+- 比較 `FF` 與 `FT` 的 activation 分布差異
 - 找出 activation quant 是否帶來：
   - 極值壓縮
   - heavy-tail 抑制
@@ -38,7 +49,7 @@
 
 ### 2. Pred-xstart / Trajectory Analysis
 目的：
-- 比較 `FF` 與 `ft` 在 diffusion 過程中的 `pred_xstart` / feature trajectory 差異
+- 比較 `FF` 與 `FT` 在 diffusion 過程中的 `pred_xstart` / feature trajectory 差異
 - 觀察 activation 分布的改變，是否真的反映到生成路徑上
 
 核心問題：
@@ -67,11 +78,11 @@
 
 目前第一優先分析設定為：
 
-- **比較對象**：`FF` vs `ft`
+- **比較對象**：`FF` vs `FT`
 - **步數**：`T = 100`
 - **原因**：
   - `T=100` 的改善幅度更明顯
-  - `ft` 是目前最佳設定
+  - `FT` 是目前最佳設定
   - 現有消融已指出主因在 activation quant path，而非 weight quant
 
 ---
@@ -87,9 +98,9 @@
 
 - 所有設定皆使用相同 effective weight：`w + lora`
 - `FF` 可視為 float control
-- `tf`（只開 weight quant）改善極小
-- `ft`（只開 activation quant）改善最大
-- `tt`（weight + activation quant）仍有改善，但通常略差於 `ft`
+- `TF`（只開 weight quant）改善極小
+- `FT`（只開 activation quant）改善最大
+- `TT`（weight + activation quant）仍有改善，但通常略差於 `FT`
 
 因此目前的中間結論是：
 
@@ -110,12 +121,17 @@
 ### `activation_results/`
 存放 activation distribution 分析結果。
 
-建議內容：
-- 各 block / timestep 的統計量
-- 直方圖
-- quantile 曲線
-- 極值 / tail / variance 比較
-- 分析摘要 md
+目前已落地第一版（`T_100/official/seed0`）：
+- `FF/`：FF 模式單獨統計（json/npz/plots）
+- `FT/`：FT 模式單獨統計（json/npz/plots）
+- `FF_vs_FT/`：比較摘要與比較圖
+- `selected_layers.json`
+
+分析主程式：
+- `activation_distribution_analysis.py`
+
+分析摘要模板：
+- `activation_results/ACTIVATION_ANALYSIS.md`
 
 ---
 
@@ -144,9 +160,9 @@
 
 ### 設定縮寫
 - `FF`：weight quant off, act quant off
-- `tf`：weight quant on, act quant off
-- `ft`：weight quant off, act quant on
-- `tt`：weight quant on, act quant on
+- `TF`：weight quant on, act quant off
+- `FT`：weight quant off, act quant on
+- `TT`：weight quant on, act quant on
 
 ### 模型比較主軸
 目前主要使用：
@@ -170,6 +186,7 @@
    - 不平均分配時間在所有設定上
 
 3. **優先分析 `FF vs ft`**
+3. **優先分析 `FF vs FT`**
    - 這組最能回答「為何 activation quant 會改善 FID」
 
 4. **先做 T=100，再考慮 T=20**
@@ -180,17 +197,18 @@
 ## 後續待完成事項
 
 ### A. FID 結論固定
-- [ ] 補完整 `fid_results/FID_ANALYSIS.md`
+- [x] 完整化 `fid_results/FID_ANALYSIS.md`
+- [ ] 補 protocol 欄位（seed / eval_samples / command / commit）到每輪結果
 
 ### B. Activation 分析
-- [ ] 建立 activation 統計蒐集程式
-- [ ] 決定 hook layer / block
-- [ ] 先完成 `FF vs ft`, `T=100`
-- [ ] 產生統計圖、json / npz、md 摘要
+- [x] 建立 activation 統計蒐集程式（`activation_distribution_analysis.py`）
+- [x] 完成首輪 `FF vs FT`, `T=100`（含 `selected_layers.json`、各模式 json、比較 json、曲線圖）
+- [ ] 決定最終固定的 layer 子集（目前可用 `--target-name-patterns`、`--max-layers`）
+- [ ] 撰寫 `ACTIVATION_ANALYSIS.md` 的機制解讀版本
 
 ### C. Pred-xstart 分析
 - [ ] 整理現有 `pred_xstart_quantile_analysis.py` 的輸出位置
-- [ ] 比較 `FF vs ft`, `T=100`
+- [ ] 比較 `FF vs FT`, `T=100`
 - [ ] 完成對應 md 摘要
 
 ### D. 全域生成指標
