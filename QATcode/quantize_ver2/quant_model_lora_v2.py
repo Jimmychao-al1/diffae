@@ -340,25 +340,31 @@ class QuantModel_DiffAE_LoRA(nn.Module):
                 m.set_quant_state(weight_quant, act_quant)
             elif isinstance(m, QuantModule):
                 # QuantModule : layer 1,2,144 權重、輸入都量化 ；layer 3 只進行權重量化
-                count += 1
-                if count in [1,2]:
-                    m.set_quant_state(True, True)
-                    logger.info("set quant state to True, True for layer %d", count)
-                elif count == 3:
-                    # 測試 layer 3 進行完整量化
-                    #m.set_quant_state(True, True)
-                    #logger.info("[Test] set quant state to True, True for layer %d", count)
+                if weight_quant and act_quant:
+                    count += 1
+                    if count in [1,2]:
+                        m.set_quant_state(True, True)
+                        logger.info("set quant state to True, True for layer %d", count)
+                    elif count == 3:
+                        # 測試 layer 3 進行完整量化
+                        #m.set_quant_state(True, True)
+                        #logger.info("[Test] set quant state to True, True for layer %d", count)
 
-                    # 測試 layer 3 不進行量化
-                    #m.set_quant_state(False, False)
-                    #logger.info("[Test] set quant state to False, False for layer %d", count)
+                        # 測試 layer 3 不進行量化
+                        #m.set_quant_state(False, False)
+                        #logger.info("[Test] set quant state to False, False for layer %d", count)
 
-                    # layer 3 權重量化
-                    m.set_quant_state(True, False)
-                    logger.info("set quant state to True, False for layer %d", count)
-                elif count == 144:
-                    m.set_quant_state(False, False)
-                    logger.info("set quant state to False, False for layer %d", count)
+                        # layer 3 權重量化
+                        m.set_quant_state(True, False)
+                        logger.info("set quant state to True, False for layer %d", count)
+                    elif count == 144:
+                        m.set_quant_state(False, False)
+                        logger.info("set quant state to False, False for layer %d", count)
+                else:
+                    count += 1
+                    if count in (1,2,3,144):
+                        m.set_quant_state(False, False)
+                        logger.info("set quant state to False, False for layer %d", count)
 
 
             elif isinstance(m, QuantModule_DiffAE_LoRA):
