@@ -12,9 +12,11 @@
 {"script": "sample_lora_intmodel_v2.py", "mode": "int", "steps": "100", "eval_samples": "5k", "fid": "14.955325126647", "return_code": "0"}
 
 {"script": "sample_lora_intmodel_v2.py", "mode": "float", "steps": "20", "eval_samples": "5k", "fid": "21.01409339904785", "set-quant": "FF"}
-{"script": "sample_lora_intmodel_v2.py", "mode": "float", "steps": "20", "eval_samples": "5k", "fid": "22.896739959716797", "set-quant": "tf"}
-{"script": "sample_lora_intmodel_v2.py", "mode": "float", "steps": "20", "eval_samples": "5k", "fid": "", "set-quant": "ft"}
-{"script": "sample_lora_intmodel_v2.py", "mode": "float", "steps": "100", "eval_samples": "5k", "fid": "", "set-quant": "FF"}
-{"script": "sample_lora_intmodel_v2.py", "mode": "float", "steps": "100", "eval_samples": "5k", "fid": "", "set-quant": "tf"}
+{"script": "sample_lora_intmodel_v2.py", "mode": "float", "steps": "20", "eval_samples": "5k", "fid": "20.515295028686523", "set-quant": "tf"}
+{"script": "sample_lora_intmodel_v2.py", "mode": "float", "steps": "20", "eval_samples": "5k", "fid": "19.3142147064209", "set-quant": "ft"}
+{"script": "sample_lora_intmodel_v2.py", "mode": "float", "steps": "20", "eval_samples": "5k", "fid": "19.86904716491", "set-quant": "tt"}
+{"script": "sample_lora_intmodel_v2.py", "mode": "float", "steps": "100", "eval_samples": "5k", "fid": "17.103330612182617", "set-quant": "FF"}
+{"script": "sample_lora_intmodel_v2.py", "mode": "float", "steps": "100", "eval_samples": "5k", "fid": "17.05845069885254", "set-quant": "tf"}
 {"script": "sample_lora_intmodel_v2.py", "mode": "float", "steps": "100", "eval_samples": "5k", "fid": "", "set-quant": "ft"}
+{"script": "sample_lora_intmodel_v2.py", "mode": "float", "steps": "100", "eval_samples": "5k", "fid": "14.947220802307129", "set-quant": "tt"}
 
