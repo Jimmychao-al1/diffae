@@ -271,6 +271,100 @@ def _resolve_device(spec: str) -> torch.device:
     return torch.device(spec)
 
 
+SELF_DELTA_BOUNDARY_META = {
+    "boundary_nan_policy": "first_step_or_last_step_has_no_adjacent_comparison",
+    "nan_when_adjacent_count_zero": True,
+    "note": "Adjacent delta compares pred_xstart at t with previous yielded timestep; the first yielded step per chunk has no neighbor.",
+}
+
+
+def _layout_run_paths(out_root: Path) -> Dict[str, Path]:
+    """Canonical layout: models/, comparisons/, plots/summary/, plots/pairwise/."""
+    return {
+        "root": out_root,
+        "models": out_root / "models",
+        "comparisons": out_root / "comparisons",
+        "plots_summary": out_root / "plots" / "summary",
+        "plots_pairwise": out_root / "plots" / "pairwise",
+    }
+
+
+def _pairwise_comparison_dir(comparisons_root: Path, a: str, b: str) -> Path:
+    """a_vs_b in lowercase (e.g. ff_vs_ft)."""
+    return comparisons_root / f"{a.lower()}_vs_{b.lower()}"
+
+
+def _timestep_zone_masks(T: int) -> Dict[str, np.ndarray]:
+    """Split t in {0..T-1} into high / middle / low noise by index thirds (high t = more noise)."""
+    t = np.arange(T, dtype=np.int32)
+    hi = int(np.ceil(2 * T / 3))
+    low = int(np.floor(T / 3))
+    return {
+        "high_noise": t >= hi,
+        "middle_noise": (t >= low) & (t < hi),
+        "low_noise": t < low,
+    }
+
+
+def _nanmean_ignore(a: np.ndarray) -> float:
+    v = np.asarray(a, dtype=np.float64)
+    if v.size == 0:
+        return float("nan")
+    m = np.nanmean(v)
+    return float(m)
+
+
+def _nanmax_ignore(a: np.ndarray) -> Tuple[float, int]:
+    v = np.asarray(a, dtype=np.float64)
+    if v.size == 0:
+        return float("nan"), -1
+    mask = np.isfinite(v)
+    if not np.any(mask):
+        return float("nan"), -1
+    idx = int(np.nanargmax(v))
+    return float(v[idx]), idx
+
+
+def _nanmin_ignore(a: np.ndarray) -> Tuple[float, int]:
+    v = np.asarray(a, dtype=np.float64)
+    if v.size == 0:
+        return float("nan"), -1
+    mask = np.isfinite(v)
+    if not np.any(mask):
+        return float("nan"), -1
+    idx = int(np.nanargmin(v))
+    return float(v[idx]), idx
+
+
+def _ensure_legacy_symlinks(out_root: Path, models_root: Path) -> None:
+    """Backward compat: out_root/FF -> models/FF, out_root/FF_vs_FT -> comparisons/ff_vs_ft."""
+    legacy_map = [
+        ("BASELINE", "BASELINE"),
+        ("FF", "FF"),
+        ("FT", "FT"),
+        ("TT", "TT"),
+    ]
+    for legacy_name, model_name in legacy_map:
+        src = models_root / model_name
+        dst = out_root / legacy_name
+        if not src.exists():
+            continue
+        if dst.exists() or dst.is_symlink():
+            continue
+        try:
+            dst.symlink_to(f"models/{model_name}", target_is_directory=True)
+        except OSError:
+            LOGGER.warning("Could not create symlink %s -> models/%s", dst, model_name)
+
+    cmp_src = out_root / "comparisons" / "ff_vs_ft"
+    cmp_dst = out_root / "FF_vs_FT"
+    if cmp_src.exists() and not cmp_dst.exists() and not cmp_dst.is_symlink():
+        try:
+            cmp_dst.symlink_to("comparisons/ff_vs_ft", target_is_directory=True)
+        except OSError:
+            LOGGER.warning("Could not create symlink FF_vs_FT -> comparisons/ff_vs_ft")
+
+
 def _make_noise_banks(
     *,
     num_images: int,
@@ -623,10 +717,13 @@ def _collect_pred_xstart_streaming_stats(
 
 
 @torch.no_grad()
-def _collect_cross_model_same_t_delta(
+def _collect_cross_model_pair_delta(
     *,
-    model_ff: nn.Module,
-    model_ft: nn.Module,
+    model_a: nn.Module,
+    model_b: nn.Module,
+    mode_a: str,
+    mode_b: str,
+    latent_net: nn.Module,
     sampler,
     latent_sampler,
     conf: Any,
@@ -639,8 +736,9 @@ def _collect_cross_model_same_t_delta(
     chunk_batch: int,
     device: torch.device,
 ) -> Dict[str, Any]:
-    _configure_model_quant_mode(model_ff, "FF")
-    _configure_model_quant_mode(model_ft, "FT")
+    """Same-t pred_xstart L1/L2/cosine between two models (aligned progressive loops)."""
+    _configure_model_quant_mode(model_a, mode_a)
+    _configure_model_quant_mode(model_b, mode_b)
     same_t = [_MetricAccumulator() for _ in range(T)]
     num_images = x_T_bank.shape[0]
     num_chunks = num_images // chunk_batch
@@ -653,7 +751,7 @@ def _collect_cross_model_same_t_delta(
             cond_chunk = _compute_latent_cond(
                 conf=conf,
                 latent_sampler=latent_sampler,
-                latent_net=model_ff.latent_net,
+                latent_net=latent_net,
                 latent_noise_chunk=latent_noise_chunk,
                 conds_mean=conds_mean,
                 conds_std=conds_std,
@@ -662,8 +760,8 @@ def _collect_cross_model_same_t_delta(
             model_kwargs = {"cond": cond_chunk}
         else:
             model_kwargs = None
-        gen_ff = sampler.ddim_sample_loop_progressive(
-            model=model_ff,
+        gen_a = sampler.ddim_sample_loop_progressive(
+            model=model_a,
             noise=x_T_chunk,
             clip_denoised=clip_denoised,
             model_kwargs=model_kwargs,
@@ -672,8 +770,8 @@ def _collect_cross_model_same_t_delta(
             eta=0.0,
             cache_scheduler=cache_scheduler,
         )
-        gen_ft = sampler.ddim_sample_loop_progressive(
-            model=model_ft,
+        gen_b = sampler.ddim_sample_loop_progressive(
+            model=model_b,
             noise=x_T_chunk,
             clip_denoised=clip_denoised,
             model_kwargs=model_kwargs,
@@ -682,14 +780,16 @@ def _collect_cross_model_same_t_delta(
             eta=0.0,
             cache_scheduler=cache_scheduler,
         )
-        for out_ff, out_ft in zip(gen_ff, gen_ft):
-            t_ff = int(out_ff["t"][0].item())
-            t_ft = int(out_ft["t"][0].item())
-            if t_ff != t_ft:
-                raise RuntimeError(f"timestep mismatch in FF/FT progressive loop: {t_ff} vs {t_ft}")
-            same_t[t_ff].update(out_ff["pred_xstart"], out_ft["pred_xstart"])
+        for out_a, out_b in zip(gen_a, gen_b):
+            t_a = int(out_a["t"][0].item())
+            t_b = int(out_b["t"][0].item())
+            if t_a != t_b:
+                raise RuntimeError(
+                    f"timestep mismatch in progressive loop ({mode_a}/{mode_b}): {t_a} vs {t_b}"
+                )
+            same_t[t_a].update(out_a["pred_xstart"], out_b["pred_xstart"])
     by_t = {str(t): same_t[t].summary() for t in range(T)}
-    return {"by_t": by_t}
+    return {"by_t": by_t, "meta": {"mode_a": mode_a, "mode_b": mode_b, "T": T}}
 
 
 @torch.no_grad()
@@ -795,13 +895,17 @@ def _save_stats_outputs(
     # self trajectory delta
     by_t = stats["stats_by_t"]
     self_delta_json = {
-        "meta": stats_json["meta"],
+        "meta": {
+            **stats_json["meta"],
+            **SELF_DELTA_BOUNDARY_META,
+            "nan_explanation": "Timesteps with adjacent_count==0 have no valid adjacent comparison (boundary of the DDIM chain per chunk).",
+        },
         "by_t": {
             str(t): {
                 "l1": by_t[str(t)].get("adjacent_l1", np.nan),
                 "l2": by_t[str(t)].get("adjacent_l2", np.nan),
                 "cosine": by_t[str(t)].get("adjacent_cosine", np.nan),
-                "count": by_t[str(t)].get("adjacent_count", 0),
+                "adjacent_count": int(by_t[str(t)].get("adjacent_count", 0)),
             }
             for t in range(T)
             if str(t) in by_t
@@ -815,12 +919,41 @@ def _save_stats_outputs(
         l1=np.array([self_delta_json["by_t"].get(str(t), {}).get("l1", np.nan) for t in range(T)], dtype=np.float64),
         l2=np.array([self_delta_json["by_t"].get(str(t), {}).get("l2", np.nan) for t in range(T)], dtype=np.float64),
         cosine=np.array([self_delta_json["by_t"].get(str(t), {}).get("cosine", np.nan) for t in range(T)], dtype=np.float64),
+        adjacent_count=np.array(
+            [self_delta_json["by_t"].get(str(t), {}).get("adjacent_count", 0) for t in range(T)], dtype=np.int64
+        ),
     )
 
 
 def _t_series_from_stats(stats_json: Dict[str, Any], key: str, T: int) -> np.ndarray:
     by_t = stats_json.get("by_t", {})
     return np.array([float(by_t.get(str(t), {}).get(key, np.nan)) for t in range(T)], dtype=np.float64)
+
+
+def _plot_overlay_two_curves(
+    *,
+    t: np.ndarray,
+    y_a: np.ndarray,
+    y_b: np.ndarray,
+    label_a: str,
+    label_b: str,
+    ylabel: str,
+    title: str,
+    out_png: Path,
+) -> None:
+    plt.figure(figsize=(8.5, 4.2))
+    plt.plot(t, y_a, label=label_a, linewidth=1.8)
+    plt.plot(t, y_b, label=label_b, linewidth=1.8)
+    plt.gca().invert_xaxis()
+    plt.grid(True, alpha=0.25)
+    plt.xlabel("DDIM timestep t (left=noisy, right=clear)")
+    plt.ylabel(ylabel)
+    plt.title(title)
+    plt.legend(loc="best")
+    out_png.parent.mkdir(parents=True, exist_ok=True)
+    plt.tight_layout()
+    plt.savefig(out_png, dpi=180)
+    plt.close()
 
 
 def _plot_overlay_curve(
@@ -832,19 +965,9 @@ def _plot_overlay_curve(
     title: str,
     out_png: Path,
 ) -> None:
-    plt.figure(figsize=(8.5, 4.2))
-    plt.plot(t, ff, label="FF", linewidth=1.8)
-    plt.plot(t, ft, label="FT", linewidth=1.8)
-    plt.gca().invert_xaxis()
-    plt.grid(True, alpha=0.25)
-    plt.xlabel("DDIM timestep t")
-    plt.ylabel(ylabel)
-    plt.title(title)
-    plt.legend(loc="best")
-    out_png.parent.mkdir(parents=True, exist_ok=True)
-    plt.tight_layout()
-    plt.savefig(out_png, dpi=180)
-    plt.close()
+    _plot_overlay_two_curves(
+        t=t, y_a=ff, y_b=ft, label_a="FF", label_b="FT", ylabel=ylabel, title=title, out_png=out_png
+    )
 
 
 def _plot_quantile_band_overlay_from_stats(
@@ -894,6 +1017,629 @@ def _plot_quantile_band_overlay_from_stats(
     plt.close()
 
 
+def _mode_key_short(mode: str) -> str:
+    u = mode.upper()
+    if u == "BASELINE":
+        return "baseline"
+    return u.lower()
+
+
+def _save_distance_to_final_json(mode_dir: Path, dist: Dict[str, Any], T: int, mode: str) -> None:
+    mode_dir.mkdir(parents=True, exist_ok=True)
+    payload = {"meta": {"mode": mode, "T": T}, "by_t": dist["by_t"]}
+    with open(mode_dir / "distance_to_final.json", "w", encoding="utf-8") as f:
+        json.dump(payload, f, indent=2, ensure_ascii=False)
+    l1 = np.array([dist["by_t"].get(str(t), {}).get("l1", np.nan) for t in range(T)], dtype=np.float64)
+    l2 = np.array([dist["by_t"].get(str(t), {}).get("l2", np.nan) for t in range(T)], dtype=np.float64)
+    cos = np.array([dist["by_t"].get(str(t), {}).get("cosine", np.nan) for t in range(T)], dtype=np.float64)
+    np.savez_compressed(mode_dir / "distance_to_final.npz", t=np.arange(T, dtype=np.int32), l1=l1, l2=l2, cosine=cos)
+
+
+def _divergence_stats_from_series(
+    l1: np.ndarray, l2: np.ndarray, cos: np.ndarray, zones: Dict[str, np.ndarray]
+) -> Dict[str, Any]:
+    """Aggregate stats; ignores NaNs (boundary / missing)."""
+    out: Dict[str, Any] = {
+        "l1": {
+            "mean_over_t": _nanmean_ignore(l1),
+            "max_over_t": _nanmax_ignore(l1)[0],
+            "argmax_timestep": _nanmax_ignore(l1)[1],
+        },
+        "l2": {
+            "mean_over_t": _nanmean_ignore(l2),
+            "max_over_t": _nanmax_ignore(l2)[0],
+            "argmax_timestep": _nanmax_ignore(l2)[1],
+        },
+        "cosine": {
+            "mean_over_t": _nanmean_ignore(cos),
+            "min_over_t": _nanmin_ignore(cos)[0],
+            "argmin_timestep": _nanmin_ignore(cos)[1],
+        },
+        "zones": {},
+    }
+    for zn, mask in zones.items():
+        m = np.asarray(mask, dtype=bool)
+        if m.size != l1.size:
+            continue
+        out["zones"][zn] = {
+            "l1_mean": _nanmean_ignore(np.where(m, l1, np.nan)),
+            "l2_mean": _nanmean_ignore(np.where(m, l2, np.nan)),
+            "cosine_mean": _nanmean_ignore(np.where(m, cos, np.nan)),
+        }
+    return out
+
+
+def _write_divergence_to_baseline_file(
+    *,
+    out_path: Path,
+    cross: Dict[str, Any],
+    T: int,
+    target_mode: str,
+) -> Dict[str, Any]:
+    """cross = same-t delta between BASELINE and target M."""
+    l1 = np.array([cross["by_t"].get(str(t), {}).get("l1", np.nan) for t in range(T)], dtype=np.float64)
+    l2 = np.array([cross["by_t"].get(str(t), {}).get("l2", np.nan) for t in range(T)], dtype=np.float64)
+    cos = np.array([cross["by_t"].get(str(t), {}).get("cosine", np.nan) for t in range(T)], dtype=np.float64)
+    zones = _timestep_zone_masks(T)
+    summary = _divergence_stats_from_series(l1, l2, cos, zones)
+    payload = {
+        "meta": {
+            "reference": "BASELINE",
+            "target": target_mode,
+            "T": T,
+            "description": "Per-timestep ||pred_xstart_baseline - pred_xstart_target|| metrics (batch-mean L1/L2, cosine).",
+        },
+        "series": {"l1": l1.tolist(), "l2": l2.tolist(), "cosine": cos.tolist(), "t": list(range(T))},
+        "summary": summary,
+    }
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(out_path, "w", encoding="utf-8") as f:
+        json.dump(payload, f, indent=2, ensure_ascii=False)
+    return payload
+
+
+def _series_from_stats_key(stats_json: Dict[str, Any], key: str, T: int) -> np.ndarray:
+    return _t_series_from_stats(stats_json, key, T)
+
+
+def _high_noise_zone_metrics(stats_json: Dict[str, Any], T: int) -> Dict[str, float]:
+    """Mean over high-noise timesteps of selected scalar stats."""
+    zones = _timestep_zone_masks(T)
+    hi = zones["high_noise"]
+    keys = ["q50", "std", "abs_max", "q99", "saturation_ratio_abs_ge_099", "positive_ratio", "negative_ratio"]
+    out: Dict[str, float] = {}
+    for k in keys:
+        s = _series_from_stats_key(stats_json, k, T)
+        out[f"mean_{k}_high_noise_zone"] = float(_nanmean_ignore(np.where(hi, s, np.nan)))
+    return out
+
+
+def _pairwise_high_noise_diff(
+    stats_a: Dict[str, Any], stats_b: Dict[str, Any], T: int, pair_name: str
+) -> Dict[str, Any]:
+    ma = _high_noise_zone_metrics(stats_a, T)
+    mb = _high_noise_zone_metrics(stats_b, T)
+    out: Dict[str, Any] = {"pair": pair_name}
+    key_map = {
+        "mean_q50_high_noise_zone": "mean_diff_q50_high_noise",
+        "mean_std_high_noise_zone": "mean_diff_std_high_noise",
+        "mean_abs_max_high_noise_zone": "mean_diff_abs_max_high_noise",
+        "mean_q99_high_noise_zone": "mean_diff_q99_high_noise",
+        "mean_saturation_ratio_abs_ge_099_high_noise_zone": "mean_diff_sat099_high_noise",
+        "mean_positive_ratio_high_noise_zone": "mean_diff_pos_ratio_high_noise",
+        "mean_negative_ratio_high_noise_zone": "mean_diff_neg_ratio_high_noise",
+    }
+    for src, dst in key_map.items():
+        if src in ma and src in mb:
+            out[dst] = float(mb[src] - ma[src])
+    return out
+
+
+def _self_delta_series_from_stats(stats_json: Dict[str, Any], T: int) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    l1 = _series_from_stats_key(stats_json, "adjacent_l1", T)
+    l2 = _series_from_stats_key(stats_json, "adjacent_l2", T)
+    cos = _series_from_stats_key(stats_json, "adjacent_cosine", T)
+    return l1, l2, cos
+
+
+def _trajectory_self_summary(l1: np.ndarray, l2: np.ndarray, cos: np.ndarray, T: int) -> Dict[str, Any]:
+    zones = _timestep_zone_masks(T)
+    hi = zones["high_noise"]
+    return {
+        "self_trajectory_delta": {
+            "mean_L1_all_t": _nanmean_ignore(l1),
+            "mean_L2_all_t": _nanmean_ignore(l2),
+            "mean_cosine_all_t": _nanmean_ignore(cos),
+            "mean_L1_high_noise": _nanmean_ignore(np.where(hi, l1, np.nan)),
+            "mean_L2_high_noise": _nanmean_ignore(np.where(hi, l2, np.nan)),
+            "mean_cosine_high_noise": _nanmean_ignore(np.where(hi, cos, np.nan)),
+            "max_L1": _nanmax_ignore(l1)[0],
+            "argmax_L1_timestep": _nanmax_ignore(l1)[1],
+            "max_L2": _nanmax_ignore(l2)[0],
+            "argmax_L2_timestep": _nanmax_ignore(l2)[1],
+            "min_cosine": _nanmin_ignore(cos)[0],
+            "argmin_cosine_timestep": _nanmin_ignore(cos)[1],
+        }
+    }
+
+
+def _distance_to_final_summary_from_by_t(by_t: Dict[str, Any], T: int) -> Dict[str, Any]:
+    l1 = np.array([by_t.get(str(t), {}).get("l1", np.nan) for t in range(T)], dtype=np.float64)
+    l2 = np.array([by_t.get(str(t), {}).get("l2", np.nan) for t in range(T)], dtype=np.float64)
+    cos = np.array([by_t.get(str(t), {}).get("cosine", np.nan) for t in range(T)], dtype=np.float64)
+    zones = _timestep_zone_masks(T)
+    return {
+        "distance_to_final": {
+            "mean_L1_all_t": _nanmean_ignore(l1),
+            "mean_L2_all_t": _nanmean_ignore(l2),
+            "mean_cosine_all_t": _nanmean_ignore(cos),
+            "mean_L1_high_noise": _nanmean_ignore(np.where(zones["high_noise"], l1, np.nan)),
+            "mean_L1_middle": _nanmean_ignore(np.where(zones["middle_noise"], l1, np.nan)),
+            "mean_L1_low_noise": _nanmean_ignore(np.where(zones["low_noise"], l1, np.nan)),
+            "mean_L2_high_noise": _nanmean_ignore(np.where(zones["high_noise"], l2, np.nan)),
+            "mean_L2_middle": _nanmean_ignore(np.where(zones["middle_noise"], l2, np.nan)),
+            "mean_L2_low_noise": _nanmean_ignore(np.where(zones["low_noise"], l2, np.nan)),
+            "mean_cosine_high_noise": _nanmean_ignore(np.where(zones["high_noise"], cos, np.nan)),
+            "mean_cosine_middle": _nanmean_ignore(np.where(zones["middle_noise"], cos, np.nan)),
+            "mean_cosine_low_noise": _nanmean_ignore(np.where(zones["low_noise"], cos, np.nan)),
+        }
+    }
+
+
+def _write_model_trajectory_summary_json(
+    *,
+    mode_dir: Path,
+    stats_json: Dict[str, Any],
+    dist_by_t: Optional[Dict[str, Any]],
+    T: int,
+    mode: str,
+) -> Dict[str, Any]:
+    l1, l2, cos = _self_delta_series_from_stats(stats_json, T)
+    payload: Dict[str, Any] = {
+        "meta": {"mode": mode, "T": T, **SELF_DELTA_BOUNDARY_META},
+        **_trajectory_self_summary(l1, l2, cos, T),
+    }
+    if dist_by_t is not None:
+        payload.update(_distance_to_final_summary_from_by_t(dist_by_t, T))
+    mode_dir.mkdir(parents=True, exist_ok=True)
+    with open(mode_dir / "trajectory_summary.json", "w", encoding="utf-8") as f:
+        json.dump(payload, f, indent=2, ensure_ascii=False)
+    return payload
+
+
+def _plot_baseline_divergence_overlays(
+    *,
+    div_payloads: Dict[str, Dict[str, Any]],
+    plots_summary: Path,
+    T: int,
+) -> None:
+    """div_payloads keys: ff, ft, tt — each has series l1, cosine."""
+    t = np.arange(T)
+    plots_summary.mkdir(parents=True, exist_ok=True)
+    plt.figure(figsize=(8.5, 4.2))
+    for label, key in [("FF", "ff"), ("FT", "ft"), ("TT", "tt")]:
+        if key in div_payloads:
+            s = div_payloads[key]["series"]["l1"]
+            plt.plot(t, np.asarray(s, dtype=np.float64), label=f"BASELINE vs {label}", linewidth=1.8)
+    plt.gca().invert_xaxis()
+    plt.grid(True, alpha=0.25)
+    plt.xlabel("DDIM timestep t (left=noisy, right=clear)")
+    plt.ylabel("L1")
+    plt.title("Divergence to baseline (L1)")
+    plt.legend(loc="best")
+    plt.tight_layout()
+    plt.savefig(plots_summary / "baseline_divergence_l1_overlay.png", dpi=180)
+    plt.close()
+
+    plt.figure(figsize=(8.5, 4.2))
+    for label, key in [("FF", "ff"), ("FT", "ft"), ("TT", "tt")]:
+        if key in div_payloads:
+            s = div_payloads[key]["series"]["cosine"]
+            plt.plot(t, np.asarray(s, dtype=np.float64), label=f"BASELINE vs {label}", linewidth=1.8)
+    plt.gca().invert_xaxis()
+    plt.grid(True, alpha=0.25)
+    plt.xlabel("DDIM timestep t (left=noisy, right=clear)")
+    plt.ylabel("cosine")
+    plt.title("Divergence to baseline (cosine)")
+    plt.legend(loc="best")
+    plt.tight_layout()
+    plt.savefig(plots_summary / "baseline_divergence_cos_overlay.png", dpi=180)
+    plt.close()
+
+
+def _plot_high_noise_model_comparison(
+    *,
+    stats_by_mode: Dict[str, Dict[str, Any]],
+    plots_summary: Path,
+    T: int,
+) -> None:
+    """One compact 2x2 of std / q99 / sat099 / pos_ratio for BASELINE, FF, FT, TT when present."""
+    t = np.arange(T)
+    modes_order = ["BASELINE", "FF", "FT", "TT"]
+    present = [m for m in modes_order if m in stats_by_mode]
+    if not present:
+        return
+    plots_summary.mkdir(parents=True, exist_ok=True)
+
+    def series(m: str, k: str) -> np.ndarray:
+        return _series_from_stats_key(stats_by_mode[m], k, T)
+
+    fig, axes = plt.subplots(2, 2, figsize=(9, 7), sharex=True)
+    pairs = [
+        (axes[0, 0], "std", "std"),
+        (axes[0, 1], "q99", "q99"),
+        (axes[1, 0], "saturation_ratio_abs_ge_099", "sat(|x|>=0.99)"),
+        (axes[1, 1], "positive_ratio", "positive ratio"),
+    ]
+    for ax, key, ylab in pairs:
+        for m in present:
+            ax.plot(t, series(m, key), label=m, linewidth=1.6)
+        ax.invert_xaxis()
+        ax.grid(True, alpha=0.25)
+        ax.set_ylabel(ylab)
+        ax.legend(loc="best", fontsize=8)
+    for ax in axes[-1, :]:
+        ax.set_xlabel("DDIM timestep t (left=noisy, right=clear)")
+    fig.suptitle("High-noise-relevant pred_xstart stats (full trajectory)")
+    plt.tight_layout()
+    plt.savefig(plots_summary / "high_noise_metrics_models_overlay.png", dpi=180)
+    plt.close()
+
+
+def _plot_trajectory_regularization_overlays(
+    *,
+    stats_by_mode: Dict[str, Dict[str, Any]],
+    dist_by_mode: Dict[str, Optional[Dict[str, Any]]],
+    plots_summary: Path,
+    T: int,
+) -> None:
+    t = np.arange(T)
+    plots_summary.mkdir(parents=True, exist_ok=True)
+    order = ["BASELINE", "FF", "FT", "TT"]
+    present = [m for m in order if m in stats_by_mode]
+    plt.figure(figsize=(8.5, 4.2))
+    for m in present:
+        l1, _, _ = _self_delta_series_from_stats(stats_by_mode[m], T)
+        plt.plot(t, l1, label=m, linewidth=1.6)
+    plt.gca().invert_xaxis()
+    plt.grid(True, alpha=0.25)
+    plt.xlabel("DDIM timestep t (left=noisy, right=clear)")
+    plt.ylabel("L1")
+    plt.title("Self trajectory delta (adjacent L1)")
+    plt.legend(loc="best")
+    plt.tight_layout()
+    plt.savefig(plots_summary / "trajectory_self_delta_l1_overlay.png", dpi=180)
+    plt.close()
+
+    plt.figure(figsize=(8.5, 4.2))
+    for m in present:
+        d = dist_by_mode.get(m)
+        if d is None:
+            continue
+        by_t = d["by_t"]
+        l1 = np.array([by_t.get(str(ti), {}).get("l1", np.nan) for ti in range(T)], dtype=np.float64)
+        plt.plot(t, l1, label=m, linewidth=1.6)
+    plt.gca().invert_xaxis()
+    plt.grid(True, alpha=0.25)
+    plt.xlabel("DDIM timestep t (left=noisy, right=clear)")
+    plt.ylabel("L1 to final pred_xstart")
+    plt.title("Distance to final (L1)")
+    plt.legend(loc="best")
+    plt.tight_layout()
+    plt.savefig(plots_summary / "trajectory_distance_to_final_l1_overlay.png", dpi=180)
+    plt.close()
+
+
+def _write_analysis_summary_md(
+    *,
+    out_path: Path,
+    T: int,
+    baseline_div: Dict[str, Dict[str, Any]],
+    high_noise_path: Path,
+    traj_path: Path,
+) -> None:
+    lines = [
+        "# Pred-xstart trajectory analysis — auto draft",
+        "",
+        "此檔為依統計自動產生的**保守**摘要，不宣稱訓練或量化之因果機制。",
+        "",
+        "## 1. 本次分析驗證了什麼",
+        "",
+        f"- 在 T={T} 的 DDIM progressive 軌跡上，對 pred_xstart 做 per-timestep 分佈與跨模型對齊度量。",
+        "- 若已產生 `divergence_to_baseline.json`，可讀取量化模型與 BASELINE 在同一 noise level 的張量差異（L1/L2/cosine）。",
+        "- 若已產生 `high_noise_regime_summary.json` 與 `trajectory_regularization_summary.json`，可比較高噪聲區段的標的統計與軌跡平滑度/距離終點。",
+        "",
+        "## 2. 目前可支持的中間結論（僅陳述觀測）",
+        "",
+        "- 請以數值為準：比較各 `summary` JSON 內 mean / zone mean，而非僅看圖。",
+        "- 若某模型在 high-noise zone 的 `saturation_ratio_abs_ge_099` 或 `std` 明顯較高，代表該區段 pred_xstart 分佈較分散或較常觸及飽和；**這不自動等於**生成品質較差。",
+        "",
+        "## 3. 目前仍不能直接下的結論",
+        "",
+        "- 「為何量化後比原作更好」涉及感知指標、資料與訓練目標；本管線**不**量測 FID/LPIPS 或重建誤差。",
+        "- pred_xstart 統計差異**不**等同於 latent 或權重空間的因果解釋。",
+        "",
+        "## 4. 建議的下一步",
+        "",
+        "- 將此處 high-noise / divergence 指標與實際樣本視覺與下游指標對照。",
+        f"- 檢查：`{high_noise_path.name}`、`{traj_path.name}`。",
+        "",
+        "## 附註：self trajectory delta 的 NaN",
+        "",
+        f"- {SELF_DELTA_BOUNDARY_META['boundary_nan_policy']}；summary 已忽略合法 NaN。",
+        "",
+    ]
+    if baseline_div:
+        lines.append("### Baseline divergence 摘要（mean L1 over t）")
+        lines.append("")
+        for k, pl in baseline_div.items():
+            s = pl.get("summary", {}).get("l1", {}).get("mean_over_t", float("nan"))
+            lines.append(f"- {k}: {s}")
+        lines.append("")
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text("\n".join(lines), encoding="utf-8")
+
+
+def _save_pairwise_compare_outputs(
+    *,
+    compare_dir: Path,
+    plots_pairwise: Path,
+    name_a: str,
+    name_b: str,
+    stats_a: Dict[str, Any],
+    stats_b: Dict[str, Any],
+    cross_same_t: Dict[str, Any],
+    dist_a_final: Optional[Dict[str, Any]],
+    dist_b_final: Optional[Dict[str, Any]],
+    T: int,
+    skip_plots: bool,
+    plot_file_prefix: str,
+) -> None:
+    """Generic FF/FT-style compare; diff_* = second model minus first (name_b - name_a)."""
+    compare_dir.mkdir(parents=True, exist_ok=True)
+    plots_pairwise.mkdir(parents=True, exist_ok=True)
+    ka = _mode_key_short(name_a)
+    kb = _mode_key_short(name_b)
+
+    def q50(s: Dict[str, Any]) -> np.ndarray:
+        return _t_series_from_stats(s, "q50", T)
+
+    def std(s: Dict[str, Any]) -> np.ndarray:
+        return _t_series_from_stats(s, "std", T)
+
+    def absmax(s: Dict[str, Any]) -> np.ndarray:
+        return _t_series_from_stats(s, "abs_max", T)
+
+    def q99(s: Dict[str, Any]) -> np.ndarray:
+        return _t_series_from_stats(s, "q99", T)
+
+    a_q50, b_q50 = q50(stats_a), q50(stats_b)
+    a_std, b_std = std(stats_a), std(stats_b)
+    a_absmax, b_absmax = absmax(stats_a), absmax(stats_b)
+    a_q99, b_q99 = q99(stats_a), q99(stats_b)
+    same_t_l1 = np.array([cross_same_t["by_t"].get(str(t), {}).get("l1", np.nan) for t in range(T)], dtype=np.float64)
+    same_t_l2 = np.array([cross_same_t["by_t"].get(str(t), {}).get("l2", np.nan) for t in range(T)], dtype=np.float64)
+    same_t_cos = np.array([cross_same_t["by_t"].get(str(t), {}).get("cosine", np.nan) for t in range(T)], dtype=np.float64)
+    a_self_l1 = _t_series_from_stats(stats_a, "adjacent_l1", T)
+    b_self_l1 = _t_series_from_stats(stats_b, "adjacent_l1", T)
+    a_self_l2 = _t_series_from_stats(stats_a, "adjacent_l2", T)
+    b_self_l2 = _t_series_from_stats(stats_b, "adjacent_l2", T)
+    a_self_cos = _t_series_from_stats(stats_a, "adjacent_cosine", T)
+    b_self_cos = _t_series_from_stats(stats_b, "adjacent_cosine", T)
+    cmp_json = {
+        "meta": {"T": T, "mode_a": name_a, "mode_b": name_b, "diff_definition": f"{kb}_minus_{ka}"},
+        "series": {
+            f"{ka}_q50": a_q50.tolist(),
+            f"{kb}_q50": b_q50.tolist(),
+            f"{ka}_std": a_std.tolist(),
+            f"{kb}_std": b_std.tolist(),
+            f"{ka}_abs_max": a_absmax.tolist(),
+            f"{kb}_abs_max": b_absmax.tolist(),
+            f"{ka}_q99": a_q99.tolist(),
+            f"{kb}_q99": b_q99.tolist(),
+            "diff_q50": (b_q50 - a_q50).tolist(),
+            "diff_std": (b_std - a_std).tolist(),
+            "diff_abs_max": (b_absmax - a_absmax).tolist(),
+            "diff_q99": (b_q99 - a_q99).tolist(),
+            "same_t_l1": same_t_l1.tolist(),
+            "same_t_l2": same_t_l2.tolist(),
+            "same_t_cosine": same_t_cos.tolist(),
+            f"{ka}_self_delta_l1": a_self_l1.tolist(),
+            f"{kb}_self_delta_l1": b_self_l1.tolist(),
+            f"{ka}_self_delta_l2": a_self_l2.tolist(),
+            f"{kb}_self_delta_l2": b_self_l2.tolist(),
+            f"{ka}_self_delta_cosine": a_self_cos.tolist(),
+            f"{kb}_self_delta_cosine": b_self_cos.tolist(),
+        },
+    }
+    with open(compare_dir / "pred_xstart_compare.json", "w", encoding="utf-8") as f:
+        json.dump(cmp_json, f, indent=2, ensure_ascii=False)
+    np.savez_compressed(
+        compare_dir / "pred_xstart_compare.npz",
+        **{k: np.array(v) for k, v in cmp_json["series"].items()},
+        t=np.arange(T),
+    )
+    with open(compare_dir / "cross_model_same_t_delta.json", "w", encoding="utf-8") as f:
+        json.dump({"meta": {"T": T}, "by_t": cross_same_t["by_t"]}, f, indent=2, ensure_ascii=False)
+    np.savez_compressed(compare_dir / "cross_model_same_t_delta.npz", t=np.arange(T), l1=same_t_l1, l2=same_t_l2, cosine=same_t_cos)
+    if dist_a_final is not None and dist_b_final is not None:
+        a_fd_l1 = np.array([dist_a_final["by_t"].get(str(t), {}).get("l1", np.nan) for t in range(T)], dtype=np.float64)
+        a_fd_l2 = np.array([dist_a_final["by_t"].get(str(t), {}).get("l2", np.nan) for t in range(T)], dtype=np.float64)
+        a_fd_cos = np.array([dist_a_final["by_t"].get(str(t), {}).get("cosine", np.nan) for t in range(T)], dtype=np.float64)
+        b_fd_l1 = np.array([dist_b_final["by_t"].get(str(t), {}).get("l1", np.nan) for t in range(T)], dtype=np.float64)
+        b_fd_l2 = np.array([dist_b_final["by_t"].get(str(t), {}).get("l2", np.nan) for t in range(T)], dtype=np.float64)
+        b_fd_cos = np.array([dist_b_final["by_t"].get(str(t), {}).get("cosine", np.nan) for t in range(T)], dtype=np.float64)
+        with open(compare_dir / "distance_to_final_compare.json", "w", encoding="utf-8") as f:
+            json.dump(
+                {
+                    "meta": {"T": T, "mode_a": name_a, "mode_b": name_b},
+                    "series": {
+                        f"{ka}_l1": a_fd_l1.tolist(),
+                        f"{ka}_l2": a_fd_l2.tolist(),
+                        f"{ka}_cosine": a_fd_cos.tolist(),
+                        f"{kb}_l1": b_fd_l1.tolist(),
+                        f"{kb}_l2": b_fd_l2.tolist(),
+                        f"{kb}_cosine": b_fd_cos.tolist(),
+                        "diff_l1": (b_fd_l1 - a_fd_l1).tolist(),
+                        "diff_l2": (b_fd_l2 - a_fd_l2).tolist(),
+                        "diff_cosine": (b_fd_cos - a_fd_cos).tolist(),
+                    },
+                },
+                f,
+                indent=2,
+                ensure_ascii=False,
+            )
+        np.savez_compressed(
+            compare_dir / "distance_to_final_compare.npz",
+            t=np.arange(T),
+            **{
+                f"{ka}_l1": a_fd_l1,
+                f"{ka}_l2": a_fd_l2,
+                f"{ka}_cosine": a_fd_cos,
+                f"{kb}_l1": b_fd_l1,
+                f"{kb}_l2": b_fd_l2,
+                f"{kb}_cosine": b_fd_cos,
+            },
+        )
+    if skip_plots:
+        return
+    t = np.arange(T)
+    pf = plot_file_prefix
+    _plot_overlay_two_curves(
+        t=t,
+        y_a=a_q50,
+        y_b=b_q50,
+        label_a=name_a,
+        label_b=name_b,
+        ylabel="q50",
+        title=f"{pf} pred_xstart q50",
+        out_png=plots_pairwise / f"{pf}_pred_xstart_q50_overlay.png",
+    )
+    _plot_overlay_two_curves(
+        t=t,
+        y_a=a_std,
+        y_b=b_std,
+        label_a=name_a,
+        label_b=name_b,
+        ylabel="std",
+        title=f"{pf} pred_xstart std",
+        out_png=plots_pairwise / f"{pf}_pred_xstart_std_overlay.png",
+    )
+    _plot_overlay_two_curves(
+        t=t,
+        y_a=a_absmax,
+        y_b=b_absmax,
+        label_a=name_a,
+        label_b=name_b,
+        ylabel="abs_max",
+        title=f"{pf} pred_xstart abs_max",
+        out_png=plots_pairwise / f"{pf}_pred_xstart_absmax_overlay.png",
+    )
+    _plot_overlay_two_curves(
+        t=t,
+        y_a=a_q99,
+        y_b=b_q99,
+        label_a=name_a,
+        label_b=name_b,
+        ylabel="q99",
+        title=f"{pf} pred_xstart q99",
+        out_png=plots_pairwise / f"{pf}_pred_xstart_q99_overlay.png",
+    )
+    plt.figure(figsize=(8.5, 4.2))
+    plt.plot(t, same_t_l1, linewidth=1.8)
+    plt.gca().invert_xaxis()
+    plt.grid(True, alpha=0.25)
+    plt.xlabel("DDIM timestep t (left=noisy, right=clear)")
+    plt.ylabel("L1")
+    plt.title(f"{pf} same-t L1")
+    plt.tight_layout()
+    plt.savefig(plots_pairwise / f"{pf}_same_t_l1_curve.png", dpi=180)
+    plt.close()
+    plt.figure(figsize=(8.5, 4.2))
+    plt.plot(t, same_t_l2, linewidth=1.8)
+    plt.gca().invert_xaxis()
+    plt.grid(True, alpha=0.25)
+    plt.xlabel("DDIM timestep t (left=noisy, right=clear)")
+    plt.ylabel("L2")
+    plt.title(f"{pf} same-t L2")
+    plt.tight_layout()
+    plt.savefig(plots_pairwise / f"{pf}_same_t_l2_curve.png", dpi=180)
+    plt.close()
+    plt.figure(figsize=(8.5, 4.2))
+    plt.plot(t, same_t_cos, linewidth=1.8)
+    plt.gca().invert_xaxis()
+    plt.grid(True, alpha=0.25)
+    plt.xlabel("DDIM timestep t (left=noisy, right=clear)")
+    plt.ylabel("cosine")
+    plt.title(f"{pf} same-t cosine")
+    plt.tight_layout()
+    plt.savefig(plots_pairwise / f"{pf}_same_t_cos_curve.png", dpi=180)
+    plt.close()
+    _plot_overlay_two_curves(
+        t=t,
+        y_a=a_self_l1,
+        y_b=b_self_l1,
+        label_a=name_a,
+        label_b=name_b,
+        ylabel="L1",
+        title=f"{pf} self trajectory adjacent L1",
+        out_png=plots_pairwise / f"{pf}_self_delta_l1_compare.png",
+    )
+    _plot_overlay_two_curves(
+        t=t,
+        y_a=a_self_l2,
+        y_b=b_self_l2,
+        label_a=name_a,
+        label_b=name_b,
+        ylabel="L2",
+        title=f"{pf} self trajectory adjacent L2",
+        out_png=plots_pairwise / f"{pf}_self_delta_l2_compare.png",
+    )
+    _plot_overlay_two_curves(
+        t=t,
+        y_a=a_self_cos,
+        y_b=b_self_cos,
+        label_a=name_a,
+        label_b=name_b,
+        ylabel="cosine",
+        title=f"{pf} self trajectory adjacent cosine",
+        out_png=plots_pairwise / f"{pf}_self_delta_cos_compare.png",
+    )
+    dtf = compare_dir / "distance_to_final_compare.npz"
+    if dtf.exists():
+        fd = np.load(dtf)
+        _plot_overlay_two_curves(
+            t=t,
+            y_a=fd[f"{ka}_l1"],
+            y_b=fd[f"{kb}_l1"],
+            label_a=name_a,
+            label_b=name_b,
+            ylabel="L1",
+            title=f"{pf} distance-to-final L1",
+            out_png=plots_pairwise / f"{pf}_final_distance_l1_compare.png",
+        )
+        _plot_overlay_two_curves(
+            t=t,
+            y_a=fd[f"{ka}_l2"],
+            y_b=fd[f"{kb}_l2"],
+            label_a=name_a,
+            label_b=name_b,
+            ylabel="L2",
+            title=f"{pf} distance-to-final L2",
+            out_png=plots_pairwise / f"{pf}_final_distance_l2_compare.png",
+        )
+        _plot_overlay_two_curves(
+            t=t,
+            y_a=fd[f"{ka}_cosine"],
+            y_b=fd[f"{kb}_cosine"],
+            label_a=name_a,
+            label_b=name_b,
+            ylabel="cosine",
+            title=f"{pf} distance-to-final cosine",
+            out_png=plots_pairwise / f"{pf}_final_distance_cos_compare.png",
+        )
+
+
 def _save_compare_outputs(
     *,
     compare_dir: Path,
@@ -904,146 +1650,24 @@ def _save_compare_outputs(
     dist_ft_final: Optional[Dict[str, Any]],
     T: int,
     skip_plots: bool,
+    plots_pairwise: Optional[Path] = None,
 ) -> None:
-    compare_dir.mkdir(parents=True, exist_ok=True)
-    ff_q50 = _t_series_from_stats(ff_stats_json, "q50", T)
-    ft_q50 = _t_series_from_stats(ft_stats_json, "q50", T)
-    ff_std = _t_series_from_stats(ff_stats_json, "std", T)
-    ft_std = _t_series_from_stats(ft_stats_json, "std", T)
-    ff_absmax = _t_series_from_stats(ff_stats_json, "abs_max", T)
-    ft_absmax = _t_series_from_stats(ft_stats_json, "abs_max", T)
-    ff_q99 = _t_series_from_stats(ff_stats_json, "q99", T)
-    ft_q99 = _t_series_from_stats(ft_stats_json, "q99", T)
-    same_t_l1 = np.array([cross_same_t["by_t"].get(str(t), {}).get("l1", np.nan) for t in range(T)], dtype=np.float64)
-    same_t_l2 = np.array([cross_same_t["by_t"].get(str(t), {}).get("l2", np.nan) for t in range(T)], dtype=np.float64)
-    same_t_cos = np.array([cross_same_t["by_t"].get(str(t), {}).get("cosine", np.nan) for t in range(T)], dtype=np.float64)
-    ff_self_l1 = _t_series_from_stats(ff_stats_json, "adjacent_l1", T)
-    ft_self_l1 = _t_series_from_stats(ft_stats_json, "adjacent_l1", T)
-    ff_self_l2 = _t_series_from_stats(ff_stats_json, "adjacent_l2", T)
-    ft_self_l2 = _t_series_from_stats(ft_stats_json, "adjacent_l2", T)
-    ff_self_cos = _t_series_from_stats(ff_stats_json, "adjacent_cosine", T)
-    ft_self_cos = _t_series_from_stats(ft_stats_json, "adjacent_cosine", T)
-    cmp_json = {
-        "meta": {"T": T, "modes": ["FF", "FT"]},
-        "series": {
-            "ff_q50": ff_q50.tolist(),
-            "ft_q50": ft_q50.tolist(),
-            "ff_std": ff_std.tolist(),
-            "ft_std": ft_std.tolist(),
-            "ff_abs_max": ff_absmax.tolist(),
-            "ft_abs_max": ft_absmax.tolist(),
-            "ff_q99": ff_q99.tolist(),
-            "ft_q99": ft_q99.tolist(),
-            "diff_q50": (ft_q50 - ff_q50).tolist(),
-            "diff_std": (ft_std - ff_std).tolist(),
-            "diff_abs_max": (ft_absmax - ff_absmax).tolist(),
-            "diff_q99": (ft_q99 - ff_q99).tolist(),
-            "same_t_l1": same_t_l1.tolist(),
-            "same_t_l2": same_t_l2.tolist(),
-            "same_t_cosine": same_t_cos.tolist(),
-            "ff_self_delta_l1": ff_self_l1.tolist(),
-            "ft_self_delta_l1": ft_self_l1.tolist(),
-            "ff_self_delta_l2": ff_self_l2.tolist(),
-            "ft_self_delta_l2": ft_self_l2.tolist(),
-            "ff_self_delta_cosine": ff_self_cos.tolist(),
-            "ft_self_delta_cosine": ft_self_cos.tolist(),
-        },
-    }
-    with open(compare_dir / "pred_xstart_compare.json", "w", encoding="utf-8") as f:
-        json.dump(cmp_json, f, indent=2, ensure_ascii=False)
-    np.savez_compressed(compare_dir / "pred_xstart_compare.npz", **{k: np.array(v) for k, v in cmp_json["series"].items()}, t=np.arange(T))
-    with open(compare_dir / "cross_model_same_t_delta.json", "w", encoding="utf-8") as f:
-        json.dump({"meta": {"T": T}, "by_t": cross_same_t["by_t"]}, f, indent=2, ensure_ascii=False)
-    np.savez_compressed(compare_dir / "cross_model_same_t_delta.npz", t=np.arange(T), l1=same_t_l1, l2=same_t_l2, cosine=same_t_cos)
-    if dist_ff_final is not None and dist_ft_final is not None:
-        ff_fd_l1 = np.array([dist_ff_final["by_t"].get(str(t), {}).get("l1", np.nan) for t in range(T)], dtype=np.float64)
-        ff_fd_l2 = np.array([dist_ff_final["by_t"].get(str(t), {}).get("l2", np.nan) for t in range(T)], dtype=np.float64)
-        ff_fd_cos = np.array([dist_ff_final["by_t"].get(str(t), {}).get("cosine", np.nan) for t in range(T)], dtype=np.float64)
-        ft_fd_l1 = np.array([dist_ft_final["by_t"].get(str(t), {}).get("l1", np.nan) for t in range(T)], dtype=np.float64)
-        ft_fd_l2 = np.array([dist_ft_final["by_t"].get(str(t), {}).get("l2", np.nan) for t in range(T)], dtype=np.float64)
-        ft_fd_cos = np.array([dist_ft_final["by_t"].get(str(t), {}).get("cosine", np.nan) for t in range(T)], dtype=np.float64)
-        with open(compare_dir / "distance_to_final_compare.json", "w", encoding="utf-8") as f:
-            json.dump(
-                {
-                    "meta": {"T": T},
-                    "series": {
-                        "ff_l1": ff_fd_l1.tolist(),
-                        "ff_l2": ff_fd_l2.tolist(),
-                        "ff_cosine": ff_fd_cos.tolist(),
-                        "ft_l1": ft_fd_l1.tolist(),
-                        "ft_l2": ft_fd_l2.tolist(),
-                        "ft_cosine": ft_fd_cos.tolist(),
-                        "diff_l1": (ft_fd_l1 - ff_fd_l1).tolist(),
-                        "diff_l2": (ft_fd_l2 - ff_fd_l2).tolist(),
-                        "diff_cosine": (ft_fd_cos - ff_fd_cos).tolist(),
-                    },
-                },
-                f,
-                indent=2,
-                ensure_ascii=False,
-            )
-        np.savez_compressed(
-            compare_dir / "distance_to_final_compare.npz",
-            t=np.arange(T),
-            ff_l1=ff_fd_l1,
-            ff_l2=ff_fd_l2,
-            ff_cosine=ff_fd_cos,
-            ft_l1=ft_fd_l1,
-            ft_l2=ft_fd_l2,
-            ft_cosine=ft_fd_cos,
-        )
-    if skip_plots:
-        return
-    plots_dir = compare_dir / "plots"
-    t = np.arange(T)
-    _plot_overlay_curve(t=t, ff=ff_q50, ft=ft_q50, ylabel="q50", title="pred_xstart q50 overlay", out_png=plots_dir / "pred_xstart_q50_overlay.png")
-    _plot_overlay_curve(t=t, ff=ff_std, ft=ft_std, ylabel="std", title="pred_xstart std overlay", out_png=plots_dir / "pred_xstart_std_overlay.png")
-    _plot_overlay_curve(t=t, ff=ff_absmax, ft=ft_absmax, ylabel="abs_max", title="pred_xstart abs_max overlay", out_png=plots_dir / "pred_xstart_absmax_overlay.png")
-    _plot_overlay_curve(t=t, ff=ff_q99, ft=ft_q99, ylabel="q99", title="pred_xstart q99 overlay", out_png=plots_dir / "pred_xstart_q99_overlay.png")
-    # same-t
-    plt.figure(figsize=(8.5, 4.2))
-    plt.plot(t, same_t_l1, linewidth=1.8)
-    plt.gca().invert_xaxis()
-    plt.grid(True, alpha=0.25)
-    plt.xlabel("DDIM timestep t")
-    plt.ylabel("L1")
-    plt.title("FF vs FT same-t L1")
-    plt.tight_layout()
-    plt.savefig(plots_dir / "same_t_l1_curve.png", dpi=180)
-    plt.close()
-    plt.figure(figsize=(8.5, 4.2))
-    plt.plot(t, same_t_l2, linewidth=1.8)
-    plt.gca().invert_xaxis()
-    plt.grid(True, alpha=0.25)
-    plt.xlabel("DDIM timestep t")
-    plt.ylabel("L2")
-    plt.title("FF vs FT same-t L2")
-    plt.tight_layout()
-    plt.savefig(plots_dir / "same_t_l2_curve.png", dpi=180)
-    plt.close()
-    plt.figure(figsize=(8.5, 4.2))
-    plt.plot(t, same_t_cos, linewidth=1.8)
-    plt.gca().invert_xaxis()
-    plt.grid(True, alpha=0.25)
-    plt.xlabel("DDIM timestep t")
-    plt.ylabel("cosine")
-    plt.title("FF vs FT same-t cosine")
-    plt.tight_layout()
-    plt.savefig(plots_dir / "same_t_cos_curve.png", dpi=180)
-    plt.close()
-    _plot_overlay_curve(t=t, ff=ff_self_l1, ft=ft_self_l1, ylabel="L1", title="self trajectory adjacent L1", out_png=plots_dir / "self_delta_l1_compare.png")
-    _plot_overlay_curve(t=t, ff=ff_self_l2, ft=ft_self_l2, ylabel="L2", title="self trajectory adjacent L2", out_png=plots_dir / "self_delta_l2_compare.png")
-    _plot_overlay_curve(t=t, ff=ff_self_cos, ft=ft_self_cos, ylabel="cosine", title="self trajectory adjacent cosine", out_png=plots_dir / "self_delta_cos_compare.png")
-    if (compare_dir / "distance_to_final_compare.npz").exists():
-        fd = np.load(compare_dir / "distance_to_final_compare.npz")
-        _plot_overlay_curve(t=t, ff=fd["ff_l1"], ft=fd["ft_l1"], ylabel="L1", title="distance-to-final L1", out_png=plots_dir / "final_distance_l1_compare.png")
-        _plot_overlay_curve(t=t, ff=fd["ff_l2"], ft=fd["ft_l2"], ylabel="L2", title="distance-to-final L2", out_png=plots_dir / "final_distance_l2_compare.png")
-        _plot_overlay_curve(t=t, ff=fd["ff_cosine"], ft=fd["ft_cosine"], ylabel="cosine", title="distance-to-final cosine", out_png=plots_dir / "final_distance_cos_compare.png")
-
-
-def _mode_subdir(root: Path, mode: str) -> Path:
-    return root / mode
-
+    """Backward-compatible wrapper: FF vs FT pairwise compare."""
+    pw = plots_pairwise if plots_pairwise is not None else compare_dir / "plots"
+    _save_pairwise_compare_outputs(
+        compare_dir=compare_dir,
+        plots_pairwise=pw,
+        name_a="FF",
+        name_b="FT",
+        stats_a=ff_stats_json,
+        stats_b=ft_stats_json,
+        cross_same_t=cross_same_t,
+        dist_a_final=dist_ff_final,
+        dist_b_final=dist_ft_final,
+        T=T,
+        skip_plots=skip_plots,
+        plot_file_prefix="ff_vs_ft",
+    )
 
 @time_operation
 def run_pred_xstart_trajectory_analysis(
@@ -1116,14 +1740,33 @@ def run_pred_xstart_trajectory_analysis(
         device=device,
     )
     out_root = Path(pred_output_root) / f"T_{T}" / images_mode / f"seed{seed}"
-    ff_dir = _mode_subdir(out_root, "FF")
-    ft_dir = _mode_subdir(out_root, "FT")
-    tt_dir = _mode_subdir(out_root, "TT")
-    baseline_dir = _mode_subdir(out_root, "BASELINE")
-    cmp_dir = out_root / "FF_vs_FT"
+    paths = _layout_run_paths(out_root)
+    models_root = paths["models"]
+    comparisons_root = paths["comparisons"]
+    plots_summary = paths["plots_summary"]
+    plots_pairwise = paths["plots_pairwise"]
+    for _p in (models_root, comparisons_root, plots_summary, plots_pairwise):
+        _p.mkdir(parents=True, exist_ok=True)
+
+    ff_dir = models_root / "FF"
+    ft_dir = models_root / "FT"
+    tt_dir = models_root / "TT"
+    baseline_dir = models_root / "BASELINE"
+    cmp_dir_ff_ft = comparisons_root / "ff_vs_ft"
+
+    model_ft_clone: Optional[nn.Module] = None
+    if run_compare and run_ft and run_tt:
+        model_ft_clone = copy.deepcopy(model_ft)
+
     mode_stats_cache: Dict[str, Dict[str, Any]] = {}
     ff_stats_json: Optional[Dict[str, Any]] = None
     ft_stats_json: Optional[Dict[str, Any]] = None
+    dist_by_mode: Dict[str, Optional[Dict[str, Any]]] = {
+        "BASELINE": None,
+        "FF": None,
+        "FT": None,
+        "TT": None,
+    }
     if run_ff:
         ff_stats = _collect_pred_xstart_streaming_stats(
             model=model_ff,
@@ -1268,32 +1911,27 @@ def run_pred_xstart_trajectory_analysis(
         )
         mode_stats_cache["BASELINE"] = {"meta": {"mode": "BASELINE", "T": T, "seed": seed, "num_images": num_images}, "by_t": b_stats["stats_by_t"]}
         LOGGER.info("BASELINE done: non-empty timesteps=%d", len(b_stats["stats_by_t"]))
-    if run_compare:
-        if ff_stats_json is None:
-            with open(ff_dir / "pred_xstart_stats.json", "r", encoding="utf-8") as f:
-                ff_stats_json = json.load(f)
-        if ft_stats_json is None:
-            with open(ft_dir / "pred_xstart_stats.json", "r", encoding="utf-8") as f:
-                ft_stats_json = json.load(f)
-        cross = _collect_cross_model_same_t_delta(
-            model_ff=model_ff,
-            model_ft=model_ft,
-            sampler=sampler,
-            latent_sampler=latent_sampler,
-            conf=conf,
-            x_T_bank=x_T_bank,
-            latent_noise_bank=latent_noise_bank,
-            conds_mean=base_model_ff.conds_mean,
-            conds_std=base_model_ff.conds_std,
-            T=T,
-            clip_denoised=True,
-            chunk_batch=chunk_batch,
-            device=device,
-        )
-        # optional distance-to-final
-        dist_ff, dist_ft = None, None
-        if enable_distance_to_final:
-            dist_ff = _collect_distance_to_final(
+
+    if enable_distance_to_final:
+        if run_baseline and model_baseline is not None and base_model_baseline is not None:
+            dist_by_mode["BASELINE"] = _collect_distance_to_final(
+                model=model_baseline,
+                mode_tag="BASELINE",
+                sampler=sampler,
+                latent_sampler=latent_sampler,
+                conf=conf,
+                x_T_bank=x_T_bank,
+                latent_noise_bank=latent_noise_bank,
+                conds_mean=base_model_baseline.conds_mean,
+                conds_std=base_model_baseline.conds_std,
+                T=T,
+                clip_denoised=True,
+                chunk_batch=chunk_batch,
+                device=device,
+            )
+            _save_distance_to_final_json(baseline_dir, dist_by_mode["BASELINE"], T, "BASELINE")
+        if run_ff:
+            dist_by_mode["FF"] = _collect_distance_to_final(
                 model=model_ff,
                 mode_tag="FF",
                 sampler=sampler,
@@ -1308,7 +1946,9 @@ def run_pred_xstart_trajectory_analysis(
                 chunk_batch=chunk_batch,
                 device=device,
             )
-            dist_ft = _collect_distance_to_final(
+            _save_distance_to_final_json(ff_dir, dist_by_mode["FF"], T, "FF")
+        if run_ft:
+            dist_by_mode["FT"] = _collect_distance_to_final(
                 model=model_ft,
                 mode_tag="FT",
                 sampler=sampler,
@@ -1323,53 +1963,243 @@ def run_pred_xstart_trajectory_analysis(
                 chunk_batch=chunk_batch,
                 device=device,
             )
-        _save_compare_outputs(
-            compare_dir=cmp_dir,
-            ff_stats_json=ff_stats_json,
-            ft_stats_json=ft_stats_json,
-            cross_same_t=cross,
-            dist_ff_final=dist_ff,
-            dist_ft_final=dist_ft,
+            _save_distance_to_final_json(ft_dir, dist_by_mode["FT"], T, "FT")
+        if run_tt:
+            dist_by_mode["TT"] = _collect_distance_to_final(
+                model=model_ft,
+                mode_tag="TT",
+                sampler=sampler,
+                latent_sampler=latent_sampler,
+                conf=conf,
+                x_T_bank=x_T_bank,
+                latent_noise_bank=latent_noise_bank,
+                conds_mean=base_model_ft.conds_mean,
+                conds_std=base_model_ft.conds_std,
+                T=T,
+                clip_denoised=True,
+                chunk_batch=chunk_batch,
+                device=device,
+            )
+            _save_distance_to_final_json(tt_dir, dist_by_mode["TT"], T, "TT")
+
+    def _load_pred_stats(mode: str, mdir: Path) -> Optional[Dict[str, Any]]:
+        p = mdir / "pred_xstart_stats.json"
+        if not p.exists():
+            return None
+        with open(p, "r", encoding="utf-8") as f:
+            return json.load(f)
+
+    for _mode, _mdir in [
+        ("BASELINE", baseline_dir),
+        ("FF", ff_dir),
+        ("FT", ft_dir),
+        ("TT", tt_dir),
+    ]:
+        sj = _load_pred_stats(_mode, _mdir)
+        if sj is None:
+            continue
+        d = dist_by_mode.get(_mode)
+        _write_model_trajectory_summary_json(
+            mode_dir=_mdir,
+            stats_json=sj,
+            dist_by_t=d["by_t"] if d is not None else None,
+            T=T,
+            mode=_mode,
+        )
+
+    baseline_div_payloads: Dict[str, Dict[str, Any]] = {}
+
+    def _stats_cached(mode: str) -> Optional[Dict[str, Any]]:
+        if mode in mode_stats_cache:
+            return mode_stats_cache[mode]
+        p = models_root / mode / "pred_xstart_stats.json"
+        if not p.exists():
+            return None
+        with open(p, "r", encoding="utf-8") as f:
+            o = json.load(f)
+            mode_stats_cache[mode] = o
+            return o
+
+    if run_compare:
+        if ff_stats_json is None:
+            with open(ff_dir / "pred_xstart_stats.json", "r", encoding="utf-8") as f:
+                ff_stats_json = json.load(f)
+        if ft_stats_json is None:
+            with open(ft_dir / "pred_xstart_stats.json", "r", encoding="utf-8") as f:
+                ft_stats_json = json.load(f)
+
+        cross_ff_ft = _collect_cross_model_pair_delta(
+            model_a=model_ff,
+            model_b=model_ft,
+            mode_a="FF",
+            mode_b="FT",
+            latent_net=model_ff.latent_net,
+            sampler=sampler,
+            latent_sampler=latent_sampler,
+            conf=conf,
+            x_T_bank=x_T_bank,
+            latent_noise_bank=latent_noise_bank,
+            conds_mean=base_model_ff.conds_mean,
+            conds_std=base_model_ff.conds_std,
+            T=T,
+            clip_denoised=True,
+            chunk_batch=chunk_batch,
+            device=device,
+        )
+        _save_pairwise_compare_outputs(
+            compare_dir=cmp_dir_ff_ft,
+            plots_pairwise=plots_pairwise,
+            name_a="FF",
+            name_b="FT",
+            stats_a=ff_stats_json,
+            stats_b=ft_stats_json,
+            cross_same_t=cross_ff_ft,
+            dist_a_final=dist_by_mode.get("FF") if enable_distance_to_final else None,
+            dist_b_final=dist_by_mode.get("FT") if enable_distance_to_final else None,
             T=T,
             skip_plots=skip_plots,
+            plot_file_prefix="ff_vs_ft",
         )
-        if save_quantile_band_overlay:
-            overlay_dir = cmp_dir / "overlay"
-            ref_mode = overlay_reference_mode.strip().upper()
-            target_modes = [m.strip().upper() for m in overlay_target_modes.split(",") if m.strip()]
-            if ref_mode not in mode_stats_cache:
-                ref_path = out_root / ref_mode / "pred_xstart_stats.json"
-                if ref_path.exists():
-                    with open(ref_path, "r", encoding="utf-8") as f:
-                        mode_stats_cache[ref_mode] = json.load(f)
-            ref_stats = mode_stats_cache.get(ref_mode)
-            if ref_stats is None:
-                LOGGER.warning("overlay skipped: reference mode stats missing (%s)", ref_mode)
-            else:
-                for tm in target_modes:
-                    if tm == ref_mode:
-                        continue
-                    tgt_stats = mode_stats_cache.get(tm)
-                    if tgt_stats is None:
-                        tgt_path = out_root / tm / "pred_xstart_stats.json"
-                        if tgt_path.exists():
-                            with open(tgt_path, "r", encoding="utf-8") as f:
-                                tgt_stats = json.load(f)
-                                mode_stats_cache[tm] = tgt_stats
-                    if tgt_stats is None:
-                        LOGGER.warning("overlay target missing: %s (skip)", tm)
-                        continue
-                    _plot_quantile_band_overlay_from_stats(
-                        ref_stats_json=ref_stats,
-                        target_stats_json=tgt_stats,
-                        ref_label=ref_mode,
-                        target_label=tm,
-                        T=T,
-                        out_png=overlay_dir / f"pred_xstart_quantiles_overlay_{ref_mode.lower()}_vs_{tm.lower()}.png",
-                    )
+
+        if run_baseline and model_baseline is not None and base_model_baseline is not None:
+            bj = _stats_cached("BASELINE")
+            for tgt_name, tgt_model in [("FF", model_ff), ("FT", model_ft), ("TT", model_ft)]:
+                sj = _stats_cached(tgt_name)
+                if bj is None or sj is None:
+                    continue
+                cross_b = _collect_cross_model_pair_delta(
+                    model_a=model_baseline,
+                    model_b=tgt_model,
+                    mode_a="BASELINE",
+                    mode_b=tgt_name,
+                    latent_net=model_baseline.latent_net,
+                    sampler=sampler,
+                    latent_sampler=latent_sampler,
+                    conf=conf,
+                    x_T_bank=x_T_bank,
+                    latent_noise_bank=latent_noise_bank,
+                    conds_mean=base_model_baseline.conds_mean,
+                    conds_std=base_model_baseline.conds_std,
+                    T=T,
+                    clip_denoised=True,
+                    chunk_batch=chunk_batch,
+                    device=device,
+                )
+                dname = f"baseline_vs_{tgt_name.lower()}"
+                cd = comparisons_root / dname
+                _save_pairwise_compare_outputs(
+                    compare_dir=cd,
+                    plots_pairwise=plots_pairwise,
+                    name_a="BASELINE",
+                    name_b=tgt_name,
+                    stats_a=bj,
+                    stats_b=sj,
+                    cross_same_t=cross_b,
+                    dist_a_final=dist_by_mode.get("BASELINE") if enable_distance_to_final else None,
+                    dist_b_final=dist_by_mode.get(tgt_name) if enable_distance_to_final else None,
+                    T=T,
+                    skip_plots=skip_plots,
+                    plot_file_prefix=dname,
+                )
+                pl = _write_divergence_to_baseline_file(
+                    out_path=cd / "divergence_to_baseline.json",
+                    cross=cross_b,
+                    T=T,
+                    target_mode=tgt_name,
+                )
+                baseline_div_payloads[tgt_name.lower()] = pl
+
+        if baseline_div_payloads:
+            with open(comparisons_root / "baseline_divergence_summary.json", "w", encoding="utf-8") as f:
+                json.dump(
+                    {
+                        "meta": {"T": T, "reference": "BASELINE"},
+                        "targets": {k: v.get("summary", {}) for k, v in baseline_div_payloads.items()},
+                    },
+                    f,
+                    indent=2,
+                    ensure_ascii=False,
+                )
+
+        if run_tt:
+            ff_sj = _stats_cached("FF")
+            tt_sj = _stats_cached("TT")
+            if ff_sj is not None and tt_sj is not None:
+                cross_ftt = _collect_cross_model_pair_delta(
+                    model_a=model_ff,
+                    model_b=model_ft,
+                    mode_a="FF",
+                    mode_b="TT",
+                    latent_net=model_ff.latent_net,
+                    sampler=sampler,
+                    latent_sampler=latent_sampler,
+                    conf=conf,
+                    x_T_bank=x_T_bank,
+                    latent_noise_bank=latent_noise_bank,
+                    conds_mean=base_model_ff.conds_mean,
+                    conds_std=base_model_ff.conds_std,
+                    T=T,
+                    clip_denoised=True,
+                    chunk_batch=chunk_batch,
+                    device=device,
+                )
+                _save_pairwise_compare_outputs(
+                    compare_dir=comparisons_root / "ff_vs_tt",
+                    plots_pairwise=plots_pairwise,
+                    name_a="FF",
+                    name_b="TT",
+                    stats_a=ff_sj,
+                    stats_b=tt_sj,
+                    cross_same_t=cross_ftt,
+                    dist_a_final=dist_by_mode.get("FF") if enable_distance_to_final else None,
+                    dist_b_final=dist_by_mode.get("TT") if enable_distance_to_final else None,
+                    T=T,
+                    skip_plots=skip_plots,
+                    plot_file_prefix="ff_vs_tt",
+                )
+
+        if run_tt and run_ft and model_ft_clone is not None:
+            ft_sj = _stats_cached("FT")
+            tt_sj = _stats_cached("TT")
+            if ft_sj is not None and tt_sj is not None:
+                cross_ttp = _collect_cross_model_pair_delta(
+                    model_a=model_ft,
+                    model_b=model_ft_clone,
+                    mode_a="FT",
+                    mode_b="TT",
+                    latent_net=model_ft.latent_net,
+                    sampler=sampler,
+                    latent_sampler=latent_sampler,
+                    conf=conf,
+                    x_T_bank=x_T_bank,
+                    latent_noise_bank=latent_noise_bank,
+                    conds_mean=base_model_ft.conds_mean,
+                    conds_std=base_model_ft.conds_std,
+                    T=T,
+                    clip_denoised=True,
+                    chunk_batch=chunk_batch,
+                    device=device,
+                )
+                _save_pairwise_compare_outputs(
+                    compare_dir=comparisons_root / "ft_vs_tt",
+                    plots_pairwise=plots_pairwise,
+                    name_a="FT",
+                    name_b="TT",
+                    stats_a=ft_sj,
+                    stats_b=tt_sj,
+                    cross_same_t=cross_ttp,
+                    dist_a_final=dist_by_mode.get("FT") if enable_distance_to_final else None,
+                    dist_b_final=dist_by_mode.get("TT") if enable_distance_to_final else None,
+                    T=T,
+                    skip_plots=skip_plots,
+                    plot_file_prefix="ft_vs_tt",
+                )
+
         missing_ff = [t for t in range(T) if str(t) not in ff_stats_json["by_t"]]
         missing_ft = [t for t in range(T) if str(t) not in ft_stats_json["by_t"]]
-        same_counts = np.array([int(cross["by_t"].get(str(t), {}).get("count", 0)) for t in range(T)], dtype=np.int64)
+        same_counts = np.array(
+            [int(cross_ff_ft["by_t"].get(str(t), {}).get("count", 0)) for t in range(T)], dtype=np.int64
+        )
         LOGGER.info(
             "Compare done: missing timesteps FF=%s FT=%s | same-t aligned sample_count[min=%d max=%d]",
             missing_ff[:10],
@@ -1377,6 +2207,114 @@ def run_pred_xstart_trajectory_analysis(
             int(np.min(same_counts)) if same_counts.size else 0,
             int(np.max(same_counts)) if same_counts.size else 0,
         )
+
+    per_model_hn: Dict[str, Any] = {}
+    for m in ["BASELINE", "FF", "FT", "TT"]:
+        sj = _stats_cached(m)
+        if sj is not None:
+            per_model_hn[m] = _high_noise_zone_metrics(sj, T)
+
+    pairwise_hn: Dict[str, Any] = {}
+    for pname, a, b in [
+        ("baseline_vs_ff", "BASELINE", "FF"),
+        ("baseline_vs_ft", "BASELINE", "FT"),
+        ("baseline_vs_tt", "BASELINE", "TT"),
+        ("ff_vs_ft", "FF", "FT"),
+        ("ff_vs_tt", "FF", "TT"),
+        ("ft_vs_tt", "FT", "TT"),
+    ]:
+        sa, sb = _stats_cached(a), _stats_cached(b)
+        if sa is None or sb is None:
+            continue
+        pairwise_hn[pname] = _pairwise_high_noise_diff(sa, sb, T, pname)
+
+    with open(comparisons_root / "high_noise_regime_summary.json", "w", encoding="utf-8") as f:
+        json.dump(
+            {
+                "meta": {
+                    "T": T,
+                    "high_noise_zone": "upper third of timestep indices t (t >= ceil(2T/3)); higher t = more noise in this DDIM ordering",
+                },
+                "per_model_high_noise_means": per_model_hn,
+                "pairwise_mean_diffs": pairwise_hn,
+            },
+            f,
+            indent=2,
+            ensure_ascii=False,
+        )
+
+    traj_reg: Dict[str, Any] = {}
+    for m in ["BASELINE", "FF", "FT", "TT"]:
+        tp = models_root / m / "trajectory_summary.json"
+        if tp.exists():
+            with open(tp, "r", encoding="utf-8") as f:
+                traj_reg[m] = json.load(f)
+    with open(comparisons_root / "trajectory_regularization_summary.json", "w", encoding="utf-8") as f:
+        json.dump({"meta": {"T": T}, "by_mode": traj_reg}, f, indent=2, ensure_ascii=False)
+
+    if not skip_plots:
+        if baseline_div_payloads:
+            _plot_baseline_divergence_overlays(
+                div_payloads=baseline_div_payloads,
+                plots_summary=plots_summary,
+                T=T,
+            )
+        sbm: Dict[str, Dict[str, Any]] = {}
+        for m in ["BASELINE", "FF", "FT", "TT"]:
+            sj = _stats_cached(m)
+            if sj is not None:
+                sbm[m] = sj
+        if sbm:
+            _plot_high_noise_model_comparison(stats_by_mode=sbm, plots_summary=plots_summary, T=T)
+            _plot_trajectory_regularization_overlays(
+                stats_by_mode=sbm,
+                dist_by_mode={m: dist_by_mode.get(m) for m in sbm},
+                plots_summary=plots_summary,
+                T=T,
+            )
+
+    if save_quantile_band_overlay:
+        ref_mode = overlay_reference_mode.strip().upper()
+        target_modes = [m.strip().upper() for m in overlay_target_modes.split(",") if m.strip()]
+        if ref_mode not in mode_stats_cache:
+            ref_path = models_root / ref_mode / "pred_xstart_stats.json"
+            if ref_path.exists():
+                with open(ref_path, "r", encoding="utf-8") as f:
+                    mode_stats_cache[ref_mode] = json.load(f)
+        ref_stats = mode_stats_cache.get(ref_mode)
+        if ref_stats is None:
+            LOGGER.warning("overlay skipped: reference mode stats missing (%s)", ref_mode)
+        else:
+            for tm in target_modes:
+                if tm == ref_mode:
+                    continue
+                tgt_stats = mode_stats_cache.get(tm)
+                if tgt_stats is None:
+                    tgt_path = models_root / tm / "pred_xstart_stats.json"
+                    if tgt_path.exists():
+                        with open(tgt_path, "r", encoding="utf-8") as f:
+                            tgt_stats = json.load(f)
+                            mode_stats_cache[tm] = tgt_stats
+                if tgt_stats is None:
+                    LOGGER.warning("overlay target missing: %s (skip)", tm)
+                    continue
+                _plot_quantile_band_overlay_from_stats(
+                    ref_stats_json=ref_stats,
+                    target_stats_json=tgt_stats,
+                    ref_label=ref_mode,
+                    target_label=tm,
+                    T=T,
+                    out_png=plots_pairwise / f"pred_xstart_quantiles_overlay_{ref_mode.lower()}_vs_{tm.lower()}.png",
+                )
+
+    _ensure_legacy_symlinks(out_root, models_root)
+    _write_analysis_summary_md(
+        out_path=out_root / "analysis_summary.md",
+        T=T,
+        baseline_div=baseline_div_payloads,
+        high_noise_path=comparisons_root / "high_noise_regime_summary.json",
+        traj_path=comparisons_root / "trajectory_regularization_summary.json",
+    )
     LOGGER.info(
         "Summary: processed_images=%d, T=%d, output_root=%s",
         num_images,
@@ -1460,7 +2398,7 @@ def main_pred_xstart_quantile_analysis(
         enable_distance_to_final=True,
     )
     root = Path(res["output_root"])
-    return root / "FF" / "pred_xstart_stats.npz", root / "FT" / "pred_xstart_stats.npz"
+    return root / "models" / "FF" / "pred_xstart_stats.npz", root / "models" / "FT" / "pred_xstart_stats.npz"
 
 
 def _setup_logging(log_file: str) -> None:

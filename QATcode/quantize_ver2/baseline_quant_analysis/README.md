@@ -139,31 +139,45 @@
 存放 `pred_xstart` / trajectory 分析結果。
 
 主程式：
-- `pred_xstart_quantile_analysis.py`（已升級為完整 Pred-xstart / Trajectory Analysis）
+- `pred_xstart_quantile_analysis.py`（Pred-xstart / Trajectory Analysis）
 
-目前輸出重點（`FF/`、`FT/`、`FF_vs_FT/`）：
+#### 目錄結構（每輪：`T_<T>/<images_mode>/seed<N>/`）
+
+- `models/BASELINE|FF|FT|TT/`：單一模式統計
+  - `pred_xstart_stats.json` / `.npz`
+  - `trajectory_self_delta.json` / `.npz`（相鄰步 delta；邊界步無相鄰可比時為 NaN，見檔內 `boundary_nan_policy`）
+  - `distance_to_final.json` / `.npz`（若 `--enable_distance_to_final`）
+  - `trajectory_summary.json`：整合 self-delta 與 distance-to-final 的摘要
+- `comparisons/<a>_vs_<b>/`：pairwise 比較（小寫，例如 `ff_vs_ft`、`baseline_vs_ff`）
+  - `pred_xstart_compare.json` / `.npz`、`cross_model_same_t_delta.*`
+  - `distance_to_final_compare.*`（若啟用 distance-to-final）
+  - `baseline_vs_*` 另含 `divergence_to_baseline.json`（相對 BASELINE 的 L1/L2/cosine 曲線與 summary）
+- `comparisons/baseline_divergence_summary.json`：FF/FT/TT 相對 BASELINE 的 divergence 摘要彙總
+- `comparisons/high_noise_regime_summary.json`：各模型高噪聲區（t 上段三分之一）之 mean 指標與 pair 差分
+- `comparisons/trajectory_regularization_summary.json`：各模式 `trajectory_summary.json` 彙總
+- `plots/summary/`：跨模型摘要圖（baseline divergence overlay、high-noise 指標、trajectory regularization overlay）
+- `plots/pairwise/`：各 pair 的 overlay / same-t / self-delta / distance 圖與 quantile band overlay
+- `analysis_summary.md`：依統計自動產生的保守文字稿（可手改）
+
+**向後相容**：執行後若 symlink 建立成功，run 根目錄下仍可有 `FF` → `models/FF`、`FF_vs_FT` → `comparisons/ff_vs_ft`（僅 Unix；失敗時請直接用新路徑）。
+
+#### 輸出內容重點
 - per-timestep 分布統計：`mean/std/min/max/abs_mean/abs_max/q001~q999`
 - 邊界飽和比率：`|x|>=0.95`、`|x|>=0.99`
-- same-t cross-model delta（FF vs FT）：
-  - L1 / L2 / cosine
-- self trajectory delta（各模式相鄰 timestep）：
-  - L1 / L2 / cosine
-- distance-to-final（可選）：
-  - 每個 timestep 與最終 `t=0` 的 L1 / L2 / cosine
-- 摘要圖：
-  - q50/std/abs_max/q99 overlay
-  - same-t delta 曲線
-  - self-delta 比較曲線
-  - distance-to-final 比較曲線（若啟用）
+- same-t cross-model delta（任意已跑之 pair）：L1 / L2 / cosine
+- self trajectory delta：相鄰 timestep；合法 NaN 已於 json 與 summary 中忽略
+- distance-to-final（可選）：各 t 與最終 `pred_xstart`（t=0）之 L1 / L2 / cosine
 
-指標意義：
-- `q50`：中心趨勢
-- `q99`：高尾端變化（tail behavior）
-- `abs_max`：極值幅度
-- `std`：整體離散程度
-- same-t delta：同一時刻 FF 與 FT 的直接偏差
-- self trajectory delta：單一模型在相鄰步的軌跡變化強度
-- distance-to-final：各步到最終輸出的收斂路徑
+#### 此分析能回答什麼 / 不能回答什麼
+- **能**：量化模型與 BASELINE 或彼此在同一 noise level 的 pred_xstart 張量差異；高噪聲區分佈形狀（std、尾端、飽和、正負比）；軌跡平滑度與距離終點的相對比較。
+- **不能**：直接證明「為何量化後比原作更好」的因果；不取代 FID/LPIPS/主觀視覺；pred_xstart 統計不等於權重或 activation 的完整故事。
+
+#### 指標意義（簡述）
+- `q50`：中心趨勢；`q99`：尾端；`abs_max`：極值；`std`：離散度
+- same-t delta：兩模型在同一 t 的 pred_xstart 差異
+- self trajectory delta：單一模型相鄰步變化（邊界步可為 NaN）
+- distance-to-final：各步與最終 pred_xstart 的距離，用於看是否較早朝終點收斂
+- high-noise regime：以 t 上段三分之一近似高噪聲區（與 `high_noise_regime_summary.json` meta 一致）
 
 ---
 
@@ -187,7 +201,7 @@
 
 ### 模型比較主軸
 目前主要使用：
-- `FF_vs_FT`
+- `comparisons/ff_vs_ft`（或舊 symlink `FF_vs_FT`）
 - `T100`
 - `official`
 - `seed0`
@@ -206,9 +220,8 @@
    - 既然目前主因明顯在 activation quant，就優先分析 activation
    - 不平均分配時間在所有設定上
 
-3. **優先分析 `FF vs ft`**
 3. **優先分析 `FF vs FT`**
-   - 這組最能回答「為何 activation quant 會改善 FID」
+   - 這組最能對照 activation quant 與軌跡差異（不等同於已解釋 FID 因果）
 
 4. **先做 T=100，再考慮 T=20**
    - 因為 T=100 的現象更穩、更接近訓練設定
@@ -228,9 +241,9 @@
 - [ ] 撰寫 `ACTIVATION_ANALYSIS.md` 的機制解讀版本
 
 ### C. Pred-xstart 分析
-- [ ] 整理現有 `pred_xstart_quantile_analysis.py` 的輸出位置
-- [ ] 比較 `FF vs FT`, `T=100`
-- [ ] 完成對應 md 摘要
+- [x] 整理 `pred_xstart_quantile_analysis.py` 輸出至 `models/`、`comparisons/`、`plots/summary`、`plots/pairwise`
+- [ ] 比較 `FF vs FT`, `T=100`（依實驗跑官方結果）
+- [x] 自動產生 `analysis_summary.md` 與各 summary json（仍可依實驗補手寫結論）
 
 ### D. 全域生成指標
 - [ ] 規劃 precision / recall / diversity 類分析
