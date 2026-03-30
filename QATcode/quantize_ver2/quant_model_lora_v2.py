@@ -340,7 +340,7 @@ class QuantModel_DiffAE_LoRA(nn.Module):
                 m.set_quant_state(weight_quant, act_quant)
             elif isinstance(m, QuantModule):
                 # QuantModule : layer 1,2,144 權重、輸入都量化 ；layer 3 只進行權重量化
-                if weight_quant and act_quant:
+                #if weight_quant and act_quant:
                     count += 1
                     if count in [1,2]:
                         m.set_quant_state(True, True)
@@ -360,11 +360,11 @@ class QuantModel_DiffAE_LoRA(nn.Module):
                     elif count == 144:
                         m.set_quant_state(False, False)
                         logger.info("set quant state to False, False for layer %d", count)
-                else:
-                    count += 1
-                    if count in (1,2,3,144):
-                        m.set_quant_state(False, False)
-                        logger.info("set quant state to False, False for layer %d", count)
+                #else:
+                #    count += 1
+                #    if count in (1,2,3,144):
+                #        m.set_quant_state(False, False)
+                #        logger.info("set quant state to False, False for layer %d", count)
 
 
             elif isinstance(m, QuantModule_DiffAE_LoRA):

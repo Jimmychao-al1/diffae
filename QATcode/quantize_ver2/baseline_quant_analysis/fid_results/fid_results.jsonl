@@ -1,0 +1,20 @@
+{"script": "run_ffhq128.py", "mode": "baseline", "steps": "20", "eval_samples": "5k", "fid": "21.1265296936", "return_code": "0"}
+{"script": "run_ffhq128.py", "mode": "baseline", "steps": "100", "eval_samples": "5k", "fid": "15.6511430740", "return_code": "0"}
+{"script": "run_ffhq128.py", "mode": "baseline", "steps": "20", "eval_samples": "50k", "fid": "16.3739738464",  "return_code": "0"}
+{"script": "run_ffhq128.py", "mode": "baseline", "steps": "100", "eval_samples": "50k", "fid": "10.1958980560", "return_code": "0"}
+{"script": "sample_lora_intmodel.py", "mode": "float", "steps": "20", "eval_samples": "5k", "fid": "20.3672809601", "return_code": "0"}
+{"script": "sample_lora_intmodel.py", "mode": "float", "steps": "100", "eval_samples": "5k", "fid": "15.7401437759", "return_code": "0"}
+{"script": "sample_lora_intmodel.py", "mode": "float", "steps": "20", "eval_samples": "50k", "fid": "15.6748886108", "return_code": "0"}
+{"script": "sample_lora_intmodel.py", "mode": "float", "steps": "100", "eval_samples": "50k", "fid": "10.3547677994", "return_code": "0"}
+{"script": "sample_lora_intmodel_v2.py", "mode": "float", "steps": "20", "eval_samples": "5k", "fid": "19.86904716491","return_code": "0"}
+{"script": "sample_lora_intmodel_v2.py", "mode": "int", "steps": "20", "eval_samples": "5k", "fid": "19.9087104797", "return_code": "0"}
+{"script": "sample_lora_intmodel_v2.py", "mode": "float", "steps": "100", "eval_samples": "5k", "fid": "14.947220802307129", "return_code": "0"}
+{"script": "sample_lora_intmodel_v2.py", "mode": "int", "steps": "100", "eval_samples": "5k", "fid": "14.955325126647", "return_code": "0"}
+
+{"script": "sample_lora_intmodel_v2.py", "mode": "float", "steps": "20", "eval_samples": "5k", "fid": "21.01409339904785", "set-quant": "FF"}
+{"script": "sample_lora_intmodel_v2.py", "mode": "float", "steps": "20", "eval_samples": "5k", "fid": "22.896739959716797", "set-quant": "tf"}
+{"script": "sample_lora_intmodel_v2.py", "mode": "float", "steps": "20", "eval_samples": "5k", "fid": "", "set-quant": "ft"}
+{"script": "sample_lora_intmodel_v2.py", "mode": "float", "steps": "100", "eval_samples": "5k", "fid": "", "set-quant": "FF"}
+{"script": "sample_lora_intmodel_v2.py", "mode": "float", "steps": "100", "eval_samples": "5k", "fid": "", "set-quant": "tf"}
+{"script": "sample_lora_intmodel_v2.py", "mode": "float", "steps": "100", "eval_samples": "5k", "fid": "", "set-quant": "ft"}
+

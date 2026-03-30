@@ -102,7 +102,10 @@ class TrainingConfig:
     # 量化參數
     N_BITS_W = 8  # 權重量化位元數
     N_BITS_A = 8  # 激活量化位元數
-    
+    # set_quant_state(weight_quant, act_quant)；CLI --quant-state tt|ff 覆寫
+    QUANT_STATE_WEIGHT = True
+    QUANT_STATE_ACT = True
+
     # 文件路徑
     MODEL_PATH = "checkpoints/ffhq128_autoenc_latent/last.ckpt"
     BEST_CKPT_PATH = "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth" 
@@ -444,7 +447,12 @@ def main_int_model():
         quant_model.set_first_last_layer_to_8bit()
         device = next(quant_model.parameters()).device
 
-        quant_model.set_quant_state(True, True)
+        quant_model.set_quant_state(CONFIG.QUANT_STATE_WEIGHT, CONFIG.QUANT_STATE_ACT)
+        LOGGER.info(
+            "set_quant_state(weight=%s, act=%s)",
+            CONFIG.QUANT_STATE_WEIGHT,
+            CONFIG.QUANT_STATE_ACT,
+        )
         quant_model.set_runtime_mode(mode='train', use_cached_aw=False, clear_cached_aw=True)
 
         with torch.no_grad():
@@ -549,7 +557,12 @@ def main_float_model():
         device = next(quant_model.parameters()).device
 
         LOGGER.info("✅ 量化模型創建成功")
-        quant_model.set_quant_state(True, True)
+        quant_model.set_quant_state(CONFIG.QUANT_STATE_WEIGHT, CONFIG.QUANT_STATE_ACT)
+        LOGGER.info(
+            "set_quant_state(weight=%s, act=%s)",
+            CONFIG.QUANT_STATE_WEIGHT,
+            CONFIG.QUANT_STATE_ACT,
+        )
         if hasattr(quant_model, 'set_runtime_mode'):
             # warmup/calibration stage keeps dynamic a_w
             quant_model.set_runtime_mode(mode='train', use_cached_aw=False, clear_cached_aw=True)
@@ -559,10 +572,6 @@ def main_float_model():
         #print('First run to init the model') ## need run to init emporal act quantizer
         with torch.no_grad():
             _ = quant_model(x=cali_images[:32].to(device), t=cali_t[:32].to(device), cond=cali_y[:32].to(device))
-
-        #quant_model.set_quant_state(False, False)
-        
-        
 
         ckpt = torch.load(CONFIG.BEST_CKPT_PATH, map_location='cpu', weights_only=False)
         from QATcode.cache_method.L1_L2_cosine.similarity_calculation import _load_quant_and_ema_from_ckpt
@@ -721,6 +730,18 @@ if __name__ == "__main__":
                         help='生成時間測試的樣本數')
     parser.add_argument('--log_file','--lf', type=str, default=None,
                         help='指定 log 檔案路徑（預設: QATcode/quantize_ver2/log/sample_lora_intmodel_v2.log）')
+    parser.add_argument(
+        '--quant-state',
+        type=str,
+        default='tt',
+        choices=['tt', 'ff', 'tf', 'ft'],
+        help=(
+            "對 QuantModel 呼叫 set_quant_state(weight, act): "
+            "tt=(True,True) 開啟權重+激活 fake-quant；ff=(False,False) 關閉量化（純 LoRA+浮點）。"
+            "tf=(True,False) 開啟權重 fake-quant，關閉激活 fake-quant；ft=(False,True) 關閉權重 fake-quant，開啟激活 fake-quant。"
+            "注意：mode=int 時 INT_QuantModel 對少數首末層可能仍有內建覆寫，見 quant_model_lora_v2。"
+        ),
+    )
     args = parser.parse_args()
     CONFIG.NUM_DIFFUSION_STEPS = args.num_steps
     CONFIG.CACHE_ANALYSIS_SAMPLES = args.samples
@@ -730,6 +751,18 @@ if __name__ == "__main__":
     CONFIG.CACHE_THRESHOLD = args.cache_threshold
     CONFIG.ENABLE_QUANTITATIVE_ANALYSIS = args.enable_quantitative_analysis
     CONFIG.ANALYSIS_NUM_SAMPLES = args.analysis_num_samples
+    if args.quant_state == 'tt':
+        CONFIG.QUANT_STATE_WEIGHT = True
+        CONFIG.QUANT_STATE_ACT = True
+    elif args.quant_state == 'tf':
+        CONFIG.QUANT_STATE_WEIGHT = True
+        CONFIG.QUANT_STATE_ACT = False
+    elif args.quant_state == 'ft':
+        CONFIG.QUANT_STATE_WEIGHT = False
+        CONFIG.QUANT_STATE_ACT = True
+    else:
+        CONFIG.QUANT_STATE_WEIGHT = False
+        CONFIG.QUANT_STATE_ACT = False
     # 如果指定了 log_file，則使用指定的路徑；否則使用預設值
     if args.log_file is not None:
         CONFIG.LOG_FILE = args.log_file
@@ -757,6 +790,12 @@ if __name__ == "__main__":
     LOGGER.info(f"Using {CONFIG.EVAL_SAMPLES} evaluation samples")
     LOGGER.info(f"Cache enabled: {CONFIG.ENABLE_CACHE}, method: {CONFIG.CACHE_METHOD}, threshold: {CONFIG.CACHE_THRESHOLD}")
     LOGGER.info(f"Quantitative analysis enabled: {CONFIG.ENABLE_QUANTITATIVE_ANALYSIS}, samples: {CONFIG.ANALYSIS_NUM_SAMPLES}")
+    LOGGER.info(
+        "quant-state: %s -> set_quant_state(weight=%s, act=%s)",
+        args.quant_state,
+        CONFIG.QUANT_STATE_WEIGHT,
+        CONFIG.QUANT_STATE_ACT,
+    )
     LOGGER.info(f"Log file: {CONFIG.LOG_FILE}")
     if args.mode == 'float':
         CONFIG.BEST_CKPT_PATH = "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth" if CONFIG.NUM_DIFFUSION_STEPS == 100 else "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best_20steps.pth"
