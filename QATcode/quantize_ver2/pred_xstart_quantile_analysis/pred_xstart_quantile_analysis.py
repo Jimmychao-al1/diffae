@@ -693,7 +693,7 @@ if __name__ == "__main__":
     parser.add_argument("--chunk_batch", type=int, default=32)
     parser.add_argument("--hist_bins", type=int, default=4096)
     parser.add_argument("--seed", type=int, default=0)
-    parser.add_argument("--pred_output_root", type=str, default="QATcode/cache_method/pred_xstart_quantile_analysis")
+    parser.add_argument("--pred_output_root", type=str, default="QATcode/quantize_ver2/pred_xstart_quantile_analysis")
     parser.add_argument("--skip_plot", action="store_true")
     parser.add_argument("--num_steps", "--n", type=int, default=100)
     args = parser.parse_args()
