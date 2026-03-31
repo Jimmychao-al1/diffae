@@ -164,23 +164,34 @@ def _run_single_render(
     )
 
 
-def _load_blockwise_threshold_config(path: str) -> Tuple[Dict[int, Dict[str, Any]], Dict[str, Any]]:
-    """讀取 build_blockwise_thresholds.py 產生的 JSON；回傳 (block_id -> entry, 完整根物件供 meta)。"""
+def _load_blockwise_threshold_config(
+    path: str,
+) -> Tuple[Dict[str, Dict[str, Any]], Dict[int, Dict[str, Any]], Dict[str, Any]]:
+    """讀取 blockwise threshold JSON；回傳 (runtime_name -> entry, block_id -> entry, root doc)。"""
     p = Path(path)
     if not p.is_file():
         raise FileNotFoundError(f"threshold config not found: {p}")
     with open(p, "r", encoding="utf-8") as f:
         data = json.load(f)
     verify_blockwise_threshold_config_dict(data)
+    by_runtime: Dict[str, Dict[str, Any]] = {}
     by_id: Dict[int, Dict[str, Any]] = {}
     for entry in data["per_block"]:
         bid = int(entry["block_id"])
+        rt = str(entry["runtime_name"])
+        if rt in by_runtime:
+            raise ValueError(f"duplicate runtime_name in threshold config: {rt}")
+        by_runtime[rt] = entry
         by_id[bid] = entry
+    if len(by_runtime) != EXPECTED_NUM_BLOCKS:
+        raise ValueError(
+            f"threshold config must contain exactly {EXPECTED_NUM_BLOCKS} runtime_name entries, got {len(by_runtime)}"
+        )
     if set(by_id.keys()) != set(range(EXPECTED_NUM_BLOCKS)):
         raise ValueError(
             f"threshold config must contain exactly block_id 0..{EXPECTED_NUM_BLOCKS - 1}, got {sorted(by_id.keys())}"
         )
-    return by_id, data
+    return by_runtime, by_id, data
 
 
 def _json_safe(obj: Any) -> Any:
@@ -306,6 +317,7 @@ def run_stage2_refine(
         per_block_zone = diagnostics["per_block_zone_error"]
         per_t = aggregate_per_timestep(per_block_step)
 
+        blockwise_by_runtime: Optional[Dict[str, Dict[str, Any]]] = None
         blockwise_by_id: Optional[Dict[int, Dict[str, Any]]] = None
         threshold_mode = "global"
         threshold_meta_diag: Dict[str, Any] = {
@@ -318,7 +330,7 @@ def run_stage2_refine(
             ),
         }
         if threshold_config_path:
-            blockwise_by_id, tc_doc = _load_blockwise_threshold_config(threshold_config_path)
+            blockwise_by_runtime, blockwise_by_id, tc_doc = _load_blockwise_threshold_config(threshold_config_path)
             threshold_mode = "blockwise_quantile"
             threshold_meta_diag = {
                 "threshold_mode": threshold_mode,
@@ -350,12 +362,11 @@ def run_stage2_refine(
 
         for b in blocks:
             rt = stage1_block_to_runtime_block(str(b["name"]))
-            bid = int(b["id"])
-            if blockwise_by_id is not None and bid not in blockwise_by_id:
-                raise RuntimeError(f"threshold config missing block_id {bid} (runtime {rt})")
+            if blockwise_by_runtime is not None and rt not in blockwise_by_runtime:
+                raise RuntimeError(f"threshold config missing runtime_name {rt} (block id={b['id']})")
             zone_thr_used = (
-                float(blockwise_by_id[bid]["zone_l1_threshold"])
-                if blockwise_by_id is not None
+                float(blockwise_by_runtime[rt]["zone_l1_threshold"])
+                if blockwise_by_runtime is not None
                 else zone_l1_threshold
             )
             kz = [int(x) for x in b["k_per_zone"]]
@@ -393,10 +404,9 @@ def run_stage2_refine(
         mask_touch: List[Dict[str, Any]] = []
         for b in blocks:
             rt = stage1_block_to_runtime_block(str(b["name"]))
-            bid = int(b["id"])
             peak_thr_used = (
-                float(blockwise_by_id[bid]["peak_l1_threshold"])
-                if blockwise_by_id is not None
+                float(blockwise_by_runtime[rt]["peak_l1_threshold"])
+                if blockwise_by_runtime is not None
                 else peak_l1_threshold
             )
             row = list(b["expanded_mask"])
@@ -423,13 +433,13 @@ def run_stage2_refine(
 
         if T >= 1:
             for b in blocks:
+                rt = stage1_block_to_runtime_block(str(b["name"]))
                 em = b["expanded_mask"]
                 if not bool(em[0]):
                     em[0] = True
-                    bid = int(b["id"])
                     peak_thr_used = (
-                        float(blockwise_by_id[bid]["peak_l1_threshold"])
-                        if blockwise_by_id is not None
+                        float(blockwise_by_runtime[rt]["peak_l1_threshold"])
+                        if blockwise_by_runtime is not None
                         else peak_l1_threshold
                     )
                     mask_touch.append(

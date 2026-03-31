@@ -464,9 +464,14 @@ def main(
 
 
 if __name__ == "__main__":
-    project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.."))
+    repo_root = Path(__file__).resolve().parents[3]
+    input_dir = repo_root / "QATcode/cache_method/Stage0/stage0e_output"
+    output_dir = repo_root / "QATcode/cache_method/Stage0/stage0e_figures"
+
+    if not input_dir.is_dir():
+        raise FileNotFoundError(f"[Stage0E-VIS] default input_dir not found: {input_dir}")
 
     main(
-        input_dir=os.path.join(project_root, "QATcode/cache_method/Stage0/stage0e_output"),
-        output_dir=os.path.join(project_root, "QATcode/cache_method/Stage0/stage0e_figures"),
+        input_dir=str(input_dir),
+        output_dir=str(output_dir),
     )

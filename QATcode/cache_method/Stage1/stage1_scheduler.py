@@ -341,7 +341,7 @@ def merge_short_zones_step(
                 zlist[i][1] = zlist[i + 1][1]
                 zlist.pop(i + 1)
                 changed = True
-        else:
+            else:
                 zlist[i - 1][1] = zlist[i][1]
                 zlist.pop(i)
                 changed = True

@@ -18,7 +18,7 @@ import json
 import math
 import sys
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 import numpy as np
 
@@ -32,10 +32,11 @@ from QATcode.cache_method.Stage2.stage2_scheduler_adapter import (
     TIME_ORDER_EXPECTED,
     rebuild_expanded_mask_from_shared_zones_and_k_per_zone,
     RUNTIME_LAYER_NAMES,
+    stage1_block_to_runtime_block,
 )
 
 
-def verify_refined_scheduler_config(cfg: Dict[str, Any]) -> None:
+def verify_refined_scheduler_config(cfg: Dict[str, Any], *, require_full_coverage: bool = True) -> None:
     if cfg.get("time_order") != TIME_ORDER_EXPECTED:
         raise ValueError(
             f"time_order must be {TIME_ORDER_EXPECTED!r}, got {cfg.get('time_order')!r}"
@@ -54,16 +55,47 @@ def verify_refined_scheduler_config(cfg: Dict[str, Any]) -> None:
     blocks = cfg.get("blocks")
     if not isinstance(blocks, list):
         raise TypeError("blocks must be a list")
-    if len(blocks) != EXPECTED_NUM_BLOCKS:
+    if require_full_coverage and len(blocks) != EXPECTED_NUM_BLOCKS:
         raise ValueError(
             f"blocks must have length {EXPECTED_NUM_BLOCKS}, got {len(blocks)}"
         )
+    if not require_full_coverage and len(blocks) < 1:
+        raise ValueError("blocks must be non-empty when require_full_coverage=False")
 
-    ids = sorted(int(b["id"]) for b in blocks)
-    if ids != list(range(EXPECTED_NUM_BLOCKS)):
+    ids = [int(b["id"]) for b in blocks]
+    if len(set(ids)) != len(ids):
+        raise ValueError(f"block ids must be unique, got {ids}")
+    if require_full_coverage:
+        ids_sorted = sorted(ids)
+        if ids_sorted != list(range(EXPECTED_NUM_BLOCKS)):
+            raise ValueError(
+                f"block ids must be 0..{EXPECTED_NUM_BLOCKS - 1} exactly once, got {ids_sorted}"
+            )
+
+    mapped_runtime_names: List[str] = []
+    for b in blocks:
+        bid = int(b["id"])
+        name = str(b.get("name", ""))
+        rt = stage1_block_to_runtime_block(name)
+        mapped_runtime_names.append(rt)
+        rt_declared = b.get("runtime_name", None)
+        if rt_declared is not None and str(rt_declared) != rt:
+            raise ValueError(
+                f"block id={bid}: runtime_name {rt_declared!r} contradicts name {name!r} -> {rt!r}"
+            )
+
+    if len(set(mapped_runtime_names)) != len(mapped_runtime_names):
         raise ValueError(
-            f"block ids must be 0..{EXPECTED_NUM_BLOCKS - 1} exactly once, got {ids}"
+            "mapped runtime block names from blocks[].name must be unique"
         )
+    if require_full_coverage:
+        if set(mapped_runtime_names) != set(RUNTIME_LAYER_NAMES):
+            missing = sorted(set(RUNTIME_LAYER_NAMES) - set(mapped_runtime_names))
+            extra = sorted(set(mapped_runtime_names) - set(RUNTIME_LAYER_NAMES))
+            raise ValueError(
+                "mapped runtime block set mismatch for full config: "
+                f"missing={missing}, extra={extra}"
+            )
 
     for b in blocks:
         bid = int(b["id"])
@@ -181,6 +213,11 @@ def main() -> None:
         default=None,
         help="若指定，改為驗證 stage2_thresholds_blockwise.json（blockwise quantile 輸出）",
     )
+    ap.add_argument(
+        "--allow-partial",
+        action="store_true",
+        help="允許 partial/ablation scheduler（不強制 31 blocks 全覆蓋）",
+    )
     args = ap.parse_args()
     if args.threshold_config:
         p = Path(args.threshold_config)
@@ -194,7 +231,7 @@ def main() -> None:
     p = Path(args.config_path)
     with open(p, "r", encoding="utf-8") as f:
         cfg = json.load(f)
-    verify_refined_scheduler_config(cfg)
+    verify_refined_scheduler_config(cfg, require_full_coverage=not bool(args.allow_partial))
     print(f"OK: {p.resolve()}")
 
 

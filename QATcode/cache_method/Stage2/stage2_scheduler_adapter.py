@@ -46,8 +46,8 @@ def load_stage1_scheduler_config(path: str | Path) -> Dict[str, Any]:
     return cfg
 
 
-def validate_stage1_scheduler_config(cfg: Dict[str, Any]) -> None:
-    """Fail-fast：Stage1 正式欄位與形狀驗證。"""
+def validate_stage1_scheduler_config(cfg: Dict[str, Any], *, require_full_coverage: bool = True) -> None:
+    """Fail-fast：Stage1/Stage2 scheduler 結構與語意驗證。"""
     if cfg.get("time_order") != TIME_ORDER_EXPECTED:
         raise ValueError(
             f"time_order must be {TIME_ORDER_EXPECTED!r}, got {cfg.get('time_order')!r}"
@@ -57,12 +57,22 @@ def validate_stage1_scheduler_config(cfg: Dict[str, Any]) -> None:
         raise ValueError(f"T must be >= 2, got {T}")
 
     blocks = cfg.get("blocks")
-    if not isinstance(blocks, list) or len(blocks) != EXPECTED_NUM_BLOCKS:
-        raise ValueError(f"blocks must be a list of length {EXPECTED_NUM_BLOCKS}, got {len(blocks) if isinstance(blocks, list) else type(blocks)}")
+    if not isinstance(blocks, list):
+        raise ValueError("blocks must be a list")
+    if require_full_coverage and len(blocks) != EXPECTED_NUM_BLOCKS:
+        raise ValueError(
+            f"blocks must be a list of length {EXPECTED_NUM_BLOCKS}, got {len(blocks)}"
+        )
+    if not require_full_coverage and len(blocks) < 1:
+        raise ValueError("blocks must be non-empty when require_full_coverage=False")
 
-    ids = sorted(int(b["id"]) for b in blocks)
-    if ids != list(range(EXPECTED_NUM_BLOCKS)):
-        raise ValueError(f"block ids must be 0..{EXPECTED_NUM_BLOCKS-1} exactly once, got {ids}")
+    ids = [int(b["id"]) for b in blocks]
+    if len(set(ids)) != len(ids):
+        raise ValueError(f"block ids must be unique, got {ids}")
+    if require_full_coverage:
+        ids_sorted = sorted(ids)
+        if ids_sorted != list(range(EXPECTED_NUM_BLOCKS)):
+            raise ValueError(f"block ids must be 0..{EXPECTED_NUM_BLOCKS-1} exactly once, got {ids_sorted}")
 
     for b in blocks:
         mask = b.get("expanded_mask")
@@ -74,6 +84,11 @@ def validate_stage1_scheduler_config(cfg: Dict[str, Any]) -> None:
         row = np.asarray(mask, dtype=bool)
         if row.shape != (T,):
             raise ValueError(f"block id={b.get('id')}: expanded_mask shape must be ({T},), got {row.shape}")
+        if not bool(row[0]):
+            raise ValueError(
+                f"block id={b.get('id')}: expanded_mask[0] must be True "
+                "(step_idx=0 <-> DDIM i=T-1)"
+            )
 
     shared = cfg.get("shared_zones")
     if not isinstance(shared, list) or len(shared) < 1:
@@ -85,12 +100,49 @@ def validate_stage1_scheduler_config(cfg: Dict[str, Any]) -> None:
 
     validate_shared_zones_ddim(shared, T)
 
+    mapped_runtime_names: List[str] = []
     for b in blocks:
+        bid = int(b.get("id"))
+        name = str(b.get("name", ""))
+        rt = stage1_block_to_runtime_block(name)
+        mapped_runtime_names.append(rt)
+        rt_declared = b.get("runtime_name", None)
+        if rt_declared is not None and str(rt_declared) != rt:
+            raise ValueError(
+                f"block id={bid}: runtime_name {rt_declared!r} contradicts name {name!r} -> {rt!r}"
+            )
         kz = b.get("k_per_zone")
         if not isinstance(kz, list) or len(kz) != nz:
             raise ValueError(
                 f"block id={b.get('id')}: k_per_zone length must be len(shared_zones)={nz}, "
                 f"got {len(kz) if isinstance(kz, list) else type(kz)}"
+            )
+        for j, kv in enumerate(kz):
+            if int(kv) < 1:
+                raise ValueError(f"block id={bid}: k_per_zone[{j}] must be >= 1, got {kv}")
+        rebuilt = np.asarray(
+            rebuild_expanded_mask_from_shared_zones_and_k_per_zone(
+                shared, [int(x) for x in kz], T, block_id=bid
+            ),
+            dtype=bool,
+        )
+        row = np.asarray(b["expanded_mask"], dtype=bool)
+        if not np.all(row >= rebuilt):
+            bad = np.where(~row & rebuilt)[0].tolist()
+            raise ValueError(
+                f"block id={bid}: expanded_mask must be >= rebuild(shared_zones,k_per_zone), missing steps {bad[:24]}"
+                + (" ..." if len(bad) > 24 else "")
+            )
+
+    if len(set(mapped_runtime_names)) != len(mapped_runtime_names):
+        raise ValueError("mapped runtime block names from blocks[].name must be unique")
+    if require_full_coverage:
+        if set(mapped_runtime_names) != set(RUNTIME_LAYER_NAMES):
+            missing = sorted(set(RUNTIME_LAYER_NAMES) - set(mapped_runtime_names))
+            extra = sorted(set(mapped_runtime_names) - set(RUNTIME_LAYER_NAMES))
+            raise ValueError(
+                "mapped runtime block set mismatch for full config: "
+                f"missing={missing}, extra={extra}"
             )
 
 

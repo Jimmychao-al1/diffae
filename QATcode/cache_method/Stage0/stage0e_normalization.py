@@ -662,17 +662,29 @@ def run_stage0e(
 #=============================================================================
 
 if __name__ == "__main__":
-    # 預設路徑（使用者需要根據實際專案結構調整）
-    import os
-    
-    # 假設從專案根目錄執行
-    project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.."))
-    
+    # 預設路徑（repo root 為 /.../diffae）
+    repo_root = Path(__file__).resolve().parents[3]
+    l1_cos_dir = repo_root / "QATcode/cache_method/a_L1_L2_cosine/T_100/v2_latest/result_npz"
+    svd_dir = repo_root / "QATcode/cache_method/b_SVD/svd_metrics"
+    fid_json_path = repo_root / "QATcode/cache_method/c_FID/fid_cache_sensitivity/fid_sensitivity_results.json"
+    output_dir = repo_root / "QATcode/cache_method/Stage0/stage0e_output"
+
+    required_inputs = [
+        ("l1_cos_dir", l1_cos_dir, True),
+        ("svd_dir", svd_dir, True),
+        ("fid_json_path", fid_json_path, False),
+    ]
+    for label, p, expect_dir in required_inputs:
+        if expect_dir and not p.is_dir():
+            raise FileNotFoundError(f"[Stage0E] default {label} directory not found: {p}")
+        if (not expect_dir) and not p.is_file():
+            raise FileNotFoundError(f"[Stage0E] default {label} file not found: {p}")
+
     run_stage0e(
-        l1_cos_dir=os.path.join(project_root, "QATcode/cache_method/a_L1_L2_cosine/T_100/v2_latest/result_npz"),
-        svd_dir=os.path.join(project_root, "QATcode/cache_method/SVD/svd_metrics"),
-        fid_json_path=os.path.join(project_root, "QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json"),
-        output_dir=os.path.join(project_root, "QATcode/cache_method/Stage0/stage0e_output"),
+        l1_cos_dir=str(l1_cos_dir),
+        svd_dir=str(svd_dir),
+        fid_json_path=str(fid_json_path),
+        output_dir=str(output_dir),
         eps_noise=0.5,
         quantile=0.95
     )
