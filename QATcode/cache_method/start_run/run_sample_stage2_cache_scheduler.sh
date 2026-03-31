@@ -1,28 +1,40 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Run FID sampling for multiple Stage2 refined schedulers and aggregate results.
+# Run FID@5K sampling for multiple Stage2 refined schedulers.
+#
+# Output layout:
+#   QATcode/cache_method/results/stage2_scheduler_runs/
+#     runs_index.jsonl                      ← append-only index (one line per run)
+#     YYYYMMDD/
+#       YYYYMMDD__<scheduler_name>/
+#         run_manifest.json
+#         summary.json
+#         detail_stats.json
+#         scheduler_config.snapshot.json
+#         run.log
+#
 # Execution order (fixed):
-#   baseline, prefix_5, prefix_10, prefix_15, first_input_only, combined_5, combined_10, combined_15
+#   baseline, prefix_5, prefix_10, prefix_15,
+#   first_input_only, combined_5, combined_10, combined_15
 
 STAGE2_BASE="QATcode/cache_method/Stage2/stage2_output/plan1_K16_sw3"
-LOG_DIR="QATcode/cache_method/start_run/log"
-RESULT_JSON="QATcode/cache_method/start_run/stage2_cache_scheduler_fid_results.json"
+RESULTS_ROOT="QATcode/cache_method/results/stage2_scheduler_runs"
+RUNS_INDEX="${RESULTS_ROOT}/runs_index.jsonl"
 
-mkdir -p "$LOG_DIR"
-
-# JSON array as a string; we grow this via a tiny Python helper.
-results='[]'
+mkdir -p "${RESULTS_ROOT}"
 
 run_exp() {
   local name="$1"
   local sched_json="$2"
 
-  echo "===== Running scheduler: ${name} ====="
+  local date_str
+  date_str="$(date +%Y%m%d)"
+  local run_dir="${RESULTS_ROOT}/${date_str}/${date_str}__${name}"
+  mkdir -p "${run_dir}"
 
-  local log_file="${LOG_DIR}/sample_stage2_cache_scheduler_${name}.log"
+  echo "===== Running scheduler: ${name} | output: ${run_dir} ====="
 
-  SECONDS=0
   python QATcode/cache_method/start_run/sample_stage2_cache_scheduler.py \
     --mode float \
     --num_steps 100 \
@@ -31,49 +43,23 @@ run_exp() {
     --quant-state tt \
     --use_cache_scheduler \
     --cache_scheduler_json "${sched_json}" \
-    --log_file "${log_file}"
-  local elapsed="${SECONDS}"
+    --scheduler-name "${name}" \
+    --run-output-dir "${run_dir}" \
+    --runs-index-path "${RUNS_INDEX}" \
+    --log_file "${run_dir}/run.log"
 
-  # Parse FID from log: expect line like "FID@N T=100 score: X"
-  local fid
-  fid="$(grep 'FID@' "${log_file}" | tail -n 1 | awk '{print $NF}')"
-  if [[ -z "${fid:-}" ]]; then
-    echo "ERROR: Failed to parse FID score from log ${log_file}" >&2
-    exit 1
-  fi
-
-  # Append this experiment to the JSON array.
-  results="$(python - "$results" "$name" "$fid" "$elapsed" << 'PY'
-import json
-import sys
-
-arr = json.loads(sys.argv[1])
-name = sys.argv[2]
-fid = float(sys.argv[3])
-elapsed = float(sys.argv[4])
-
-arr.append(
-    {
-        "scheduler": name,
-        "fid": fid,
-        "time_seconds": elapsed,
-    }
-)
-
-print(json.dumps(arr, indent=2, ensure_ascii=False))
-PY
-)"
+  echo "  → done. Summary: ${run_dir}/summary.json"
 }
 
-run_exp "baseline"          "${STAGE2_BASE}/baseline/stage2_refined_scheduler_config.json"
-run_exp "prefix_5"          "${STAGE2_BASE}/prefix_5/stage2_refined_scheduler_config.json"
-run_exp "prefix_10"         "${STAGE2_BASE}/prefix_10/stage2_refined_scheduler_config.json"
-run_exp "prefix_15"         "${STAGE2_BASE}/prefix_15/stage2_refined_scheduler_config.json"
-run_exp "first_input_only"  "${STAGE2_BASE}/first_input_only/stage2_refined_scheduler_config.json"
-run_exp "combined_5"        "${STAGE2_BASE}/combined_5/stage2_refined_scheduler_config.json"
-run_exp "combined_10"       "${STAGE2_BASE}/combined_10/stage2_refined_scheduler_config.json"
-run_exp "combined_15"       "${STAGE2_BASE}/combined_15/stage2_refined_scheduler_config.json"
+run_exp "baseline"         "${STAGE2_BASE}/baseline/stage2_refined_scheduler_config.json"
+run_exp "prefix_5"         "${STAGE2_BASE}/prefix_5/stage2_refined_scheduler_config.json"
+run_exp "prefix_10"        "${STAGE2_BASE}/prefix_10/stage2_refined_scheduler_config.json"
+run_exp "prefix_15"        "${STAGE2_BASE}/prefix_15/stage2_refined_scheduler_config.json"
+run_exp "first_input_only" "${STAGE2_BASE}/first_input_only/stage2_refined_scheduler_config.json"
+run_exp "combined_5"       "${STAGE2_BASE}/combined_5/stage2_refined_scheduler_config.json"
+run_exp "combined_10"      "${STAGE2_BASE}/combined_10/stage2_refined_scheduler_config.json"
+run_exp "combined_15"      "${STAGE2_BASE}/combined_15/stage2_refined_scheduler_config.json"
 
-echo "${results}" > "${RESULT_JSON}"
-echo "Wrote aggregated FID results to ${RESULT_JSON}"
-
+echo ""
+echo "All runs complete."
+echo "Index: ${RUNS_INDEX}"
