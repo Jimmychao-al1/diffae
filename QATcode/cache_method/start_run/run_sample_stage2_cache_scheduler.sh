@@ -29,8 +29,11 @@ run_exp() {
   local sched_json="$2"
 
   local date_str
-  date_str="$(date +%Y%m%dT%H%M%S)"
-  local run_dir="${RESULTS_ROOT}/${date_str}/${date_str}__${name}"
+  date_str="$(date +%Y%m%d)"
+  local time_str
+  # e.g. 0331_17 -> MMDD_HH
+  time_str="$(date +%m%d_%H)"
+  local run_dir="${RESULTS_ROOT}/${date_str}/${name}/${time_str}_${name}"
   mkdir -p "${run_dir}"
 
   echo "===== Running scheduler: ${name} | output: ${run_dir} ====="
