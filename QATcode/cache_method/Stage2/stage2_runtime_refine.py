@@ -104,7 +104,10 @@ def _load_quant_model_for_sampling(
     QAT_CONFIG.CALIB_DATA_PATH = cp
 
     base_model: LitModel = load_diffae_model(mp)
-    quant_model = create_float_quantized_model(base_model.ema_model)
+    quant_model = create_float_quantized_model(
+        base_model.ema_model,
+        num_steps=QAT_CONFIG.NUM_DIFFUSION_STEPS,
+    )
     quant_model.to(device)
 
     cali_images, cali_t, cali_y = load_calibration_data()
@@ -266,6 +269,7 @@ def run_stage2_refine(
     force_full_prefix_steps: int = 0,
     force_full_runtime_blocks: Optional[List[str]] = None,
     safety_first_input_block: bool = False,
+    eval_num_images: int = 4,
 ) -> Dict[str, Any]:
     _configure_stage2_logging()
     device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -318,13 +322,14 @@ def run_stage2_refine(
             device=device,
         )
         conf = base_model.conf.clone()
-        conf.eval_num_images = 1
+        # 使用小 batch 多張圖來穩定統計；eval_num_images 也作為 x_T 的 batch 大小
+        conf.eval_num_images = int(eval_num_images)
         sampler = base_model.conf._make_diffusion_conf(T=T).make_sampler()
         latent_sampler = base_model.conf._make_latent_diffusion_conf(T=T).make_sampler()
 
         g = torch.Generator(device=device)
         g.manual_seed(seed)
-        x_T = torch.randn((1, 3, conf.img_size, conf.img_size), generator=g, device=device)
+        x_T = torch.randn((conf.eval_num_images, 3, conf.img_size, conf.img_size), generator=g, device=device)
         conf.seed = seed
 
         collector = Stage2ErrorCollector(T=T, device=device)
@@ -639,6 +644,13 @@ def main() -> None:
         help="Optional: stage2_thresholds_blockwise.json（build_blockwise_thresholds.py）；若省略則用 --zone_l1_threshold / --peak_l1_threshold",
     )
     p.add_argument(
+        "--eval-num-images",
+        type=int,
+        default=4,
+        choices=[1, 4, 8],
+        help="Number of images used for Stage2 diagnostics (batch size); 1=debug, 4=default, 8=more stable.",
+    )
+    p.add_argument(
         "--force-full-prefix-steps",
         type=_nonnegative_int,
         default=0,
@@ -677,6 +689,7 @@ def main() -> None:
         force_full_prefix_steps=args.force_full_prefix_steps,
         force_full_runtime_blocks=_parse_force_full_runtime_blocks(args.force_full_runtime_blocks),
         safety_first_input_block=bool(args.safety_first_input_block),
+        eval_num_images=int(args.eval_num_images),
     )
 
 
