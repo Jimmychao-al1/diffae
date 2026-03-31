@@ -190,8 +190,7 @@ def load_interval_metrics(
             
         except Exception as e:
             LOGGER.error(f"載入 {block_name} 時出錯: {e}")
-            failed_blocks.append(block_name)
-            continue
+            raise ValueError(f"載入 {block_name} 時出錯: {e}")
     
     if len(block_names) == 0:
         raise ValueError("沒有成功載入任何 block 的資料")
