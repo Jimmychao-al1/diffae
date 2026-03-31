@@ -147,10 +147,10 @@ def main() -> None:
     ap = argparse.ArgumentParser(description="Build per-block quantile thresholds from Stage2 diagnostics JSON")
     ap.add_argument("--diagnostics", type=str, required=True, help="Path to stage2_runtime_diagnostics.json")
     ap.add_argument("--output", type=str, required=True, help="Output path, e.g. stage2_thresholds_blockwise.json")
-    ap.add_argument("--q-zone", type=float, default=0.75, help="Quantile over zone mean_l1 values per block (default 0.75)")
-    ap.add_argument("--q-peak", type=float, default=0.95, help="Quantile over per-step l1 values per block (default 0.95)")
+    ap.add_argument("--q_zone", type=float, default=0.75, help="Quantile over zone mean_l1 values per block (default 0.75)")
+    ap.add_argument("--q_peak", type=float, default=0.95, help="Quantile over per-step l1 values per block (default 0.95)")
     ap.add_argument(
-        "--peak-over-zone-ratio-min",
+        "--peak_over_zone_ratio_min",
         type=float,
         default=1.5,
         help="Enforce peak_l1 >= this * zone_l1 after quantiles (default 1.5)",
