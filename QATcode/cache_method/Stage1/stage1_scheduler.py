@@ -737,7 +737,11 @@ def _self_test_fid_zero_uniform_G() -> None:
 def _self_test_t_curr_mismatch_raises(tmp: Path, B: int, T: int) -> None:
     tmp.mkdir(parents=True, exist_ok=True)
     Tm1 = T - 1
-    np.save(tmp / "block_names.npy", np.array([f"b{i}" for i in range(B)], dtype=object))
+    test_names = np.array(
+        [f"model.input_blocks.{i}" for i in range(B)],
+        dtype=object,
+    )
+    np.save(tmp / "block_names.npy", test_names)
     np.save(tmp / "l1_interval_norm.npy", np.zeros((B, Tm1)))
     np.save(tmp / "cosdist_interval_norm.npy", np.zeros((B, Tm1)))
     np.save(tmp / "svd_interval_norm.npy", np.zeros((B, Tm1)))
@@ -774,7 +778,11 @@ def self_test():
     _self_test_t_curr_mismatch_raises(tmp / "bad_tcurr", B, T)
     _self_test_merge_zones_cover_T()
 
-    np.save(tmp / "block_names.npy", np.array([f"b{i}" for i in range(B)], dtype=object))
+    test_names = np.array(
+        [f"model.input_blocks.{i}" for i in range(B)],
+        dtype=object,
+    )
+    np.save(tmp / "block_names.npy", test_names)
     rng = np.random.default_rng(0)
     np.save(tmp / "l1_interval_norm.npy", rng.random((B, Tm1)).astype(np.float64))
     np.save(tmp / "cosdist_interval_norm.npy", rng.random((B, Tm1)).astype(np.float64))
