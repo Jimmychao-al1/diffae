@@ -10,7 +10,7 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Set
 
 import numpy as np
 
@@ -64,6 +64,80 @@ def check_shared_zones_cover_ddim(shared_zones: List[Dict[str, Any]], T: int) ->
     return True
 
 
+def check_time_order(cfg: Dict[str, Any]) -> bool:
+    order = cfg.get("time_order")
+    if order != "ddim_99_to_0":
+        print(f"❌ time_order 必須為 'ddim_99_to_0'，收到: {order!r}")
+        return False
+    print("✅ time_order 正確（ddim_99_to_0）")
+    return True
+
+
+def check_block_ids(blocks: List[Dict[str, Any]]) -> bool:
+    B = len(blocks)
+    seen: Set[int] = set()
+    ok = True
+    for idx, block in enumerate(blocks):
+        if "id" not in block:
+            print(f"❌ block index={idx} 缺少 id")
+            ok = False
+            continue
+        bid = block["id"]
+        if not isinstance(bid, int):
+            print(f"❌ block index={idx} id 必須為 int，收到 {type(bid).__name__}")
+            ok = False
+            continue
+        if bid < 0 or bid >= B:
+            print(f"❌ block id={bid} 超出合法範圍 [0, {B - 1}]")
+            ok = False
+        if bid in seen:
+            print(f"❌ block id 重複: {bid}")
+            ok = False
+        seen.add(bid)
+    if len(seen) != B:
+        miss = sorted(set(range(B)) - seen)
+        if miss:
+            print(f"❌ block id 非連續/缺漏，缺少: {miss}")
+        ok = False
+    if ok:
+        print("✅ block 數量與 id 唯一性/範圍檢查通過")
+    return ok
+
+
+def check_shared_zone_ids(shared_zones: List[Dict[str, Any]]) -> bool:
+    Z = len(shared_zones)
+    seen: Set[int] = set()
+    ok = True
+    for idx, z in enumerate(shared_zones):
+        zid = z.get("id", None)
+        if not isinstance(zid, int):
+            print(f"❌ shared_zones[{idx}] id 必須為 int，收到 {zid!r}")
+            ok = False
+            continue
+        if zid < 0 or zid >= Z:
+            print(f"❌ zone id={zid} 超出合法範圍 [0, {Z - 1}]")
+            ok = False
+        if zid in seen:
+            print(f"❌ zone id 重複: {zid}")
+            ok = False
+        seen.add(zid)
+        if "length" in z:
+            ts = int(z["t_start"])
+            te = int(z["t_end"])
+            exp_len = ts - te + 1
+            if int(z["length"]) != exp_len:
+                print(f"❌ zone id={zid} length={z['length']} 與 t_start/t_end 不一致（應為 {exp_len}）")
+                ok = False
+    if len(seen) != Z:
+        miss = sorted(set(range(Z)) - seen)
+        if miss:
+            print(f"❌ zone id 非連續/缺漏，缺少: {miss}")
+        ok = False
+    if ok:
+        print("✅ shared_zones 的 id 與 length 一致性檢查通過")
+    return ok
+
+
 def main():
     parser = argparse.ArgumentParser(description="Verify Stage-1 baseline scheduler JSON")
     parser.add_argument(
@@ -81,6 +155,7 @@ def main():
     cfg = load_config(str(path))
     T = int(cfg["T"])
     shared_zones = cfg["shared_zones"]
+    blocks = cfg["blocks"]
     params = cfg.get("stage1_baseline_params", {})
     k_min = int(params.get("k_min", 1))
     k_max = int(params.get("k_max", 4))
@@ -89,12 +164,22 @@ def main():
     print("Stage-1 baseline 驗證")
     print("=" * 72)
     print(f"time_order: {cfg.get('time_order')}")
-    print(f"T={T}, |shared_zones|={len(shared_zones)}, blocks={len(cfg['blocks'])}")
+    print(f"T={T}, |shared_zones|={len(shared_zones)}, blocks={len(blocks)}")
 
     all_ok = True
+    all_ok &= check_time_order(cfg)
+    all_ok &= check_block_ids(blocks)
+    all_ok &= check_shared_zone_ids(shared_zones)
     all_ok &= check_shared_zones_cover_ddim(shared_zones, T)
 
-    exp_all = np.array([b["expanded_mask"] for b in cfg["blocks"]], dtype=bool)
+    exp_all_raw = [b.get("expanded_mask") for b in blocks]
+    if any(not isinstance(m, list) for m in exp_all_raw):
+        print("❌ 每個 block 都必須有 list 型別的 expanded_mask")
+        return
+    exp_all = np.array(exp_all_raw, dtype=bool)
+    if exp_all.ndim != 2:
+        print(f"❌ expanded_mask 應為 [blocks, T] 二維結構，收到 ndim={exp_all.ndim}")
+        return
     if exp_all.shape[1] != T:
         print(f"❌ expanded_mask 寬度 {exp_all.shape[1]} != T={T}")
         all_ok = False
@@ -116,7 +201,7 @@ def main():
     if zone_start_ok:
         print("✅ 每個 zone 在該區第一步（DDIM t=t_start）為 F")
 
-    for block in cfg["blocks"]:
+    for block in blocks:
         bid = block["id"]
         kz = block["k_per_zone"]
         if len(kz) != len(shared_zones):
@@ -131,7 +216,7 @@ def main():
     if all_ok:
         print(f"✅ 所有 k 在 [{k_min}, {k_max}]")
 
-    for b, block in enumerate(cfg["blocks"]):
+    for b, block in enumerate(blocks):
         recon = rebuild_mask(shared_zones, block["k_per_zone"], T)
         if not np.array_equal(exp_all[b], recon):
             diff = np.where(exp_all[b] != recon)[0]
@@ -143,8 +228,8 @@ def main():
     nF = exp_all.sum(axis=1)
     nR = T - nF
     print("\n📊 每 block #F / #R:")
-    for b in range(len(cfg["blocks"])):
-        print(f"   block {b} ({cfg['blocks'][b].get('name', '')}): F={int(nF[b])}, R={int(nR[b])}")
+    for b in range(len(blocks)):
+        print(f"   block {b} ({blocks[b].get('name', '')}): F={int(nF[b])}, R={int(nR[b])}")
 
     print("\n" + ("🎉 全部通過" if all_ok else "⚠️ 有項目失敗"))
     print("=" * 72)

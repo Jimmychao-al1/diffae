@@ -4,7 +4,7 @@
   "svd_source_key": "subspace_dist[1:]",
   "t_axis_definition": "interval-wise: analysis interval index j (0..T-2) keeps internal order; display label is t_curr=(T-2)-j",
   "similarity_root": "/home/jimmy/diffae/QATcode/cache_method/a_L1_L2_cosine/T_100/v2_latest/result_npz",
-  "svd_root": "/home/jimmy/diffae/QATcode/cache_method/SVD/svd_metrics",
+  "svd_root": "/home/jimmy/diffae/QATcode/cache_method/b_SVD/svd_metrics",
   "failed_blocks_count": 0,
   "failed_blocks": [],
   "strict_mode": false

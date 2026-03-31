@@ -17,7 +17,7 @@ VISUALIZE="QATcode/cache_method/Stage1/visualize_stage1.py"
 VERIFY="QATcode/cache_method/Stage1/verify_scheduler.py"
 
 # 預設掃描範圍（可自行改小以縮短時間）
-K_LIST=(4 8 12 16 20 25 30)
+K_LIST=(12 16)
 SW_LIST=(3 5)
 LAM_LIST=(0.25 0.5 1.0 2.0)
 KMAX_LIST=(4)

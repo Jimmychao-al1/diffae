@@ -78,6 +78,17 @@ def verify_refined_scheduler_config(cfg: Dict[str, Any], *, require_full_coverag
         name = str(b.get("name", ""))
         rt = stage1_block_to_runtime_block(name)
         mapped_runtime_names.append(rt)
+        runtime_bid = RUNTIME_LAYER_NAMES.index(rt)
+        local_bid_declared = b.get("scheduler_local_block_id", None)
+        if local_bid_declared is not None and int(local_bid_declared) != bid:
+            raise ValueError(
+                f"block id={bid}: scheduler_local_block_id {local_bid_declared!r} must equal id"
+            )
+        runtime_bid_declared = b.get("canonical_runtime_block_id", None)
+        if runtime_bid_declared is not None and int(runtime_bid_declared) != runtime_bid:
+            raise ValueError(
+                f"block id={bid}: canonical_runtime_block_id {runtime_bid_declared!r} contradicts name {name!r} -> {runtime_bid}"
+            )
         rt_declared = b.get("runtime_name", None)
         if rt_declared is not None and str(rt_declared) != rt:
             raise ValueError(
@@ -177,6 +188,11 @@ def verify_blockwise_threshold_config_dict(data: Dict[str, Any], *, eps: float =
         if rt != RUNTIME_LAYER_NAMES[bid]:
             raise ValueError(
                 f"block_id {bid}: runtime_name must be {RUNTIME_LAYER_NAMES[bid]!r}, got {rt!r}"
+            )
+        crid = entry.get("canonical_runtime_block_id", None)
+        if crid is not None and int(crid) != bid:
+            raise ValueError(
+                f"block_id {bid}: canonical_runtime_block_id must equal block_id, got {crid!r}"
             )
         cn = str(entry.get("canonical_name", ""))
         if not cn.startswith("model."):

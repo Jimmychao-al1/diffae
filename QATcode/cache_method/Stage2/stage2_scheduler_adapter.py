@@ -105,11 +105,22 @@ def validate_stage1_scheduler_config(cfg: Dict[str, Any], *, require_full_covera
         bid = int(b.get("id"))
         name = str(b.get("name", ""))
         rt = stage1_block_to_runtime_block(name)
+        runtime_bid = runtime_name_to_block_id(rt)
         mapped_runtime_names.append(rt)
         rt_declared = b.get("runtime_name", None)
         if rt_declared is not None and str(rt_declared) != rt:
             raise ValueError(
                 f"block id={bid}: runtime_name {rt_declared!r} contradicts name {name!r} -> {rt!r}"
+            )
+        runtime_bid_declared = b.get("canonical_runtime_block_id", None)
+        if runtime_bid_declared is not None and int(runtime_bid_declared) != runtime_bid:
+            raise ValueError(
+                f"block id={bid}: canonical_runtime_block_id {runtime_bid_declared!r} contradicts name {name!r} -> {runtime_bid}"
+            )
+        local_bid_declared = b.get("scheduler_local_block_id", None)
+        if local_bid_declared is not None and int(local_bid_declared) != bid:
+            raise ValueError(
+                f"block id={bid}: scheduler_local_block_id {local_bid_declared!r} must equal id"
             )
         kz = b.get("k_per_zone")
         if not isinstance(kz, list) or len(kz) != nz:
@@ -162,6 +173,15 @@ def runtime_block_to_stage1_name(runtime: str) -> str:
     if m:
         return f"model.output_blocks.{int(m.group(1))}"
     raise ValueError(f"unrecognized runtime block name: {runtime!r}")
+
+
+def runtime_name_to_block_id(runtime: str) -> int:
+    """Canonical runtime block index from runtime block name."""
+    s = runtime.strip()
+    try:
+        return RUNTIME_LAYER_NAMES.index(s)
+    except ValueError as e:
+        raise ValueError(f"unrecognized runtime block name: {runtime!r}") from e
 
 
 def stage1_block_to_runtime_block(stage1_name: str) -> str:

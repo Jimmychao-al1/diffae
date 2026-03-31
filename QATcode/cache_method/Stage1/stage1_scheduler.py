@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 from pathlib import Path
 from typing import Any, Dict, List, Sequence, Tuple
 
@@ -44,6 +45,22 @@ assert abs(ALPHA_ICUT + BETA_ICUT - 1.0) < 1e-9
 
 VERSION = "stage1_baseline_v1"
 DEFAULT_LAMBDA_SWEEP = (0.25, 0.5, 1.0, 2.0)
+
+
+def stage1_name_to_runtime_identity(stage1_name: str) -> Tuple[str, int]:
+    """Stage1 block name -> (runtime_name, canonical runtime block id 0..30)."""
+    s = stage1_name.strip()
+    m = re.match(r"^model\.input_blocks\.(\d+)$", s)
+    if m:
+        i = int(m.group(1))
+        return f"encoder_layer_{i}", i
+    if s == "model.middle_block":
+        return "middle_layer", 15
+    m = re.match(r"^model\.output_blocks\.(\d+)$", s)
+    if m:
+        i = int(m.group(1))
+        return f"decoder_layer_{i}", 16 + i
+    raise ValueError(f"unrecognized Stage1 block name: {stage1_name!r}")
 
 
 def ddim_t_to_step_index(t: int, T: int) -> int:
@@ -488,6 +505,7 @@ def run_stage1_synthesis(
 
         for b in range(B):
             row: Dict[str, Any] = {"block_id": b, "candidates": {}}
+            runtime_name, runtime_block_id = stage1_name_to_runtime_identity(str(block_names[b]))
             best_k = cands[0]
             best_J = float("inf")
             for k in cands:
@@ -507,6 +525,9 @@ def run_stage1_synthesis(
                     best_k = k
             row["selected_k"] = int(best_k)
             row["selected_J"] = float(best_J)
+            row["scheduler_local_block_id"] = int(b)
+            row["runtime_name"] = runtime_name
+            row["canonical_runtime_block_id"] = int(runtime_block_id)
             k_chosen[b, zi] = int(best_k)
             zone_cost["per_block"].append(row)
 
@@ -527,6 +548,8 @@ def run_stage1_synthesis(
     total_cost_b = np.zeros(B, dtype=np.float64)
     for b in range(B):
         tc = 0.0
+        block_name = str(block_names[b])
+        runtime_name, runtime_block_id = stage1_name_to_runtime_identity(block_name)
         for zi, zd in enumerate(shared_zones):
             Lz = zd["length"]
             J, _, _, _, _ = cost_J_for_k(
@@ -544,7 +567,11 @@ def run_stage1_synthesis(
         blocks_out.append(
             {
                 "id": b,
-                "name": str(block_names[b]),
+                "scheduler_local_block_id": b,
+                "block_id_semantics": "scheduler-local index (not canonical runtime block index)",
+                "name": block_name,
+                "runtime_name": runtime_name,
+                "canonical_runtime_block_id": int(runtime_block_id),
                 "k_per_zone": k_chosen[b, :].tolist(),
                 "expanded_mask": expanded[b, :].tolist(),
             }
@@ -578,6 +605,11 @@ def run_stage1_synthesis(
         "T": T,
         "time_order": "ddim_99_to_0",
         "expanded_mask_layout": "index i=0 is first DDIM step (t=T-1); i=T-1 is t=0",
+        "block_identity_semantics": {
+            "blocks[].id": "scheduler-local index (stable within this scheduler JSON)",
+            "blocks[].scheduler_local_block_id": "same as blocks[].id",
+            "blocks[].canonical_runtime_block_id": "canonical runtime index aligned with runtime layer order",
+        },
         "stage1_baseline_params": stage1_baseline_params,
         "shared_zones": shared_zones,
         "blocks": blocks_out,
@@ -588,7 +620,7 @@ def run_stage1_synthesis(
     for lam in lambda_sweep:
         key = str(lam)
         sweep_report[key] = {"per_block_k": []}
-    for b in range(B):  
+        for b in range(B):
             k_z = []
             for zi, zd in enumerate(shared_zones):
                 Lz = zd["length"]
@@ -596,7 +628,9 @@ def run_stage1_synthesis(
                 best_k = cand_k_per_zone[zi][0]
                 best_J = float("inf")
                 for k in cand_k_per_zone[zi]:
-                    J, _, _, _, _ = cost_J_for_k(I_cut[b], fid_w[b], ts, te, k, Lz, float(lam), T)
+                    J, _, _, _, _ = cost_J_for_k(
+                        I_cut[b], fid_w[b], ts, te, k, Lz, float(lam), T
+                    )
                     if J < best_J - 1e-15:
                         best_J = J
                         best_k = k

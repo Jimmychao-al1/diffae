@@ -111,6 +111,7 @@ def build_blockwise_thresholds(
         per_block.append(
             {
                 "block_id": block_id,
+                "canonical_runtime_block_id": block_id,
                 "canonical_name": canonical,
                 "runtime_name": rt,
                 "num_zone_samples": len(zvals),
@@ -125,6 +126,10 @@ def build_blockwise_thresholds(
 
     out: Dict[str, Any] = {
         "method": METHOD_NAME,
+        "block_identity_semantics": {
+            "block_id": "canonical runtime block index",
+            "canonical_runtime_block_id": "same as block_id (explicit alias for readability)",
+        },
         "source_diagnostics_path": str(diagnostics_path.resolve()),
         "q_zone": float(q_zone),
         "q_peak": float(q_peak),

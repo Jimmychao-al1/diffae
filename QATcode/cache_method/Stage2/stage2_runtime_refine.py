@@ -39,6 +39,7 @@ from QATcode.cache_method.Stage2.stage2_scheduler_adapter import (
     ddim_timestep_to_step_index,
     load_stage1_scheduler_config,
     rebuild_expanded_mask_from_shared_zones_and_k_per_zone,
+    runtime_name_to_block_id,
     stage1_block_to_runtime_block,
     stage1_mask_to_runtime_cache_scheduler,
     validate_stage1_scheduler_config,
@@ -346,6 +347,10 @@ def run_stage2_refine(
                 ),
             }
         diagnostics["stage2_threshold_meta"] = threshold_meta_diag
+        diagnostics["block_identity_semantics"] = {
+            "scheduler_local_block_id": "scheduler-local id from scheduler_config blocks[].id",
+            "canonical_runtime_block_id": "canonical runtime index from runtime_name",
+        }
 
         refined = copy.deepcopy(cfg)
         refined["version"] = "stage2_refined_v1"
@@ -362,6 +367,7 @@ def run_stage2_refine(
 
         for b in blocks:
             rt = stage1_block_to_runtime_block(str(b["name"]))
+            runtime_bid = runtime_name_to_block_id(rt)
             if blockwise_by_runtime is not None and rt not in blockwise_by_runtime:
                 raise RuntimeError(f"threshold config missing runtime_name {rt} (block id={b['id']})")
             zone_thr_used = (
@@ -382,7 +388,9 @@ def run_stage2_refine(
                     k_touch.append(
                         {
                             "block_id": b["id"],
-                            "runtime": rt,
+                            "scheduler_local_block_id": int(b["id"]),
+                            "runtime_name": rt,
+                            "canonical_runtime_block_id": int(runtime_bid),
                             "zone_id": zid,
                             "k_before": old,
                             "k_after": kz[zid],
@@ -404,6 +412,7 @@ def run_stage2_refine(
         mask_touch: List[Dict[str, Any]] = []
         for b in blocks:
             rt = stage1_block_to_runtime_block(str(b["name"]))
+            runtime_bid = runtime_name_to_block_id(rt)
             peak_thr_used = (
                 float(blockwise_by_runtime[rt]["peak_l1_threshold"])
                 if blockwise_by_runtime is not None
@@ -420,7 +429,9 @@ def run_stage2_refine(
                 mask_touch.append(
                     {
                         "block_id": b["id"],
-                        "runtime": rt,
+                        "scheduler_local_block_id": int(b["id"]),
+                        "runtime_name": rt,
+                        "canonical_runtime_block_id": int(runtime_bid),
                         "ddim_timestep": ddim_i,
                         "step_index": si,
                         "was_reuse_before_peak_repair": was_reuse,
@@ -434,6 +445,7 @@ def run_stage2_refine(
         if T >= 1:
             for b in blocks:
                 rt = stage1_block_to_runtime_block(str(b["name"]))
+                runtime_bid = runtime_name_to_block_id(rt)
                 em = b["expanded_mask"]
                 if not bool(em[0]):
                     em[0] = True
@@ -445,6 +457,9 @@ def run_stage2_refine(
                     mask_touch.append(
                         {
                             "block_id": b["id"],
+                            "scheduler_local_block_id": int(b["id"]),
+                            "runtime_name": rt,
+                            "canonical_runtime_block_id": int(runtime_bid),
                             "note": "enforce first step full compute (step_idx=0 -> DDIM i=T-1)",
                             "expanded_mask_after": True,
                             "threshold_mode": threshold_mode,
@@ -460,6 +475,7 @@ def run_stage2_refine(
             per_block_thr_summary = [
                 {
                     "block_id": int(blockwise_by_id[i]["block_id"]),
+                    "canonical_runtime_block_id": int(blockwise_by_id[i].get("canonical_runtime_block_id", blockwise_by_id[i]["block_id"])),
                     "canonical_name": blockwise_by_id[i]["canonical_name"],
                     "runtime_name": blockwise_by_id[i]["runtime_name"],
                     "zone_l1_threshold": float(blockwise_by_id[i]["zone_l1_threshold"]),
@@ -471,6 +487,11 @@ def run_stage2_refine(
         summary = {
             "zone_k_adjustments": k_touch,
             "peak_mask_adjustments": mask_touch,
+            "block_identity_semantics": {
+                "block_id": "backward-compatible alias of scheduler_local_block_id",
+                "scheduler_local_block_id": "id in scheduler JSON; do not interpret as canonical runtime index",
+                "canonical_runtime_block_id": "canonical runtime index matching runtime_name",
+            },
             "threshold_mode": threshold_mode,
             "global_thresholds": {"zone_l1": zone_l1_threshold, "peak_l1": peak_l1_threshold},
             "per_block_thresholds": per_block_thr_summary,
