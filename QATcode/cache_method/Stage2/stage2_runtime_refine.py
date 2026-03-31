@@ -159,16 +159,149 @@ def _run_single_render(
     cb = getattr(conf, "cache_debug_collector", None)
     if cb is not None:
         c.cache_debug_collector = cb
-    _ = render_uncondition(
-        conf=c,
-        model=model,
-        x_T=x_T,
-        sampler=sampler,
-        latent_sampler=latent_sampler,
-        conds_mean=conds_mean,
-        conds_std=conds_std,
-        clip_latent_noise=False,
-    )
+    with torch.inference_mode():
+        _ = render_uncondition(
+            conf=c,
+            model=model,
+            x_T=x_T,
+            sampler=sampler,
+            latent_sampler=latent_sampler,
+            conds_mean=conds_mean,
+            conds_std=conds_std,
+            clip_latent_noise=False,
+        )
+
+
+def _read_process_rss_mb() -> Optional[float]:
+    try:
+        with open("/proc/self/status", "r", encoding="utf-8") as f:
+            for line in f:
+                if line.startswith("VmRSS:"):
+                    parts = line.split()
+                    if len(parts) >= 2:
+                        return float(parts[1]) / 1024.0
+    except Exception:
+        return None
+    return None
+
+
+def _aggregate_step_metrics_inplace(
+    agg: Dict[str, Dict[str, Dict[str, float]]],
+    per_block_step_error: Dict[str, Dict[str, Dict[str, float]]],
+    *,
+    batch_size: int,
+) -> None:
+    w = float(batch_size)
+    for rt, steps in per_block_step_error.items():
+        rt_acc = agg.setdefault(rt, {})
+        for ti_str, m in steps.items():
+            slot = rt_acc.setdefault(
+                ti_str,
+                {"sum_l1": 0.0, "sum_l2_sq": 0.0, "sum_cos": 0.0, "weight": 0.0},
+            )
+            l1 = float(m["l1"])
+            l2 = float(m["l2"])
+            cos = float(m["cosine"])
+            slot["sum_l1"] += l1 * w
+            slot["sum_l2_sq"] += (l2 * l2) * w
+            slot["sum_cos"] += cos * w
+            slot["weight"] += w
+
+
+def _finalize_per_block_step_error(
+    agg: Dict[str, Dict[str, Dict[str, float]]],
+) -> Dict[str, Dict[str, Dict[str, float]]]:
+    out: Dict[str, Dict[str, Dict[str, float]]] = {}
+    for rt, steps in agg.items():
+        row: Dict[str, Dict[str, float]] = {}
+        for ti_str, slot in steps.items():
+            w = float(slot["weight"])
+            if w <= 0.0:
+                continue
+            row[ti_str] = {
+                "l1": float(slot["sum_l1"] / w),
+                "l2": float(math.sqrt(max(slot["sum_l2_sq"] / w, 0.0))),
+                "cosine": float(slot["sum_cos"] / w),
+            }
+        out[rt] = row
+    return out
+
+
+def _compute_per_block_zone_error(
+    per_block_step_error: Dict[str, Dict[str, Dict[str, float]]],
+    shared_zones: List[Dict[str, Any]],
+) -> Dict[str, Dict[str, Dict[str, Any]]]:
+    per_block_zone_error: Dict[str, Dict[str, Dict[str, Any]]] = {}
+    zone_ts: Dict[int, List[int]] = {}
+    for z in shared_zones:
+        zid = int(z["id"])
+        ts, te = int(z["t_start"]), int(z["t_end"])
+        zone_ts[zid] = list(range(te, ts + 1))
+
+    for rt, steps in per_block_step_error.items():
+        per_block_zone_error[rt] = {}
+        for zid, ts in zone_ts.items():
+            zs_l1: List[float] = []
+            zs_l2: List[float] = []
+            zs_cos: List[float] = []
+            for ddim_i in ts:
+                st = steps.get(str(ddim_i))
+                if st is None:
+                    continue
+                zs_l1.append(float(st["l1"]))
+                zs_l2.append(float(st["l2"]))
+                zs_cos.append(float(st["cosine"]))
+            if not zs_l1:
+                per_block_zone_error[rt][str(zid)] = {
+                    "mean_l1": float("nan"),
+                    "mean_l2": float("nan"),
+                    "mean_cosine": float("nan"),
+                    "num_steps": len(ts),
+                    "num_compared_in_zone": 0,
+                }
+            else:
+                per_block_zone_error[rt][str(zid)] = {
+                    "mean_l1": float(np.mean(zs_l1)),
+                    "mean_l2": float(np.mean(zs_l2)),
+                    "mean_cosine": float(np.mean(zs_cos)),
+                    "num_steps": len(ts),
+                    "num_compared_in_zone": len(zs_l1),
+                }
+    return per_block_zone_error
+
+
+def _build_diagnostics_from_aggregated_steps(
+    *,
+    per_block_step_error: Dict[str, Dict[str, Dict[str, float]]],
+    shared_zones: List[Dict[str, Any]],
+    T: int,
+) -> Dict[str, Any]:
+    per_block_zone_error = _compute_per_block_zone_error(per_block_step_error, shared_zones)
+    all_l1: List[float] = []
+    all_l2: List[float] = []
+    all_cos: List[float] = []
+    for steps in per_block_step_error.values():
+        for m in steps.values():
+            all_l1.append(float(m["l1"]))
+            all_l2.append(float(m["l2"]))
+            all_cos.append(float(m["cosine"]))
+    global_summary = {
+        "mean_l1": float(np.mean(all_l1)) if all_l1 else None,
+        "mean_l2": float(np.mean(all_l2)) if all_l2 else None,
+        "mean_cosine": float(np.mean(all_cos)) if all_cos else None,
+        "num_entries": len(all_l1),
+        "note": "含 reuse 步：cache 側為 cached_data 讀出的 tensor，與 baseline 全算比較。",
+    }
+    return {
+        "per_block_step_error": per_block_step_error,
+        "per_block_zone_error": per_block_zone_error,
+        "global_summary": global_summary,
+        "T": int(T),
+        "time_axis_note": (
+            "step_idx 0..T-1：0=第一步(DDIM i=T-1)，T-1=最後一步(DDIM i=0)；"
+            "per_block_step_error 的 key 為字串化的 DDIM timestep i"
+        ),
+    }
 
 
 def _load_blockwise_threshold_config(
@@ -270,6 +403,8 @@ def run_stage2_refine(
     force_full_runtime_blocks: Optional[List[str]] = None,
     safety_first_input_block: bool = False,
     eval_num_images: int = 4,
+    eval_chunk_size: Optional[int] = None,
+    memory_log_every_images: int = 0,
 ) -> Dict[str, Any]:
     _configure_stage2_logging()
     device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -278,8 +413,6 @@ def run_stage2_refine(
     out.mkdir(parents=True, exist_ok=True)
 
     conf = None
-    collector: Optional[Stage2ErrorCollector] = None
-
     try:
         cfg = load_stage1_scheduler_config(scheduler_config_path)
         validate_stage1_scheduler_config(cfg)
@@ -322,57 +455,88 @@ def run_stage2_refine(
             device=device,
         )
         conf = base_model.conf.clone()
-        # 使用小 batch 多張圖來穩定統計；eval_num_images 也作為 x_T 的 batch 大小
-        conf.eval_num_images = int(eval_num_images)
+        total_eval_images = int(eval_num_images)
+        if total_eval_images < 1:
+            raise ValueError(f"eval_num_images must be >= 1, got {total_eval_images}")
+        chunk_size = int(eval_chunk_size) if eval_chunk_size is not None else min(4, total_eval_images)
+        if chunk_size < 1:
+            raise ValueError(f"eval_chunk_size must be >= 1, got {chunk_size}")
+        chunk_size = min(chunk_size, total_eval_images)
+        conf.eval_num_images = chunk_size
         sampler = base_model.conf._make_diffusion_conf(T=T).make_sampler()
         latent_sampler = base_model.conf._make_latent_diffusion_conf(T=T).make_sampler()
 
         g = torch.Generator(device=device)
         g.manual_seed(seed)
-        x_T = torch.randn((conf.eval_num_images, 3, conf.img_size, conf.img_size), generator=g, device=device)
         conf.seed = seed
 
-        collector = Stage2ErrorCollector(T=T, device=device)
-        cb = collector.make_cache_debug_callback()
+        agg_step_metrics: Dict[str, Dict[str, Dict[str, float]]] = {}
+        done = 0
+        chunk_idx = 0
+        while done < total_eval_images:
+            bsz = min(chunk_size, total_eval_images - done)
+            x_T = torch.randn((bsz, 3, conf.img_size, conf.img_size), generator=g, device=device)
+            collector = Stage2ErrorCollector(T=T, device=device)
+            cb = collector.make_cache_debug_callback()
+            try:
+                conf.cache_debug_collector = cb
+                collector.set_run("baseline")
+                _seed_all(seed + chunk_idx)
+                _run_single_render(
+                    conf=conf,
+                    model=base_model.ema_model,
+                    sampler=sampler,
+                    latent_sampler=latent_sampler,
+                    x_T=x_T,
+                    conds_mean=base_model.conds_mean,
+                    conds_std=base_model.conds_std,
+                    cache_scheduler=None,
+                )
+                LOGGER.info("%s", collector.debug_snapshot_line(f"after_baseline_chunk_{chunk_idx}"))
 
-        try:
-            conf.cache_debug_collector = cb
-            collector.set_run("baseline")
-            torch.manual_seed(seed)
-            if torch.cuda.is_available():
-                torch.cuda.manual_seed_all(seed)
-            _run_single_render(
-                conf=conf,
-                model=base_model.ema_model,
-                sampler=sampler,
-                latent_sampler=latent_sampler,
-                x_T=x_T,
-                conds_mean=base_model.conds_mean,
-                conds_std=base_model.conds_std,
-                cache_scheduler=None,
-            )
-            LOGGER.info("%s", collector.debug_snapshot_line("after_baseline"))
+                collector.set_run("cache")
+                _seed_all(seed + chunk_idx)
+                _run_single_render(
+                    conf=conf,
+                    model=base_model.ema_model,
+                    sampler=sampler,
+                    latent_sampler=latent_sampler,
+                    x_T=x_T,
+                    conds_mean=base_model.conds_mean,
+                    conds_std=base_model.conds_std,
+                    cache_scheduler=cache_sched_effective,
+                )
+                LOGGER.info("%s", collector.debug_snapshot_line(f"after_cache_chunk_{chunk_idx}"))
+                chunk_diag = collector.compute_diagnostics(shared_zones)
+                _aggregate_step_metrics_inplace(
+                    agg_step_metrics,
+                    chunk_diag["per_block_step_error"],
+                    batch_size=bsz,
+                )
+            finally:
+                conf.cache_debug_collector = None
+                collector.clear_storage()
+                del collector
 
-            collector.set_run("cache")
-            torch.manual_seed(seed)
-            if torch.cuda.is_available():
-                torch.cuda.manual_seed_all(seed)
-            _run_single_render(
-                conf=conf,
-                model=base_model.ema_model,
-                sampler=sampler,
-                latent_sampler=latent_sampler,
-                x_T=x_T,
-                conds_mean=base_model.conds_mean,
-                conds_std=base_model.conds_std,
-                cache_scheduler=cache_sched_effective,
-            )
-            LOGGER.info("%s", collector.debug_snapshot_line("after_cache"))
-        finally:
-            conf.cache_debug_collector = None
+            done += bsz
+            chunk_idx += 1
+            if int(memory_log_every_images) > 0 and (done % int(memory_log_every_images) == 0 or done == total_eval_images):
+                rss_mb = _read_process_rss_mb()
+                LOGGER.info(
+                    "[mem] done_images=%s/%s chunk_size=%s rss_mb=%s agg_runtime_layers=%s",
+                    done,
+                    total_eval_images,
+                    bsz,
+                    f"{rss_mb:.2f}" if rss_mb is not None else "n/a",
+                    len(agg_step_metrics),
+                )
 
-        LOGGER.info("%s", collector.debug_snapshot_line("before_compute_diagnostics"))
-        diagnostics = collector.compute_diagnostics(shared_zones)
+        per_block_step_agg = _finalize_per_block_step_error(agg_step_metrics)
+        diagnostics = _build_diagnostics_from_aggregated_steps(
+            per_block_step_error=per_block_step_agg,
+            shared_zones=shared_zones,
+            T=T,
+        )
         diagnostics["cache_scheduler_input"] = cache_scheduler_to_jsonable(cache_sched_stage1)
         diagnostics["cache_scheduler_effective_for_cache_pass"] = cache_scheduler_to_jsonable(
             cache_sched_effective
@@ -621,8 +785,6 @@ def run_stage2_refine(
     finally:
         if conf is not None:
             conf.cache_debug_collector = None
-        if collector is not None:
-            collector.clear_storage()
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
 
@@ -647,8 +809,19 @@ def main() -> None:
         "--eval-num-images",
         type=int,
         default=4,
-        choices=[1, 4, 8],
-        help="Number of images used for Stage2 diagnostics (batch size); 1=debug, 4=default, 8=more stable.",
+        help="Number of images used for Stage2 diagnostics.",
+    )
+    p.add_argument(
+        "--eval-chunk-size",
+        type=_nonnegative_int,
+        default=0,
+        help="Chunk size for eval images (0=auto=min(4, eval_num_images)); lower value reduces CPU RAM peak.",
+    )
+    p.add_argument(
+        "--memory-log-every-images",
+        type=_nonnegative_int,
+        default=0,
+        help="If >0, log process RSS every N processed eval images.",
     )
     p.add_argument(
         "--force-full-prefix-steps",
@@ -690,6 +863,8 @@ def main() -> None:
         force_full_runtime_blocks=_parse_force_full_runtime_blocks(args.force_full_runtime_blocks),
         safety_first_input_block=bool(args.safety_first_input_block),
         eval_num_images=int(args.eval_num_images),
+        eval_chunk_size=(None if int(args.eval_chunk_size) <= 0 else int(args.eval_chunk_size)),
+        memory_log_every_images=int(args.memory_log_every_images),
     )
 
 
