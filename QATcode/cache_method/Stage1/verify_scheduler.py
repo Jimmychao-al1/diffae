@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 from typing import Any, Dict, List, Set
 
@@ -138,7 +139,7 @@ def check_shared_zone_ids(shared_zones: List[Dict[str, Any]]) -> bool:
     return ok
 
 
-def main():
+def main() -> int:
     parser = argparse.ArgumentParser(description="Verify Stage-1 baseline scheduler JSON")
     parser.add_argument(
         "--config",
@@ -150,7 +151,7 @@ def main():
     path = Path(args.config)
     if not path.exists():
         print(f"❌ 找不到 {path}")
-        return
+        return 1
 
     cfg = load_config(str(path))
     T = int(cfg["T"])
@@ -175,11 +176,11 @@ def main():
     exp_all_raw = [b.get("expanded_mask") for b in blocks]
     if any(not isinstance(m, list) for m in exp_all_raw):
         print("❌ 每個 block 都必須有 list 型別的 expanded_mask")
-        return
+        return 1
     exp_all = np.array(exp_all_raw, dtype=bool)
     if exp_all.ndim != 2:
         print(f"❌ expanded_mask 應為 [blocks, T] 二維結構，收到 ndim={exp_all.ndim}")
-        return
+        return 1
     if exp_all.shape[1] != T:
         print(f"❌ expanded_mask 寬度 {exp_all.shape[1]} != T={T}")
         all_ok = False
@@ -233,7 +234,8 @@ def main():
 
     print("\n" + ("🎉 全部通過" if all_ok else "⚠️ 有項目失敗"))
     print("=" * 72)
+    return 0 if all_ok else 1
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
