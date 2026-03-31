@@ -231,9 +231,9 @@ This balances **reuse** against **interpretable** zone geometry.
 
 Based on the current Stage 1 sweep results, the selected baseline is:
 
-**`sweep_K16_sw5_lam1.0_kmax4`**
+**`sweep_K16_sw3_lam0.5_kmax4`**
 
-Hyperparameters (selected run): $K = 16$, $\lambda = 1.0$, $k_{\min} = 1$, $k_{\max} = 4$, smooth\_window $= 5$, min\_zone\_len $= 2$.
+Hyperparameters (selected run): $K = 16$, $\lambda = 1.0$, $k_{\min} = 1$, $k_{\max} = 4$, smooth\_window $= 3$, min\_zone\_len $= 2$.
 
 ---
 
@@ -269,7 +269,7 @@ The pipeline in order:
 
 Under this formulation, the selected baseline is:
 
-**`sweep_K16_sw5_lam1.0_kmax4`**
+**`sweep_K16_sw3_lam0.5_kmax4`**
 
 This baseline is considered the most appropriate entry point to Stage 2 because it provides a scheduler scaffold that is:
 

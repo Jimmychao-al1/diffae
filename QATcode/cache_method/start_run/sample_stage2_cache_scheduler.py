@@ -10,11 +10,12 @@ Goal:
 from __future__ import annotations
 
 import argparse
+import json
 import logging
 import os
 import sys
 from pathlib import Path
-from typing import Any, Dict, Set
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 import torch
 
@@ -25,7 +26,11 @@ if str(_REPO_ROOT) not in sys.path:
 from metrics import evaluate_fid
 from QATcode.cache_method.Stage2.stage2_scheduler_adapter import (
     EXPECTED_NUM_BLOCKS,
+    FIRST_INPUT_RUNTIME_BLOCK_NAME,
     RUNTIME_LAYER_NAMES,
+    apply_cache_scheduler_runtime_overrides,
+    cache_runtime_override_variant_label,
+    cache_scheduler_to_jsonable,
     load_stage1_scheduler_config,
     stage1_block_to_runtime_block,
     stage1_mask_to_runtime_cache_scheduler,
@@ -70,7 +75,12 @@ def _setup_environment() -> None:
     )
 
 
-def _validate_required_stage2_fields(cfg: Dict[str, Any], *, cfg_path: Path) -> None:
+def _validate_required_stage2_fields(
+    cfg: Dict[str, Any],
+    *,
+    cfg_path: Path,
+    require_k_per_zone: bool = True,
+) -> None:
     required_top = ("T", "shared_zones", "blocks")
     for key in required_top:
         if key not in cfg:
@@ -82,20 +92,43 @@ def _validate_required_stage2_fields(cfg: Dict[str, Any], *, cfg_path: Path) -> 
     for idx, block in enumerate(blocks):
         if not isinstance(block, dict):
             raise TypeError(f"{cfg_path}: blocks[{idx}] must be an object")
-        for k in ("name", "k_per_zone", "expanded_mask"):
+        for k in ("name", "expanded_mask"):
             if k not in block:
                 raise ValueError(f"{cfg_path}: blocks[{idx}] missing required field '{k}'")
+        if require_k_per_zone and "k_per_zone" not in block:
+            raise ValueError(f"{cfg_path}: blocks[{idx}] missing required field 'k_per_zone'")
+
+
+def _parse_force_full_runtime_blocks(s: str) -> List[str]:
+    if not s or not str(s).strip():
+        return []
+    return [x.strip() for x in str(s).split(",") if x.strip()]
+
+
+def _nonnegative_int(s: str) -> int:
+    v = int(s)
+    if v < 0:
+        raise argparse.ArgumentTypeError("must be >= 0")
+    return v
 
 
 def _load_runtime_cache_scheduler(
     *,
     cache_scheduler_json: str,
     num_steps: int,
-) -> Dict[str, Set[int]]:
+    force_full_prefix_steps: int = 0,
+    force_full_runtime_blocks: Optional[List[str]] = None,
+    safety_first_input_block: bool = False,
+    allow_missing_k_per_zone: bool = False,
+) -> Tuple[Dict[str, Set[int]], Dict[str, Any]]:
     cfg_path = _resolve_repo_path(cache_scheduler_json)
     cfg = load_stage1_scheduler_config(cfg_path)
-    _validate_required_stage2_fields(cfg, cfg_path=cfg_path)
-    validate_stage1_scheduler_config(cfg)
+    _validate_required_stage2_fields(
+        cfg,
+        cfg_path=cfg_path,
+        require_k_per_zone=not allow_missing_k_per_zone,
+    )
+    validate_stage1_scheduler_config(cfg, require_k_per_zone=not allow_missing_k_per_zone)
 
     T_cfg = int(cfg["T"])
     if T_cfg != int(num_steps):
@@ -132,12 +165,39 @@ def _load_runtime_cache_scheduler(
             f"missing={missing}, extra={extra}"
         )
 
-    cache_scheduler = stage1_mask_to_runtime_cache_scheduler(cfg)
+    cache_scheduler = stage1_mask_to_runtime_cache_scheduler(
+        cfg,
+        require_k_per_zone=not allow_missing_k_per_zone,
+    )
     if len(cache_scheduler) != EXPECTED_NUM_BLOCKS:
         raise ValueError(
             f"Runtime cache scheduler size mismatch: expected {EXPECTED_NUM_BLOCKS}, got {len(cache_scheduler)}"
         )
-    return cache_scheduler
+    blocks_eff = list(force_full_runtime_blocks or [])
+    if safety_first_input_block and FIRST_INPUT_RUNTIME_BLOCK_NAME not in blocks_eff:
+        blocks_eff.append(FIRST_INPUT_RUNTIME_BLOCK_NAME)
+    cache_effective, override_meta = apply_cache_scheduler_runtime_overrides(
+        cache_scheduler,
+        T_cfg,
+        force_full_prefix_steps=int(force_full_prefix_steps),
+        force_full_runtime_blocks=blocks_eff,
+    )
+    override_meta["variant_label"] = cache_runtime_override_variant_label(
+        force_full_prefix_steps=int(force_full_prefix_steps),
+        force_full_runtime_blocks=list(force_full_runtime_blocks or []),
+        safety_first_input_block=bool(safety_first_input_block),
+    )
+    override_meta["force_full_runtime_blocks_effective"] = list(blocks_eff)
+    LOGGER.info("cache_scheduler runtime overrides: %s", override_meta)
+    run_record: Dict[str, Any] = {
+        "stage": "fid_sampling",
+        "scheduler_config_path": str(cfg_path.resolve()),
+        "T": T_cfg,
+        "allow_missing_k_per_zone": bool(allow_missing_k_per_zone),
+        **override_meta,
+        "cache_scheduler_effective_for_sampling": cache_scheduler_to_jsonable(cache_effective),
+    }
+    return cache_effective, run_record
 
 
 @torch.no_grad()
@@ -145,6 +205,10 @@ def main_sample_with_optional_stage2_scheduler(
     *,
     use_cache_scheduler: bool,
     cache_scheduler_json: str,
+    force_full_prefix_steps: int = 0,
+    force_full_runtime_blocks: Optional[List[str]] = None,
+    safety_first_input_block: bool = False,
+    allow_missing_k_per_zone: bool = False,
 ) -> None:
     LOGGER.info("=" * 50)
     LOGGER.info("Diff-AE sampling with optional Stage2 scheduler")
@@ -190,10 +254,15 @@ def main_sample_with_optional_stage2_scheduler(
     conf = base_model.conf.clone()
     conf.eval_num_images = CONFIG.EVAL_SAMPLES
 
+    runtime_override_run_record: Optional[Dict[str, Any]] = None
     if use_cache_scheduler:
-        runtime_cache_scheduler = _load_runtime_cache_scheduler(
+        runtime_cache_scheduler, runtime_override_run_record = _load_runtime_cache_scheduler(
             cache_scheduler_json=cache_scheduler_json,
             num_steps=T,
+            force_full_prefix_steps=int(force_full_prefix_steps),
+            force_full_runtime_blocks=force_full_runtime_blocks,
+            safety_first_input_block=bool(safety_first_input_block),
+            allow_missing_k_per_zone=bool(allow_missing_k_per_zone),
         )
         conf.cache_scheduler = runtime_cache_scheduler
         LOGGER.info("✅ Stage2 cache scheduler enabled: %s", _resolve_repo_path(cache_scheduler_json))
@@ -221,6 +290,15 @@ def main_sample_with_optional_stage2_scheduler(
     )
     LOGGER.info("FID@%d T=%d score: %s", CONFIG.EVAL_SAMPLES, T, score)
     LOGGER.info("Output dir: %s", output_dir)
+
+    if use_cache_scheduler and runtime_override_run_record is not None:
+        runtime_override_run_record["fid_score"] = score
+        out_p = Path(output_dir)
+        out_p.mkdir(parents=True, exist_ok=True)
+        sidecar = out_p / "cache_runtime_overrides_run.json"
+        with open(sidecar, "w", encoding="utf-8") as f:
+            json.dump(runtime_override_run_record, f, indent=2, ensure_ascii=False)
+        LOGGER.info("Wrote override run record: %s", sidecar.resolve())
 
 
 def _set_quant_state_from_cli(quant_state: str) -> None:
@@ -278,6 +356,28 @@ def main() -> None:
         type=str,
         default="QATcode/cache_method/start_run/log/sample_stage2_cache_scheduler.log",
     )
+    parser.add_argument(
+        "--force-full-prefix-steps",
+        type=_nonnegative_int,
+        default=0,
+        help="Safety experiment: union full-compute on first N DDIM timesteps for all layers (0=off)",
+    )
+    parser.add_argument(
+        "--force-full-runtime-blocks",
+        type=str,
+        default="",
+        help="Comma-separated runtime blocks forced full at all timesteps (e.g. encoder_layer_0)",
+    )
+    parser.add_argument(
+        "--safety-first-input-block",
+        action="store_true",
+        help=f"Add {FIRST_INPUT_RUNTIME_BLOCK_NAME} to forced blocks",
+    )
+    parser.add_argument(
+        "--allow-missing-k-per-zone",
+        action="store_true",
+        help="Runtime sampling only: allow blocks[].without k_per_zone (still need expanded_mask + shared_zones)",
+    )
     args = parser.parse_args()
 
     CONFIG.NUM_DIFFUSION_STEPS = int(args.num_steps)
@@ -309,11 +409,19 @@ def main() -> None:
             len(cfg.get("blocks", []) if isinstance(cfg.get("blocks"), list) else []),
         )
         # Friendly fail-fast for malformed JSON before heavy model loading.
-        _validate_required_stage2_fields(cfg, cfg_path=_resolve_repo_path(args.cache_scheduler_json))
+        _validate_required_stage2_fields(
+            cfg,
+            cfg_path=_resolve_repo_path(args.cache_scheduler_json),
+            require_k_per_zone=not bool(args.allow_missing_k_per_zone),
+        )
 
     main_sample_with_optional_stage2_scheduler(
         use_cache_scheduler=bool(args.use_cache_scheduler),
         cache_scheduler_json=str(args.cache_scheduler_json),
+        force_full_prefix_steps=args.force_full_prefix_steps,
+        force_full_runtime_blocks=_parse_force_full_runtime_blocks(str(args.force_full_runtime_blocks)),
+        safety_first_input_block=bool(args.safety_first_input_block),
+        allow_missing_k_per_zone=bool(args.allow_missing_k_per_zone),
     )
 
 

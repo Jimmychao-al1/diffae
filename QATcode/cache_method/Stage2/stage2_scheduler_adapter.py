@@ -15,7 +15,7 @@ from __future__ import annotations
 import json
 import re
 from pathlib import Path
-from typing import Any, Dict, List, Set, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 import numpy as np
 
@@ -26,6 +26,10 @@ from QATcode.cache_method.Stage1.stage1_scheduler import (
 
 EXPECTED_NUM_BLOCKS = 31
 TIME_ORDER_EXPECTED = "ddim_99_to_0"
+
+# 與 `stage1_block_to_runtime_block("model.input_blocks.0")` 一致：UNet 第一個可快取 encoder 子模組
+# （接在輸入卷積之後的第一個 residual block stack；對齊 diffusion/base.py layer_keys 的 encoder_layer_0）
+FIRST_INPUT_RUNTIME_BLOCK_NAME = "encoder_layer_0"
 
 # 與 diffusion/base.py layer_keys 順序一致：encoder 0..14 → middle → decoder 0..14
 RUNTIME_LAYER_NAMES: Tuple[str, ...] = tuple(
@@ -46,8 +50,17 @@ def load_stage1_scheduler_config(path: str | Path) -> Dict[str, Any]:
     return cfg
 
 
-def validate_stage1_scheduler_config(cfg: Dict[str, Any], *, require_full_coverage: bool = True) -> None:
-    """Fail-fast：Stage1/Stage2 scheduler 結構與語意驗證。"""
+def validate_stage1_scheduler_config(
+    cfg: Dict[str, Any],
+    *,
+    require_full_coverage: bool = True,
+    require_k_per_zone: bool = True,
+) -> None:
+    """Fail-fast：Stage1/Stage2 scheduler 結構與語意驗證。
+
+    require_k_per_zone=False：僅供「只依 expanded_mask 做 runtime cache_scheduler」的載入路徑；
+    不檢查 k_per_zone 長度與 rebuild 一致性（仍要求 expanded_mask 合法）。
+    """
     if cfg.get("time_order") != TIME_ORDER_EXPECTED:
         raise ValueError(
             f"time_order must be {TIME_ORDER_EXPECTED!r}, got {cfg.get('time_order')!r}"
@@ -122,28 +135,29 @@ def validate_stage1_scheduler_config(cfg: Dict[str, Any], *, require_full_covera
             raise ValueError(
                 f"block id={bid}: scheduler_local_block_id {local_bid_declared!r} must equal id"
             )
-        kz = b.get("k_per_zone")
-        if not isinstance(kz, list) or len(kz) != nz:
-            raise ValueError(
-                f"block id={b.get('id')}: k_per_zone length must be len(shared_zones)={nz}, "
-                f"got {len(kz) if isinstance(kz, list) else type(kz)}"
+        if require_k_per_zone:
+            kz = b.get("k_per_zone")
+            if not isinstance(kz, list) or len(kz) != nz:
+                raise ValueError(
+                    f"block id={b.get('id')}: k_per_zone length must be len(shared_zones)={nz}, "
+                    f"got {len(kz) if isinstance(kz, list) else type(kz)}"
+                )
+            for j, kv in enumerate(kz):
+                if int(kv) < 1:
+                    raise ValueError(f"block id={bid}: k_per_zone[{j}] must be >= 1, got {kv}")
+            rebuilt = np.asarray(
+                rebuild_expanded_mask_from_shared_zones_and_k_per_zone(
+                    shared, [int(x) for x in kz], T, block_id=bid
+                ),
+                dtype=bool,
             )
-        for j, kv in enumerate(kz):
-            if int(kv) < 1:
-                raise ValueError(f"block id={bid}: k_per_zone[{j}] must be >= 1, got {kv}")
-        rebuilt = np.asarray(
-            rebuild_expanded_mask_from_shared_zones_and_k_per_zone(
-                shared, [int(x) for x in kz], T, block_id=bid
-            ),
-            dtype=bool,
-        )
-        row = np.asarray(b["expanded_mask"], dtype=bool)
-        if not np.all(row >= rebuilt):
-            bad = np.where(~row & rebuilt)[0].tolist()
-            raise ValueError(
-                f"block id={bid}: expanded_mask must be >= rebuild(shared_zones,k_per_zone), missing steps {bad[:24]}"
-                + (" ..." if len(bad) > 24 else "")
-            )
+            row = np.asarray(b["expanded_mask"], dtype=bool)
+            if not np.all(row >= rebuilt):
+                bad = np.where(~row & rebuilt)[0].tolist()
+                raise ValueError(
+                    f"block id={bid}: expanded_mask must be >= rebuild(shared_zones,k_per_zone), missing steps {bad[:24]}"
+                    + (" ..." if len(bad) > 24 else "")
+                )
 
     if len(set(mapped_runtime_names)) != len(mapped_runtime_names):
         raise ValueError("mapped runtime block names from blocks[].name must be unique")
@@ -222,14 +236,18 @@ def expanded_mask_row_to_recompute_ddim_timesteps(expanded_mask_row: List[bool] 
     return out
 
 
-def stage1_mask_to_runtime_cache_scheduler(cfg: Dict[str, Any]) -> Dict[str, Set[int]]:
+def stage1_mask_to_runtime_cache_scheduler(
+    cfg: Dict[str, Any],
+    *,
+    require_k_per_zone: bool = True,
+) -> Dict[str, Set[int]]:
     """
     由整份 Stage1 config 建出完整 31 層的 cache_scheduler。
 
     回傳 dict：key 為 encoder_layer_* / middle_layer / decoder_layer_*，
     value 為「該層要 recompute 的 DDIM timestep i」的集合。
     """
-    validate_stage1_scheduler_config(cfg)
+    validate_stage1_scheduler_config(cfg, require_k_per_zone=require_k_per_zone)
     T = int(cfg["T"])
     blocks = sorted(cfg["blocks"], key=lambda b: int(b["id"]))
     sched: Dict[str, Set[int]] = {}
@@ -247,6 +265,101 @@ def stage1_mask_to_runtime_cache_scheduler(cfg: Dict[str, Any]) -> Dict[str, Set
 def cache_scheduler_to_jsonable(sched: Dict[str, Set[int]]) -> Dict[str, List[int]]:
     """將 set 轉成可 json.dump 的 sorted list（便於診斷輸出）。"""
     return {k: sorted(v) for k, v in sorted(sched.items())}
+
+
+def prefix_ddim_timesteps_first_n(T: int, n: int) -> Set[int]:
+    """
+    採樣「前 N 個」DDIM timestep i（與 diffusion/base.py 迴圈 indices 順序一致：先 i=T-1）：
+    i ∈ {T-1, T-2, ..., T-N}（共 N 個；N 超過 T 時只取前 T 個）。
+    """
+    if int(n) < 0:
+        raise ValueError(f"prefix steps N must be >= 0, got {n!r}")
+    if n <= 0:
+        return set()
+    T = int(T)
+    n_eff = min(int(n), T)
+    return set(range(T - n_eff, T))
+
+
+def apply_cache_scheduler_runtime_overrides(
+    sched: Dict[str, Set[int]],
+    T: int,
+    *,
+    force_full_prefix_steps: int = 0,
+    force_full_runtime_blocks: Optional[List[str]] = None,
+) -> Tuple[Dict[str, Set[int]], Dict[str, Any]]:
+    """
+    在已由 Stage1 展開的 runtime cache_scheduler 上套用實驗用保守約束（union 更多 recompute timesteps）。
+
+    cache_scheduler[key] = 該層在 DDIM timestep i 需要 recompute（full) 的集合（見 diffusion/base.py）。
+
+    - force_full_prefix_steps: 所有 runtime 層在前 N 個 DDIM 步皆強制 full（union prefix timesteps）。
+    - force_full_runtime_blocks: 列出的 runtime_name 在所有 timestep 強制 full（union 0..T-1）。
+    """
+    T = int(T)
+    if T < 1:
+        raise ValueError(f"T must be >= 1, got {T}")
+    if int(force_full_prefix_steps) < 0:
+        raise ValueError(f"force_full_prefix_steps must be >= 0, got {force_full_prefix_steps!r}")
+    if set(sched.keys()) != set(RUNTIME_LAYER_NAMES):
+        raise ValueError(
+            "cache_scheduler keys must match full runtime inventory; "
+            f"got {sorted(sched.keys())[:8]}... (len={len(sched)})"
+        )
+
+    force_full_runtime_blocks = list(force_full_runtime_blocks or [])
+    for name in force_full_runtime_blocks:
+        if name not in RUNTIME_LAYER_NAMES:
+            raise ValueError(
+                f"unknown runtime block in force_full_runtime_blocks: {name!r}; "
+                f"expected one of known encoder/middle/decoder names"
+            )
+
+    out: Dict[str, Set[int]] = {k: set(v) for k, v in sched.items()}
+    prefix_ts = prefix_ddim_timesteps_first_n(T, force_full_prefix_steps)
+    all_ts = set(range(T))
+
+    for k in out:
+        out[k] |= prefix_ts
+    for name in force_full_runtime_blocks:
+        out[name] |= all_ts
+
+    meta: Dict[str, Any] = {
+        "force_full_prefix_steps": int(force_full_prefix_steps),
+        "prefix_ddim_timesteps": sorted(prefix_ts),
+        "force_full_runtime_blocks": list(force_full_runtime_blocks),
+        "first_input_runtime_block_name": FIRST_INPUT_RUNTIME_BLOCK_NAME,
+        "note": (
+            "Overrides are unions on top of Stage1-expanded recompute sets; "
+            "they do not replace the Stage1 scheduler JSON."
+        ),
+    }
+    return out, meta
+
+
+def cache_runtime_override_variant_label(
+    *,
+    force_full_prefix_steps: int,
+    force_full_runtime_blocks: List[str],
+    safety_first_input_block: bool,
+) -> str:
+    """Human-readable experiment bucket for logging / JSON (not used for logic)."""
+    prefix = int(force_full_prefix_steps)
+    blocks = list(force_full_runtime_blocks or [])
+    if safety_first_input_block and FIRST_INPUT_RUNTIME_BLOCK_NAME not in blocks:
+        blocks = blocks + [FIRST_INPUT_RUNTIME_BLOCK_NAME]
+    has_p = prefix > 0
+    has_first = FIRST_INPUT_RUNTIME_BLOCK_NAME in blocks
+    extra = [b for b in blocks if b != FIRST_INPUT_RUNTIME_BLOCK_NAME]
+    if not has_p and not blocks and not safety_first_input_block:
+        return "baseline"
+    if has_p and not extra and not has_first:
+        return "prefix_only"
+    if has_first and not extra and not has_p:
+        return "first_input_only"
+    if has_p and has_first and not extra:
+        return "combined"
+    return "custom"
 
 
 def ddim_timestep_to_step_index(i: int, T: int) -> int:

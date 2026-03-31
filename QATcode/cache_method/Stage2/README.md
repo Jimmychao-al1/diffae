@@ -89,7 +89,7 @@ Stage2 負責：
 
 ```bash
 python QATcode/cache_method/Stage2/stage2_runtime_refine.py \
-  --scheduler_config QATcode/cache_method/Stage1/stage1_output/sweep_K16_sw5_lam1.0_kmax4/scheduler_config.json \
+  --scheduler_config QATcode/cache_method/Stage1/stage1_output/sweep_K16_sw3_lam0.5_kmax4/scheduler_config.json \
   --output_dir QATcode/cache_method/Stage2/stage2_output/run1 \
   --seed 0 \
   --zone_l1_threshold 0.02 \

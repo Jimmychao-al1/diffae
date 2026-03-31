@@ -35,6 +35,9 @@ from QATcode.cache_method.Stage2.stage2_error_collector import (
 )
 from QATcode.cache_method.Stage2.stage2_scheduler_adapter import (
     EXPECTED_NUM_BLOCKS,
+    FIRST_INPUT_RUNTIME_BLOCK_NAME,
+    apply_cache_scheduler_runtime_overrides,
+    cache_runtime_override_variant_label,
     cache_scheduler_to_jsonable,
     ddim_timestep_to_step_index,
     load_stage1_scheduler_config,
@@ -195,6 +198,33 @@ def _load_blockwise_threshold_config(
     return by_runtime, by_id, data
 
 
+def _parse_force_full_runtime_blocks(s: Optional[str]) -> List[str]:
+    if not s or not str(s).strip():
+        return []
+    return [x.strip() for x in str(s).split(",") if x.strip()]
+
+
+def _nonnegative_int(s: str) -> int:
+    v = int(s)
+    if v < 0:
+        raise argparse.ArgumentTypeError("must be >= 0")
+    return v
+
+
+def _cache_runtime_override_contract(*, override_active: bool) -> Dict[str, str]:
+    return {
+        "must_reapply_same_runtime_overrides_for_sampling": (
+            "true" if override_active else "false"
+        ),
+        "refined_json_expanded_mask_is_algorithm_only": "true",
+        "diagnostics_cache_pass_scheduler_field": "cache_scheduler_effective_for_cache_pass",
+        "interpretation": (
+            "Safety overrides apply only to the cache diagnostic render pass (runtime union). "
+            "stage2_refined_scheduler_config.json masks are from Stage2 refine rules unless you merge policy elsewhere."
+        ),
+    }
+
+
 def _json_safe(obj: Any) -> Any:
     import math
 
@@ -233,6 +263,9 @@ def run_stage2_refine(
     calib_path: str = "QATcode/quantize_ver2/calibration_diffae.pth",
     device: Optional[torch.device] = None,
     threshold_config_path: Optional[str] = None,
+    force_full_prefix_steps: int = 0,
+    force_full_runtime_blocks: Optional[List[str]] = None,
+    safety_first_input_block: bool = False,
 ) -> Dict[str, Any]:
     _configure_stage2_logging()
     device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -251,7 +284,31 @@ def run_stage2_refine(
 
         QAT_CONFIG.NUM_DIFFUSION_STEPS = T
 
-        cache_sched_input = stage1_mask_to_runtime_cache_scheduler(cfg)
+        cache_sched_stage1 = stage1_mask_to_runtime_cache_scheduler(cfg)
+        blocks_eff = list(force_full_runtime_blocks or [])
+        if safety_first_input_block and FIRST_INPUT_RUNTIME_BLOCK_NAME not in blocks_eff:
+            blocks_eff.append(FIRST_INPUT_RUNTIME_BLOCK_NAME)
+        cache_sched_effective, override_meta = apply_cache_scheduler_runtime_overrides(
+            cache_sched_stage1,
+            T,
+            force_full_prefix_steps=int(force_full_prefix_steps),
+            force_full_runtime_blocks=blocks_eff,
+        )
+        override_meta["variant_label"] = cache_runtime_override_variant_label(
+            force_full_prefix_steps=int(force_full_prefix_steps),
+            force_full_runtime_blocks=list(force_full_runtime_blocks or []),
+            safety_first_input_block=bool(safety_first_input_block),
+        )
+        override_meta["force_full_runtime_blocks_effective"] = list(blocks_eff)
+        override_meta["safety_first_input_block"] = bool(safety_first_input_block)
+        LOGGER.info(
+            "cache runtime overrides | variant=%s | prefix_steps=%s | forced_blocks=%s",
+            override_meta.get("variant_label"),
+            override_meta.get("force_full_prefix_steps"),
+            override_meta.get("force_full_runtime_blocks_effective"),
+        )
+        _ov_active = bool(int(force_full_prefix_steps) > 0 or blocks_eff)
+        _contract = _cache_runtime_override_contract(override_active=_ov_active)
 
         base_model = _load_quant_model_for_sampling(
             repo_root=_REPO_ROOT,
@@ -303,7 +360,7 @@ def run_stage2_refine(
                 x_T=x_T,
                 conds_mean=base_model.conds_mean,
                 conds_std=base_model.conds_std,
-                cache_scheduler=cache_sched_input,
+                cache_scheduler=cache_sched_effective,
             )
             LOGGER.info("%s", collector.debug_snapshot_line("after_cache"))
         finally:
@@ -311,7 +368,12 @@ def run_stage2_refine(
 
         LOGGER.info("%s", collector.debug_snapshot_line("before_compute_diagnostics"))
         diagnostics = collector.compute_diagnostics(shared_zones)
-        diagnostics["cache_scheduler_input"] = cache_scheduler_to_jsonable(cache_sched_input)
+        diagnostics["cache_scheduler_input"] = cache_scheduler_to_jsonable(cache_sched_stage1)
+        diagnostics["cache_scheduler_effective_for_cache_pass"] = cache_scheduler_to_jsonable(
+            cache_sched_effective
+        )
+        diagnostics["cache_scheduler_runtime_overrides"] = dict(override_meta)
+        diagnostics["cache_runtime_override_contract"] = dict(_contract)
         diagnostics["scheduler_config_path"] = str(Path(scheduler_config_path).resolve())
 
         per_block_step = diagnostics["per_block_step_error"]
@@ -360,6 +422,14 @@ def run_stage2_refine(
             "seed": seed,
             "threshold_mode": threshold_mode,
             "threshold_config_path": str(Path(threshold_config_path).resolve()) if threshold_config_path else None,
+            "cache_runtime_overrides": {
+                "variant_label": override_meta.get("variant_label"),
+                "force_full_prefix_steps": int(force_full_prefix_steps),
+                "force_full_runtime_blocks_effective": list(blocks_eff),
+                "safety_first_input_block": bool(safety_first_input_block),
+                "first_input_runtime_block_name": FIRST_INPUT_RUNTIME_BLOCK_NAME,
+                **_contract,
+            },
         }
 
         k_touch: List[Dict[str, Any]] = []
@@ -485,6 +555,18 @@ def run_stage2_refine(
             ]
 
         summary = {
+            "cache_runtime_overrides": {
+                "variant_label": override_meta.get("variant_label"),
+                "force_full_prefix_steps": int(force_full_prefix_steps),
+                "force_full_runtime_blocks_effective": list(blocks_eff),
+                "safety_first_input_block": bool(safety_first_input_block),
+                "first_input_runtime_block_name": FIRST_INPUT_RUNTIME_BLOCK_NAME,
+                **_contract,
+                "note": (
+                    "Diagnostics / refinement used cache pass scheduler = cache_scheduler_effective_for_cache_pass "
+                    "(Stage1 expanded + optional runtime unions). Refined JSON masks follow Stage2 algorithm only."
+                ),
+            },
             "zone_k_adjustments": k_touch,
             "peak_mask_adjustments": mask_touch,
             "block_identity_semantics": {
@@ -505,6 +587,23 @@ def run_stage2_refine(
             json.dump(_json_safe(refined), f, indent=2, ensure_ascii=False)
         with open(out / "stage2_refinement_summary.json", "w", encoding="utf-8") as f:
             json.dump(_json_safe(summary), f, indent=2, ensure_ascii=False)
+
+        with open(out / "cache_runtime_overrides_run.json", "w", encoding="utf-8") as f:
+            json.dump(
+                _json_safe(
+                    {
+                        "stage": "stage2_runtime_refine",
+                        "scheduler_config_path": str(Path(scheduler_config_path).resolve()),
+                        "T": T,
+                        "seed": seed,
+                        **dict(override_meta),
+                        "cache_runtime_override_contract": _contract,
+                    }
+                ),
+                f,
+                indent=2,
+                ensure_ascii=False,
+            )
 
         LOGGER.info("寫入 %s", out)
 
@@ -539,6 +638,23 @@ def main() -> None:
         default=None,
         help="Optional: stage2_thresholds_blockwise.json（build_blockwise_thresholds.py）；若省略則用 --zone_l1_threshold / --peak_l1_threshold",
     )
+    p.add_argument(
+        "--force-full-prefix-steps",
+        type=_nonnegative_int,
+        default=0,
+        help="Safety experiment: all runtime layers full-compute on first N DDIM timesteps (i=T-1..T-N); 0=off",
+    )
+    p.add_argument(
+        "--force-full-runtime-blocks",
+        type=str,
+        default="",
+        help="Comma-separated runtime_name list (e.g. encoder_layer_0) forced full-compute at all timesteps; empty=off",
+    )
+    p.add_argument(
+        "--safety-first-input-block",
+        action="store_true",
+        help=f"Shortcut: add {FIRST_INPUT_RUNTIME_BLOCK_NAME} to forced full-compute blocks (canonical first input block)",
+    )
     args = p.parse_args()
     _configure_stage2_logging()
     LOGGER.info(
@@ -558,6 +674,9 @@ def main() -> None:
         best_ckpt_path=args.best_ckpt,
         calib_path=args.calib,
         threshold_config_path=args.threshold_config,
+        force_full_prefix_steps=args.force_full_prefix_steps,
+        force_full_runtime_blocks=_parse_force_full_runtime_blocks(args.force_full_runtime_blocks),
+        safety_first_input_block=bool(args.safety_first_input_block),
     )
 
 
