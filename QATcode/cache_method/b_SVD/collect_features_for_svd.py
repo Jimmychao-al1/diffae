@@ -68,7 +68,7 @@ class Config:
     # SVD Feature 收集設定
     SVD_TARGET_BLOCK = None  # 從 CLI 指定
     SVD_TARGET_N = 32  # 每個 timestep 收集的樣本數
-    SVD_OUTPUT_ROOT = 'QATcode/cache_method/SVD'
+    SVD_OUTPUT_ROOT = 'QATcode/cache_method/b_SVD'
     NUM_DIFFUSION_STEPS = 100  # T=100
     
     # FID 設定（用於驅動生成流程）
@@ -437,7 +437,7 @@ def main():
                 "W": svd_collector.W
             }
 
-            from QATcode.cache_method.SVD.svd_metrics import process_feature_buffers_in_memory
+            from QATcode.cache_method.b_SVD.svd_metrics import process_feature_buffers_in_memory
             svd_metrics_dir = Path(CONFIG.SVD_OUTPUT_ROOT) / "svd_metrics"
             svd_result = process_feature_buffers_in_memory(
                 feature_buffers=svd_collector.feature_buffers,
@@ -453,7 +453,7 @@ def main():
             if not CONFIG.SKIP_CORRELATION:
                 if CONFIG.SIMILARITY_NPZ is None:
                     raise ValueError("in-memory pipeline 需要提供 --similarity_npz 才能執行階段 C")
-                from QATcode.cache_method.SVD.correlate_svd_similarity import process_single_correlation
+                from QATcode.cache_method.b_SVD.correlate_svd_similarity import process_single_correlation
                 svd_json_path = svd_metrics_dir / f"{svd_result['block']}.json"
                 corr_output_dir = Path(CONFIG.SVD_OUTPUT_ROOT) / "correlation"
                 process_single_correlation(
@@ -484,7 +484,7 @@ if __name__ == "__main__":
     parser.add_argument('--num_steps', '--n', type=int, default=100, help='擴散步數 T')
     parser.add_argument('--svd_target_block', type=str, required=True, help='目標 block 名稱（如 model.input_blocks.0）')
     parser.add_argument('--svd_target_N', type=int, default=32, help='每個 timestep 收集的樣本數')
-    parser.add_argument('--svd_output_root', type=str, default='QATcode/cache_method/SVD', help='輸出根目錄')
+    parser.add_argument('--svd_output_root', type=str, default='QATcode/cache_method/b_SVD', help='輸出根目錄')
     parser.add_argument('--log_file', '--lf', type=str, default=None, help='Log 檔案路徑')
     parser.add_argument('--in_memory_pipeline', action='store_true',
                         help='A 收集後直接在記憶體執行 B/C，不寫 t_{t}.pt')

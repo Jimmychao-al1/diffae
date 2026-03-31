@@ -6,17 +6,17 @@
 # 主機 2 模式 B:  bash run_experiment.sh B
 #
 # 兩台請使用相同 repo；JSON 預設皆寫入本機
-#   QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity_results.json
+#   QATcode/cache_method/c_FID/fid_cache_sensitivity/fid_sensitivity_results.json
 # 跑完後自行合併兩份 JSON 的 results.T100.k* 欄位（T20 僅 A 有）。
 #
 # 建議先各自寫好 baseline（或先執行）:
-#   python3 QATcode/cache_method/FID/fid_cache_sensitivity/fid_cache_sensitivity.py --num_steps 20 --baseline
-#   python3 QATcode/cache_method/FID/fid_cache_sensitivity/fid_cache_sensitivity.py --num_steps 100 --baseline
+#   python3 QATcode/cache_method/c_FID/fid_cache_sensitivity/fid_cache_sensitivity.py --num_steps 20 --baseline
+#   python3 QATcode/cache_method/c_FID/fid_cache_sensitivity/fid_cache_sensitivity.py --num_steps 100 --baseline
 #
 set -e
 
-SCRIPT="QATcode/cache_method/FID/fid_cache_sensitivity/fid_cache_sensitivity.py"
-LOG_DIR="QATcode/cache_method/FID/fid_cache_sensitivity"
+SCRIPT="QATcode/cache_method/c_FID/fid_cache_sensitivity/fid_cache_sensitivity.py"
+LOG_DIR="QATcode/cache_method/c_FID/fid_cache_sensitivity"
 MODE="${1:-}"
 
 if [[ -n "$MODE" ]]; then

@@ -85,9 +85,9 @@ class ExperimentConfig:
     CALIB_SAMPLES = 1024
     
     # 輸出路徑
-    OUTPUT_DIR = "QATcode/cache_method/FID/fid_cache_sensitivity"
+    OUTPUT_DIR = "QATcode/cache_method/c_FID/fid_cache_sensitivity"
     RESULTS_JSON = "fid_sensitivity_results.json"
-    LOG_FILE = 'QATcode/cache_method/FID/fid_cache_sensitivity/fid_sensitivity.log'
+    LOG_FILE = 'QATcode/cache_method/c_FID/fid_cache_sensitivity/fid_sensitivity.log'
 
     
     

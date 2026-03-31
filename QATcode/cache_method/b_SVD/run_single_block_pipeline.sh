@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # 對單一 block 執行 SVD 完整流程（A → B → C）
-# 用法：bash QATcode/cache_method/SVD/run_single_block_pipeline.sh "model.output_blocks.11" [N]
+# 用法：bash QATcode/cache_method/b_SVD/run_single_block_pipeline.sh "model.output_blocks.11" [N]
 #   $1 = block 名稱（必填）
 #   $2 = 樣本數 N（選填，預設 32）
 # 說明：
@@ -18,7 +18,7 @@ fi
 BLOCK="$1"
 TARGET_N="${2:-32}"
 SAFE_NAME=$(echo "$BLOCK" | tr '.' '_')
-LOG_DIR="QATcode/cache_method/SVD/logs"
+LOG_DIR="QATcode/cache_method/b_SVD/logs"
 SIM_NPZ="QATcode/cache_method/a_L1_L2_cosine/T_100/v2_latest/result_npz/${SAFE_NAME}.npz"
 mkdir -p "$LOG_DIR"
 
@@ -37,11 +37,11 @@ fi
 
 echo ""
 echo "[階段 A->B->C] in-memory 執行中..."
-python QATcode/cache_method/SVD/collect_features_for_svd.py \
+python QATcode/cache_method/b_SVD/collect_features_for_svd.py \
   --num_steps 100 \
   --svd_target_block "$BLOCK" \
   --svd_target_N "$TARGET_N" \
-  --svd_output_root "QATcode/cache_method/SVD" \
+  --svd_output_root "QATcode/cache_method/b_SVD" \
   --in_memory_pipeline \
   --representative-t -1 \
   --energy-threshold 0.98 \

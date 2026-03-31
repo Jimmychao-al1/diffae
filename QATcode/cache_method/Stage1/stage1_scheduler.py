@@ -588,7 +588,7 @@ def run_stage1_synthesis(
     for lam in lambda_sweep:
         key = str(lam)
         sweep_report[key] = {"per_block_k": []}
-    for b in range(B):
+    for b in range(B):  
             k_z = []
             for zi, zd in enumerate(shared_zones):
                 Lz = zd["length"]

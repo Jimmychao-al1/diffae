@@ -5,20 +5,20 @@
 # QATcode/cache_method/a_L1_L2_cosine/T_100/v2_latest/result_npz
 #
 # 用法：
-#   bash QATcode/cache_method/SVD/run_svd_all_blocks_single_pipeline.sh [target_N] [start_from_block]
+#   bash QATcode/cache_method/b_SVD/run_svd_all_blocks_single_pipeline.sh [target_N] [start_from_block]
 # 參數：
 #   $1 = target_N（選填，預設 32）
 #   $2 = start_from_block（選填，從該 block 開始跑，用於續跑）
 #
 # 範例：
-#   bash QATcode/cache_method/SVD/run_svd_all_blocks_single_pipeline.sh
-#   bash QATcode/cache_method/SVD/run_svd_all_blocks_single_pipeline.sh 32 model.output_blocks.7
+#   bash QATcode/cache_method/b_SVD/run_svd_all_blocks_single_pipeline.sh
+#   bash QATcode/cache_method/b_SVD/run_svd_all_blocks_single_pipeline.sh 32 model.output_blocks.7
 
 set -e
 
 TARGET_N="${1:-32}"
 START_FROM_BLOCK="${2:-}"
-RUN_SINGLE_SCRIPT="QATcode/cache_method/SVD/run_single_block_pipeline.sh"
+RUN_SINGLE_SCRIPT="QATcode/cache_method/b_SVD/run_single_block_pipeline.sh"
 
 # GPU 記憶體較喫緊的 block，降低樣本數
 declare -A OVERRIDE_N=(
