@@ -1,0 +1,1 @@
+{"run_id": "20260331T174744__baseline", "date": "20260331", "scheduler_name": "baseline", "num_images": 5000, "seed": 0, "fid_5k": null, "recompute_ratio": null, "output_dir": "/home/jimmy/diffae/QATcode/cache_method/results/stage2_scheduler_runs/20260331T174742/20260331T174742__baseline", "summary_path": null, "status": "failed"}

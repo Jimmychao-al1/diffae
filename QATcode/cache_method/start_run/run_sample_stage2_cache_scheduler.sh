@@ -29,7 +29,7 @@ run_exp() {
   local sched_json="$2"
 
   local date_str
-  date_str="$(date +%Y%m%d)"
+  date_str="$(date +%Y%m%dT%H%M%S)"
   local run_dir="${RESULTS_ROOT}/${date_str}/${date_str}__${name}"
   mkdir -p "${run_dir}"
 
