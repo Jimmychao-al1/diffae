@@ -41,7 +41,7 @@ run_exp() {
   python QATcode/cache_method/start_run/sample_stage2_cache_scheduler.py \
     --mode float \
     --num_steps 100 \
-    --eval_samples 5000 \
+    --eval_samples 50000 \
     --seed 0 \
     --quant-state tt \
     --use_cache_scheduler \
@@ -54,14 +54,14 @@ run_exp() {
   echo "  → done. Summary: ${run_dir}/summary.json"
 }
 
-run_exp "baseline"         "${STAGE2_BASE}/baseline/stage2_refined_scheduler_config.json"
-run_exp "prefix_5"         "${STAGE2_BASE}/prefix_5/stage2_refined_scheduler_config.json"
+#run_exp "baseline"         "${STAGE2_BASE}/baseline/stage2_refined_scheduler_config.json"
+#run_exp "prefix_5"         "${STAGE2_BASE}/prefix_5/stage2_refined_scheduler_config.json"
 run_exp "prefix_10"        "${STAGE2_BASE}/prefix_10/stage2_refined_scheduler_config.json"
 run_exp "prefix_15"        "${STAGE2_BASE}/prefix_15/stage2_refined_scheduler_config.json"
-run_exp "first_input_only" "${STAGE2_BASE}/first_input_only/stage2_refined_scheduler_config.json"
-run_exp "combined_5"       "${STAGE2_BASE}/combined_5/stage2_refined_scheduler_config.json"
-run_exp "combined_10"      "${STAGE2_BASE}/combined_10/stage2_refined_scheduler_config.json"
-run_exp "combined_15"      "${STAGE2_BASE}/combined_15/stage2_refined_scheduler_config.json"
+#run_exp "first_input_only" "${STAGE2_BASE}/first_input_only/stage2_refined_scheduler_config.json"
+#run_exp "combined_5"       "${STAGE2_BASE}/combined_5/stage2_refined_scheduler_config.json"
+#run_exp "combined_10"      "${STAGE2_BASE}/combined_10/stage2_refined_scheduler_config.json"
+#run_exp "combined_15"      "${STAGE2_BASE}/combined_15/stage2_refined_scheduler_config.json"
 
 echo ""
 echo "All runs complete."

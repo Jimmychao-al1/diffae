@@ -1,0 +1,182 @@
+{
+  "run_id": "20260401T100342__prefix_15",
+  "per_block_recompute_count": {
+    "encoder_layer_0": 36,
+    "encoder_layer_1": 36,
+    "encoder_layer_10": 32,
+    "encoder_layer_11": 32,
+    "encoder_layer_12": 31,
+    "encoder_layer_13": 31,
+    "encoder_layer_14": 31,
+    "encoder_layer_2": 36,
+    "encoder_layer_3": 36,
+    "encoder_layer_4": 37,
+    "encoder_layer_5": 35,
+    "encoder_layer_6": 35,
+    "encoder_layer_7": 36,
+    "encoder_layer_8": 34,
+    "encoder_layer_9": 33,
+    "middle_layer": 31,
+    "decoder_layer_0": 31,
+    "decoder_layer_1": 31,
+    "decoder_layer_10": 38,
+    "decoder_layer_11": 40,
+    "decoder_layer_12": 39,
+    "decoder_layer_13": 36,
+    "decoder_layer_14": 36,
+    "decoder_layer_2": 31,
+    "decoder_layer_3": 32,
+    "decoder_layer_4": 32,
+    "decoder_layer_5": 33,
+    "decoder_layer_6": 33,
+    "decoder_layer_7": 33,
+    "decoder_layer_8": 41,
+    "decoder_layer_9": 38
+  },
+  "per_block_reuse_count": {
+    "encoder_layer_0": 64,
+    "encoder_layer_1": 64,
+    "encoder_layer_10": 68,
+    "encoder_layer_11": 68,
+    "encoder_layer_12": 69,
+    "encoder_layer_13": 69,
+    "encoder_layer_14": 69,
+    "encoder_layer_2": 64,
+    "encoder_layer_3": 64,
+    "encoder_layer_4": 63,
+    "encoder_layer_5": 65,
+    "encoder_layer_6": 65,
+    "encoder_layer_7": 64,
+    "encoder_layer_8": 66,
+    "encoder_layer_9": 67,
+    "middle_layer": 69,
+    "decoder_layer_0": 69,
+    "decoder_layer_1": 69,
+    "decoder_layer_10": 62,
+    "decoder_layer_11": 60,
+    "decoder_layer_12": 61,
+    "decoder_layer_13": 64,
+    "decoder_layer_14": 64,
+    "decoder_layer_2": 69,
+    "decoder_layer_3": 68,
+    "decoder_layer_4": 68,
+    "decoder_layer_5": 67,
+    "decoder_layer_6": 67,
+    "decoder_layer_7": 67,
+    "decoder_layer_8": 59,
+    "decoder_layer_9": 62
+  },
+  "per_zone_recompute_stats": {
+    "0": {
+      "full_count": 31,
+      "reuse_count": 31,
+      "num_timesteps_in_zone": 2
+    },
+    "1": {
+      "full_count": 31,
+      "reuse_count": 62,
+      "num_timesteps_in_zone": 3
+    },
+    "2": {
+      "full_count": 62,
+      "reuse_count": 124,
+      "num_timesteps_in_zone": 6
+    },
+    "3": {
+      "full_count": 458,
+      "reuse_count": 1185,
+      "num_timesteps_in_zone": 53
+    },
+    "4": {
+      "full_count": 36,
+      "reuse_count": 57,
+      "num_timesteps_in_zone": 3
+    },
+    "5": {
+      "full_count": 97,
+      "reuse_count": 244,
+      "num_timesteps_in_zone": 11
+    },
+    "6": {
+      "full_count": 135,
+      "reuse_count": 206,
+      "num_timesteps_in_zone": 11
+    },
+    "7": {
+      "full_count": 42,
+      "reuse_count": 51,
+      "num_timesteps_in_zone": 3
+    },
+    "8": {
+      "full_count": 31,
+      "reuse_count": 31,
+      "num_timesteps_in_zone": 2
+    },
+    "9": {
+      "full_count": 38,
+      "reuse_count": 24,
+      "num_timesteps_in_zone": 2
+    },
+    "10": {
+      "full_count": 44,
+      "reuse_count": 18,
+      "num_timesteps_in_zone": 2
+    },
+    "11": {
+      "full_count": 61,
+      "reuse_count": 1,
+      "num_timesteps_in_zone": 2
+    }
+  },
+  "per_zone_adjustment_stats": {
+    "5": 1,
+    "6": 23,
+    "7": 11,
+    "11": 30,
+    "9": 7,
+    "10": 13,
+    "4": 5,
+    "3": 1
+  },
+  "raw_estimation_stats": {
+    "recompute_ratio": 0.343871,
+    "total_full_compute_count": 1066,
+    "total_cache_reuse_count": 2034,
+    "full_compute_blocks_count": 0,
+    "T": 100,
+    "num_blocks": 31,
+    "per_block_recompute_ratio": {
+      "encoder_layer_0": 0.36,
+      "encoder_layer_1": 0.36,
+      "encoder_layer_10": 0.32,
+      "encoder_layer_11": 0.32,
+      "encoder_layer_12": 0.31,
+      "encoder_layer_13": 0.31,
+      "encoder_layer_14": 0.31,
+      "encoder_layer_2": 0.36,
+      "encoder_layer_3": 0.36,
+      "encoder_layer_4": 0.37,
+      "encoder_layer_5": 0.35,
+      "encoder_layer_6": 0.35,
+      "encoder_layer_7": 0.36,
+      "encoder_layer_8": 0.34,
+      "encoder_layer_9": 0.33,
+      "middle_layer": 0.31,
+      "decoder_layer_0": 0.31,
+      "decoder_layer_1": 0.31,
+      "decoder_layer_10": 0.38,
+      "decoder_layer_11": 0.4,
+      "decoder_layer_12": 0.39,
+      "decoder_layer_13": 0.36,
+      "decoder_layer_14": 0.36,
+      "decoder_layer_2": 0.31,
+      "decoder_layer_3": 0.32,
+      "decoder_layer_4": 0.32,
+      "decoder_layer_5": 0.33,
+      "decoder_layer_6": 0.33,
+      "decoder_layer_7": 0.33,
+      "decoder_layer_8": 0.41,
+      "decoder_layer_9": 0.38
+    }
+  }
+}
