@@ -43,7 +43,7 @@ run_exp() {
   python QATcode/cache_method/start_run/sample_stage2_cache_scheduler.py \
     --mode float \
     --num_steps 100 \
-    --eval_samples 5000 \
+    --eval_samples 50000 \
     --seed 0 \
     --quant-state tt \
     --use_cache_scheduler \
