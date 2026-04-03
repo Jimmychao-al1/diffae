@@ -53,6 +53,9 @@ QATcode/quantize_ver2/baseline_quant_analysis/**.gif
 QATcode/quantize_ver2/baseline_quant_analysis/**.bmp
 QATcode/quantize_ver2/baseline_quant_analysis/pred_xstart_quantile_analysis/T_100/official/seed0/**.json
 QATcode/cache_method/Stage2/stage2_output/plan1_K16_sw3/**/*.json
+QATcode/cache_method/Stage2/stage2_output/plan2_k25_sw2/**/*.json
+QATcode/cache_method/results/stage2_scheduler_runs/**/*.json
+QATcode/cache_method/results/plan2_k25_sw2/**/*.json
 QATcode/**/*.png
 QATcode/quantize_ver2/tb_runs
 QATcode/quantize_ver2/quant_diag_runs

@@ -19,7 +19,9 @@ set -euo pipefail
 #   first_input_only, combined_5, combined_10, combined_15
 
 STAGE2_BASE="QATcode/cache_method/Stage2/stage2_output/plan1_K16_sw3"
+#STAGE2_BASE="QATcode/cache_method/Stage2/stage2_output/plan2_k25_sw2"
 RESULTS_ROOT="QATcode/cache_method/results/stage2_scheduler_runs"
+#RESULTS_ROOT="QATcode/cache_method/results/plan2_k25_sw2"
 RUNS_INDEX="${RESULTS_ROOT}/runs_index.jsonl"
 
 mkdir -p "${RESULTS_ROOT}"
@@ -54,14 +56,17 @@ run_exp() {
   echo "  → done. Summary: ${run_dir}/summary.json"
 }
 
-run_exp "baseline"         "${STAGE2_BASE}/baseline/stage2_refined_scheduler_config.json"
-run_exp "prefix_5"         "${STAGE2_BASE}/prefix_5/stage2_refined_scheduler_config.json"
-run_exp "prefix_10"        "${STAGE2_BASE}/prefix_10/stage2_refined_scheduler_config.json"
+#run_exp "baseline"         "${STAGE2_BASE}/baseline/stage2_refined_scheduler_config.json"
+#run_exp "prefix_5"         "${STAGE2_BASE}/prefix_5/stage2_refined_scheduler_config.json"
+#run_exp "prefix_10"        "${STAGE2_BASE}/prefix_10/stage2_refined_scheduler_config.json"
 run_exp "prefix_15"        "${STAGE2_BASE}/prefix_15/stage2_refined_scheduler_config.json"
-run_exp "first_input_only" "${STAGE2_BASE}/first_input_only/stage2_refined_scheduler_config.json"
-run_exp "combined_5"       "${STAGE2_BASE}/combined_5/stage2_refined_scheduler_config.json"
-run_exp "combined_10"      "${STAGE2_BASE}/combined_10/stage2_refined_scheduler_config.json"
-run_exp "combined_15"      "${STAGE2_BASE}/combined_15/stage2_refined_scheduler_config.json"
+#run_exp "first_input_only" "${STAGE2_BASE}/first_input_only/stage2_refined_scheduler_config.json"
+#run_exp "combined_5"       "${STAGE2_BASE}/combined_5/stage2_refined_scheduler_config.json"
+#run_exp "combined_10"      "${STAGE2_BASE}/combined_10/stage2_refined_scheduler_config.json"
+#run_exp "combined_15"      "${STAGE2_BASE}/combined_15/stage2_refined_scheduler_config.json"
+
+#run_exp "baseline_908030"   "${STAGE2_BASE}/baseline_908030/stage2_refined_scheduler_config.json"
+#run_exp "baseline_928535"   "${STAGE2_BASE}/baseline_928535/stage2_refined_scheduler_config.json"
 
 echo ""
 echo "All runs complete."
