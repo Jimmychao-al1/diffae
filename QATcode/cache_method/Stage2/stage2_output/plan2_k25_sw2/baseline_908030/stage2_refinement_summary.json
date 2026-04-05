@@ -1,0 +1,2542 @@
+{
+  "cache_runtime_overrides": {
+    "variant_label": "baseline",
+    "force_full_prefix_steps": 0,
+    "force_full_runtime_blocks_effective": [],
+    "safety_first_input_block": false,
+    "first_input_runtime_block_name": "encoder_layer_0",
+    "must_reapply_same_runtime_overrides_for_sampling": "false",
+    "refined_json_expanded_mask_is_algorithm_only": "true",
+    "diagnostics_cache_pass_scheduler_field": "cache_scheduler_effective_for_cache_pass",
+    "interpretation": "Safety overrides apply only to the cache diagnostic render pass (runtime union). stage2_refined_scheduler_config.json masks are from Stage2 refine rules unless you merge policy elsewhere.",
+    "note": "Diagnostics / refinement used cache pass scheduler = cache_scheduler_effective_for_cache_pass (Stage1 expanded + optional runtime unions). Refined JSON masks follow Stage2 algorithm only."
+  },
+  "zone_k_adjustments": [
+    {
+      "block_id": 0,
+      "scheduler_local_block_id": 0,
+      "runtime_name": "encoder_layer_0",
+      "canonical_runtime_block_id": 0,
+      "zone_id": 8,
+      "k_before": 4,
+      "k_after": 3,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.02132805924217488
+    },
+    {
+      "block_id": 0,
+      "scheduler_local_block_id": 0,
+      "runtime_name": "encoder_layer_0",
+      "canonical_runtime_block_id": 0,
+      "zone_id": 10,
+      "k_before": 4,
+      "k_after": 3,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.02132805924217488
+    },
+    {
+      "block_id": 1,
+      "scheduler_local_block_id": 1,
+      "runtime_name": "encoder_layer_1",
+      "canonical_runtime_block_id": 1,
+      "zone_id": 10,
+      "k_before": 3,
+      "k_after": 2,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.05281934172510066
+    },
+    {
+      "block_id": 1,
+      "scheduler_local_block_id": 1,
+      "runtime_name": "encoder_layer_1",
+      "canonical_runtime_block_id": 1,
+      "zone_id": 15,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.05281934172510066
+    },
+    {
+      "block_id": 2,
+      "scheduler_local_block_id": 2,
+      "runtime_name": "encoder_layer_10",
+      "canonical_runtime_block_id": 10,
+      "zone_id": 4,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.2176042947685346
+    },
+    {
+      "block_id": 2,
+      "scheduler_local_block_id": 2,
+      "runtime_name": "encoder_layer_10",
+      "canonical_runtime_block_id": 10,
+      "zone_id": 15,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.2176042947685346
+    },
+    {
+      "block_id": 3,
+      "scheduler_local_block_id": 3,
+      "runtime_name": "encoder_layer_11",
+      "canonical_runtime_block_id": 11,
+      "zone_id": 4,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.26422856969293207
+    },
+    {
+      "block_id": 3,
+      "scheduler_local_block_id": 3,
+      "runtime_name": "encoder_layer_11",
+      "canonical_runtime_block_id": 11,
+      "zone_id": 15,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.26422856969293207
+    },
+    {
+      "block_id": 4,
+      "scheduler_local_block_id": 4,
+      "runtime_name": "encoder_layer_12",
+      "canonical_runtime_block_id": 12,
+      "zone_id": 4,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.2475067488849163
+    },
+    {
+      "block_id": 4,
+      "scheduler_local_block_id": 4,
+      "runtime_name": "encoder_layer_12",
+      "canonical_runtime_block_id": 12,
+      "zone_id": 5,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.2475067488849163
+    },
+    {
+      "block_id": 5,
+      "scheduler_local_block_id": 5,
+      "runtime_name": "encoder_layer_13",
+      "canonical_runtime_block_id": 13,
+      "zone_id": 4,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.2165913147618994
+    },
+    {
+      "block_id": 5,
+      "scheduler_local_block_id": 5,
+      "runtime_name": "encoder_layer_13",
+      "canonical_runtime_block_id": 13,
+      "zone_id": 5,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.2165913147618994
+    },
+    {
+      "block_id": 6,
+      "scheduler_local_block_id": 6,
+      "runtime_name": "encoder_layer_14",
+      "canonical_runtime_block_id": 14,
+      "zone_id": 4,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.26158944435883313
+    },
+    {
+      "block_id": 6,
+      "scheduler_local_block_id": 6,
+      "runtime_name": "encoder_layer_14",
+      "canonical_runtime_block_id": 14,
+      "zone_id": 5,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.26158944435883313
+    },
+    {
+      "block_id": 7,
+      "scheduler_local_block_id": 7,
+      "runtime_name": "encoder_layer_2",
+      "canonical_runtime_block_id": 2,
+      "zone_id": 10,
+      "k_before": 4,
+      "k_after": 3,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.08772616880014539
+    },
+    {
+      "block_id": 7,
+      "scheduler_local_block_id": 7,
+      "runtime_name": "encoder_layer_2",
+      "canonical_runtime_block_id": 2,
+      "zone_id": 15,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.08772616880014539
+    },
+    {
+      "block_id": 8,
+      "scheduler_local_block_id": 8,
+      "runtime_name": "encoder_layer_3",
+      "canonical_runtime_block_id": 3,
+      "zone_id": 10,
+      "k_before": 3,
+      "k_after": 2,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.09096314525231719
+    },
+    {
+      "block_id": 8,
+      "scheduler_local_block_id": 8,
+      "runtime_name": "encoder_layer_3",
+      "canonical_runtime_block_id": 3,
+      "zone_id": 15,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.09096314525231719
+    },
+    {
+      "block_id": 9,
+      "scheduler_local_block_id": 9,
+      "runtime_name": "encoder_layer_4",
+      "canonical_runtime_block_id": 4,
+      "zone_id": 10,
+      "k_before": 3,
+      "k_after": 2,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.11588458586225493
+    },
+    {
+      "block_id": 9,
+      "scheduler_local_block_id": 9,
+      "runtime_name": "encoder_layer_4",
+      "canonical_runtime_block_id": 4,
+      "zone_id": 15,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.11588458586225493
+    },
+    {
+      "block_id": 10,
+      "scheduler_local_block_id": 10,
+      "runtime_name": "encoder_layer_5",
+      "canonical_runtime_block_id": 5,
+      "zone_id": 14,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.173594814285429
+    },
+    {
+      "block_id": 10,
+      "scheduler_local_block_id": 10,
+      "runtime_name": "encoder_layer_5",
+      "canonical_runtime_block_id": 5,
+      "zone_id": 15,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.173594814285429
+    },
+    {
+      "block_id": 11,
+      "scheduler_local_block_id": 11,
+      "runtime_name": "encoder_layer_6",
+      "canonical_runtime_block_id": 6,
+      "zone_id": 14,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.1426114416939931
+    },
+    {
+      "block_id": 11,
+      "scheduler_local_block_id": 11,
+      "runtime_name": "encoder_layer_6",
+      "canonical_runtime_block_id": 6,
+      "zone_id": 15,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.1426114416939931
+    },
+    {
+      "block_id": 12,
+      "scheduler_local_block_id": 12,
+      "runtime_name": "encoder_layer_7",
+      "canonical_runtime_block_id": 7,
+      "zone_id": 14,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.14604416414577928
+    },
+    {
+      "block_id": 12,
+      "scheduler_local_block_id": 12,
+      "runtime_name": "encoder_layer_7",
+      "canonical_runtime_block_id": 7,
+      "zone_id": 15,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.14604416414577928
+    },
+    {
+      "block_id": 13,
+      "scheduler_local_block_id": 13,
+      "runtime_name": "encoder_layer_8",
+      "canonical_runtime_block_id": 8,
+      "zone_id": 4,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.2300382893299684
+    },
+    {
+      "block_id": 13,
+      "scheduler_local_block_id": 13,
+      "runtime_name": "encoder_layer_8",
+      "canonical_runtime_block_id": 8,
+      "zone_id": 15,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.2300382893299684
+    },
+    {
+      "block_id": 14,
+      "scheduler_local_block_id": 14,
+      "runtime_name": "encoder_layer_9",
+      "canonical_runtime_block_id": 9,
+      "zone_id": 4,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.229007922927849
+    },
+    {
+      "block_id": 14,
+      "scheduler_local_block_id": 14,
+      "runtime_name": "encoder_layer_9",
+      "canonical_runtime_block_id": 9,
+      "zone_id": 15,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.229007922927849
+    },
+    {
+      "block_id": 15,
+      "scheduler_local_block_id": 15,
+      "runtime_name": "middle_layer",
+      "canonical_runtime_block_id": 15,
+      "zone_id": 4,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.4163561563473195
+    },
+    {
+      "block_id": 15,
+      "scheduler_local_block_id": 15,
+      "runtime_name": "middle_layer",
+      "canonical_runtime_block_id": 15,
+      "zone_id": 5,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.4163561563473195
+    },
+    {
+      "block_id": 16,
+      "scheduler_local_block_id": 16,
+      "runtime_name": "decoder_layer_0",
+      "canonical_runtime_block_id": 16,
+      "zone_id": 4,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.5099082454107702
+    },
+    {
+      "block_id": 16,
+      "scheduler_local_block_id": 16,
+      "runtime_name": "decoder_layer_0",
+      "canonical_runtime_block_id": 16,
+      "zone_id": 5,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.5099082454107702
+    },
+    {
+      "block_id": 17,
+      "scheduler_local_block_id": 17,
+      "runtime_name": "decoder_layer_1",
+      "canonical_runtime_block_id": 17,
+      "zone_id": 4,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.4588463753461838
+    },
+    {
+      "block_id": 17,
+      "scheduler_local_block_id": 17,
+      "runtime_name": "decoder_layer_1",
+      "canonical_runtime_block_id": 17,
+      "zone_id": 5,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.4588463753461838
+    },
+    {
+      "block_id": 18,
+      "scheduler_local_block_id": 18,
+      "runtime_name": "decoder_layer_10",
+      "canonical_runtime_block_id": 26,
+      "zone_id": 14,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.3252283122597469
+    },
+    {
+      "block_id": 18,
+      "scheduler_local_block_id": 18,
+      "runtime_name": "decoder_layer_10",
+      "canonical_runtime_block_id": 26,
+      "zone_id": 15,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.3252283122597469
+    },
+    {
+      "block_id": 19,
+      "scheduler_local_block_id": 19,
+      "runtime_name": "decoder_layer_11",
+      "canonical_runtime_block_id": 27,
+      "zone_id": 14,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.2898194662605723
+    },
+    {
+      "block_id": 19,
+      "scheduler_local_block_id": 19,
+      "runtime_name": "decoder_layer_11",
+      "canonical_runtime_block_id": 27,
+      "zone_id": 15,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.2898194662605723
+    },
+    {
+      "block_id": 20,
+      "scheduler_local_block_id": 20,
+      "runtime_name": "decoder_layer_12",
+      "canonical_runtime_block_id": 28,
+      "zone_id": 14,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.24454357609566715
+    },
+    {
+      "block_id": 20,
+      "scheduler_local_block_id": 20,
+      "runtime_name": "decoder_layer_12",
+      "canonical_runtime_block_id": 28,
+      "zone_id": 15,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.24454357609566715
+    },
+    {
+      "block_id": 21,
+      "scheduler_local_block_id": 21,
+      "runtime_name": "decoder_layer_13",
+      "canonical_runtime_block_id": 29,
+      "zone_id": 10,
+      "k_before": 4,
+      "k_after": 3,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.25792272564851576
+    },
+    {
+      "block_id": 21,
+      "scheduler_local_block_id": 21,
+      "runtime_name": "decoder_layer_13",
+      "canonical_runtime_block_id": 29,
+      "zone_id": 15,
+      "k_before": 1,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.25792272564851576
+    },
+    {
+      "block_id": 22,
+      "scheduler_local_block_id": 22,
+      "runtime_name": "decoder_layer_14",
+      "canonical_runtime_block_id": 30,
+      "zone_id": 10,
+      "k_before": 4,
+      "k_after": 3,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.48134455348675453
+    },
+    {
+      "block_id": 22,
+      "scheduler_local_block_id": 22,
+      "runtime_name": "decoder_layer_14",
+      "canonical_runtime_block_id": 30,
+      "zone_id": 15,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.48134455348675453
+    },
+    {
+      "block_id": 23,
+      "scheduler_local_block_id": 23,
+      "runtime_name": "decoder_layer_2",
+      "canonical_runtime_block_id": 18,
+      "zone_id": 4,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.5064657288603485
+    },
+    {
+      "block_id": 23,
+      "scheduler_local_block_id": 23,
+      "runtime_name": "decoder_layer_2",
+      "canonical_runtime_block_id": 18,
+      "zone_id": 15,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.5064657288603485
+    },
+    {
+      "block_id": 24,
+      "scheduler_local_block_id": 24,
+      "runtime_name": "decoder_layer_3",
+      "canonical_runtime_block_id": 19,
+      "zone_id": 4,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.5683766836300492
+    },
+    {
+      "block_id": 24,
+      "scheduler_local_block_id": 24,
+      "runtime_name": "decoder_layer_3",
+      "canonical_runtime_block_id": 19,
+      "zone_id": 15,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.5683766836300492
+    },
+    {
+      "block_id": 25,
+      "scheduler_local_block_id": 25,
+      "runtime_name": "decoder_layer_4",
+      "canonical_runtime_block_id": 20,
+      "zone_id": 4,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.6288767773658037
+    },
+    {
+      "block_id": 25,
+      "scheduler_local_block_id": 25,
+      "runtime_name": "decoder_layer_4",
+      "canonical_runtime_block_id": 20,
+      "zone_id": 15,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.6288767773658037
+    },
+    {
+      "block_id": 26,
+      "scheduler_local_block_id": 26,
+      "runtime_name": "decoder_layer_5",
+      "canonical_runtime_block_id": 21,
+      "zone_id": 4,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.7124109347350895
+    },
+    {
+      "block_id": 26,
+      "scheduler_local_block_id": 26,
+      "runtime_name": "decoder_layer_5",
+      "canonical_runtime_block_id": 21,
+      "zone_id": 15,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.7124109347350895
+    },
+    {
+      "block_id": 27,
+      "scheduler_local_block_id": 27,
+      "runtime_name": "decoder_layer_6",
+      "canonical_runtime_block_id": 22,
+      "zone_id": 4,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.6885695494711399
+    },
+    {
+      "block_id": 27,
+      "scheduler_local_block_id": 27,
+      "runtime_name": "decoder_layer_6",
+      "canonical_runtime_block_id": 22,
+      "zone_id": 15,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.6885695494711399
+    },
+    {
+      "block_id": 28,
+      "scheduler_local_block_id": 28,
+      "runtime_name": "decoder_layer_7",
+      "canonical_runtime_block_id": 23,
+      "zone_id": 4,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.5152459053788334
+    },
+    {
+      "block_id": 28,
+      "scheduler_local_block_id": 28,
+      "runtime_name": "decoder_layer_7",
+      "canonical_runtime_block_id": 23,
+      "zone_id": 15,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.5152459053788334
+    },
+    {
+      "block_id": 29,
+      "scheduler_local_block_id": 29,
+      "runtime_name": "decoder_layer_8",
+      "canonical_runtime_block_id": 24,
+      "zone_id": 8,
+      "k_before": 4,
+      "k_after": 3,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.5292701221122924
+    },
+    {
+      "block_id": 29,
+      "scheduler_local_block_id": 29,
+      "runtime_name": "decoder_layer_8",
+      "canonical_runtime_block_id": 24,
+      "zone_id": 15,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.5292701221122924
+    },
+    {
+      "block_id": 30,
+      "scheduler_local_block_id": 30,
+      "runtime_name": "decoder_layer_9",
+      "canonical_runtime_block_id": 25,
+      "zone_id": 14,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.4919250767367581
+    },
+    {
+      "block_id": 30,
+      "scheduler_local_block_id": 30,
+      "runtime_name": "decoder_layer_9",
+      "canonical_runtime_block_id": 25,
+      "zone_id": 15,
+      "k_before": 2,
+      "k_after": 1,
+      "threshold_mode": "blockwise_quantile",
+      "zone_l1_threshold_used": 0.4919250767367581
+    }
+  ],
+  "peak_mask_adjustments": [
+    {
+      "block_id": 0,
+      "scheduler_local_block_id": 0,
+      "runtime_name": "encoder_layer_0",
+      "canonical_runtime_block_id": 0,
+      "ddim_timestep": 36,
+      "step_index": 63,
+      "was_reuse_before_peak_repair": true,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.027726477014827347
+    },
+    {
+      "block_id": 0,
+      "scheduler_local_block_id": 0,
+      "runtime_name": "encoder_layer_0",
+      "canonical_runtime_block_id": 0,
+      "ddim_timestep": 30,
+      "step_index": 69,
+      "was_reuse_before_peak_repair": true,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.027726477014827347
+    },
+    {
+      "block_id": 0,
+      "scheduler_local_block_id": 0,
+      "runtime_name": "encoder_layer_0",
+      "canonical_runtime_block_id": 0,
+      "ddim_timestep": 29,
+      "step_index": 70,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.027726477014827347
+    },
+    {
+      "block_id": 0,
+      "scheduler_local_block_id": 0,
+      "runtime_name": "encoder_layer_0",
+      "canonical_runtime_block_id": 0,
+      "ddim_timestep": 26,
+      "step_index": 73,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.027726477014827347
+    },
+    {
+      "block_id": 0,
+      "scheduler_local_block_id": 0,
+      "runtime_name": "encoder_layer_0",
+      "canonical_runtime_block_id": 0,
+      "ddim_timestep": 25,
+      "step_index": 74,
+      "was_reuse_before_peak_repair": true,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.027726477014827347
+    },
+    {
+      "block_id": 0,
+      "scheduler_local_block_id": 0,
+      "runtime_name": "encoder_layer_0",
+      "canonical_runtime_block_id": 0,
+      "ddim_timestep": 22,
+      "step_index": 77,
+      "was_reuse_before_peak_repair": true,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.027726477014827347
+    },
+    {
+      "block_id": 0,
+      "scheduler_local_block_id": 0,
+      "runtime_name": "encoder_layer_0",
+      "canonical_runtime_block_id": 0,
+      "ddim_timestep": 21,
+      "step_index": 78,
+      "was_reuse_before_peak_repair": true,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.027726477014827347
+    },
+    {
+      "block_id": 0,
+      "scheduler_local_block_id": 0,
+      "runtime_name": "encoder_layer_0",
+      "canonical_runtime_block_id": 0,
+      "ddim_timestep": 16,
+      "step_index": 83,
+      "was_reuse_before_peak_repair": true,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.027726477014827347
+    },
+    {
+      "block_id": 0,
+      "scheduler_local_block_id": 0,
+      "runtime_name": "encoder_layer_0",
+      "canonical_runtime_block_id": 0,
+      "ddim_timestep": 15,
+      "step_index": 84,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.027726477014827347
+    },
+    {
+      "block_id": 0,
+      "scheduler_local_block_id": 0,
+      "runtime_name": "encoder_layer_0",
+      "canonical_runtime_block_id": 0,
+      "ddim_timestep": 12,
+      "step_index": 87,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.027726477014827347
+    },
+    {
+      "block_id": 0,
+      "scheduler_local_block_id": 0,
+      "runtime_name": "encoder_layer_0",
+      "canonical_runtime_block_id": 0,
+      "ddim_timestep": 11,
+      "step_index": 88,
+      "was_reuse_before_peak_repair": true,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.027726477014827347
+    },
+    {
+      "block_id": 1,
+      "scheduler_local_block_id": 1,
+      "runtime_name": "encoder_layer_1",
+      "canonical_runtime_block_id": 1,
+      "ddim_timestep": 25,
+      "step_index": 74,
+      "was_reuse_before_peak_repair": true,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.06866514424263086
+    },
+    {
+      "block_id": 1,
+      "scheduler_local_block_id": 1,
+      "runtime_name": "encoder_layer_1",
+      "canonical_runtime_block_id": 1,
+      "ddim_timestep": 21,
+      "step_index": 78,
+      "was_reuse_before_peak_repair": true,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.06866514424263086
+    },
+    {
+      "block_id": 1,
+      "scheduler_local_block_id": 1,
+      "runtime_name": "encoder_layer_1",
+      "canonical_runtime_block_id": 1,
+      "ddim_timestep": 14,
+      "step_index": 85,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.06866514424263086
+    },
+    {
+      "block_id": 1,
+      "scheduler_local_block_id": 1,
+      "runtime_name": "encoder_layer_1",
+      "canonical_runtime_block_id": 1,
+      "ddim_timestep": 13,
+      "step_index": 86,
+      "was_reuse_before_peak_repair": true,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.06866514424263086
+    },
+    {
+      "block_id": 1,
+      "scheduler_local_block_id": 1,
+      "runtime_name": "encoder_layer_1",
+      "canonical_runtime_block_id": 1,
+      "ddim_timestep": 11,
+      "step_index": 88,
+      "was_reuse_before_peak_repair": true,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.06866514424263086
+    },
+    {
+      "block_id": 1,
+      "scheduler_local_block_id": 1,
+      "runtime_name": "encoder_layer_1",
+      "canonical_runtime_block_id": 1,
+      "ddim_timestep": 10,
+      "step_index": 89,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.06866514424263086
+    },
+    {
+      "block_id": 1,
+      "scheduler_local_block_id": 1,
+      "runtime_name": "encoder_layer_1",
+      "canonical_runtime_block_id": 1,
+      "ddim_timestep": 0,
+      "step_index": 99,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.06866514424263086
+    },
+    {
+      "block_id": 2,
+      "scheduler_local_block_id": 2,
+      "runtime_name": "encoder_layer_10",
+      "canonical_runtime_block_id": 10,
+      "ddim_timestep": 0,
+      "step_index": 99,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.282885583199095
+    },
+    {
+      "block_id": 3,
+      "scheduler_local_block_id": 3,
+      "runtime_name": "encoder_layer_11",
+      "canonical_runtime_block_id": 11,
+      "ddim_timestep": 0,
+      "step_index": 99,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.3434971406008117
+    },
+    {
+      "block_id": 4,
+      "scheduler_local_block_id": 4,
+      "runtime_name": "encoder_layer_12",
+      "canonical_runtime_block_id": 12,
+      "ddim_timestep": 0,
+      "step_index": 99,
+      "was_reuse_before_peak_repair": true,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.32175877355039123
+    },
+    {
+      "block_id": 5,
+      "scheduler_local_block_id": 5,
+      "runtime_name": "encoder_layer_13",
+      "canonical_runtime_block_id": 13,
+      "ddim_timestep": 0,
+      "step_index": 99,
+      "was_reuse_before_peak_repair": true,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.2815687091904692
+    },
+    {
+      "block_id": 6,
+      "scheduler_local_block_id": 6,
+      "runtime_name": "encoder_layer_14",
+      "canonical_runtime_block_id": 14,
+      "ddim_timestep": 0,
+      "step_index": 99,
+      "was_reuse_before_peak_repair": true,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.34006627766648306
+    },
+    {
+      "block_id": 7,
+      "scheduler_local_block_id": 7,
+      "runtime_name": "encoder_layer_2",
+      "canonical_runtime_block_id": 2,
+      "ddim_timestep": 13,
+      "step_index": 86,
+      "was_reuse_before_peak_repair": true,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.114044019440189
+    },
+    {
+      "block_id": 7,
+      "scheduler_local_block_id": 7,
+      "runtime_name": "encoder_layer_2",
+      "canonical_runtime_block_id": 2,
+      "ddim_timestep": 12,
+      "step_index": 87,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.114044019440189
+    },
+    {
+      "block_id": 7,
+      "scheduler_local_block_id": 7,
+      "runtime_name": "encoder_layer_2",
+      "canonical_runtime_block_id": 2,
+      "ddim_timestep": 11,
+      "step_index": 88,
+      "was_reuse_before_peak_repair": true,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.114044019440189
+    },
+    {
+      "block_id": 7,
+      "scheduler_local_block_id": 7,
+      "runtime_name": "encoder_layer_2",
+      "canonical_runtime_block_id": 2,
+      "ddim_timestep": 10,
+      "step_index": 89,
+      "was_reuse_before_peak_repair": true,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.114044019440189
+    },
+    {
+      "block_id": 7,
+      "scheduler_local_block_id": 7,
+      "runtime_name": "encoder_layer_2",
+      "canonical_runtime_block_id": 2,
+      "ddim_timestep": 0,
+      "step_index": 99,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.114044019440189
+    },
+    {
+      "block_id": 8,
+      "scheduler_local_block_id": 8,
+      "runtime_name": "encoder_layer_3",
+      "canonical_runtime_block_id": 3,
+      "ddim_timestep": 13,
+      "step_index": 86,
+      "was_reuse_before_peak_repair": true,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.11825208882801234
+    },
+    {
+      "block_id": 8,
+      "scheduler_local_block_id": 8,
+      "runtime_name": "encoder_layer_3",
+      "canonical_runtime_block_id": 3,
+      "ddim_timestep": 12,
+      "step_index": 87,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.11825208882801234
+    },
+    {
+      "block_id": 8,
+      "scheduler_local_block_id": 8,
+      "runtime_name": "encoder_layer_3",
+      "canonical_runtime_block_id": 3,
+      "ddim_timestep": 11,
+      "step_index": 88,
+      "was_reuse_before_peak_repair": true,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.11825208882801234
+    },
+    {
+      "block_id": 8,
+      "scheduler_local_block_id": 8,
+      "runtime_name": "encoder_layer_3",
+      "canonical_runtime_block_id": 3,
+      "ddim_timestep": 10,
+      "step_index": 89,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.11825208882801234
+    },
+    {
+      "block_id": 8,
+      "scheduler_local_block_id": 8,
+      "runtime_name": "encoder_layer_3",
+      "canonical_runtime_block_id": 3,
+      "ddim_timestep": 0,
+      "step_index": 99,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.11825208882801234
+    },
+    {
+      "block_id": 9,
+      "scheduler_local_block_id": 9,
+      "runtime_name": "encoder_layer_4",
+      "canonical_runtime_block_id": 4,
+      "ddim_timestep": 11,
+      "step_index": 88,
+      "was_reuse_before_peak_repair": true,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.15064996162093142
+    },
+    {
+      "block_id": 9,
+      "scheduler_local_block_id": 9,
+      "runtime_name": "encoder_layer_4",
+      "canonical_runtime_block_id": 4,
+      "ddim_timestep": 10,
+      "step_index": 89,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.15064996162093142
+    },
+    {
+      "block_id": 9,
+      "scheduler_local_block_id": 9,
+      "runtime_name": "encoder_layer_4",
+      "canonical_runtime_block_id": 4,
+      "ddim_timestep": 2,
+      "step_index": 97,
+      "was_reuse_before_peak_repair": true,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.15064996162093142
+    },
+    {
+      "block_id": 9,
+      "scheduler_local_block_id": 9,
+      "runtime_name": "encoder_layer_4",
+      "canonical_runtime_block_id": 4,
+      "ddim_timestep": 0,
+      "step_index": 99,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.15064996162093142
+    },
+    {
+      "block_id": 10,
+      "scheduler_local_block_id": 10,
+      "runtime_name": "encoder_layer_5",
+      "canonical_runtime_block_id": 5,
+      "ddim_timestep": 11,
+      "step_index": 88,
+      "was_reuse_before_peak_repair": true,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.22567325857105772
+    },
+    {
+      "block_id": 10,
+      "scheduler_local_block_id": 10,
+      "runtime_name": "encoder_layer_5",
+      "canonical_runtime_block_id": 5,
+      "ddim_timestep": 10,
+      "step_index": 89,
+      "was_reuse_before_peak_repair": true,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.22567325857105772
+    },
+    {
+      "block_id": 10,
+      "scheduler_local_block_id": 10,
+      "runtime_name": "encoder_layer_5",
+      "canonical_runtime_block_id": 5,
+      "ddim_timestep": 2,
+      "step_index": 97,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.22567325857105772
+    },
+    {
+      "block_id": 10,
+      "scheduler_local_block_id": 10,
+      "runtime_name": "encoder_layer_5",
+      "canonical_runtime_block_id": 5,
+      "ddim_timestep": 0,
+      "step_index": 99,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.22567325857105772
+    },
+    {
+      "block_id": 11,
+      "scheduler_local_block_id": 11,
+      "runtime_name": "encoder_layer_6",
+      "canonical_runtime_block_id": 6,
+      "ddim_timestep": 12,
+      "step_index": 87,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.18539487420219103
+    },
+    {
+      "block_id": 11,
+      "scheduler_local_block_id": 11,
+      "runtime_name": "encoder_layer_6",
+      "canonical_runtime_block_id": 6,
+      "ddim_timestep": 11,
+      "step_index": 88,
+      "was_reuse_before_peak_repair": true,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.18539487420219103
+    },
+    {
+      "block_id": 11,
+      "scheduler_local_block_id": 11,
+      "runtime_name": "encoder_layer_6",
+      "canonical_runtime_block_id": 6,
+      "ddim_timestep": 10,
+      "step_index": 89,
+      "was_reuse_before_peak_repair": true,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.18539487420219103
+    },
+    {
+      "block_id": 11,
+      "scheduler_local_block_id": 11,
+      "runtime_name": "encoder_layer_6",
+      "canonical_runtime_block_id": 6,
+      "ddim_timestep": 2,
+      "step_index": 97,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.18539487420219103
+    },
+    {
+      "block_id": 11,
+      "scheduler_local_block_id": 11,
+      "runtime_name": "encoder_layer_6",
+      "canonical_runtime_block_id": 6,
+      "ddim_timestep": 0,
+      "step_index": 99,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.18539487420219103
+    },
+    {
+      "block_id": 12,
+      "scheduler_local_block_id": 12,
+      "runtime_name": "encoder_layer_7",
+      "canonical_runtime_block_id": 7,
+      "ddim_timestep": 12,
+      "step_index": 87,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.18985741338951306
+    },
+    {
+      "block_id": 12,
+      "scheduler_local_block_id": 12,
+      "runtime_name": "encoder_layer_7",
+      "canonical_runtime_block_id": 7,
+      "ddim_timestep": 11,
+      "step_index": 88,
+      "was_reuse_before_peak_repair": true,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.18985741338951306
+    },
+    {
+      "block_id": 12,
+      "scheduler_local_block_id": 12,
+      "runtime_name": "encoder_layer_7",
+      "canonical_runtime_block_id": 7,
+      "ddim_timestep": 10,
+      "step_index": 89,
+      "was_reuse_before_peak_repair": true,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.18985741338951306
+    },
+    {
+      "block_id": 12,
+      "scheduler_local_block_id": 12,
+      "runtime_name": "encoder_layer_7",
+      "canonical_runtime_block_id": 7,
+      "ddim_timestep": 2,
+      "step_index": 97,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.18985741338951306
+    },
+    {
+      "block_id": 12,
+      "scheduler_local_block_id": 12,
+      "runtime_name": "encoder_layer_7",
+      "canonical_runtime_block_id": 7,
+      "ddim_timestep": 0,
+      "step_index": 99,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.18985741338951306
+    },
+    {
+      "block_id": 13,
+      "scheduler_local_block_id": 13,
+      "runtime_name": "encoder_layer_8",
+      "canonical_runtime_block_id": 8,
+      "ddim_timestep": 10,
+      "step_index": 89,
+      "was_reuse_before_peak_repair": true,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.29904977612895894
+    },
+    {
+      "block_id": 13,
+      "scheduler_local_block_id": 13,
+      "runtime_name": "encoder_layer_8",
+      "canonical_runtime_block_id": 8,
+      "ddim_timestep": 0,
+      "step_index": 99,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.29904977612895894
+    },
+    {
+      "block_id": 14,
+      "scheduler_local_block_id": 14,
+      "runtime_name": "encoder_layer_9",
+      "canonical_runtime_block_id": 9,
+      "ddim_timestep": 0,
+      "step_index": 99,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.2977102998062037
+    },
+    {
+      "block_id": 15,
+      "scheduler_local_block_id": 15,
+      "runtime_name": "middle_layer",
+      "canonical_runtime_block_id": 15,
+      "ddim_timestep": 0,
+      "step_index": 99,
+      "was_reuse_before_peak_repair": true,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.5412630032515153
+    },
+    {
+      "block_id": 16,
+      "scheduler_local_block_id": 16,
+      "runtime_name": "decoder_layer_0",
+      "canonical_runtime_block_id": 16,
+      "ddim_timestep": 0,
+      "step_index": 99,
+      "was_reuse_before_peak_repair": true,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.6628807190340013
+    },
+    {
+      "block_id": 17,
+      "scheduler_local_block_id": 17,
+      "runtime_name": "decoder_layer_1",
+      "canonical_runtime_block_id": 17,
+      "ddim_timestep": 0,
+      "step_index": 99,
+      "was_reuse_before_peak_repair": true,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.596500287950039
+    },
+    {
+      "block_id": 18,
+      "scheduler_local_block_id": 18,
+      "runtime_name": "decoder_layer_10",
+      "canonical_runtime_block_id": 26,
+      "ddim_timestep": 11,
+      "step_index": 88,
+      "was_reuse_before_peak_repair": true,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.422796805937671
+    },
+    {
+      "block_id": 18,
+      "scheduler_local_block_id": 18,
+      "runtime_name": "decoder_layer_10",
+      "canonical_runtime_block_id": 26,
+      "ddim_timestep": 10,
+      "step_index": 89,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.422796805937671
+    },
+    {
+      "block_id": 18,
+      "scheduler_local_block_id": 18,
+      "runtime_name": "decoder_layer_10",
+      "canonical_runtime_block_id": 26,
+      "ddim_timestep": 2,
+      "step_index": 97,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.422796805937671
+    },
+    {
+      "block_id": 18,
+      "scheduler_local_block_id": 18,
+      "runtime_name": "decoder_layer_10",
+      "canonical_runtime_block_id": 26,
+      "ddim_timestep": 0,
+      "step_index": 99,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.422796805937671
+    },
+    {
+      "block_id": 19,
+      "scheduler_local_block_id": 19,
+      "runtime_name": "decoder_layer_11",
+      "canonical_runtime_block_id": 27,
+      "ddim_timestep": 11,
+      "step_index": 88,
+      "was_reuse_before_peak_repair": true,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.37676530613874404
+    },
+    {
+      "block_id": 19,
+      "scheduler_local_block_id": 19,
+      "runtime_name": "decoder_layer_11",
+      "canonical_runtime_block_id": 27,
+      "ddim_timestep": 10,
+      "step_index": 89,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.37676530613874404
+    },
+    {
+      "block_id": 19,
+      "scheduler_local_block_id": 19,
+      "runtime_name": "decoder_layer_11",
+      "canonical_runtime_block_id": 27,
+      "ddim_timestep": 2,
+      "step_index": 97,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.37676530613874404
+    },
+    {
+      "block_id": 19,
+      "scheduler_local_block_id": 19,
+      "runtime_name": "decoder_layer_11",
+      "canonical_runtime_block_id": 27,
+      "ddim_timestep": 0,
+      "step_index": 99,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.37676530613874404
+    },
+    {
+      "block_id": 20,
+      "scheduler_local_block_id": 20,
+      "runtime_name": "decoder_layer_12",
+      "canonical_runtime_block_id": 28,
+      "ddim_timestep": 11,
+      "step_index": 88,
+      "was_reuse_before_peak_repair": true,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.3179066489243673
+    },
+    {
+      "block_id": 20,
+      "scheduler_local_block_id": 20,
+      "runtime_name": "decoder_layer_12",
+      "canonical_runtime_block_id": 28,
+      "ddim_timestep": 10,
+      "step_index": 89,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.3179066489243673
+    },
+    {
+      "block_id": 20,
+      "scheduler_local_block_id": 20,
+      "runtime_name": "decoder_layer_12",
+      "canonical_runtime_block_id": 28,
+      "ddim_timestep": 2,
+      "step_index": 97,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.3179066489243673
+    },
+    {
+      "block_id": 20,
+      "scheduler_local_block_id": 20,
+      "runtime_name": "decoder_layer_12",
+      "canonical_runtime_block_id": 28,
+      "ddim_timestep": 0,
+      "step_index": 99,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.3179066489243673
+    },
+    {
+      "block_id": 21,
+      "scheduler_local_block_id": 21,
+      "runtime_name": "decoder_layer_13",
+      "canonical_runtime_block_id": 29,
+      "ddim_timestep": 14,
+      "step_index": 85,
+      "was_reuse_before_peak_repair": true,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.3352995433430705
+    },
+    {
+      "block_id": 21,
+      "scheduler_local_block_id": 21,
+      "runtime_name": "decoder_layer_13",
+      "canonical_runtime_block_id": 29,
+      "ddim_timestep": 13,
+      "step_index": 86,
+      "was_reuse_before_peak_repair": true,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.3352995433430705
+    },
+    {
+      "block_id": 21,
+      "scheduler_local_block_id": 21,
+      "runtime_name": "decoder_layer_13",
+      "canonical_runtime_block_id": 29,
+      "ddim_timestep": 12,
+      "step_index": 87,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.3352995433430705
+    },
+    {
+      "block_id": 21,
+      "scheduler_local_block_id": 21,
+      "runtime_name": "decoder_layer_13",
+      "canonical_runtime_block_id": 29,
+      "ddim_timestep": 11,
+      "step_index": 88,
+      "was_reuse_before_peak_repair": true,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.3352995433430705
+    },
+    {
+      "block_id": 21,
+      "scheduler_local_block_id": 21,
+      "runtime_name": "decoder_layer_13",
+      "canonical_runtime_block_id": 29,
+      "ddim_timestep": 10,
+      "step_index": 89,
+      "was_reuse_before_peak_repair": true,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.3352995433430705
+    },
+    {
+      "block_id": 21,
+      "scheduler_local_block_id": 21,
+      "runtime_name": "decoder_layer_13",
+      "canonical_runtime_block_id": 29,
+      "ddim_timestep": 0,
+      "step_index": 99,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.3352995433430705
+    },
+    {
+      "block_id": 22,
+      "scheduler_local_block_id": 22,
+      "runtime_name": "decoder_layer_14",
+      "canonical_runtime_block_id": 30,
+      "ddim_timestep": 29,
+      "step_index": 70,
+      "was_reuse_before_peak_repair": true,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.6257479195327809
+    },
+    {
+      "block_id": 22,
+      "scheduler_local_block_id": 22,
+      "runtime_name": "decoder_layer_14",
+      "canonical_runtime_block_id": 30,
+      "ddim_timestep": 25,
+      "step_index": 74,
+      "was_reuse_before_peak_repair": true,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.6257479195327809
+    },
+    {
+      "block_id": 22,
+      "scheduler_local_block_id": 22,
+      "runtime_name": "decoder_layer_14",
+      "canonical_runtime_block_id": 30,
+      "ddim_timestep": 21,
+      "step_index": 78,
+      "was_reuse_before_peak_repair": true,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.6257479195327809
+    },
+    {
+      "block_id": 22,
+      "scheduler_local_block_id": 22,
+      "runtime_name": "decoder_layer_14",
+      "canonical_runtime_block_id": 30,
+      "ddim_timestep": 16,
+      "step_index": 83,
+      "was_reuse_before_peak_repair": true,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.6257479195327809
+    },
+    {
+      "block_id": 22,
+      "scheduler_local_block_id": 22,
+      "runtime_name": "decoder_layer_14",
+      "canonical_runtime_block_id": 30,
+      "ddim_timestep": 15,
+      "step_index": 84,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.6257479195327809
+    },
+    {
+      "block_id": 22,
+      "scheduler_local_block_id": 22,
+      "runtime_name": "decoder_layer_14",
+      "canonical_runtime_block_id": 30,
+      "ddim_timestep": 13,
+      "step_index": 86,
+      "was_reuse_before_peak_repair": true,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.6257479195327809
+    },
+    {
+      "block_id": 22,
+      "scheduler_local_block_id": 22,
+      "runtime_name": "decoder_layer_14",
+      "canonical_runtime_block_id": 30,
+      "ddim_timestep": 12,
+      "step_index": 87,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.6257479195327809
+    },
+    {
+      "block_id": 22,
+      "scheduler_local_block_id": 22,
+      "runtime_name": "decoder_layer_14",
+      "canonical_runtime_block_id": 30,
+      "ddim_timestep": 11,
+      "step_index": 88,
+      "was_reuse_before_peak_repair": true,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.6257479195327809
+    },
+    {
+      "block_id": 22,
+      "scheduler_local_block_id": 22,
+      "runtime_name": "decoder_layer_14",
+      "canonical_runtime_block_id": 30,
+      "ddim_timestep": 0,
+      "step_index": 99,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.6257479195327809
+    },
+    {
+      "block_id": 23,
+      "scheduler_local_block_id": 23,
+      "runtime_name": "decoder_layer_2",
+      "canonical_runtime_block_id": 18,
+      "ddim_timestep": 0,
+      "step_index": 99,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.658405447518453
+    },
+    {
+      "block_id": 24,
+      "scheduler_local_block_id": 24,
+      "runtime_name": "decoder_layer_3",
+      "canonical_runtime_block_id": 19,
+      "ddim_timestep": 0,
+      "step_index": 99,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.738889688719064
+    },
+    {
+      "block_id": 25,
+      "scheduler_local_block_id": 25,
+      "runtime_name": "decoder_layer_4",
+      "canonical_runtime_block_id": 20,
+      "ddim_timestep": 0,
+      "step_index": 99,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.8175398105755448
+    },
+    {
+      "block_id": 26,
+      "scheduler_local_block_id": 26,
+      "runtime_name": "decoder_layer_5",
+      "canonical_runtime_block_id": 21,
+      "ddim_timestep": 0,
+      "step_index": 99,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.9261342151556164
+    },
+    {
+      "block_id": 27,
+      "scheduler_local_block_id": 27,
+      "runtime_name": "decoder_layer_6",
+      "canonical_runtime_block_id": 22,
+      "ddim_timestep": 0,
+      "step_index": 99,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.8951404143124819
+    },
+    {
+      "block_id": 28,
+      "scheduler_local_block_id": 28,
+      "runtime_name": "decoder_layer_7",
+      "canonical_runtime_block_id": 23,
+      "ddim_timestep": 10,
+      "step_index": 89,
+      "was_reuse_before_peak_repair": true,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.6698196769924835
+    },
+    {
+      "block_id": 28,
+      "scheduler_local_block_id": 28,
+      "runtime_name": "decoder_layer_7",
+      "canonical_runtime_block_id": 23,
+      "ddim_timestep": 0,
+      "step_index": 99,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.6698196769924835
+    },
+    {
+      "block_id": 29,
+      "scheduler_local_block_id": 29,
+      "runtime_name": "decoder_layer_8",
+      "canonical_runtime_block_id": 24,
+      "ddim_timestep": 27,
+      "step_index": 72,
+      "was_reuse_before_peak_repair": true,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.6880511587459801
+    },
+    {
+      "block_id": 29,
+      "scheduler_local_block_id": 29,
+      "runtime_name": "decoder_layer_8",
+      "canonical_runtime_block_id": 24,
+      "ddim_timestep": 10,
+      "step_index": 89,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.6880511587459801
+    },
+    {
+      "block_id": 29,
+      "scheduler_local_block_id": 29,
+      "runtime_name": "decoder_layer_8",
+      "canonical_runtime_block_id": 24,
+      "ddim_timestep": 0,
+      "step_index": 99,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.6880511587459801
+    },
+    {
+      "block_id": 30,
+      "scheduler_local_block_id": 30,
+      "runtime_name": "decoder_layer_9",
+      "canonical_runtime_block_id": 25,
+      "ddim_timestep": 11,
+      "step_index": 88,
+      "was_reuse_before_peak_repair": true,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.6395025997577856
+    },
+    {
+      "block_id": 30,
+      "scheduler_local_block_id": 30,
+      "runtime_name": "decoder_layer_9",
+      "canonical_runtime_block_id": 25,
+      "ddim_timestep": 10,
+      "step_index": 89,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.6395025997577856
+    },
+    {
+      "block_id": 30,
+      "scheduler_local_block_id": 30,
+      "runtime_name": "decoder_layer_9",
+      "canonical_runtime_block_id": 25,
+      "ddim_timestep": 2,
+      "step_index": 97,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.6395025997577856
+    },
+    {
+      "block_id": 30,
+      "scheduler_local_block_id": 30,
+      "runtime_name": "decoder_layer_9",
+      "canonical_runtime_block_id": 25,
+      "ddim_timestep": 0,
+      "step_index": 99,
+      "was_reuse_before_peak_repair": false,
+      "expanded_mask_after": true,
+      "threshold_mode": "blockwise_quantile",
+      "peak_l1_threshold_used": 0.6395025997577856
+    }
+  ],
+  "block_identity_semantics": {
+    "block_id": "backward-compatible alias of scheduler_local_block_id",
+    "scheduler_local_block_id": "id in scheduler JSON; do not interpret as canonical runtime index",
+    "canonical_runtime_block_id": "canonical runtime index matching runtime_name"
+  },
+  "threshold_mode": "blockwise_quantile",
+  "global_thresholds": {
+    "zone_l1": 0.02,
+    "peak_l1": 0.08
+  },
+  "per_block_thresholds": [
+    {
+      "block_id": 0,
+      "canonical_runtime_block_id": 0,
+      "canonical_name": "model.input_blocks.0",
+      "runtime_name": "encoder_layer_0",
+      "zone_l1_threshold": 0.02132805924217488,
+      "peak_l1_threshold": 0.027726477014827347
+    },
+    {
+      "block_id": 1,
+      "canonical_runtime_block_id": 1,
+      "canonical_name": "model.input_blocks.1",
+      "runtime_name": "encoder_layer_1",
+      "zone_l1_threshold": 0.05281934172510066,
+      "peak_l1_threshold": 0.06866514424263086
+    },
+    {
+      "block_id": 2,
+      "canonical_runtime_block_id": 2,
+      "canonical_name": "model.input_blocks.2",
+      "runtime_name": "encoder_layer_2",
+      "zone_l1_threshold": 0.08772616880014539,
+      "peak_l1_threshold": 0.114044019440189
+    },
+    {
+      "block_id": 3,
+      "canonical_runtime_block_id": 3,
+      "canonical_name": "model.input_blocks.3",
+      "runtime_name": "encoder_layer_3",
+      "zone_l1_threshold": 0.09096314525231719,
+      "peak_l1_threshold": 0.11825208882801234
+    },
+    {
+      "block_id": 4,
+      "canonical_runtime_block_id": 4,
+      "canonical_name": "model.input_blocks.4",
+      "runtime_name": "encoder_layer_4",
+      "zone_l1_threshold": 0.11588458586225493,
+      "peak_l1_threshold": 0.15064996162093142
+    },
+    {
+      "block_id": 5,
+      "canonical_runtime_block_id": 5,
+      "canonical_name": "model.input_blocks.5",
+      "runtime_name": "encoder_layer_5",
+      "zone_l1_threshold": 0.173594814285429,
+      "peak_l1_threshold": 0.22567325857105772
+    },
+    {
+      "block_id": 6,
+      "canonical_runtime_block_id": 6,
+      "canonical_name": "model.input_blocks.6",
+      "runtime_name": "encoder_layer_6",
+      "zone_l1_threshold": 0.1426114416939931,
+      "peak_l1_threshold": 0.18539487420219103
+    },
+    {
+      "block_id": 7,
+      "canonical_runtime_block_id": 7,
+      "canonical_name": "model.input_blocks.7",
+      "runtime_name": "encoder_layer_7",
+      "zone_l1_threshold": 0.14604416414577928,
+      "peak_l1_threshold": 0.18985741338951306
+    },
+    {
+      "block_id": 8,
+      "canonical_runtime_block_id": 8,
+      "canonical_name": "model.input_blocks.8",
+      "runtime_name": "encoder_layer_8",
+      "zone_l1_threshold": 0.2300382893299684,
+      "peak_l1_threshold": 0.29904977612895894
+    },
+    {
+      "block_id": 9,
+      "canonical_runtime_block_id": 9,
+      "canonical_name": "model.input_blocks.9",
+      "runtime_name": "encoder_layer_9",
+      "zone_l1_threshold": 0.229007922927849,
+      "peak_l1_threshold": 0.2977102998062037
+    },
+    {
+      "block_id": 10,
+      "canonical_runtime_block_id": 10,
+      "canonical_name": "model.input_blocks.10",
+      "runtime_name": "encoder_layer_10",
+      "zone_l1_threshold": 0.2176042947685346,
+      "peak_l1_threshold": 0.282885583199095
+    },
+    {
+      "block_id": 11,
+      "canonical_runtime_block_id": 11,
+      "canonical_name": "model.input_blocks.11",
+      "runtime_name": "encoder_layer_11",
+      "zone_l1_threshold": 0.26422856969293207,
+      "peak_l1_threshold": 0.3434971406008117
+    },
+    {
+      "block_id": 12,
+      "canonical_runtime_block_id": 12,
+      "canonical_name": "model.input_blocks.12",
+      "runtime_name": "encoder_layer_12",
+      "zone_l1_threshold": 0.2475067488849163,
+      "peak_l1_threshold": 0.32175877355039123
+    },
+    {
+      "block_id": 13,
+      "canonical_runtime_block_id": 13,
+      "canonical_name": "model.input_blocks.13",
+      "runtime_name": "encoder_layer_13",
+      "zone_l1_threshold": 0.2165913147618994,
+      "peak_l1_threshold": 0.2815687091904692
+    },
+    {
+      "block_id": 14,
+      "canonical_runtime_block_id": 14,
+      "canonical_name": "model.input_blocks.14",
+      "runtime_name": "encoder_layer_14",
+      "zone_l1_threshold": 0.26158944435883313,
+      "peak_l1_threshold": 0.34006627766648306
+    },
+    {
+      "block_id": 15,
+      "canonical_runtime_block_id": 15,
+      "canonical_name": "model.middle_block",
+      "runtime_name": "middle_layer",
+      "zone_l1_threshold": 0.4163561563473195,
+      "peak_l1_threshold": 0.5412630032515153
+    },
+    {
+      "block_id": 16,
+      "canonical_runtime_block_id": 16,
+      "canonical_name": "model.output_blocks.0",
+      "runtime_name": "decoder_layer_0",
+      "zone_l1_threshold": 0.5099082454107702,
+      "peak_l1_threshold": 0.6628807190340013
+    },
+    {
+      "block_id": 17,
+      "canonical_runtime_block_id": 17,
+      "canonical_name": "model.output_blocks.1",
+      "runtime_name": "decoder_layer_1",
+      "zone_l1_threshold": 0.4588463753461838,
+      "peak_l1_threshold": 0.596500287950039
+    },
+    {
+      "block_id": 18,
+      "canonical_runtime_block_id": 18,
+      "canonical_name": "model.output_blocks.2",
+      "runtime_name": "decoder_layer_2",
+      "zone_l1_threshold": 0.5064657288603485,
+      "peak_l1_threshold": 0.658405447518453
+    },
+    {
+      "block_id": 19,
+      "canonical_runtime_block_id": 19,
+      "canonical_name": "model.output_blocks.3",
+      "runtime_name": "decoder_layer_3",
+      "zone_l1_threshold": 0.5683766836300492,
+      "peak_l1_threshold": 0.738889688719064
+    },
+    {
+      "block_id": 20,
+      "canonical_runtime_block_id": 20,
+      "canonical_name": "model.output_blocks.4",
+      "runtime_name": "decoder_layer_4",
+      "zone_l1_threshold": 0.6288767773658037,
+      "peak_l1_threshold": 0.8175398105755448
+    },
+    {
+      "block_id": 21,
+      "canonical_runtime_block_id": 21,
+      "canonical_name": "model.output_blocks.5",
+      "runtime_name": "decoder_layer_5",
+      "zone_l1_threshold": 0.7124109347350895,
+      "peak_l1_threshold": 0.9261342151556164
+    },
+    {
+      "block_id": 22,
+      "canonical_runtime_block_id": 22,
+      "canonical_name": "model.output_blocks.6",
+      "runtime_name": "decoder_layer_6",
+      "zone_l1_threshold": 0.6885695494711399,
+      "peak_l1_threshold": 0.8951404143124819
+    },
+    {
+      "block_id": 23,
+      "canonical_runtime_block_id": 23,
+      "canonical_name": "model.output_blocks.7",
+      "runtime_name": "decoder_layer_7",
+      "zone_l1_threshold": 0.5152459053788334,
+      "peak_l1_threshold": 0.6698196769924835
+    },
+    {
+      "block_id": 24,
+      "canonical_runtime_block_id": 24,
+      "canonical_name": "model.output_blocks.8",
+      "runtime_name": "decoder_layer_8",
+      "zone_l1_threshold": 0.5292701221122924,
+      "peak_l1_threshold": 0.6880511587459801
+    },
+    {
+      "block_id": 25,
+      "canonical_runtime_block_id": 25,
+      "canonical_name": "model.output_blocks.9",
+      "runtime_name": "decoder_layer_9",
+      "zone_l1_threshold": 0.4919250767367581,
+      "peak_l1_threshold": 0.6395025997577856
+    },
+    {
+      "block_id": 26,
+      "canonical_runtime_block_id": 26,
+      "canonical_name": "model.output_blocks.10",
+      "runtime_name": "decoder_layer_10",
+      "zone_l1_threshold": 0.3252283122597469,
+      "peak_l1_threshold": 0.422796805937671
+    },
+    {
+      "block_id": 27,
+      "canonical_runtime_block_id": 27,
+      "canonical_name": "model.output_blocks.11",
+      "runtime_name": "decoder_layer_11",
+      "zone_l1_threshold": 0.2898194662605723,
+      "peak_l1_threshold": 0.37676530613874404
+    },
+    {
+      "block_id": 28,
+      "canonical_runtime_block_id": 28,
+      "canonical_name": "model.output_blocks.12",
+      "runtime_name": "decoder_layer_12",
+      "zone_l1_threshold": 0.24454357609566715,
+      "peak_l1_threshold": 0.3179066489243673
+    },
+    {
+      "block_id": 29,
+      "canonical_runtime_block_id": 29,
+      "canonical_name": "model.output_blocks.13",
+      "runtime_name": "decoder_layer_13",
+      "zone_l1_threshold": 0.25792272564851576,
+      "peak_l1_threshold": 0.3352995433430705
+    },
+    {
+      "block_id": 30,
+      "canonical_runtime_block_id": 30,
+      "canonical_name": "model.output_blocks.14",
+      "runtime_name": "decoder_layer_14",
+      "zone_l1_threshold": 0.48134455348675453,
+      "peak_l1_threshold": 0.6257479195327809
+    }
+  ],
+  "thresholds": {
+    "zone_l1": 0.02,
+    "peak_l1": 0.08
+  },
+  "aggregate_per_ddim_timestep_l1": {
+    "99": {
+      "mean_l1": 0.0,
+      "max_l1": 0.0
+    },
+    "98": {
+      "mean_l1": 0.0980776805864157,
+      "max_l1": 0.22064432501792908
+    },
+    "97": {
+      "mean_l1": 0.0964837735874983,
+      "max_l1": 0.22044848278164864
+    },
+    "96": {
+      "mean_l1": 0.12217107281392073,
+      "max_l1": 0.2744750380516052
+    },
+    "95": {
+      "mean_l1": 0.20489003581191825,
+      "max_l1": 0.5105855874717236
+    },
+    "94": {
+      "mean_l1": 0.2101728010433538,
+      "max_l1": 0.5201533678919077
+    },
+    "93": {
+      "mean_l1": 0.2027806773415162,
+      "max_l1": 0.5042853709310293
+    },
+    "92": {
+      "mean_l1": 0.21036456778482157,
+      "max_l1": 0.5263646338135004
+    },
+    "91": {
+      "mean_l1": 0.2755194490755751,
+      "max_l1": 0.7181362546980381
+    },
+    "90": {
+      "mean_l1": 0.2940284453772268,
+      "max_l1": 0.7574135754257441
+    },
+    "89": {
+      "mean_l1": 0.2598559476067631,
+      "max_l1": 0.6718971095979214
+    },
+    "88": {
+      "mean_l1": 0.2713268888657049,
+      "max_l1": 0.7021967992186546
+    },
+    "87": {
+      "mean_l1": 0.20423450550339523,
+      "max_l1": 0.513668280094862
+    },
+    "86": {
+      "mean_l1": 0.20164068706987065,
+      "max_l1": 0.5099673084914684
+    },
+    "85": {
+      "mean_l1": 0.2046822789082897,
+      "max_l1": 0.5208648778498173
+    },
+    "84": {
+      "mean_l1": 0.2155095175938538,
+      "max_l1": 0.5563163384795189
+    },
+    "83": {
+      "mean_l1": 0.16386096390793212,
+      "max_l1": 0.4127736110240221
+    },
+    "82": {
+      "mean_l1": 0.17756186209026642,
+      "max_l1": 0.44634013809263706
+    },
+    "81": {
+      "mean_l1": 0.19842826748208608,
+      "max_l1": 0.5026660412549973
+    },
+    "80": {
+      "mean_l1": 0.2203181178530588,
+      "max_l1": 0.5563108287751675
+    },
+    "79": {
+      "mean_l1": 0.2482964907155087,
+      "max_l1": 0.6488964632153511
+    },
+    "78": {
+      "mean_l1": 0.2576511529919263,
+      "max_l1": 0.6709517780691385
+    },
+    "77": {
+      "mean_l1": 0.2738334126742331,
+      "max_l1": 0.7058321945369244
+    },
+    "76": {
+      "mean_l1": 0.2981927935221803,
+      "max_l1": 0.7639780379831791
+    },
+    "75": {
+      "mean_l1": 0.23724199600556242,
+      "max_l1": 0.6199234742671251
+    },
+    "74": {
+      "mean_l1": 0.2481468891111886,
+      "max_l1": 0.6432417463511229
+    },
+    "73": {
+      "mean_l1": 0.2606948984715517,
+      "max_l1": 0.6633086316287518
+    },
+    "72": {
+      "mean_l1": 0.2808743468354336,
+      "max_l1": 0.7068427689373493
+    },
+    "71": {
+      "mean_l1": 0.20014124107195042,
+      "max_l1": 0.5135029833763838
+    },
+    "70": {
+      "mean_l1": 0.21499196303475107,
+      "max_l1": 0.5414080023765564
+    },
+    "69": {
+      "mean_l1": 0.2234455513018709,
+      "max_l1": 0.5536125712096691
+    },
+    "68": {
+      "mean_l1": 0.24998742039878702,
+      "max_l1": 0.6075007952749729
+    },
+    "67": {
+      "mean_l1": 0.19071345971878467,
+      "max_l1": 0.48837835714221
+    },
+    "66": {
+      "mean_l1": 0.20001508971871507,
+      "max_l1": 0.502457682043314
+    },
+    "65": {
+      "mean_l1": 0.21668201053868077,
+      "max_l1": 0.5338348262012005
+    },
+    "64": {
+      "mean_l1": 0.23445066955173388,
+      "max_l1": 0.5649311393499374
+    },
+    "63": {
+      "mean_l1": 0.28257178079295575,
+      "max_l1": 0.726505758240819
+    },
+    "62": {
+      "mean_l1": 0.2721310183114838,
+      "max_l1": 0.6975102610886097
+    },
+    "61": {
+      "mean_l1": 0.26718480964454133,
+      "max_l1": 0.6701503396034241
+    },
+    "60": {
+      "mean_l1": 0.27285010365942014,
+      "max_l1": 0.67027897387743
+    },
+    "59": {
+      "mean_l1": 0.31577652901966846,
+      "max_l1": 0.8040042016655207
+    },
+    "58": {
+      "mean_l1": 0.29355273965272993,
+      "max_l1": 0.7403274588286877
+    },
+    "57": {
+      "mean_l1": 0.2593137872717043,
+      "max_l1": 0.6370054110884666
+    },
+    "56": {
+      "mean_l1": 0.2605901374106085,
+      "max_l1": 0.6207250021398067
+    },
+    "55": {
+      "mean_l1": 0.16152508949087332,
+      "max_l1": 0.39303867146372795
+    },
+    "54": {
+      "mean_l1": 0.1595012369310303,
+      "max_l1": 0.3716813996434212
+    },
+    "53": {
+      "mean_l1": 0.15028329922126665,
+      "max_l1": 0.33855561912059784
+    },
+    "52": {
+      "mean_l1": 0.1661107003268215,
+      "max_l1": 0.37171731516718864
+    },
+    "51": {
+      "mean_l1": 0.1191205115502535,
+      "max_l1": 0.27699598111212254
+    },
+    "50": {
+      "mean_l1": 0.1333905877432816,
+      "max_l1": 0.30254778265953064
+    },
+    "49": {
+      "mean_l1": 0.1427002955235601,
+      "max_l1": 0.3176238499581814
+    },
+    "48": {
+      "mean_l1": 0.16097578200166143,
+      "max_l1": 0.34955739974975586
+    },
+    "47": {
+      "mean_l1": 0.11672503951535139,
+      "max_l1": 0.2735777050256729
+    },
+    "46": {
+      "mean_l1": 0.12811397629294305,
+      "max_l1": 0.2867123279720545
+    },
+    "45": {
+      "mean_l1": 0.13981879900975694,
+      "max_l1": 0.3039235882461071
+    },
+    "44": {
+      "mean_l1": 0.16303302950766538,
+      "max_l1": 0.3503921590745449
+    },
+    "43": {
+      "mean_l1": 0.12118284495062975,
+      "max_l1": 0.2776360958814621
+    },
+    "42": {
+      "mean_l1": 0.13011235687806602,
+      "max_l1": 0.29173434898257256
+    },
+    "41": {
+      "mean_l1": 0.15036066340267537,
+      "max_l1": 0.3226483315229416
+    },
+    "40": {
+      "mean_l1": 0.17126854317593238,
+      "max_l1": 0.37255536019802094
+    },
+    "39": {
+      "mean_l1": 0.1174194417216049,
+      "max_l1": 0.26983046904206276
+    },
+    "38": {
+      "mean_l1": 0.1341533295532328,
+      "max_l1": 0.2935791127383709
+    },
+    "37": {
+      "mean_l1": 0.14980265378741728,
+      "max_l1": 0.3446483016014099
+    },
+    "36": {
+      "mean_l1": 0.1765753724537189,
+      "max_l1": 0.5073103085160255
+    },
+    "35": {
+      "mean_l1": 0.11824562172959334,
+      "max_l1": 0.2717563398182392
+    },
+    "34": {
+      "mean_l1": 0.13003672615084197,
+      "max_l1": 0.28473392874002457
+    },
+    "33": {
+      "mean_l1": 0.15420820823149575,
+      "max_l1": 0.4041784107685089
+    },
+    "32": {
+      "mean_l1": 0.11679099730287318,
+      "max_l1": 0.26563978381454945
+    },
+    "31": {
+      "mean_l1": 0.28811794169427407,
+      "max_l1": 0.713030505925417
+    },
+    "30": {
+      "mean_l1": 0.29262115794324106,
+      "max_l1": 0.7036644630134106
+    },
+    "29": {
+      "mean_l1": 0.2904326776643434,
+      "max_l1": 0.6709062308073044
+    },
+    "28": {
+      "mean_l1": 0.22357787924063874,
+      "max_l1": 0.5539169106632471
+    },
+    "27": {
+      "mean_l1": 0.3347094242814027,
+      "max_l1": 0.8385501801967621
+    },
+    "26": {
+      "mean_l1": 0.3126417907751015,
+      "max_l1": 0.7542511932551861
+    },
+    "25": {
+      "mean_l1": 0.28631090003276066,
+      "max_l1": 0.8058370649814606
+    },
+    "24": {
+      "mean_l1": 0.205354687161631,
+      "max_l1": 0.49928959645330906
+    },
+    "23": {
+      "mean_l1": 0.31782651773744053,
+      "max_l1": 0.8159983344376087
+    },
+    "22": {
+      "mean_l1": 0.31232552356537313,
+      "max_l1": 0.7659571319818497
+    },
+    "21": {
+      "mean_l1": 0.29574488714757946,
+      "max_l1": 0.911172553896904
+    },
+    "20": {
+      "mean_l1": 0.2129812884668354,
+      "max_l1": 0.5462334826588631
+    },
+    "19": {
+      "mean_l1": 0.18989013097879867,
+      "max_l1": 0.4535900875926018
+    },
+    "18": {
+      "mean_l1": 0.1616078613329709,
+      "max_l1": 0.3932397533208132
+    },
+    "17": {
+      "mean_l1": 0.15523759197563894,
+      "max_l1": 0.38723867014050484
+    },
+    "16": {
+      "mean_l1": 0.18929316534570628,
+      "max_l1": 0.7275328934192657
+    },
+    "15": {
+      "mean_l1": 0.2220754235261871,
+      "max_l1": 1.0902143716812134
+    },
+    "14": {
+      "mean_l1": 0.22816453238333306,
+      "max_l1": 0.5623153373599052
+    },
+    "13": {
+      "mean_l1": 0.2674825923487304,
+      "max_l1": 0.7992573082447052
+    },
+    "12": {
+      "mean_l1": 0.3329918543928333,
+      "max_l1": 1.1230242997407913
+    },
+    "11": {
+      "mean_l1": 0.3765668412370066,
+      "max_l1": 1.4945118129253387
+    },
+    "10": {
+      "mean_l1": 0.36336969055475726,
+      "max_l1": 0.8867090791463852
+    },
+    "9": {
+      "mean_l1": 0.13914581650169566,
+      "max_l1": 0.3345444090664387
+    },
+    "8": {
+      "mean_l1": 0.17523204792861738,
+      "max_l1": 0.4391493983566761
+    },
+    "7": {
+      "mean_l1": 0.14161689960653143,
+      "max_l1": 0.34391093999147415
+    },
+    "6": {
+      "mean_l1": 0.18197905048427562,
+      "max_l1": 0.4159809462726116
+    },
+    "5": {
+      "mean_l1": 0.14703277985550342,
+      "max_l1": 0.35724737867712975
+    },
+    "4": {
+      "mean_l1": 0.21007322278174181,
+      "max_l1": 0.47894174233078957
+    },
+    "3": {
+      "mean_l1": 0.1569556851492023,
+      "max_l1": 0.3821016810834408
+    },
+    "2": {
+      "mean_l1": 0.29407250213496866,
+      "max_l1": 0.6836045756936073
+    },
+    "1": {
+      "mean_l1": 0.18458737035642467,
+      "max_l1": 0.45265427604317665
+    },
+    "0": {
+      "mean_l1": 0.8582657124066064,
+      "max_l1": 1.9008727222681046
+    }
+  }
+}
