@@ -1,0 +1,20 @@
+{
+  "run_id": "20260402T184442__baseline_908030",
+  "status": "success",
+  "scheduler_name": "baseline_908030",
+  "scheduler_config_path": "/home/jimmy/diffae/QATcode/cache_method/Stage2/stage2_output/plan2_k25_sw2/baseline_908030/stage2_refined_scheduler_config.json",
+  "threshold_config_path": null,
+  "num_images": 5000,
+  "seed": 0,
+  "fid_5k": 16.16924285888672,
+  "recompute_ratio": 0.354839,
+  "total_full_compute_count": 1100,
+  "total_cache_reuse_count": 2000,
+  "full_compute_blocks_count": 0,
+  "zone_adjustments_count": 62,
+  "peak_adjustments_count": 98,
+  "start_time": "2026-04-02T18:44:42",
+  "end_time": "2026-04-02T19:08:14",
+  "duration_sec": 1411.73,
+  "detail_stats_path": "/home/jimmy/diffae/QATcode/cache_method/results/plan2_k25_sw2/20260402/baseline_908030/0402_18_baseline_908030/detail_stats.json"
+}
