@@ -1,7 +1,6 @@
 mycache/**
 .ckpt
 QATcode/diffae_*.pth
-QATcode/**.pth
 datasets/**
 EfficientDM/**
 **.ckpt
@@ -14,3 +13,4 @@ checkpoints/**
 **.log
 .git/
 .git/**
+__pycache__
