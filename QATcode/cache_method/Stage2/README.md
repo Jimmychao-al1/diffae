@@ -1,5 +1,7 @@
 # Stage2：Runtime 對齊與單輪 Refinement
 
+**批次實驗指令與環境變數**：見同目錄 [`stage2ExperimentsGuide.md`](stage2ExperimentsGuide.md)（`run_stage2_full_experiments.sh`）。
+
 ## 定位
 
 Stage2 **不**重新設計 scheduler，也不沿用舊版「A[b,z]→k」線性映射敘事。正式輸入是 **Stage1 產生的 `scheduler_config.json`**（已含 `shared_zones`、`k_per_zone`、每 block 的 `expanded_mask`）。

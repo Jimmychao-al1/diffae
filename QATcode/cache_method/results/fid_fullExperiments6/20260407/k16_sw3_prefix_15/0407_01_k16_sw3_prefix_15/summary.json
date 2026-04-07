@@ -1,0 +1,22 @@
+{
+  "run_id": "20260407T014050__k16_sw3_prefix_15",
+  "status": "success",
+  "scheduler_name": "k16_sw3_prefix_15",
+  "scheduler_config_path": "/home/jimmy/diffae/QATcode/cache_method/Stage2/stage2_output/fullExperimentsK16sw3/prefix_15/stage2_refined_scheduler_config.json",
+  "threshold_config_path": null,
+  "force-prefix": "T",
+  "force-full-prefix-steps": 15,
+  "num_images": 5000,
+  "seed": 0,
+  "fid_5k": 15.414191246032715,
+  "full_compute_ratio": 0.443548,
+  "total_full_compute_count": 1375,
+  "total_cache_reuse_count": 1725,
+  "full_compute_blocks_count": 0,
+  "zone_adjustments_count": 91,
+  "peak_adjustments_count": 95,
+  "start_time": "2026-04-07T01:40:50",
+  "end_time": "2026-04-07T02:32:33",
+  "duration_sec": 3102.89,
+  "detail_stats_path": "/home/jimmy/diffae/QATcode/cache_method/results/fid_fullExperiments6/20260407/k16_sw3_prefix_15/0407_01_k16_sw3_prefix_15/detail_stats.json"
+}

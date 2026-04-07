@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SCHED="${SCHED:-QATcode/cache_method/Stage1/stage1_output/sweep_K16_sw3/scheduler_config.json}"
-OUT_BASE="${OUT_BASE:-QATcode/cache_method/Stage2/stage2_output/plan1_K16_sw3/10_variants_blockwise}"
-THRESH="${THRESH:-QATcode/cache_method/Stage2/stage2_output/plan1_K16_sw3/01_blockwise_threshold/stage2_thresholds_blockwise.json}"
+#SCHED="${SCHED:-QATcode/cache_method/Stage1/stage1_output/sweep_K16_sw3/scheduler_config.json}"
+SCHED="${SCHED:-QATcode/cache_method/Stage1/stage1_output/sweep_K25_sw2_lam0.5_kmax4/scheduler_config.json}"
+#OUT_BASE="${OUT_BASE:-QATcode/cache_method/Stage2/stage2_output/plan1_K16_sw3/10_variants_blockwise}"
+OUT_BASE="${OUT_BASE:-QATcode/cache_method/Stage2/stage2_output/plan2_k25_sw2/10_variants_blockwise}"
+#THRESH="${THRESH:-QATcode/cache_method/Stage2/stage2_output/plan1_K16_sw3/01_blockwise_threshold/stage2_thresholds_blockwise.json}"
+THRESH="${THRESH:-QATcode/cache_method/Stage2/stage2_output/plan2_k25_sw2/01_blockwise_threshold/stage2_thresholds_blockwise.json}"
 
 PY=(python QATcode/cache_method/Stage2/stage2_runtime_refine.py)
 

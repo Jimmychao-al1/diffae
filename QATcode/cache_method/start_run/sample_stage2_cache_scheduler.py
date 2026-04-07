@@ -10,6 +10,8 @@ Goal:
 from __future__ import annotations
 
 import argparse
+import copy
+from datetime import datetime
 import json
 import logging
 import os
@@ -123,6 +125,32 @@ def _sanitize_name(s: str) -> str:
     return re.sub(r"[^a-zA-Z0-9_\-]", "_", s)
 
 
+def _compact_run_index_id(start_dt: datetime, scheduler_name: str) -> str:
+    """Short id for runs_index.jsonl (no year, MMDDHHMMSS + scheduler slug)."""
+    return f"{start_dt.strftime('%m%d%H%M%S')}__{_sanitize_name(scheduler_name)}"
+
+
+def _fid_index_key(num_images: int) -> str:
+    if num_images == 5000:
+        return "FID@5K"
+    if num_images == 50000:
+        return "FID@50K"
+    return f"FID@{num_images}"
+
+
+def _round_fid_index(x: Optional[float]) -> Optional[float]:
+    if x is None:
+        return None
+    return round(float(x), 3)
+
+
+def _repo_rel_path(p: Path) -> str:
+    try:
+        return str(p.resolve().relative_to(_REPO_ROOT))
+    except ValueError:
+        return str(p.resolve())
+
+
 def _get_git_commit() -> Optional[str]:
     try:
         return subprocess.check_output(
@@ -147,9 +175,10 @@ def _append_runs_index(index_path: Path, entry: Dict[str, Any]) -> None:
 
 
 def _compute_schedule_stats(cfg: Dict[str, Any]) -> Dict[str, Any]:
-    """Derive recompute/reuse counts purely from expanded_mask in scheduler config.
+    """Derive recompute/reuse counts purely from expanded_mask in scheduler JSON on disk.
 
-    All fields here are *confirmed* (no external data required).
+    Does not include CLI runtime unions (e.g. ``--force-full-prefix-steps``). Prefer
+    :func:`_compute_schedule_stats_from_effective_runtime_scheduler` for stats aligned with sampling.
     """
     T = int(cfg["T"])
     blocks: List[Dict[str, Any]] = cfg.get("blocks", [])
@@ -198,14 +227,14 @@ def _compute_schedule_stats(cfg: Dict[str, Any]) -> Dict[str, Any]:
                         per_zone[zkey]["reuse_count"] += 1
 
     num_cells = T * len(blocks) if blocks else 1
-    recompute_ratio = round(total_full / num_cells, 6)
+    full_compute_ratio = round(total_full / num_cells, 6)
 
     return {
         "T": T,
         "num_blocks": len(blocks),
         "total_full_compute_count": total_full,
         "total_cache_reuse_count": total_reuse,
-        "recompute_ratio": recompute_ratio,
+        "full_compute_ratio": full_compute_ratio,
         "full_compute_blocks_count": full_compute_blocks_count,
         "per_block_recompute_count": per_block_recompute,
         "per_block_reuse_count": per_block_reuse,
@@ -214,6 +243,171 @@ def _compute_schedule_stats(cfg: Dict[str, Any]) -> Dict[str, Any]:
         },
         "per_zone_recompute_stats": per_zone,
     }
+
+
+def _compute_schedule_stats_from_effective_runtime_scheduler(
+    cache_scheduler: Dict[str, Set[int]],
+    *,
+    T: int,
+    shared_zones: List[Dict[str, Any]],
+) -> Dict[str, Any]:
+    """Recompute/reuse counts from the **effective** runtime cache_scheduler used in sampling.
+
+    ``cache_scheduler[layer]`` = DDIM timestep indices ``i`` where that layer does full compute
+    (same convention as ``diffusion/base.py`` / ``stage1_mask_to_runtime_cache_scheduler`` +
+    ``apply_cache_scheduler_runtime_overrides``).
+    """
+    T = int(T)
+    keys = set(cache_scheduler.keys())
+    if keys != set(RUNTIME_LAYER_NAMES):
+        raise ValueError(
+            "effective cache_scheduler keys must match RUNTIME_LAYER_NAMES; "
+            f"got missing={sorted(set(RUNTIME_LAYER_NAMES) - keys)} extra={sorted(keys - set(RUNTIME_LAYER_NAMES))}"
+        )
+
+    zone_ts: Dict[int, List[int]] = {}
+    for z in shared_zones:
+        zid = int(z["id"])
+        t_s, t_e = int(z["t_start"]), int(z["t_end"])
+        zone_ts[zid] = list(range(t_e, t_s + 1))
+
+    total_full = 0
+    total_reuse = 0
+    per_block_recompute: Dict[str, int] = {}
+    per_block_reuse: Dict[str, int] = {}
+    full_compute_blocks_count = 0
+
+    per_zone: Dict[str, Dict[str, Any]] = {
+        str(zid): {"full_count": 0, "reuse_count": 0, "num_timesteps_in_zone": len(ts)}
+        for zid, ts in zone_ts.items()
+    }
+
+    for rt in RUNTIME_LAYER_NAMES:
+        rec = cache_scheduler[rt]
+        n_full = len(rec)
+        n_reuse = T - n_full
+        total_full += n_full
+        total_reuse += n_reuse
+        per_block_recompute[rt] = n_full
+        per_block_reuse[rt] = n_reuse
+        if n_full == T:
+            full_compute_blocks_count += 1
+
+        for zid, ts_list in zone_ts.items():
+            zkey = str(zid)
+            for t_val in ts_list:
+                if t_val in rec:
+                    per_zone[zkey]["full_count"] += 1
+                else:
+                    per_zone[zkey]["reuse_count"] += 1
+
+    num_blocks = len(RUNTIME_LAYER_NAMES)
+    num_cells = T * num_blocks
+    full_compute_ratio = round(total_full / num_cells, 6)
+
+    return {
+        "T": T,
+        "num_blocks": num_blocks,
+        "total_full_compute_count": total_full,
+        "total_cache_reuse_count": total_reuse,
+        "full_compute_ratio": full_compute_ratio,
+        "full_compute_blocks_count": full_compute_blocks_count,
+        "per_block_recompute_count": per_block_recompute,
+        "per_block_reuse_count": per_block_reuse,
+        "per_block_recompute_ratio": {
+            rt: round(per_block_recompute[rt] / T, 6) for rt in RUNTIME_LAYER_NAMES
+        },
+        "per_zone_recompute_stats": per_zone,
+    }
+
+
+def _format_effective_scheduler_fr_grid(
+    cache_scheduler: Dict[str, Set[int]],
+    *,
+    T: int,
+) -> Dict[str, Any]:
+    """Human-readable F/R grid for the effective runtime scheduler (order A: DDIM i = T-1 .. 0)."""
+    T = int(T)
+    if set(cache_scheduler.keys()) != set(RUNTIME_LAYER_NAMES):
+        raise ValueError(
+            "effective cache_scheduler keys must match RUNTIME_LAYER_NAMES for FR grid"
+        )
+
+    ddim_order = list(range(T - 1, -1, -1))
+    name_w = max(len(x) for x in RUNTIME_LAYER_NAMES)
+
+    by_layer: Dict[str, str] = {}
+    aligned_lines: List[str] = []
+
+    for rt in RUNTIME_LAYER_NAMES:
+        rec = cache_scheduler[rt]
+        # Width-2 cells so F/R columns line up in monospace.
+        cells = [f"{('F' if i in rec else 'R'):^2}" for i in ddim_order]
+        row = " ".join(cells)
+        by_layer[rt] = row
+        aligned_lines.append(f"{rt.ljust(name_w)} : {row}")
+
+    return {
+        "meta": {
+            "source": "runtime_conf_cache_scheduler_after_cli_overrides",
+            "timestep_order": "A_ddim_execution",
+            "columns_left_to_right": "DDIM timestep i from T-1 down to 0 (first denoising step → last)",
+            "ddim_timestep_i_left_to_right": ddim_order,
+            "T": T,
+            "num_blocks": EXPECTED_NUM_BLOCKS,
+            "cell_token": "F=full_compute R=cache_reuse",
+        },
+        "by_layer": by_layer,
+        "aligned_lines": aligned_lines,
+        "aligned_text_block": "\n".join(aligned_lines),
+    }
+
+
+def _cfg_snapshot_with_effective_expanded_masks(
+    base_cfg: Dict[str, Any],
+    effective: Dict[str, Set[int]],
+    *,
+    T: int,
+) -> Dict[str, Any]:
+    """Build a scheduler_config-shaped dict with expanded_mask rows from the effective runtime scheduler.
+
+    Inverts the same convention as ``expanded_mask_row_to_recompute_ddim_timesteps`` /
+    ``stage1_mask_to_runtime_cache_scheduler``: for each ``step_idx`` in ``0..T-1``,
+    DDIM timestep ``i = (T-1) - step_idx`` is full compute iff ``i in effective[runtime_name]``.
+    """
+    T = int(T)
+    if set(effective.keys()) != set(RUNTIME_LAYER_NAMES):
+        raise ValueError(
+            "effective cache_scheduler keys must match RUNTIME_LAYER_NAMES for snapshot synthesis"
+        )
+
+    out = copy.deepcopy(base_cfg)
+    for b in out.get("blocks", []):
+        name = str(b["name"])
+        rt = stage1_block_to_runtime_block(name)
+        rec = effective[rt]
+        row: List[bool] = []
+        for step_idx in range(T):
+            i = (T - 1) - step_idx
+            row.append(bool(i in rec))
+        b["expanded_mask"] = row
+
+    snap_meta: Dict[str, Any] = {
+        "source": "effective_runtime_cache_scheduler_after_cli_overrides",
+        "expanded_mask_semantics": (
+            "step_idx=0 is first DDIM step (t=T-1); True = full compute for this block at that step"
+        ),
+        "note": (
+            "k_per_zone copied from on-disk JSON and may not reconstruct this expanded_mask "
+            "when CLI runtime overrides (e.g. --force-full-prefix-steps) apply."
+        ),
+    }
+    prev = out.get("snapshot_meta")
+    if isinstance(prev, dict):
+        out["snapshot_meta"] = {**prev, **snap_meta}
+    else:
+        out["snapshot_meta"] = snap_meta
+    return out
 
 
 def _load_stage2_summary_stats(scheduler_json_path: Path) -> Dict[str, Any]:
@@ -381,6 +575,7 @@ def main_sample_with_optional_stage2_scheduler(
         _write_json(run_output_dir / "run_manifest.json", _manifest)
 
     _score: Optional[float] = None
+    runtime_effective_cache_scheduler: Optional[Dict[str, Set[int]]] = None
     try:
         LOGGER.info("=" * 50)
         LOGGER.info("Diff-AE sampling with optional Stage2 scheduler")
@@ -436,6 +631,7 @@ def main_sample_with_optional_stage2_scheduler(
                 safety_first_input_block=bool(safety_first_input_block),
                 allow_missing_k_per_zone=bool(allow_missing_k_per_zone),
             )
+            runtime_effective_cache_scheduler = runtime_cache_scheduler
             conf.cache_scheduler = runtime_cache_scheduler
             LOGGER.info("✅ Stage2 cache scheduler enabled: %s", _resolve_repo_path(cache_scheduler_json))
             LOGGER.info("scheduler blocks=%d, T=%d", len(runtime_cache_scheduler), T)
@@ -485,19 +681,20 @@ def main_sample_with_optional_stage2_scheduler(
             })
             _write_json(run_output_dir / "run_manifest.json", _manifest)
             if runs_index_path is not None:
+                _n = int(CONFIG.EVAL_SAMPLES)
+                _fk = _fid_index_key(_n)
                 _append_runs_index(
                     Path(runs_index_path),
                     {
-                        "run_id": run_id,
-                        "date": start_dt.strftime("%Y%m%d"),
-                        "scheduler_name": scheduler_name,
-                        "num_images": CONFIG.EVAL_SAMPLES,
+                        "rid": _compact_run_index_id(start_dt, scheduler_name),
+                        _fk: _round_fid_index(None),
+                        "d": start_dt.strftime("%Y%m%d"),
+                        "sch": scheduler_name,
+                        "r": None,
                         "seed": CONFIG.SEED,
-                        "fid_5k": None,
-                        "recompute_ratio": None,
-                        "output_dir": str(run_output_dir.resolve()),
-                        "summary_path": None,
-                        "status": "failed",
+                        "out": _repo_rel_path(Path(run_output_dir)),
+                        "sum": None,
+                        "st": "failed",
                     },
                 )
         raise
@@ -513,11 +710,27 @@ def main_sample_with_optional_stage2_scheduler(
         if use_cache_scheduler:
             try:
                 _cfg_snap = load_stage1_scheduler_config(_resolve_repo_path(cache_scheduler_json))
-                sched_stats = _compute_schedule_stats(_cfg_snap)
+                if runtime_effective_cache_scheduler is not None:
+                    sched_stats = _compute_schedule_stats_from_effective_runtime_scheduler(
+                        runtime_effective_cache_scheduler,
+                        T=int(_cfg_snap["T"]),
+                        shared_zones=list(_cfg_snap.get("shared_zones", [])),
+                    )
+                else:
+                    sched_stats = _compute_schedule_stats(_cfg_snap)
                 stage2_sidecar_stats = _load_stage2_summary_stats(
                     _resolve_repo_path(cache_scheduler_json)
                 )
-                _write_json(run_output_dir / "scheduler_config.snapshot.json", _cfg_snap)
+                _t_snap = int(_cfg_snap["T"])
+                if runtime_effective_cache_scheduler is not None:
+                    _snap_out = _cfg_snapshot_with_effective_expanded_masks(
+                        _cfg_snap,
+                        runtime_effective_cache_scheduler,
+                        T=_t_snap,
+                    )
+                    _write_json(run_output_dir / "scheduler_config.snapshot.json", _snap_out)
+                else:
+                    _write_json(run_output_dir / "scheduler_config.snapshot.json", _cfg_snap)
             except Exception as _e:
                 LOGGER.warning("Could not write schedule stats/snapshot: %s", _e)
 
@@ -528,16 +741,19 @@ def main_sample_with_optional_stage2_scheduler(
         })
         _write_json(run_output_dir / "run_manifest.json", _manifest)
 
+        _fps = int(force_full_prefix_steps)
         summary_obj: Dict[str, Any] = {
             "run_id": run_id,
             "status": "success",
             "scheduler_name": scheduler_name,
             "scheduler_config_path": _manifest.get("scheduler_config_path"),
             "threshold_config_path": None,
+            "force-prefix": "T" if _fps > 0 else "F",
+            "force-full-prefix-steps": _fps,
             "num_images": CONFIG.EVAL_SAMPLES,
             "seed": CONFIG.SEED,
             "fid_5k": float(_score) if _score is not None else None,
-            "recompute_ratio": sched_stats.get("recompute_ratio"),
+            "full_compute_ratio": sched_stats.get("full_compute_ratio"),
             "total_full_compute_count": sched_stats.get("total_full_compute_count"),
             "total_cache_reuse_count": sched_stats.get("total_cache_reuse_count"),
             "full_compute_blocks_count": sched_stats.get("full_compute_blocks_count"),
@@ -557,7 +773,7 @@ def main_sample_with_optional_stage2_scheduler(
             "per_zone_recompute_stats": sched_stats.get("per_zone_recompute_stats", {}),
             "per_zone_adjustment_stats": stage2_sidecar_stats.get("per_zone_adjustment_stats", {}),
             "raw_estimation_stats": {
-                "recompute_ratio": sched_stats.get("recompute_ratio"),
+                "full_compute_ratio": sched_stats.get("full_compute_ratio"),
                 "total_full_compute_count": sched_stats.get("total_full_compute_count"),
                 "total_cache_reuse_count": sched_stats.get("total_cache_reuse_count"),
                 "full_compute_blocks_count": sched_stats.get("full_compute_blocks_count"),
@@ -566,22 +782,33 @@ def main_sample_with_optional_stage2_scheduler(
                 "per_block_recompute_ratio": sched_stats.get("per_block_recompute_ratio", {}),
             },
         }
+        if runtime_effective_cache_scheduler is not None:
+            try:
+                _t_fr = int(sched_stats.get("T") or CONFIG.NUM_DIFFUSION_STEPS)
+                detail_stats_obj["effective_scheduler_fr_grid"] = _format_effective_scheduler_fr_grid(
+                    runtime_effective_cache_scheduler,
+                    T=_t_fr,
+                )
+            except Exception as _ge:
+                LOGGER.warning("effective_scheduler_fr_grid failed: %s", _ge)
+                detail_stats_obj["effective_scheduler_fr_grid"] = {"error": str(_ge)}
         _write_json(run_output_dir / "detail_stats.json", detail_stats_obj)
 
         if runs_index_path is not None:
+            _n = int(CONFIG.EVAL_SAMPLES)
+            _fk = _fid_index_key(_n)
             _append_runs_index(
                 Path(runs_index_path),
                 {
-                    "run_id": run_id,
-                    "date": start_dt.strftime("%Y%m%d"),
-                    "scheduler_name": scheduler_name,
-                    "num_images": CONFIG.EVAL_SAMPLES,
+                    "rid": _compact_run_index_id(start_dt, scheduler_name),
+                    _fk: _round_fid_index(float(_score) if _score is not None else None),
+                    "d": start_dt.strftime("%Y%m%d"),
+                    "sch": scheduler_name,
+                    "r": sched_stats.get("full_compute_ratio"),
                     "seed": CONFIG.SEED,
-                    "fid_5k": float(_score) if _score is not None else None,
-                    "recompute_ratio": sched_stats.get("recompute_ratio"),
-                    "output_dir": str(run_output_dir.resolve()),
-                    "summary_path": str((run_output_dir / "summary.json").resolve()),
-                    "status": "success",
+                    "out": _repo_rel_path(run_output_dir),
+                    "sum": _repo_rel_path(run_output_dir / "summary.json"),
+                    "st": "success",
                 },
             )
         LOGGER.info("Run artifacts written to: %s", run_output_dir)
@@ -613,74 +840,125 @@ def _set_ckpt_for_mode(mode: str, num_steps: int) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--num_steps", "--n", type=int, default=100)
-    parser.add_argument("--eval_samples", "--es", type=int, default=50000)
-    parser.add_argument("--seed", type=int, default=0)
-    parser.add_argument("--mode", "--m", type=str, default="float", choices=["float", "final"])
-    parser.add_argument(
-        "--cache_scheduler_json",
+    epilog = """
+Examples (repo root):
+  Baseline FID (do not pass --use_cache_scheduler):
+    python QATcode/cache_method/start_run/sample_stage2_cache_scheduler.py \\
+      --num_steps 100 --eval_samples 5000
+
+  Stage2 refined scheduler + artifacts + JSONL index:
+    python QATcode/cache_method/start_run/sample_stage2_cache_scheduler.py \\
+      --use_cache_scheduler \\
+      --cache_scheduler_json QATcode/cache_method/Stage2/stage2_output/.../stage2_refined_scheduler_config.json \\
+      --scheduler-name prefix_15 \\
+      --run-output-dir QATcode/cache_method/results/my_run \\
+      --runs-index-path QATcode/cache_method/results/my_run/runs_index.jsonl
+
+Pipeline context: Stage2 refine first → QATcode/cache_method/Stage2/stage2ExperimentsGuide.md
+Batch FID driver: QATcode/cache_method/start_run/runFidWithStage2Scheduler.sh
+Sampling how-to: QATcode/cache_method/start_run/sampleStage2FidGuide.md
+"""
+    parser = argparse.ArgumentParser(
+        description=(
+            "FFHQ latent sampling + FID. Optional Stage2 cache scheduler from "
+            "stage2_refined_scheduler_config.json (--use_cache_scheduler)."
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=epilog,
+    )
+
+    g_samp = parser.add_argument_group("Sampling / FID")
+    g_samp.add_argument("--num_steps", "--n", type=int, default=100, help="DDIM steps T (also selects default QAT ckpt when mode=float)")
+    g_samp.add_argument(
+        "--eval_samples",
+        "--es",
+        type=int,
+        default=50000,
+        help="Number of images for FID (5K vs 50K affects metric key in runs_index)",
+    )
+    g_samp.add_argument("--seed", type=int, default=0)
+    g_samp.add_argument(
+        "--mode",
+        "--m",
         type=str,
-        default=DEFAULT_STAGE2_SCHEDULER_JSON,
-        help="Path to Stage2 refined scheduler JSON",
+        default="float",
+        help="best ckpt :diffae_step6_lora_best_final.pth",
     )
-    parser.add_argument(
-        "--use_cache_scheduler",
-        action="store_true",
-        help="Enable Stage2 refined scheduler; when disabled runs baseline sampling path",
-    )
-    parser.add_argument(
+
+    g_q = parser.add_argument_group("Quantization (passed to CONFIG)")
+    g_q.add_argument(
         "--quant-state",
         type=str,
         default="tt",
         choices=["tt", "ff", "tf", "ft"],
-        help="Quant state mapping: tt/ff/tf/ft -> set_quant_state(weight, act)",
+        help="Quant flags: tt=weight+act, ff=neither, tf=weight only, ft=act only",
     )
-    parser.add_argument(
+
+    g_st2 = parser.add_argument_group("Stage2 scheduler (cache)")
+    g_st2.add_argument(
+        "--use_cache_scheduler",
+        action="store_true",
+        help="Load Stage2 JSON and run cache path; omit for baseline (no scheduler file)",
+    )
+    g_st2.add_argument(
+        "--cache_scheduler_json",
+        type=str,
+        default=DEFAULT_STAGE2_SCHEDULER_JSON,
+        help="Path to stage2_refined_scheduler_config.json (ignored if --use_cache_scheduler not set)",
+    )
+    g_st2.add_argument(
+        "--scheduler-name",
+        type=str,
+        default="unknown",
+        help="Label for logs, summary.json, runs_index (e.g. baseline, prefix_15)",
+    )
+    g_st2.add_argument(
+        "--allow-missing-k-per-zone",
+        action="store_true",
+        help="Allow blocks without k_per_zone (still need expanded_mask + shared_zones)",
+    )
+
+    g_safe = parser.add_argument_group("Safety / runtime overrides (union with Stage1 mask)")
+    g_safe.add_argument(
+        "--force-full-prefix-steps",
+        type=_nonnegative_int,
+        default=0,
+        help="Full-compute all layers on first N DDIM timesteps (0=off)",
+    )
+    g_safe.add_argument(
+        "--force-full-runtime-blocks",
+        type=str,
+        default="",
+        help="Comma-separated runtime_name list, full at every timestep (e.g. encoder_layer_0)",
+    )
+    g_safe.add_argument(
+        "--safety-first-input-block",
+        action="store_true",
+        help=f"Shortcut: add {FIRST_INPUT_RUNTIME_BLOCK_NAME} to --force-full-runtime-blocks",
+    )
+
+    g_out = parser.add_argument_group("Logging / run artifacts")
+    g_out.add_argument(
         "--log_file",
         "--lf",
         type=str,
         default="QATcode/cache_method/start_run/log/sample_stage2_cache_scheduler.log",
+        help="File log path (also see stream handler in _setup_environment)",
     )
-    parser.add_argument(
-        "--force-full-prefix-steps",
-        type=_nonnegative_int,
-        default=0,
-        help="Safety experiment: union full-compute on first N DDIM timesteps for all layers (0=off)",
-    )
-    parser.add_argument(
-        "--force-full-runtime-blocks",
-        type=str,
-        default="",
-        help="Comma-separated runtime blocks forced full at all timesteps (e.g. encoder_layer_0)",
-    )
-    parser.add_argument(
-        "--safety-first-input-block",
-        action="store_true",
-        help=f"Add {FIRST_INPUT_RUNTIME_BLOCK_NAME} to forced blocks",
-    )
-    parser.add_argument(
-        "--allow-missing-k-per-zone",
-        action="store_true",
-        help="Runtime sampling only: allow blocks[].without k_per_zone (still need expanded_mask + shared_zones)",
-    )
-    parser.add_argument(
-        "--scheduler-name",
-        type=str,
-        default="unknown",
-        help="Human-readable name for this scheduler run (used in output dir and artifacts)",
-    )
-    parser.add_argument(
+    g_out.add_argument(
         "--run-output-dir",
         type=str,
         default=None,
-        help="If set, write run_manifest.json / summary.json / detail_stats.json / snapshot here",
+        help="Write run_manifest.json, summary.json, detail_stats.json, scheduler_config.snapshot.json",
     )
-    parser.add_argument(
+    g_out.add_argument(
         "--runs-index-path",
         type=str,
         default=None,
-        help="If set, append one JSONL line per run to this path (runs_index.jsonl)",
+        help=(
+            "Append one JSONL line per run: rid,FID@5K|FID@50K|…,d,sch,r,seed,out,sum,st "
+            "(paths relative to repo root)"
+        ),
     )
     args = parser.parse_args()
 

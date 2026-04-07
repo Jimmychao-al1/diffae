@@ -172,19 +172,6 @@ def _run_single_render(
         )
 
 
-def _read_process_rss_mb() -> Optional[float]:
-    try:
-        with open("/proc/self/status", "r", encoding="utf-8") as f:
-            for line in f:
-                if line.startswith("VmRSS:"):
-                    parts = line.split()
-                    if len(parts) >= 2:
-                        return float(parts[1]) / 1024.0
-    except Exception:
-        return None
-    return None
-
-
 def _aggregate_step_metrics_inplace(
     agg: Dict[str, Dict[str, Dict[str, float]]],
     per_block_step_error: Dict[str, Dict[str, Dict[str, float]]],
@@ -404,7 +391,6 @@ def run_stage2_refine(
     safety_first_input_block: bool = False,
     eval_num_images: int = 4,
     eval_chunk_size: Optional[int] = None,
-    memory_log_every_images: int = 0,
 ) -> Dict[str, Any]:
     _configure_stage2_logging()
     device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -520,16 +506,6 @@ def run_stage2_refine(
 
             done += bsz
             chunk_idx += 1
-            if int(memory_log_every_images) > 0 and (done % int(memory_log_every_images) == 0 or done == total_eval_images):
-                rss_mb = _read_process_rss_mb()
-                LOGGER.info(
-                    "[mem] done_images=%s/%s chunk_size=%s rss_mb=%s agg_runtime_layers=%s",
-                    done,
-                    total_eval_images,
-                    bsz,
-                    f"{rss_mb:.2f}" if rss_mb is not None else "n/a",
-                    len(agg_step_metrics),
-                )
 
         per_block_step_agg = _finalize_per_block_step_error(agg_step_metrics)
         diagnostics = _build_diagnostics_from_aggregated_steps(
@@ -790,58 +766,75 @@ def run_stage2_refine(
 
 
 def main() -> None:
-    p = argparse.ArgumentParser(description="Stage2 runtime refine (single-pass)")
-    p.add_argument("--scheduler_config", type=str, required=True, help="Stage1 scheduler_config.json")
-    p.add_argument("--output_dir", type=str, required=True)
-    p.add_argument("--seed", type=int, default=0)
-    p.add_argument("--zone_l1_threshold", type=float, default=0.02)
-    p.add_argument("--peak_l1_threshold", type=float, default=0.08)
-    p.add_argument("--model_path", type=str, default="checkpoints/ffhq128_autoenc_latent/last.ckpt")
-    p.add_argument("--best_ckpt", type=str, default="QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth")
-    p.add_argument("--calib", type=str, default="QATcode/quantize_ver2/calibration_diffae.pth")
-    p.add_argument(
+    epilog = """
+Typical two-pass pipeline (from repo root):
+  1) Pass 1 — omit --threshold-config; use global --zone_l1_threshold / --peak_l1_threshold
+     to write stage2_runtime_diagnostics.json under --output_dir.
+  2) build_blockwise_thresholds.py --diagnostics <that>/stage2_runtime_diagnostics.json ...
+  3) Pass 2 — same --scheduler_config, new --output_dir, add --threshold-config <blockwise json>.
+
+See QATcode/cache_method/Stage2/stage2ExperimentsGuide.md and README.md section 「如何執行」.
+"""
+    p = argparse.ArgumentParser(
+        description="Stage2 runtime refine (single-pass). Run twice for global then blockwise thresholds.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=epilog,
+    )
+    g_in = p.add_argument_group("Stage1 input / output")
+    g_in.add_argument("--scheduler_config", type=str, required=True, help="Stage1 scheduler_config.json")
+    g_in.add_argument("--output_dir", type=str, required=True)
+    g_in.add_argument("--seed", type=int, default=0)
+
+    g_thr = p.add_argument_group("Threshold (global unless --threshold-config)")
+    g_thr.add_argument("--zone_l1_threshold", type=float, default=0.02)
+    g_thr.add_argument("--peak_l1_threshold", type=float, default=0.08)
+    g_thr.add_argument(
         "--threshold-config",
         type=str,
         default=None,
         help="Optional: stage2_thresholds_blockwise.json（build_blockwise_thresholds.py）；若省略則用 --zone_l1_threshold / --peak_l1_threshold",
     )
-    p.add_argument(
+
+    g_model = p.add_argument_group("Model / calibration (paths relative to repo root unless absolute)")
+    g_model.add_argument("--model_path", type=str, default="checkpoints/ffhq128_autoenc_latent/last.ckpt")
+    g_model.add_argument("--best_ckpt", type=str, default="QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth")
+    g_model.add_argument("--calib", type=str, default="QATcode/quantize_ver2/calibration_diffae.pth")
+
+    g_eval = p.add_argument_group("Diagnostics eval (Stage2 cache vs full)")
+    g_eval.add_argument(
         "--eval-num-images",
         type=int,
         default=4,
         help="Number of images used for Stage2 diagnostics.",
     )
-    p.add_argument(
+    g_eval.add_argument(
         "--eval-chunk-size",
         type=_nonnegative_int,
         default=0,
         help="Chunk size for eval images (0=auto=min(4, eval_num_images)); lower value reduces CPU RAM peak.",
     )
-    p.add_argument(
-        "--memory-log-every-images",
-        type=_nonnegative_int,
-        default=0,
-        help="If >0, log process RSS every N processed eval images.",
-    )
-    p.add_argument(
+
+    g_safe = p.add_argument_group("Safety overrides (diagnostic cache pass only; see README)")
+    g_safe.add_argument(
         "--force-full-prefix-steps",
         type=_nonnegative_int,
         default=0,
         help="Safety experiment: all runtime layers full-compute on first N DDIM timesteps (i=T-1..T-N); 0=off",
     )
-    p.add_argument(
+    g_safe.add_argument(
         "--force-full-runtime-blocks",
         type=str,
         default="",
         help="Comma-separated runtime_name list (e.g. encoder_layer_0) forced full-compute at all timesteps; empty=off",
     )
-    p.add_argument(
+    g_safe.add_argument(
         "--safety-first-input-block",
         action="store_true",
         help=f"Shortcut: add {FIRST_INPUT_RUNTIME_BLOCK_NAME} to forced full-compute blocks (canonical first input block)",
     )
     args = p.parse_args()
     _configure_stage2_logging()
+
     LOGGER.info(
         "----- Stage2 run start | log_file=%s | scheduler_config=%s | output_dir=%s | seed=%s -----",
         _STAGE2_LOG_FILE,
@@ -864,7 +857,6 @@ def main() -> None:
         safety_first_input_block=bool(args.safety_first_input_block),
         eval_num_images=int(args.eval_num_images),
         eval_chunk_size=(None if int(args.eval_chunk_size) <= 0 else int(args.eval_chunk_size)),
-        memory_log_every_images=int(args.memory_log_every_images),
     )
 
 

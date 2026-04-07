@@ -686,7 +686,7 @@ def _collect_pred_xstart_streaming_stats(
             eta=0.0,
             cache_scheduler=cache_scheduler,
         ):
-            t_idx = int(out["t"][0].item())
+      t_idx = int(out["t"][0].item())
             pred = out["pred_xstart"].detach()
             per_t[t_idx].update(pred.reshape(-1))
             counts_t[t_idx] += int(pred.numel())
@@ -1715,10 +1715,10 @@ def run_pred_xstart_trajectory_analysis(
     model_baseline: Optional[nn.Module] = None
     if run_baseline:
         base_model_baseline = load_diffae_model(CONFIG.MODEL_PATH)
-        base_model_baseline.to(device)
-        base_model_baseline.eval()
-        base_model_baseline.setup()
-        base_model_baseline.train_dataloader()
+    base_model_baseline.to(device)
+    base_model_baseline.eval()
+    base_model_baseline.setup()
+    base_model_baseline.train_dataloader()
         model_baseline = base_model_baseline.ema_model
 
     base_model_ff, model_ff = _build_eval_model_with_w_plus_lora(
