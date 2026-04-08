@@ -80,8 +80,10 @@ if [[ "${RUN_K25_FID}" == "1" ]]; then
   #run_one "k25_sw2_baseline" "${EXP_K25}/baseline/stage2_refined_scheduler_config.json"
   #run_one "k25_sw2_prefix_15" "${EXP_K25}/prefix_15/stage2_refined_scheduler_config.json" \
   #  --force-full-prefix-steps 15
-  run_one "k25_sw2_baseline_908030" "${EXP_K25}/baseline_908030/stage2_refined_scheduler_config.json"
-  run_one "k25_sw2_prefix_15_q90q80min130" "${EXP_K25}/prefix_15_q90q80min130/stage2_refined_scheduler_config.json" \
+  #run_one "k25_sw2_baseline_908030" "${EXP_K25}/baseline_908030/stage2_refined_scheduler_config.json"
+  #run_one "k25_sw2_prefix_15_q90q80min130" "${EXP_K25}/prefix_15_q90q80min130/stage2_refined_scheduler_config.json" \
+  #  --force-full-prefix-steps 15
+  run_one "baseline_908030_prefix_15" "${EXP_K25}/baseline_908030/stage2_refined_scheduler_config.json" \
     --force-full-prefix-steps 15
 else
   echo "(skip K25 FID: RUN_K25_FID=${RUN_K25_FID})"

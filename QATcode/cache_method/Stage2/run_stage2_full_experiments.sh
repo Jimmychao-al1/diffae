@@ -138,15 +138,20 @@ run_k25() {
 
   #run_pass1_global_refine "${SCHED_K25}" "${g}"
   #build_thresh_orig "${g}/stage2_runtime_diagnostics.json" "${th_orig}"
-  build_thresh_q90q80 "${g}/stage2_runtime_diagnostics.json" "${th_9080}"
+  #build_thresh_q90q80 "${g}/stage2_runtime_diagnostics.json" "${th_9080}"
 
   #run_pass2_blockwise "${SCHED_K25}" "${EXP_K25}/baseline" "${th_orig}"
   #run_pass2_blockwise "${SCHED_K25}" "${EXP_K25}/prefix_15" "${th_orig}" \
   #  --force-full-prefix-steps 15
 
-  run_pass2_blockwise "${SCHED_K25}" "${EXP_K25}/baseline_908030" "${th_9080}"
-  run_pass2_blockwise "${SCHED_K25}" "${EXP_K25}/prefix_15_q90q80min130" "${th_9080}" \
-    --force-full-prefix-steps 15
+  #run_pass2_blockwise "${SCHED_K25}" "${EXP_K25}/baseline_908030" "${th_9080}"
+  #run_pass2_blockwise "${SCHED_K25}" "${EXP_K25}/prefix_15_q90q80min130" "${th_9080}" \
+  #  --force-full-prefix-steps 15
+
+  run_pass2_blockwise "${SCHED_K25}" "${EXP_K25}/prefix_5_q90q80min130" "${th_9080}" \
+    --force-full-prefix-steps 5
+  run_pass2_blockwise "${SCHED_K25}" "${EXP_K25}/prefix_10_q90q80min130" "${th_9080}" \
+    --force-full-prefix-steps 10
 }
 
 echo "================================================================"
@@ -183,6 +188,6 @@ echo ""
 echo "================================================================"
 echo "✅ 完成。各變體目錄內應有 stage2_refined_scheduler_config.json"
 echo "   K16: ${EXP_K16}/{baseline,prefix_15}"
-echo "   K25: ${EXP_K25}/{baseline,prefix_15,baseline_908030,prefix_15_q90q80min130}"
+echo "   K25: ${EXP_K25}/{baseline,prefix_15,baseline_908030,prefix_15_q90q80min130,prefix_5,prefix_10}"
 echo "詳見 QATcode/cache_method/Stage2/stage2ExperimentsGuide.md"
 echo "================================================================"
