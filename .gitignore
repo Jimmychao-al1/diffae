@@ -67,6 +67,7 @@ experiment_results/logs
 __pycache__/
 *.py[cod]
 *.log
+*.pyc
 nohup.out
 artifacts
 analysis_simple
