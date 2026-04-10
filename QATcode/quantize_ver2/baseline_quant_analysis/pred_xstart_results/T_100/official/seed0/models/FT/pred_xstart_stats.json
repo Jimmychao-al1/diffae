@@ -2704,9 +2704,9 @@
       "zero_ratio": 5.7220458984375e-06,
       "saturation_ratio_abs_ge_095": 0.2392749786376953,
       "saturation_ratio_abs_ge_099": 0.21973133087158203,
-      "adjacent_l1": NaN,
-      "adjacent_l2": NaN,
-      "adjacent_cosine": NaN,
+      "adjacent_l1": null,
+      "adjacent_l2": null,
+      "adjacent_cosine": null,
       "adjacent_count": 0
     }
   },
