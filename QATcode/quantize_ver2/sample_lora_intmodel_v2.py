@@ -712,6 +712,136 @@ def main_float_model():
         
         
 
+@time_operation
+def main_baseline_aq():
+    """
+    BASELINE+AQ 實驗模式：
+    使用原始 org_weight（不載入 LoRA），只校正 per-timestep activation scale，
+    再進行正式推論生成並儲存結果。
+
+    流程：
+    1. 載入原始 Diff-AE ema（不載入 LoRA ckpt）
+    2. 建立 quant model 結構
+    3. 對所有 QuantModule_DiffAE_LoRA 設定 use_original_weight=True
+    4. 對所有 TemporalActivationQuantizer 設定 calibration_mode=True
+    5. set_quant_state(False, True)
+    6. 跑一次完整 denoising loop（不儲存結果，只為校正所有 timestep 的 scale）
+    7. 對所有 TemporalActivationQuantizer 設定 calibration_mode=False，並將 inited 設為 True
+    8. 正式推論生成並儲存結果
+    """
+    LOGGER.info("=" * 50)
+    LOGGER.info("BASELINE+AQ 模式：原始權重 + per-timestep activation scale 校正")
+    LOGGER.info("=" * 50)
+
+    _seed_all(CONFIG.SEED)
+
+    try:
+        # 1. 載入原始 Diff-AE ema（不載入 LoRA ckpt）
+        base_model: LitModel = load_diffae_model()
+        LOGGER.info("✅ Diff-AE 模型載入成功（未載入 LoRA ckpt）")
+        diffusion_model = base_model.ema_model
+
+        # 2. 建立 quant model 結構
+        quant_model: QuantModel_DiffAE_LoRA = create_float_quantized_model(
+            diffusion_model,
+            num_steps=CONFIG.NUM_DIFFUSION_STEPS,
+            lora_rank=CONFIG.LORA_RANK,
+            mode=CONFIG.MODE,
+        )
+        quant_model.to(CONFIG.DEVICE)
+        quant_model.eval()
+
+        # 3. 對所有 QuantModule_DiffAE_LoRA 設定 use_original_weight=True
+        for m in quant_model.modules():
+            if isinstance(m, QuantModule_DiffAE_LoRA):
+                m.use_original_weight = True
+        LOGGER.info("✅ 已設定 use_original_weight=True（跳過 LoRA merge，使用原始權重）")
+
+        # 4. 對所有 TemporalActivationQuantizer 設定 calibration_mode=True
+        from QATcode.quantize_ver2.quant_layer_v2 import TemporalActivationQuantizer
+        for m in quant_model.modules():
+            if isinstance(m, TemporalActivationQuantizer):
+                m.calibration_mode = True
+                m.current_step = CONFIG.NUM_DIFFUSION_STEPS - 1
+        LOGGER.info("✅ 已設定 calibration_mode=True，current_step 重置至最後一步")
+
+        # 5. set_quant_state(False, True)
+        quant_model.set_quant_state(False, True)
+        LOGGER.info("set_quant_state(weight=False, act=True)")
+
+        # 掛到 base_model.ema_model，讓 evaluate_fid 使用量化模型
+        base_model.ema_model = quant_model
+
+        # 6. 跑一次完整 denoising loop（不儲存結果，只為校正所有 timestep 的 scale）
+        LOGGER.info("開始校正用 denoising loop（不儲存結果）...")
+        base_model.to(CONFIG.DEVICE)
+        base_model.eval()
+        base_model.setup()
+        T = CONFIG.NUM_DIFFUSION_STEPS
+        base_model.train_dataloader()
+        sampler = base_model.conf._make_diffusion_conf(T=T).make_sampler()
+        latent_sampler = base_model.conf._make_latent_diffusion_conf(T=T).make_sampler()
+
+        import tempfile
+        conf_calib = base_model.conf.clone()
+        conf_calib.eval_num_images = 32
+        #conf_calib.fid_cache = "checkpoints/ffhq128_autoenc_latent/fid_cache"
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            evaluate_fid(
+                sampler,
+                base_model.ema_model,
+                conf_calib,
+                device=CONFIG.DEVICE,
+                train_data=base_model.train_data,
+                val_data=base_model.val_data,
+                latent_sampler=latent_sampler,
+                conds_mean=base_model.conds_mean,
+                conds_std=base_model.conds_std,
+                remove_cache=False,
+                clip_latent_noise=False,
+                T=T,
+                output_dir=tmp_dir,
+                skip_fid=True,
+            )
+        LOGGER.info("✅ 校正 denoising loop 完成")
+
+        # 7. 對所有 TemporalActivationQuantizer 設定 calibration_mode=False，並將 inited 設為 True
+        quant_model.eval()
+        for m in quant_model.modules():
+            if isinstance(m, TemporalActivationQuantizer):
+                m.calibration_mode = False
+                m.inited = True
+                m.current_step = CONFIG.NUM_DIFFUSION_STEPS - 1
+        LOGGER.info("✅ calibration_mode=False，inited=True，current_step 已重置")
+
+        # 8. 正式推論生成並儲存結果
+        LOGGER.info("開始正式推論生成...")
+        conf = base_model.conf.clone()
+        conf.eval_num_images = CONFIG.EVAL_SAMPLES
+
+        score = evaluate_fid(
+            sampler,
+            base_model.ema_model,
+            conf,
+            device=CONFIG.DEVICE,
+            train_data=base_model.train_data,
+            val_data=base_model.val_data,
+            latent_sampler=latent_sampler,
+            conds_mean=base_model.conds_mean,
+            conds_std=base_model.conds_std,
+            remove_cache=False,
+            clip_latent_noise=False,
+            T=T,
+            output_dir=f'{conf.generate_dir}_BASELINE_AQ_T{T}',
+        )
+        LOGGER.info(f'[BASELINE+AQ] FID@{CONFIG.EVAL_SAMPLES} T={T} score: {score}')
+        LOGGER.info("=" * 50)
+
+    except Exception as e:
+        LOGGER.error(f"BASELINE+AQ error: {e}")
+        raise
+
+
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
@@ -730,6 +860,8 @@ if __name__ == "__main__":
                         help='生成時間測試的樣本數')
     parser.add_argument('--log_file','--lf', type=str, default=None,
                         help='指定 log 檔案路徑（預設: QATcode/quantize_ver2/log/sample_lora_intmodel_v2.log）')
+    parser.add_argument('--baseline-aq', action='store_true',
+                        help='啟用 BASELINE+AQ 實驗模式：使用原始權重（不載入 LoRA）+ per-timestep activation 校正後推論')
     parser.add_argument(
         '--quant-state',
         type=str,
@@ -797,7 +929,9 @@ if __name__ == "__main__":
         CONFIG.QUANT_STATE_ACT,
     )
     LOGGER.info(f"Log file: {CONFIG.LOG_FILE}")
-    if args.mode == 'float':
+    if args.baseline_aq:
+        main_baseline_aq()
+    elif args.mode == 'float':
         CONFIG.BEST_CKPT_PATH = "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth" if CONFIG.NUM_DIFFUSION_STEPS == 100 else "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best_20steps.pth"
         main_float_model()
     elif args.mode == 'int':

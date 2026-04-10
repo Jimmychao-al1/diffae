@@ -243,6 +243,7 @@ class TemporalActivationQuantizer(nn.Module):
         # Compatibility placeholders (not used in normalized quant)
         self.delta = None
         self.zero_point = None
+        self.calibration_mode = False
     
     def clipping(self, x, lower, upper):
         """Differentiable clipping for STE."""
@@ -266,9 +267,14 @@ class TemporalActivationQuantizer(nn.Module):
         """
         Temporal normalized fake quantization.
         Uses scale_list[current_step] as absmax scale.
-        
+
         Returns normalized quantized tensor in approximately [-1, 1] range.
         """
+        if self.calibration_mode:
+            self.calibrate_step(x, self.current_step)
+            self.current_step = self.total_steps - 1 if self.current_step - 1 < 0 else self.current_step - 1
+            return x
+
         if not self.inited:
             # Keep behavior aligned with original implementation:
             # first forward initializes per-step parameters and does NOT decrement current_step.

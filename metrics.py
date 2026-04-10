@@ -179,32 +179,35 @@ def evaluate_fid(
     clip_latent_noise: bool = False,
     T: int = None,
     output_dir: str = None,
+    skip_fid: bool = False,
 ):
     """
     Original FID evaluation function (Student vs Real)
     """
-    assert conf.fid_cache is not None
+    if not skip_fid:
+        assert conf.fid_cache is not None
     if get_rank() == 0:
-        # no parallel
-        # validation data for a comparing FID
-        val_loader = make_subset_loader(conf,
-                                        dataset=val_data,
-                                        batch_size=conf.batch_size_eval,
-                                        shuffle=False,
-                                        parallel=False)
+        if not skip_fid:
+            # no parallel
+            # validation data for a comparing FID
+            val_loader = make_subset_loader(conf,
+                                            dataset=val_data,
+                                            batch_size=conf.batch_size_eval,
+                                            shuffle=False,
+                                            parallel=False)
 
-        # put the val images to a directory
-        cache_dir = f'{conf.fid_cache}_{conf.eval_num_images}'
-        if (os.path.exists(cache_dir)
-                and len(os.listdir(cache_dir)) < conf.eval_num_images):
-            shutil.rmtree(cache_dir)
-            pass
+            # put the val images to a directory
+            cache_dir = f'{conf.fid_cache}_{conf.eval_num_images}'
+            if (os.path.exists(cache_dir)
+                    and len(os.listdir(cache_dir)) < conf.eval_num_images):
+                shutil.rmtree(cache_dir)
+                pass
 
-        if not os.path.exists(cache_dir):
-            # write files to the cache
-            # the images are normalized, hence need to denormalize first
-            loader_to_path(val_loader, cache_dir, denormalize=True)
-            pass
+            if not os.path.exists(cache_dir):
+                # write files to the cache
+                # the images are normalized, hence need to denormalize first
+                loader_to_path(val_loader, cache_dir, denormalize=True)
+                pass
         # create the generate dir
         #out_put_dir = f'{conf.generate_dir}_l2TF_cache_analysis_T{T}' #if output_dir is None else output_dir
         out_put_dir = f'{conf.generate_dir}_T{T}' if output_dir is None else output_dir
@@ -341,34 +344,35 @@ def evaluate_fid(
             raise NotImplementedError()
     
     fid = 0
-    
-    model.train()
-    
-    barrier()
-    
-    if get_rank() == 0:
-        fid = fid_score.calculate_fid_given_paths(
-            [cache_dir, out_put_dir],
-            batch_size,
-            device=device,
-            dims=2048)
-            #dims=192) # for FID sensitivity experiment
-        # remove the cache
-        if remove_cache and os.path.exists(conf.generate_dir):
-            shutil.rmtree(conf.generate_dir)
-            pass
-    barrier()
 
-    if get_rank() == 0:
-        # need to float it! unless the broadcasted value is wrong
-        fid = torch.tensor(float(fid), device=device)
-        broadcast(fid, 0)
-    else:
-        fid = torch.tensor(0., device=device)
-        broadcast(fid, 0)
-    fid = fid.item()
-    print(f'fid ({get_rank()}):', fid)
-    
+    if not skip_fid:
+        model.train()
+
+        barrier()
+
+        if get_rank() == 0:
+            fid = fid_score.calculate_fid_given_paths(
+                [cache_dir, out_put_dir],
+                batch_size,
+                device=device,
+                dims=2048)
+                #dims=192) # for FID sensitivity experiment
+            # remove the cache
+            if remove_cache and os.path.exists(conf.generate_dir):
+                shutil.rmtree(conf.generate_dir)
+                pass
+        barrier()
+
+        if get_rank() == 0:
+            # need to float it! unless the broadcasted value is wrong
+            fid = torch.tensor(float(fid), device=device)
+            broadcast(fid, 0)
+        else:
+            fid = torch.tensor(0., device=device)
+            broadcast(fid, 0)
+        fid = fid.item()
+        print(f'fid ({get_rank()}):', fid)
+
     return fid
 
 

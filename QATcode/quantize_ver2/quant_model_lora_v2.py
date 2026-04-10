@@ -75,7 +75,8 @@ class QuantModule_DiffAE_LoRA(nn.Module):
         self.runtime_mode = 'train'
         self.use_cached_aw = False
         self.cached_a_w = None
-        
+        self.use_original_weight = False
+
         # LoRA 參數設定
         self.lora_rank = lora_rank
         lora_dropout = 0.0
@@ -137,6 +138,9 @@ class QuantModule_DiffAE_LoRA(nn.Module):
             lora_weight = lora_weight.permute(2,3,0,1)
             weight_eff = self.org_weight + lora_weight.to(self.org_weight.device)
         else:
+            weight_eff = self.org_weight
+
+        if self.use_original_weight:
             weight_eff = self.org_weight
 
         # Ensure weight is on the same device as input.
@@ -534,7 +538,8 @@ class INT_QuantModule_DiffAE_LoRA(nn.Module):
         self.runtime_mode = 'train'
         self.use_cached_aw = False
         self.cached_a_w = None
-        
+        self.use_original_weight = False
+
         # LoRA 參數設定
         self.lora_rank = lora_rank
         lora_dropout = 0.0
