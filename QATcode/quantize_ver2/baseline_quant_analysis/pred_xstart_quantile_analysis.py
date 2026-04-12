@@ -686,15 +686,17 @@ def _collect_pred_xstart_streaming_stats(
             eta=0.0,
             cache_scheduler=cache_scheduler,
         ):
-      t_idx = int(out["t"][0].item())
+            t_idx = int(out["t"][0].item())
             pred = out["pred_xstart"].detach()
-            per_t[t_idx].update(pred.reshape(-1))
-            counts_t[t_idx] += int(pred.numel())
-            if prev_pred is not None and prev_t_idx is not None:
-                # adjacent step delta anchored on current t
-                self_delta[t_idx].update(pred, prev_pred)
-            prev_pred = pred
-            prev_t_idx = t_idx
+            if t_idx == 0:
+                print(pred.shape)
+                per_t[t_idx].update(pred.reshape(-1))
+                counts_t[t_idx] += int(pred.numel())
+                if prev_pred is not None and prev_t_idx is not None:
+                    # adjacent step delta anchored on current t
+                    self_delta[t_idx].update(pred, prev_pred)
+                prev_pred = pred
+                prev_t_idx = t_idx
     bin_edges = np.linspace(hist_min, hist_max, hist_bins + 1, dtype=np.float64)
     stats_by_t = {}
     hist_counts = np.zeros((T, hist_bins), dtype=np.float64)
@@ -1719,7 +1721,7 @@ def run_pred_xstart_trajectory_analysis(
     base_model_baseline.eval()
     base_model_baseline.setup()
     base_model_baseline.train_dataloader()
-        model_baseline = base_model_baseline.ema_model
+    model_baseline = base_model_baseline.ema_model
 
     base_model_ff, model_ff = _build_eval_model_with_w_plus_lora(
         model_path=CONFIG.MODEL_PATH, ckpt_path=ckpt_path, num_steps=T, device=device
