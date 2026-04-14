@@ -86,3 +86,4 @@ ckpts/
 *.safetensors
 cache_analysis/collected_outputs/
 QATcode/quantize_ver2/baseline_quant_analysis/weight_hist/stats
+QATcode/quantize_ver2/results/act_quant_per_timestep
