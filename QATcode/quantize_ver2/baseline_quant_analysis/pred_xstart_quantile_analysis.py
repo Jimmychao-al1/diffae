@@ -27,6 +27,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 import sys
 import matplotlib.pyplot as plt
+
 sys.path.append(".")
 sys.path.append("./model")
 
@@ -37,35 +38,27 @@ from QATcode.quantize_ver2.quant_model_lora_v2 import (
     INT_QuantModel_DiffAE_LoRA,
 )
 from QATcode.quantize_ver2.quant_layer_v2 import SimpleDequantizer
+from QATcode.quantize_ver2.common_utils import (
+    seed_all as _seed_all,
+    make_time_operation,
+    get_train_samples as _common_get_train_samples,
+    load_calibration_data as _common_load_calibration_data,
+    load_diffae_model as _common_load_diffae_model,
+)
 
 from experiment import LitModel
-from templates_latent import ffhq128_autoenc_latent
 
 
 LOGGER = logging.getLogger("pred_xstart_quantile_analysis")
 
 
-def _seed_all(seed: int) -> None:
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    if torch.cuda.is_available():
-        torch.cuda.manual_seed_all(seed)
-
-
-def time_operation(func: Callable) -> Callable:
-    def wrapper(*args, **kwargs):
-        start = time.time()
-        out = func(*args, **kwargs)
-        elapsed = time.time() - start
-        LOGGER.info("執行 '%s' 完成，耗時: %.2f 秒", func.__name__, elapsed)
-        return out
-
-    return wrapper
+time_operation = make_time_operation(LOGGER)
 
 
 @dataclass
 class PredXStartConfig:
+    """Public class PredXStartConfig."""
+
     # baseline model checkpoint
     MODEL_PATH: str = "checkpoints/ffhq128_autoenc_latent/last.ckpt"
     # quantize ver2 checkpoint
@@ -92,13 +85,8 @@ CONFIG = PredXStartConfig()
 
 
 def load_diffae_model(model_path: str = CONFIG.MODEL_PATH) -> LitModel:
-    LOGGER.info("載入 Diff-AE 模型: %s", model_path)
-    ckpt = torch.load(model_path, map_location="cpu", weights_only=False)
-    conf = ffhq128_autoenc_latent()
-    model = LitModel(conf)
-    model.load_state_dict(ckpt["state_dict"], strict=False)
-    LOGGER.info("Diff-AE 模型載入完成")
-    return model
+    """Public function load_diffae_model."""
+    return _common_load_diffae_model(model_path, LOGGER)
 
 
 def create_float_quantized_model(
@@ -107,6 +95,7 @@ def create_float_quantized_model(
     lora_rank: int = CONFIG.LORA_RANK,
     mode: str = "train",
 ) -> QuantModel_DiffAE_LoRA:
+    """Public function create_float_quantized_model."""
     LOGGER.info("=== 創建 LoRA Float Fake-Quant 模型 ===")
     wq_params = {
         "n_bits": CONFIG.N_BITS_W,
@@ -138,6 +127,7 @@ def create_int_quantized_model(
     lora_rank: int = CONFIG.LORA_RANK,
     mode: str = "train",
 ) -> INT_QuantModel_DiffAE_LoRA:
+    """Public function create_int_quantized_model."""
     LOGGER.info("=== 創建 LoRA True-INT 模型(目前分析預設不使用) ===")
     wq_params = {
         "n_bits": CONFIG.N_BITS_W,
@@ -161,36 +151,21 @@ def create_int_quantized_model(
     return quant_model
 
 
-def _get_train_samples(train_loader: DataLoader, num_samples: int) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-    image_data, t_data, y_data = [], [], []
-    for (image, t, y) in train_loader:
-        image_data.append(image)
-        t_data.append(t)
-        y_data.append(y)
-        if len(image_data) >= num_samples:
-            break
-    return (
-        torch.cat(image_data, dim=0)[:num_samples],
-        torch.cat(t_data, dim=0)[:num_samples],
-        torch.cat(y_data, dim=0)[:num_samples],
-    )
+def _get_train_samples(
+    train_loader: DataLoader, num_samples: int
+) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    return _common_get_train_samples(train_loader, num_samples)
 
 
 def load_calibration_data() -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-    LOGGER.info("載入校準資料...")
-    try:
-        dataset = DiffusionInputDataset(CONFIG.CALIB_DATA_PATH)
-        data_loader = DataLoader(dataset=dataset, batch_size=32, shuffle=True)
-        cali_images, cali_t, cali_y = _get_train_samples(data_loader, num_samples=CONFIG.CALIB_SAMPLES)
-        LOGGER.info("✅ 載入真實校準資料成功")
-    except Exception as e:
-        LOGGER.warning("⚠️ 載入校準資料失敗: %s", e)
-        LOGGER.info("使用合成校準資料")
-        # fallback shapes match dataset expectations for calibration forward
-        cali_images = torch.randn(CONFIG.CALIB_SAMPLES, 3, 128, 128)
-        cali_t = torch.randint(0, CONFIG.NUM_DIFFUSION_STEPS, (CONFIG.CALIB_SAMPLES,))
-        cali_y = torch.randint(0, 1000, (CONFIG.CALIB_SAMPLES,))
-    return cali_images, cali_t, cali_y
+    """Public function load_calibration_data."""
+    return _common_load_calibration_data(
+        calib_data_path=CONFIG.CALIB_DATA_PATH,
+        calib_samples=CONFIG.CALIB_SAMPLES,
+        num_diffusion_steps=CONFIG.NUM_DIFFUSION_STEPS,
+        dataset_cls=DiffusionInputDataset,
+        logger=LOGGER,
+    )
 
 
 def _collect_prefixed_state_dict(
@@ -208,7 +183,9 @@ def _collect_prefixed_state_dict(
     return out
 
 
-def _load_quant_and_ema_from_ckpt(base_model: LitModel, quant_model: nn.Module, ckpt: Dict[str, Any]) -> None:
+def _load_quant_and_ema_from_ckpt(
+    base_model: LitModel, quant_model: nn.Module, ckpt: Dict[str, Any]
+) -> None:
     """
     Load strategy (consistent with the existing codebase logic):
     - base_model.ema_model 架構 = deepcopy(quant_model)
@@ -423,6 +400,7 @@ class _DistAccumulator:
         self.hist_counts = torch.zeros((self.hist_bins,), dtype=torch.float64)
 
     def update(self, x_flat: torch.Tensor) -> None:
+        """Public function update."""
         if x_flat.numel() == 0:
             return
         x = x_flat.detach().to(dtype=torch.float32)
@@ -440,10 +418,13 @@ class _DistAccumulator:
         self.sat95_count += int((x_abs >= 0.95).sum().item())
         self.sat99_count += int((x_abs >= 0.99).sum().item())
         xc = x.clamp(self.hist_min, self.hist_max)
-        hc = torch.histc(xc, bins=self.hist_bins, min=self.hist_min, max=self.hist_max).to(torch.float64)
+        hc = torch.histc(xc, bins=self.hist_bins, min=self.hist_min, max=self.hist_max).to(
+            torch.float64
+        )
         self.hist_counts += hc.cpu()
 
     def summary(self, *, q_list: np.ndarray, bin_edges: np.ndarray) -> Dict[str, float]:
+        """Public function summary."""
         if self.count <= 0:
             return {}
         mean = self.sum_v / self.count
@@ -477,6 +458,7 @@ class _MetricAccumulator:
     count: int = 0
 
     def update(self, a: torch.Tensor, b: torch.Tensor) -> None:
+        """Public function update."""
         da = a.detach().reshape(a.shape[0], -1).to(torch.float32)
         db = b.detach().reshape(b.shape[0], -1).to(torch.float32)
         if da.shape != db.shape:
@@ -491,6 +473,7 @@ class _MetricAccumulator:
         self.count += int(da.shape[0])
 
     def summary(self) -> Dict[str, float]:
+        """Public function summary."""
         if self.count <= 0:
             return {"count": 0, "l1": float("nan"), "l2": float("nan"), "cosine": float("nan")}
         return {
@@ -517,12 +500,14 @@ def _compute_latent_cond(
         noise=latent_noise_chunk,
         clip_denoised=conf.latent_clip_sample,
     )
-    if conf.latent_znormalize :
+    if conf.latent_znormalize:
         cond = cond * conds_std.to(device) + conds_mean.to(device)
     return cond
 
 
-def _hist_counts_to_quantiles_single(hist_counts_1d: np.ndarray, bin_edges: np.ndarray, q_list: np.ndarray) -> np.ndarray:
+def _hist_counts_to_quantiles_single(
+    hist_counts_1d: np.ndarray, bin_edges: np.ndarray, q_list: np.ndarray
+) -> np.ndarray:
     cumulative = np.cumsum(hist_counts_1d)
     total = cumulative[-1] if cumulative.size > 0 else 0.0
     out = np.zeros((len(q_list),), dtype=np.float64)
@@ -612,21 +597,32 @@ def _build_eval_model_with_w_plus_lora(
     base_model.setup()
     base_model.train_dataloader()
     diffusion_model = base_model.ema_model
-    quant_model = create_float_quantized_model(diffusion_model, num_steps=num_steps, lora_rank=CONFIG.LORA_RANK, mode="train")
+    quant_model = create_float_quantized_model(
+        diffusion_model, num_steps=num_steps, lora_rank=CONFIG.LORA_RANK, mode="train"
+    )
     quant_model.to(device)
     quant_model.eval()
     for _, module in quant_model.named_modules():
-        if isinstance(module, QuantModule_DiffAE_LoRA) and getattr(module, "ignore_reconstruction", False) is False:
-            module.intn_dequantizer = SimpleDequantizer(uaq=module.weight_quantizer, weight=module.weight).to(device)
+        if (
+            isinstance(module, QuantModule_DiffAE_LoRA)
+            and getattr(module, "ignore_reconstruction", False) is False
+        ):
+            module.intn_dequantizer = SimpleDequantizer(
+                uaq=module.weight_quantizer, weight=module.weight
+            ).to(device)
     cali_images, cali_t, cali_y = load_calibration_data()
     quant_model.set_first_last_layer_to_8bit()
     quant_model.set_quant_state(True, True)
     with torch.no_grad():
-        _ = quant_model(x=cali_images[:4].to(device), t=cali_t[:4].to(device), cond=cali_y[:4].to(device))
+        _ = quant_model(
+            x=cali_images[:4].to(device), t=cali_t[:4].to(device), cond=cali_y[:4].to(device)
+        )
     ckpt = torch.load(ckpt_path, map_location="cpu", weights_only=False)
     _load_quant_and_ema_from_ckpt(base_model, quant_model, ckpt)
     if hasattr(base_model.ema_model, "set_runtime_mode"):
-        base_model.ema_model.set_runtime_mode(mode="infer", use_cached_aw=True, clear_cached_aw=True)
+        base_model.ema_model.set_runtime_mode(
+            mode="infer", use_cached_aw=True, clear_cached_aw=True
+        )
     return base_model, base_model.ema_model
 
 
@@ -651,7 +647,10 @@ def _collect_pred_xstart_streaming_stats(
     device: torch.device,
 ) -> Dict[str, Any]:
     _configure_model_quant_mode(model, mode_tag)
-    per_t = [_DistAccumulator(hist_bins=hist_bins, hist_min=hist_min, hist_max=hist_max) for _ in range(T)]
+    per_t = [
+        _DistAccumulator(hist_bins=hist_bins, hist_min=hist_min, hist_max=hist_max)
+        for _ in range(T)
+    ]
     self_delta = [_MetricAccumulator() for _ in range(T)]
     counts_t = np.zeros((T,), dtype=np.int64)
     num_images = x_T_bank.shape[0]
@@ -689,7 +688,7 @@ def _collect_pred_xstart_streaming_stats(
             t_idx = int(out["t"][0].item())
             pred = out["pred_xstart"].detach()
             if t_idx == 0:
-                print(pred.shape)
+                LOGGER.debug("pred_xstart shape at t=0: %s", tuple(pred.shape))
                 per_t[t_idx].update(pred.reshape(-1))
                 counts_t[t_idx] += int(pred.numel())
                 if prev_pred is not None and prev_t_idx is not None:
@@ -851,7 +850,11 @@ def _collect_distance_to_final(
             if t_idx == 0:
                 final_pred = pred
         if final_pred is None:
-            LOGGER.warning("mode=%s chunk=%d final timestep (t=0) missing; skip distance-to-final for this chunk", mode_tag, ci)
+            LOGGER.warning(
+                "mode=%s chunk=%d final timestep (t=0) missing; skip distance-to-final for this chunk",
+                mode_tag,
+                ci,
+            )
             continue
         for t_idx, pred in per_t_pred.items():
             dist[t_idx].update(pred, final_pred)
@@ -918,18 +921,30 @@ def _save_stats_outputs(
     np.savez_compressed(
         mode_dir / "trajectory_self_delta.npz",
         t=np.arange(T, dtype=np.int32),
-        l1=np.array([self_delta_json["by_t"].get(str(t), {}).get("l1", np.nan) for t in range(T)], dtype=np.float64),
-        l2=np.array([self_delta_json["by_t"].get(str(t), {}).get("l2", np.nan) for t in range(T)], dtype=np.float64),
-        cosine=np.array([self_delta_json["by_t"].get(str(t), {}).get("cosine", np.nan) for t in range(T)], dtype=np.float64),
+        l1=np.array(
+            [self_delta_json["by_t"].get(str(t), {}).get("l1", np.nan) for t in range(T)],
+            dtype=np.float64,
+        ),
+        l2=np.array(
+            [self_delta_json["by_t"].get(str(t), {}).get("l2", np.nan) for t in range(T)],
+            dtype=np.float64,
+        ),
+        cosine=np.array(
+            [self_delta_json["by_t"].get(str(t), {}).get("cosine", np.nan) for t in range(T)],
+            dtype=np.float64,
+        ),
         adjacent_count=np.array(
-            [self_delta_json["by_t"].get(str(t), {}).get("adjacent_count", 0) for t in range(T)], dtype=np.int64
+            [self_delta_json["by_t"].get(str(t), {}).get("adjacent_count", 0) for t in range(T)],
+            dtype=np.int64,
         ),
     )
 
 
 def _t_series_from_stats(stats_json: Dict[str, Any], key: str, T: int) -> np.ndarray:
     by_t = stats_json.get("by_t", {})
-    return np.array([float(by_t.get(str(t), {}).get(key, np.nan)) for t in range(T)], dtype=np.float64)
+    return np.array(
+        [float(by_t.get(str(t), {}).get(key, np.nan)) for t in range(T)], dtype=np.float64
+    )
 
 
 def _plot_overlay_two_curves(
@@ -983,7 +998,9 @@ def _plot_quantile_band_overlay_from_stats(
 ) -> None:
     def _q_series(stats_json: Dict[str, Any], key: str) -> np.ndarray:
         by_t = stats_json.get("by_t", {})
-        return np.array([float(by_t.get(str(t), {}).get(key, np.nan)) for t in range(T)], dtype=np.float64)
+        return np.array(
+            [float(by_t.get(str(t), {}).get(key, np.nan)) for t in range(T)], dtype=np.float64
+        )
 
     t = np.arange(T, dtype=np.int32)
     r01 = _q_series(ref_stats_json, "q01")
@@ -1031,10 +1048,18 @@ def _save_distance_to_final_json(mode_dir: Path, dist: Dict[str, Any], T: int, m
     payload = {"meta": {"mode": mode, "T": T}, "by_t": dist["by_t"]}
     with open(mode_dir / "distance_to_final.json", "w", encoding="utf-8") as f:
         json.dump(payload, f, indent=2, ensure_ascii=False)
-    l1 = np.array([dist["by_t"].get(str(t), {}).get("l1", np.nan) for t in range(T)], dtype=np.float64)
-    l2 = np.array([dist["by_t"].get(str(t), {}).get("l2", np.nan) for t in range(T)], dtype=np.float64)
-    cos = np.array([dist["by_t"].get(str(t), {}).get("cosine", np.nan) for t in range(T)], dtype=np.float64)
-    np.savez_compressed(mode_dir / "distance_to_final.npz", t=np.arange(T, dtype=np.int32), l1=l1, l2=l2, cosine=cos)
+    l1 = np.array(
+        [dist["by_t"].get(str(t), {}).get("l1", np.nan) for t in range(T)], dtype=np.float64
+    )
+    l2 = np.array(
+        [dist["by_t"].get(str(t), {}).get("l2", np.nan) for t in range(T)], dtype=np.float64
+    )
+    cos = np.array(
+        [dist["by_t"].get(str(t), {}).get("cosine", np.nan) for t in range(T)], dtype=np.float64
+    )
+    np.savez_compressed(
+        mode_dir / "distance_to_final.npz", t=np.arange(T, dtype=np.int32), l1=l1, l2=l2, cosine=cos
+    )
 
 
 def _divergence_stats_from_series(
@@ -1079,9 +1104,15 @@ def _write_divergence_to_baseline_file(
     target_mode: str,
 ) -> Dict[str, Any]:
     """cross = same-t delta between BASELINE and target M."""
-    l1 = np.array([cross["by_t"].get(str(t), {}).get("l1", np.nan) for t in range(T)], dtype=np.float64)
-    l2 = np.array([cross["by_t"].get(str(t), {}).get("l2", np.nan) for t in range(T)], dtype=np.float64)
-    cos = np.array([cross["by_t"].get(str(t), {}).get("cosine", np.nan) for t in range(T)], dtype=np.float64)
+    l1 = np.array(
+        [cross["by_t"].get(str(t), {}).get("l1", np.nan) for t in range(T)], dtype=np.float64
+    )
+    l2 = np.array(
+        [cross["by_t"].get(str(t), {}).get("l2", np.nan) for t in range(T)], dtype=np.float64
+    )
+    cos = np.array(
+        [cross["by_t"].get(str(t), {}).get("cosine", np.nan) for t in range(T)], dtype=np.float64
+    )
     zones = _timestep_zone_masks(T)
     summary = _divergence_stats_from_series(l1, l2, cos, zones)
     payload = {
@@ -1091,7 +1122,12 @@ def _write_divergence_to_baseline_file(
             "T": T,
             "description": "Per-timestep ||pred_xstart_baseline - pred_xstart_target|| metrics (batch-mean L1/L2, cosine).",
         },
-        "series": {"l1": l1.tolist(), "l2": l2.tolist(), "cosine": cos.tolist(), "t": list(range(T))},
+        "series": {
+            "l1": l1.tolist(),
+            "l2": l2.tolist(),
+            "cosine": cos.tolist(),
+            "t": list(range(T)),
+        },
         "summary": summary,
     }
     out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -1108,7 +1144,15 @@ def _high_noise_zone_metrics(stats_json: Dict[str, Any], T: int) -> Dict[str, fl
     """Mean over high-noise timesteps of selected scalar stats."""
     zones = _timestep_zone_masks(T)
     hi = zones["high_noise"]
-    keys = ["q50", "std", "abs_max", "q99", "saturation_ratio_abs_ge_099", "positive_ratio", "negative_ratio"]
+    keys = [
+        "q50",
+        "std",
+        "abs_max",
+        "q99",
+        "saturation_ratio_abs_ge_099",
+        "positive_ratio",
+        "negative_ratio",
+    ]
     out: Dict[str, float] = {}
     for k in keys:
         s = _series_from_stats_key(stats_json, k, T)
@@ -1137,14 +1181,18 @@ def _pairwise_high_noise_diff(
     return out
 
 
-def _self_delta_series_from_stats(stats_json: Dict[str, Any], T: int) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+def _self_delta_series_from_stats(
+    stats_json: Dict[str, Any], T: int
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     l1 = _series_from_stats_key(stats_json, "adjacent_l1", T)
     l2 = _series_from_stats_key(stats_json, "adjacent_l2", T)
     cos = _series_from_stats_key(stats_json, "adjacent_cosine", T)
     return l1, l2, cos
 
 
-def _trajectory_self_summary(l1: np.ndarray, l2: np.ndarray, cos: np.ndarray, T: int) -> Dict[str, Any]:
+def _trajectory_self_summary(
+    l1: np.ndarray, l2: np.ndarray, cos: np.ndarray, T: int
+) -> Dict[str, Any]:
     zones = _timestep_zone_masks(T)
     hi = zones["high_noise"]
     return {
@@ -1222,7 +1270,9 @@ def _plot_baseline_divergence_overlays(
     for label, key in [("FF", "ff"), ("FT", "ft"), ("TT", "tt")]:
         if key in div_payloads:
             s = div_payloads[key]["series"]["l1"]
-            plt.plot(t, np.asarray(s, dtype=np.float64), label=f"BASELINE vs {label}", linewidth=1.8)
+            plt.plot(
+                t, np.asarray(s, dtype=np.float64), label=f"BASELINE vs {label}", linewidth=1.8
+            )
     plt.gca().invert_xaxis()
     plt.grid(True, alpha=0.25)
     plt.xlabel("DDIM timestep t (left=noisy, right=clear)")
@@ -1237,7 +1287,9 @@ def _plot_baseline_divergence_overlays(
     for label, key in [("FF", "ff"), ("FT", "ft"), ("TT", "tt")]:
         if key in div_payloads:
             s = div_payloads[key]["series"]["cosine"]
-            plt.plot(t, np.asarray(s, dtype=np.float64), label=f"BASELINE vs {label}", linewidth=1.8)
+            plt.plot(
+                t, np.asarray(s, dtype=np.float64), label=f"BASELINE vs {label}", linewidth=1.8
+            )
     plt.gca().invert_xaxis()
     plt.grid(True, alpha=0.25)
     plt.xlabel("DDIM timestep t (left=noisy, right=clear)")
@@ -1264,6 +1316,7 @@ def _plot_high_noise_model_comparison(
     plots_summary.mkdir(parents=True, exist_ok=True)
 
     def series(m: str, k: str) -> np.ndarray:
+        """Public function series."""
         return _series_from_stats_key(stats_by_mode[m], k, T)
 
     fig, axes = plt.subplots(2, 2, figsize=(9, 7), sharex=True)
@@ -1319,7 +1372,9 @@ def _plot_trajectory_regularization_overlays(
         if d is None:
             continue
         by_t = d["by_t"]
-        l1 = np.array([by_t.get(str(ti), {}).get("l1", np.nan) for ti in range(T)], dtype=np.float64)
+        l1 = np.array(
+            [by_t.get(str(ti), {}).get("l1", np.nan) for ti in range(T)], dtype=np.float64
+        )
         plt.plot(t, l1, label=m, linewidth=1.6)
     plt.gca().invert_xaxis()
     plt.grid(True, alpha=0.25)
@@ -1404,24 +1459,35 @@ def _save_pairwise_compare_outputs(
     kb = _mode_key_short(name_b)
 
     def q50(s: Dict[str, Any]) -> np.ndarray:
+        """Public function q50."""
         return _t_series_from_stats(s, "q50", T)
 
     def std(s: Dict[str, Any]) -> np.ndarray:
+        """Public function std."""
         return _t_series_from_stats(s, "std", T)
 
     def absmax(s: Dict[str, Any]) -> np.ndarray:
+        """Public function absmax."""
         return _t_series_from_stats(s, "abs_max", T)
 
     def q99(s: Dict[str, Any]) -> np.ndarray:
+        """Public function q99."""
         return _t_series_from_stats(s, "q99", T)
 
     a_q50, b_q50 = q50(stats_a), q50(stats_b)
     a_std, b_std = std(stats_a), std(stats_b)
     a_absmax, b_absmax = absmax(stats_a), absmax(stats_b)
     a_q99, b_q99 = q99(stats_a), q99(stats_b)
-    same_t_l1 = np.array([cross_same_t["by_t"].get(str(t), {}).get("l1", np.nan) for t in range(T)], dtype=np.float64)
-    same_t_l2 = np.array([cross_same_t["by_t"].get(str(t), {}).get("l2", np.nan) for t in range(T)], dtype=np.float64)
-    same_t_cos = np.array([cross_same_t["by_t"].get(str(t), {}).get("cosine", np.nan) for t in range(T)], dtype=np.float64)
+    same_t_l1 = np.array(
+        [cross_same_t["by_t"].get(str(t), {}).get("l1", np.nan) for t in range(T)], dtype=np.float64
+    )
+    same_t_l2 = np.array(
+        [cross_same_t["by_t"].get(str(t), {}).get("l2", np.nan) for t in range(T)], dtype=np.float64
+    )
+    same_t_cos = np.array(
+        [cross_same_t["by_t"].get(str(t), {}).get("cosine", np.nan) for t in range(T)],
+        dtype=np.float64,
+    )
     a_self_l1 = _t_series_from_stats(stats_a, "adjacent_l1", T)
     b_self_l1 = _t_series_from_stats(stats_b, "adjacent_l1", T)
     a_self_l2 = _t_series_from_stats(stats_a, "adjacent_l2", T)
@@ -1463,14 +1529,38 @@ def _save_pairwise_compare_outputs(
     )
     with open(compare_dir / "cross_model_same_t_delta.json", "w", encoding="utf-8") as f:
         json.dump({"meta": {"T": T}, "by_t": cross_same_t["by_t"]}, f, indent=2, ensure_ascii=False)
-    np.savez_compressed(compare_dir / "cross_model_same_t_delta.npz", t=np.arange(T), l1=same_t_l1, l2=same_t_l2, cosine=same_t_cos)
+    np.savez_compressed(
+        compare_dir / "cross_model_same_t_delta.npz",
+        t=np.arange(T),
+        l1=same_t_l1,
+        l2=same_t_l2,
+        cosine=same_t_cos,
+    )
     if dist_a_final is not None and dist_b_final is not None:
-        a_fd_l1 = np.array([dist_a_final["by_t"].get(str(t), {}).get("l1", np.nan) for t in range(T)], dtype=np.float64)
-        a_fd_l2 = np.array([dist_a_final["by_t"].get(str(t), {}).get("l2", np.nan) for t in range(T)], dtype=np.float64)
-        a_fd_cos = np.array([dist_a_final["by_t"].get(str(t), {}).get("cosine", np.nan) for t in range(T)], dtype=np.float64)
-        b_fd_l1 = np.array([dist_b_final["by_t"].get(str(t), {}).get("l1", np.nan) for t in range(T)], dtype=np.float64)
-        b_fd_l2 = np.array([dist_b_final["by_t"].get(str(t), {}).get("l2", np.nan) for t in range(T)], dtype=np.float64)
-        b_fd_cos = np.array([dist_b_final["by_t"].get(str(t), {}).get("cosine", np.nan) for t in range(T)], dtype=np.float64)
+        a_fd_l1 = np.array(
+            [dist_a_final["by_t"].get(str(t), {}).get("l1", np.nan) for t in range(T)],
+            dtype=np.float64,
+        )
+        a_fd_l2 = np.array(
+            [dist_a_final["by_t"].get(str(t), {}).get("l2", np.nan) for t in range(T)],
+            dtype=np.float64,
+        )
+        a_fd_cos = np.array(
+            [dist_a_final["by_t"].get(str(t), {}).get("cosine", np.nan) for t in range(T)],
+            dtype=np.float64,
+        )
+        b_fd_l1 = np.array(
+            [dist_b_final["by_t"].get(str(t), {}).get("l1", np.nan) for t in range(T)],
+            dtype=np.float64,
+        )
+        b_fd_l2 = np.array(
+            [dist_b_final["by_t"].get(str(t), {}).get("l2", np.nan) for t in range(T)],
+            dtype=np.float64,
+        )
+        b_fd_cos = np.array(
+            [dist_b_final["by_t"].get(str(t), {}).get("cosine", np.nan) for t in range(T)],
+            dtype=np.float64,
+        )
         with open(compare_dir / "distance_to_final_compare.json", "w", encoding="utf-8") as f:
             json.dump(
                 {
@@ -1671,6 +1761,7 @@ def _save_compare_outputs(
         plot_file_prefix="ff_vs_ft",
     )
 
+
 @time_operation
 def run_pred_xstart_trajectory_analysis(
     *,
@@ -1693,6 +1784,7 @@ def run_pred_xstart_trajectory_analysis(
     overlay_reference_mode: str,
     overlay_target_modes: str,
 ) -> Dict[str, Any]:
+    """Public function run_pred_xstart_trajectory_analysis."""
     _seed_all(seed)
     device = CONFIG.DEVICE
     T = int(num_steps)
@@ -1710,7 +1802,9 @@ def run_pred_xstart_trajectory_analysis(
         run_compare,
     )
     if num_images % chunk_batch != 0:
-        raise ValueError(f"num_images({num_images}) must be divisible by chunk_batch({chunk_batch})")
+        raise ValueError(
+            f"num_images({num_images}) must be divisible by chunk_batch({chunk_batch})"
+        )
     ckpt_path = _resolve_best_ckpt_path(T)
     # baseline model (original Diff-AE path)
     base_model_baseline: Optional[LitModel] = None
@@ -1799,7 +1893,10 @@ def run_pred_xstart_trajectory_analysis(
             hist_min=hist_min,
             hist_max=hist_max,
         )
-        ff_stats_json = {"meta": {"mode": "FF", "T": T, "seed": seed, "num_images": num_images}, "by_t": ff_stats["stats_by_t"]}
+        ff_stats_json = {
+            "meta": {"mode": "FF", "T": T, "seed": seed, "num_images": num_images},
+            "by_t": ff_stats["stats_by_t"],
+        }
         mode_stats_cache["FF"] = ff_stats_json
         ff_missing = [t for t in range(T) if str(t) not in ff_stats["stats_by_t"]]
         LOGGER.info(
@@ -1839,7 +1936,10 @@ def run_pred_xstart_trajectory_analysis(
             hist_min=hist_min,
             hist_max=hist_max,
         )
-        ft_stats_json = {"meta": {"mode": "FT", "T": T, "seed": seed, "num_images": num_images}, "by_t": ft_stats["stats_by_t"]}
+        ft_stats_json = {
+            "meta": {"mode": "FT", "T": T, "seed": seed, "num_images": num_images},
+            "by_t": ft_stats["stats_by_t"],
+        }
         mode_stats_cache["FT"] = ft_stats_json
         ft_missing = [t for t in range(T) if str(t) not in ft_stats["stats_by_t"]]
         LOGGER.info(
@@ -1879,7 +1979,10 @@ def run_pred_xstart_trajectory_analysis(
             hist_min=hist_min,
             hist_max=hist_max,
         )
-        mode_stats_cache["TT"] = {"meta": {"mode": "TT", "T": T, "seed": seed, "num_images": num_images}, "by_t": tt_stats["stats_by_t"]}
+        mode_stats_cache["TT"] = {
+            "meta": {"mode": "TT", "T": T, "seed": seed, "num_images": num_images},
+            "by_t": tt_stats["stats_by_t"],
+        }
         LOGGER.info("TT done: non-empty timesteps=%d", len(tt_stats["stats_by_t"]))
     if run_baseline and model_baseline is not None and base_model_baseline is not None:
         b_stats = _collect_pred_xstart_streaming_stats(
@@ -1911,7 +2014,10 @@ def run_pred_xstart_trajectory_analysis(
             hist_min=hist_min,
             hist_max=hist_max,
         )
-        mode_stats_cache["BASELINE"] = {"meta": {"mode": "BASELINE", "T": T, "seed": seed, "num_images": num_images}, "by_t": b_stats["stats_by_t"]}
+        mode_stats_cache["BASELINE"] = {
+            "meta": {"mode": "BASELINE", "T": T, "seed": seed, "num_images": num_images},
+            "by_t": b_stats["stats_by_t"],
+        }
         LOGGER.info("BASELINE done: non-empty timesteps=%d", len(b_stats["stats_by_t"]))
 
     if enable_distance_to_final:
@@ -2112,11 +2218,15 @@ def run_pred_xstart_trajectory_analysis(
                 baseline_div_payloads[tgt_name.lower()] = pl
 
         if baseline_div_payloads:
-            with open(comparisons_root / "baseline_divergence_summary.json", "w", encoding="utf-8") as f:
+            with open(
+                comparisons_root / "baseline_divergence_summary.json", "w", encoding="utf-8"
+            ) as f:
                 json.dump(
                     {
                         "meta": {"T": T, "reference": "BASELINE"},
-                        "targets": {k: v.get("summary", {}) for k, v in baseline_div_payloads.items()},
+                        "targets": {
+                            k: v.get("summary", {}) for k, v in baseline_div_payloads.items()
+                        },
                     },
                     f,
                     indent=2,
@@ -2200,7 +2310,8 @@ def run_pred_xstart_trajectory_analysis(
         missing_ff = [t for t in range(T) if str(t) not in ff_stats_json["by_t"]]
         missing_ft = [t for t in range(T) if str(t) not in ft_stats_json["by_t"]]
         same_counts = np.array(
-            [int(cross_ff_ft["by_t"].get(str(t), {}).get("count", 0)) for t in range(T)], dtype=np.int64
+            [int(cross_ff_ft["by_t"].get(str(t), {}).get("count", 0)) for t in range(T)],
+            dtype=np.int64,
         )
         LOGGER.info(
             "Compare done: missing timesteps FF=%s FT=%s | same-t aligned sample_count[min=%d max=%d]",
@@ -2251,7 +2362,9 @@ def run_pred_xstart_trajectory_analysis(
         if tp.exists():
             with open(tp, "r", encoding="utf-8") as f:
                 traj_reg[m] = json.load(f)
-    with open(comparisons_root / "trajectory_regularization_summary.json", "w", encoding="utf-8") as f:
+    with open(
+        comparisons_root / "trajectory_regularization_summary.json", "w", encoding="utf-8"
+    ) as f:
         json.dump({"meta": {"T": T}, "by_mode": traj_reg}, f, indent=2, ensure_ascii=False)
 
     if not skip_plots:
@@ -2306,7 +2419,8 @@ def run_pred_xstart_trajectory_analysis(
                     ref_label=ref_mode,
                     target_label=tm,
                     T=T,
-                    out_png=plots_pairwise / f"pred_xstart_quantiles_overlay_{ref_mode.lower()}_vs_{tm.lower()}.png",
+                    out_png=plots_pairwise
+                    / f"pred_xstart_quantiles_overlay_{ref_mode.lower()}_vs_{tm.lower()}.png",
                 )
 
     _ensure_legacy_symlinks(out_root, models_root)
@@ -2327,8 +2441,7 @@ def run_pred_xstart_trajectory_analysis(
 
 
 def plot_pred_xstart_quantile_overlay(*, npz_baseline: Path, npz_v2: Path, out_png: Path) -> None:
-    
-
+    """Public function plot_pred_xstart_quantile_overlay."""
     nb = np.load(npz_baseline, allow_pickle=True)
     nv = np.load(npz_v2, allow_pickle=True)
 
@@ -2336,7 +2449,8 @@ def plot_pred_xstart_quantile_overlay(*, npz_baseline: Path, npz_v2: Path, out_p
     q_v = nv["quantiles"]
     t = nb["t"]  # (T,)
 
-    def bands(q_arr: np.ndarray):
+    def bands(q_arr: np.ndarray) -> "Any":
+        """Public function bands."""
         q01 = q_arr[:, 0]
         q25 = q_arr[:, 2]
         q50 = q_arr[:, 3]
@@ -2361,7 +2475,7 @@ def plot_pred_xstart_quantile_overlay(*, npz_baseline: Path, npz_v2: Path, out_p
     plt.xlim(0, len(t) - 1)
     # 依照你統一約定：左邊最雜端 t=T-1，右邊最清晰端 t=0
     plt.gca().invert_xaxis()
-    plt.xlabel("DDIM timestep t") # noise (T-1) -> clear (0) 放在論文圖中說明
+    plt.xlabel("DDIM timestep t")  # noise (T-1) -> clear (0) 放在論文圖中說明
     plt.ylabel("Predicted x_start value")
     plt.grid(True, alpha=0.25)
     plt.legend(loc="best")
@@ -2383,6 +2497,7 @@ def main_pred_xstart_quantile_analysis(
     skip_plot: bool,
     num_steps: int,
 ) -> Tuple[Path, Path]:
+    """Public function main_pred_xstart_quantile_analysis."""
     # Legacy compatibility wrapper: keep old API name but route to the new formal trajectory pipeline.
     res = run_pred_xstart_trajectory_analysis(
         images_mode=images_mode,
@@ -2402,7 +2517,10 @@ def main_pred_xstart_quantile_analysis(
         enable_distance_to_final=True,
     )
     root = Path(res["output_root"])
-    return root / "models" / "FF" / "pred_xstart_stats.npz", root / "models" / "FT" / "pred_xstart_stats.npz"
+    return (
+        root / "models" / "FF" / "pred_xstart_stats.npz",
+        root / "models" / "FT" / "pred_xstart_stats.npz",
+    )
 
 
 def _setup_logging(log_file: str) -> None:
@@ -2420,15 +2538,25 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--run", action="store_true", help="run full pred-xstart / trajectory analysis")
-    parser.add_argument("--run_pred_xstart_quantile_analysis", action="store_true", help="legacy alias of --run")
-    parser.add_argument("--images_mode", type=str, default="official", choices=["debug", "v1", "official"])
+    parser.add_argument(
+        "--run", action="store_true", help="run full pred-xstart / trajectory analysis"
+    )
+    parser.add_argument(
+        "--run_pred_xstart_quantile_analysis", action="store_true", help="legacy alias of --run"
+    )
+    parser.add_argument(
+        "--images_mode", type=str, default="official", choices=["debug", "v1", "official"]
+    )
     parser.add_argument("--chunk_batch", type=int, default=32)
     parser.add_argument("--hist_bins", type=int, default=4096)
     parser.add_argument("--hist_min", type=float, default=-1.0)
     parser.add_argument("--hist_max", type=float, default=1.0)
     parser.add_argument("--seed", type=int, default=0)
-    parser.add_argument("--pred_output_root", type=str, default="QATcode/quantize_ver2/baseline_quant_analysis/pred_xstart_results")
+    parser.add_argument(
+        "--pred_output_root",
+        type=str,
+        default="QATcode/quantize_ver2/baseline_quant_analysis/pred_xstart_results",
+    )
     parser.add_argument("--skip_plots", action="store_true")
     parser.add_argument("--num_steps", "--n", type=int, default=100)
     parser.add_argument("--run_ff", action=argparse.BooleanOptionalAction, default=True)
@@ -2446,8 +2574,12 @@ if __name__ == "__main__":
         help="collect BASELINE and pairwise baseline_vs_ff|ft|tt (needs each target mode's stats, e.g. --run_tt for TT)",
     )
     parser.add_argument("--run_compare", action=argparse.BooleanOptionalAction, default=True)
-    parser.add_argument("--enable_distance_to_final", action=argparse.BooleanOptionalAction, default=True)
-    parser.add_argument("--save_quantile_band_overlay", action=argparse.BooleanOptionalAction, default=True)
+    parser.add_argument(
+        "--enable_distance_to_final", action=argparse.BooleanOptionalAction, default=True
+    )
+    parser.add_argument(
+        "--save_quantile_band_overlay", action=argparse.BooleanOptionalAction, default=True
+    )
     parser.add_argument("--overlay_reference_mode", type=str, default="BASELINE")
     parser.add_argument("--overlay_target_modes", type=str, default="TT,FT,FF")
     parser.add_argument("--device", type=str, default="auto")
@@ -2484,4 +2616,3 @@ if __name__ == "__main__":
         overlay_target_modes=str(args.overlay_target_modes),
     )
     LOGGER.info("Done: %s", res)
-

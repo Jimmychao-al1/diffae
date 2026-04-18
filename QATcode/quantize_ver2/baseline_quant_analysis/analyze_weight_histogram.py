@@ -64,14 +64,15 @@ OUT_ROOT = Path("QATcode/quantize_ver2/baseline_quant_analysis/weight_hist")
 # Quantization helpers  (unchanged from previous version)
 # ---------------------------------------------------------------------------
 
+
 @torch.no_grad()
 def _compute_a_w(w: torch.Tensor) -> torch.Tensor:
     """Per-channel absmax scale — mirrors QuantModule_DiffAE_LoRA._compute_a_w()."""
-    if len(w.shape) == 4:                    # Conv [Cout, Cin, H, W]
+    if len(w.shape) == 4:  # Conv [Cout, Cin, H, W]
         return w.abs().amax(dim=(1, 2, 3), keepdim=True) + 1e-8
-    elif len(w.shape) == 2:                  # Linear [Cout, Cin]
+    elif len(w.shape) == 2:  # Linear [Cout, Cin]
         return w.abs().amax(dim=1, keepdim=True) + 1e-8
-    return w.abs().max() + 1e-8              # fallback: per-tensor
+    return w.abs().max() + 1e-8  # fallback: per-tensor
 
 
 @torch.no_grad()
@@ -94,18 +95,21 @@ def _compute_lora_weight(mod: QuantModule_DiffAE_LoRA) -> torch.Tensor:
     device = mod.org_weight.device
     if mod.fwd_func is F.linear:
         E = torch.eye(mod.org_weight.shape[1], device=device)
-        lora_weight = mod.loraB(mod.loraA(E)).T          # [Cout, Cin]
+        lora_weight = mod.loraB(mod.loraA(E)).T  # [Cout, Cin]
     else:
         lora_weight = (
-            mod.loraB.weight.squeeze(-1).squeeze(-1)     # [Cout, rank]
-            @ mod.loraA.weight.permute(2, 3, 0, 1)       # [kH, kW, rank, Cin]
-        ).permute(2, 3, 0, 1)                             # [Cout, Cin, kH, kW]
+            mod.loraB.weight.squeeze(-1).squeeze(-1)  # [Cout, rank]
+            @ mod.loraA.weight.permute(2, 3, 0, 1)  # [kH, kW, rank, Cin]
+        ).permute(
+            2, 3, 0, 1
+        )  # [Cout, Cin, kH, kW]
     return lora_weight.to(device)
 
 
 # ---------------------------------------------------------------------------
 # Weight extraction
 # ---------------------------------------------------------------------------
+
 
 @torch.no_grad()
 def extract_effective_weight_pair(
@@ -128,19 +132,20 @@ def extract_effective_weight_pair(
 # Statistics
 # ---------------------------------------------------------------------------
 
+
 def compute_distribution_stats(arr: np.ndarray) -> Dict:
     """Basic distribution statistics for a flat array."""
     return {
-        "numel":   int(arr.size),
-        "mean":    float(np.mean(arr)),
-        "std":     float(np.std(arr)),
+        "numel": int(arr.size),
+        "mean": float(np.mean(arr)),
+        "std": float(np.std(arr)),
         "abs_max": float(np.abs(arr).max()),
-        "min":     float(arr.min()),
-        "max":     float(arr.max()),
-        "q001":    float(np.quantile(arr, 0.001)),
-        "q01":     float(np.quantile(arr, 0.01)),
-        "q99":     float(np.quantile(arr, 0.99)),
-        "q999":    float(np.quantile(arr, 0.999)),
+        "min": float(arr.min()),
+        "max": float(arr.max()),
+        "q001": float(np.quantile(arr, 0.001)),
+        "q01": float(np.quantile(arr, 0.01)),
+        "q99": float(np.quantile(arr, 0.99)),
+        "q999": float(np.quantile(arr, 0.999)),
     }
 
 
@@ -150,12 +155,12 @@ def compute_residual_stats(w_lora: np.ndarray, w_lora_q: np.ndarray) -> Dict:
     norm_wl = float(np.linalg.norm(w_lora))
     norm_res = float(np.linalg.norm(res))
     return {
-        "mean":      float(np.mean(res)),
-        "std":       float(np.std(res)),
-        "abs_max":   float(np.abs(res).max()),
-        "MAE":       float(np.mean(np.abs(res))),
-        "RMSE":      float(np.sqrt(np.mean(res ** 2))),
-        "rel_L2":    float(norm_res / norm_wl) if norm_wl > 0 else float("nan"),
+        "mean": float(np.mean(res)),
+        "std": float(np.std(res)),
+        "abs_max": float(np.abs(res).max()),
+        "MAE": float(np.mean(np.abs(res))),
+        "RMSE": float(np.sqrt(np.mean(res**2))),
+        "rel_L2": float(norm_res / norm_wl) if norm_wl > 0 else float("nan"),
         "zero_ratio": float(np.mean(res == 0.0)),
     }
 
@@ -207,12 +212,10 @@ def _make_comparison_table(dist_pre: Dict, dist_post: Dict) -> str:
         <9-char metric>  <10-char pre-quant>  <10-char post-quant>
     """
     header = f"{'':9s}  {'pre-quant':>10s}  {'post-quant':>10s}"
-    sep    = f"{'':9s}  {'----------':>10s}  {'----------':>10s}"
-    lines  = [header, sep]
+    sep = f"{'':9s}  {'----------':>10s}  {'----------':>10s}"
+    lines = [header, sep]
     for k in _PANEL_A_KEYS:
-        lines.append(
-            f"{k:<9s}  {_fmt_num(dist_pre[k], k)}  {_fmt_num(dist_post[k], k)}"
-        )
+        lines.append(f"{k:<9s}  {_fmt_num(dist_pre[k], k)}  {_fmt_num(dist_post[k], k)}")
     return "\n".join(lines)
 
 
@@ -232,6 +235,7 @@ def _make_stats_table(stats: Dict, keys: List[str]) -> str:
 # ---------------------------------------------------------------------------
 # Main plotting function
 # ---------------------------------------------------------------------------
+
 
 def plot_effective_weight_analysis(
     layer_name: str,
@@ -255,45 +259,53 @@ def plot_effective_weight_analysis(
     Panel C (bottom) — residual histogram  Q(w_lora) − w_lora
                        text box: error stats table (7 metrics)
     """
-    residual  = w_lora_q - w_lora
-    dist_wl   = compute_distribution_stats(w_lora)
-    dist_wlq  = compute_distribution_stats(w_lora_q)
+    residual = w_lora_q - w_lora
+    dist_wl = compute_distribution_stats(w_lora)
+    dist_wlq = compute_distribution_stats(w_lora_q)
     res_stats = compute_residual_stats(w_lora, w_lora_q)
 
     # ── Panel A x-axis: symmetric around 0, clipped at ±q99.9% of union ─────
     all_sym = np.concatenate([w_lora, w_lora_q])
-    q_lo_a  = float(np.quantile(all_sym, 0.001))
-    q_hi_a  = float(np.quantile(all_sym, 0.999))
-    L_a     = max(abs(q_lo_a), abs(q_hi_a))
+    q_lo_a = float(np.quantile(all_sym, 0.001))
+    q_hi_a = float(np.quantile(all_sym, 0.999))
+    L_a = max(abs(q_lo_a), abs(q_hi_a))
     edges_a = np.linspace(-L_a, L_a, bins + 1)
 
     # ── Panel B x-axis: percentile-based zoom on w_lora ──────────────────────
-    zoom_lo   = float(np.quantile(w_lora, zoom_quantile))
-    zoom_hi   = float(np.quantile(w_lora, 1.0 - zoom_quantile))
-    bins_b    = 100                                    # coarser than Panel A to suppress discrete spikes
-    edges_b   = np.linspace(zoom_lo, zoom_hi, bins_b + 1)
+    zoom_lo = float(np.quantile(w_lora, zoom_quantile))
+    zoom_hi = float(np.quantile(w_lora, 1.0 - zoom_quantile))
+    bins_b = 100  # coarser than Panel A to suppress discrete spikes
+    edges_b = np.linspace(zoom_lo, zoom_hi, bins_b + 1)
 
     # ── Panel C x-axis: full residual range ──────────────────────────────────
     edges_c = np.linspace(residual.min(), residual.max(), bins + 1)
 
     # ── Figure layout ─────────────────────────────────────────────────────────
     fig, axes = plt.subplots(
-        3, 1, figsize=(10, 11),
+        3,
+        1,
+        figsize=(10, 11),
         gridspec_kw={"hspace": 0.50},
     )
     # y=0.975 pulls suptitle slightly away from the top edge;
     # rect leaves enough headroom so it doesn't collide with Panel A title.
     fig.suptitle(layer_name, fontsize=9, y=0.975)
 
-    hist_kw_wl  = dict(density=True, histtype="step", linewidth=1.9,
-                       label="w+LoRA  (pre-quant)", color="steelblue")
-    hist_kw_wlq = dict(density=True, histtype="step", linewidth=1.2,
-                       label="Q(w+LoRA)  (post-quant)", color="crimson",
-                       linestyle="--")
+    hist_kw_wl = dict(
+        density=True, histtype="step", linewidth=1.9, label="w+LoRA  (pre-quant)", color="steelblue"
+    )
+    hist_kw_wlq = dict(
+        density=True,
+        histtype="step",
+        linewidth=1.2,
+        label="Q(w+LoRA)  (post-quant)",
+        color="crimson",
+        linestyle="--",
+    )
 
     # ── Panel A ───────────────────────────────────────────────────────────────
     ax_a = axes[0]
-    ax_a.hist(w_lora,   bins=edges_a, **hist_kw_wl)
+    ax_a.hist(w_lora, bins=edges_a, **hist_kw_wl)
     ax_a.hist(w_lora_q, bins=edges_a, **hist_kw_wlq)
     ax_a.set_xlim(-L_a, L_a)
     ax_a.axvline(0.0, color="gray", linewidth=0.7, linestyle=":")
@@ -304,17 +316,20 @@ def plot_effective_weight_analysis(
     )
     ax_a.legend(fontsize=7, loc="upper left")
     ax_a.text(
-        0.985, 0.97,
+        0.985,
+        0.97,
         _make_comparison_table(dist_wl, dist_wlq),
         transform=ax_a.transAxes,
-        fontsize=6.5, fontfamily="monospace",
-        verticalalignment="top", horizontalalignment="right",
+        fontsize=6.5,
+        fontfamily="monospace",
+        verticalalignment="top",
+        horizontalalignment="right",
         bbox=_TEXT_BOX_STYLE,
     )
 
     # ── Panel B ───────────────────────────────────────────────────────────────
     ax_b = axes[1]
-    ax_b.hist(w_lora,   bins=edges_b, **hist_kw_wl)
+    ax_b.hist(w_lora, bins=edges_b, **hist_kw_wl)
     ax_b.hist(w_lora_q, bins=edges_b, **hist_kw_wlq)
     ax_b.set_xlim(zoom_lo, zoom_hi)
     zoom_pct = zoom_quantile * 100
@@ -328,21 +343,30 @@ def plot_effective_weight_analysis(
 
     # ── Panel C ───────────────────────────────────────────────────────────────
     ax_c = axes[2]
-    ax_c.hist(residual, bins=edges_c, density=True,
-              histtype="stepfilled", linewidth=1.2,
-              color="mediumpurple", alpha=0.75,
-              label="Q(w+LoRA) − w+LoRA")
+    ax_c.hist(
+        residual,
+        bins=edges_c,
+        density=True,
+        histtype="stepfilled",
+        linewidth=1.2,
+        color="mediumpurple",
+        alpha=0.75,
+        label="Q(w+LoRA) − w+LoRA",
+    )
     ax_c.axvline(0.0, color="black", linewidth=0.9, linestyle="--")
     ax_c.set_xlabel("residual value")
     ax_c.set_ylabel("density")
     ax_c.set_title("Panel C — quantization residual  Q(w+LoRA) − w+LoRA", fontsize=8)
     ax_c.legend(fontsize=7, loc="upper left")
     ax_c.text(
-        0.985, 0.97,
+        0.985,
+        0.97,
         _make_stats_table(res_stats, _PANEL_C_KEYS),
         transform=ax_c.transAxes,
-        fontsize=6.5, fontfamily="monospace",
-        verticalalignment="top", horizontalalignment="right",
+        fontsize=6.5,
+        fontfamily="monospace",
+        verticalalignment="top",
+        horizontalalignment="right",
         bbox=_TEXT_BOX_STYLE,
     )
 
@@ -355,6 +379,7 @@ def plot_effective_weight_analysis(
 # ---------------------------------------------------------------------------
 # Extended extraction — raw + normalized in one pass
 # ---------------------------------------------------------------------------
+
 
 @torch.no_grad()
 def extract_effective_weight_and_scale(
@@ -378,10 +403,10 @@ def extract_effective_weight_and_scale(
     w = mod.org_weight.detach().float()
     lora = _compute_lora_weight(mod)
     w_lora = (w + lora).float()
-    a_w = _compute_a_w(w_lora)          # same scale as inside _dequant
+    a_w = _compute_a_w(w_lora)  # same scale as inside _dequant
     w_lora_q = normalized_fake_quant(w_lora, a_w) * a_w
 
-    w_lora_norm   = w_lora   / a_w      # per-channel normalize, then flatten
+    w_lora_norm = w_lora / a_w  # per-channel normalize, then flatten
     w_lora_q_norm = w_lora_q / a_w
 
     return (
@@ -396,30 +421,31 @@ def extract_effective_weight_and_scale(
 # Per-layer metrics
 # ---------------------------------------------------------------------------
 
-def compute_layerwise_metrics(name: str, idx: int,
-                               w_lora: np.ndarray,
-                               w_lora_q: np.ndarray) -> Dict:
+
+def compute_layerwise_metrics(
+    name: str, idx: int, w_lora: np.ndarray, w_lora_q: np.ndarray
+) -> Dict:
     """Compute the full set of per-layer summary metrics."""
-    res     = w_lora_q - w_lora
+    res = w_lora_q - w_lora
     abs_res = np.abs(res)
-    norm_wl  = float(np.linalg.norm(w_lora))
+    norm_wl = float(np.linalg.norm(w_lora))
     norm_res = float(np.linalg.norm(res))
     return {
-        "idx":               idx,
-        "layer_name":        name,
-        "numel":             int(w_lora.size),
-        "residual_mean":     float(np.mean(res)),
-        "residual_std":      float(np.std(res)),
-        "residual_abs_max":  float(abs_res.max()),
-        "residual_MAE":      float(np.mean(abs_res)),
-        "residual_RMSE":     float(np.sqrt(np.mean(res ** 2))),
-        "residual_rel_L2":   float(norm_res / norm_wl) if norm_wl > 0 else float("nan"),
-        "residual_q99_abs":  float(np.quantile(abs_res, 0.99)),
+        "idx": idx,
+        "layer_name": name,
+        "numel": int(w_lora.size),
+        "residual_mean": float(np.mean(res)),
+        "residual_std": float(np.std(res)),
+        "residual_abs_max": float(abs_res.max()),
+        "residual_MAE": float(np.mean(abs_res)),
+        "residual_RMSE": float(np.sqrt(np.mean(res**2))),
+        "residual_rel_L2": float(norm_res / norm_wl) if norm_wl > 0 else float("nan"),
+        "residual_q99_abs": float(np.quantile(abs_res, 0.99)),
         "residual_q999_abs": float(np.quantile(abs_res, 0.999)),
-        "w_lora_mean":       float(np.mean(w_lora)),
-        "w_lora_std":        float(np.std(w_lora)),
-        "w_lora_q_mean":     float(np.mean(w_lora_q)),
-        "w_lora_q_std":      float(np.std(w_lora_q)),
+        "w_lora_mean": float(np.mean(w_lora)),
+        "w_lora_std": float(np.std(w_lora)),
+        "w_lora_q_mean": float(np.mean(w_lora_q)),
+        "w_lora_q_std": float(np.std(w_lora_q)),
     }
 
 
@@ -427,8 +453,9 @@ def compute_layerwise_metrics(name: str, idx: int,
 # Overall raw distribution
 # ---------------------------------------------------------------------------
 
+
 def plot_overall_raw_distribution(
-    all_wl:  np.ndarray,
+    all_wl: np.ndarray,
     all_wlq: np.ndarray,
     out_dir: Path,
     bins: int = 400,
@@ -448,11 +475,25 @@ def plot_overall_raw_distribution(
     edges = np.linspace(lo, hi, bins + 1)
 
     fig, ax = plt.subplots(figsize=(10, 4))
-    ax.hist(all_wl,  bins=edges, density=True, histtype="step",
-            linewidth=1.8, color="steelblue", label="w+LoRA  (pre-quant)")
-    ax.hist(all_wlq, bins=edges, density=True, histtype="step",
-            linewidth=1.2, color="crimson", linestyle="--",
-            label="Q(w+LoRA)  (post-quant)")
+    ax.hist(
+        all_wl,
+        bins=edges,
+        density=True,
+        histtype="step",
+        linewidth=1.8,
+        color="steelblue",
+        label="w+LoRA  (pre-quant)",
+    )
+    ax.hist(
+        all_wlq,
+        bins=edges,
+        density=True,
+        histtype="step",
+        linewidth=1.2,
+        color="crimson",
+        linestyle="--",
+        label="Q(w+LoRA)  (post-quant)",
+    )
     ax.axvline(0.0, color="gray", linewidth=0.7, linestyle=":")
     ax.set_xlabel("weight value")
     ax.set_ylabel("density")
@@ -473,9 +514,15 @@ def plot_overall_raw_distribution(
     r_edges = np.linspace(r_lo, r_hi, bins + 1)
 
     fig, ax = plt.subplots(figsize=(10, 4))
-    ax.hist(residual, bins=r_edges, density=True,
-            histtype="stepfilled", color="mediumpurple", alpha=0.75,
-            label="Q(w+LoRA) − w+LoRA")
+    ax.hist(
+        residual,
+        bins=r_edges,
+        density=True,
+        histtype="stepfilled",
+        color="mediumpurple",
+        alpha=0.75,
+        label="Q(w+LoRA) − w+LoRA",
+    )
     ax.axvline(0.0, color="black", linewidth=0.9, linestyle="--")
     ax.set_xlabel("residual value")
     ax.set_ylabel("density")
@@ -491,7 +538,7 @@ def plot_overall_raw_distribution(
 
     # ── stats JSON ───────────────────────────────────────────────────────
     residual_full = all_wlq - all_wl
-    norm_wl  = float(np.linalg.norm(all_wl))
+    norm_wl = float(np.linalg.norm(all_wl))
     norm_res = float(np.linalg.norm(residual_full))
     stats = {
         "_note": (
@@ -499,29 +546,29 @@ def plot_overall_raw_distribution(
             "Values are dominated by large-scale layers; "
             "use overall_normalized/ for cross-layer comparisons."
         ),
-        "numel":   int(all_wl.size),
-        "w_lora":  {
-            "mean":    float(np.mean(all_wl)),
-            "std":     float(np.std(all_wl)),
-            "min":     float(all_wl.min()),
-            "max":     float(all_wl.max()),
+        "numel": int(all_wl.size),
+        "w_lora": {
+            "mean": float(np.mean(all_wl)),
+            "std": float(np.std(all_wl)),
+            "min": float(all_wl.min()),
+            "max": float(all_wl.max()),
             "abs_max": float(np.abs(all_wl).max()),
-            "q001":    float(np.quantile(all_wl, 0.001)),
-            "q01":     float(np.quantile(all_wl, 0.01)),
-            "q99":     float(np.quantile(all_wl, 0.99)),
-            "q999":    float(np.quantile(all_wl, 0.999)),
+            "q001": float(np.quantile(all_wl, 0.001)),
+            "q01": float(np.quantile(all_wl, 0.01)),
+            "q99": float(np.quantile(all_wl, 0.99)),
+            "q999": float(np.quantile(all_wl, 0.999)),
         },
         "residual": {
-            "mean":    float(np.mean(residual_full)),
-            "std":     float(np.std(residual_full)),
+            "mean": float(np.mean(residual_full)),
+            "std": float(np.std(residual_full)),
             "abs_max": float(np.abs(residual_full).max()),
-            "q001":    float(np.quantile(residual_full, 0.001)),
-            "q01":     float(np.quantile(residual_full, 0.01)),
-            "q99":     float(np.quantile(residual_full, 0.99)),
-            "q999":    float(np.quantile(residual_full, 0.999)),
-            "MAE":     float(np.mean(np.abs(residual_full))),
-            "RMSE":    float(np.sqrt(np.mean(residual_full ** 2))),
-            "rel_L2":  float(norm_res / norm_wl) if norm_wl > 0 else float("nan"),
+            "q001": float(np.quantile(residual_full, 0.001)),
+            "q01": float(np.quantile(residual_full, 0.01)),
+            "q99": float(np.quantile(residual_full, 0.99)),
+            "q999": float(np.quantile(residual_full, 0.999)),
+            "MAE": float(np.mean(np.abs(residual_full))),
+            "RMSE": float(np.sqrt(np.mean(residual_full**2))),
+            "rel_L2": float(norm_res / norm_wl) if norm_wl > 0 else float("nan"),
         },
     }
     (out_dir / "overall_raw_stats.json").write_text(json.dumps(stats, indent=2))
@@ -532,8 +579,9 @@ def plot_overall_raw_distribution(
 # Overall normalized distribution
 # ---------------------------------------------------------------------------
 
+
 def plot_overall_normalized_distribution(
-    all_nl:  np.ndarray,
+    all_nl: np.ndarray,
     all_nlq: np.ndarray,
     out_dir: Path,
     bins: int = 400,
@@ -552,15 +600,29 @@ def plot_overall_normalized_distribution(
     # ── figure 1: normalized overlay ────────────────────────────────────
     all_cat = np.concatenate([all_nl, all_nlq])
     lo = max(-1.05, float(np.quantile(all_cat, 0.001)))
-    hi = min( 1.05, float(np.quantile(all_cat, 0.999)))
+    hi = min(1.05, float(np.quantile(all_cat, 0.999)))
     edges = np.linspace(lo, hi, bins + 1)
 
     fig, ax = plt.subplots(figsize=(10, 4))
-    ax.hist(all_nl,  bins=edges, density=True, histtype="step",
-            linewidth=1.8, color="steelblue", label="w+LoRA / a_w  (pre-quant, normalized)")
-    ax.hist(all_nlq, bins=edges, density=True, histtype="step",
-            linewidth=1.2, color="crimson", linestyle="--",
-            label="Q(w+LoRA) / a_w  (post-quant, normalized)")
+    ax.hist(
+        all_nl,
+        bins=edges,
+        density=True,
+        histtype="step",
+        linewidth=1.8,
+        color="steelblue",
+        label="w+LoRA / a_w  (pre-quant, normalized)",
+    )
+    ax.hist(
+        all_nlq,
+        bins=edges,
+        density=True,
+        histtype="step",
+        linewidth=1.2,
+        color="crimson",
+        linestyle="--",
+        label="Q(w+LoRA) / a_w  (post-quant, normalized)",
+    )
     ax.axvline(0.0, color="gray", linewidth=0.7, linestyle=":")
     ax.set_xlabel("normalized weight value  (w / absmax per channel)")
     ax.set_ylabel("density")
@@ -581,9 +643,15 @@ def plot_overall_normalized_distribution(
     r_edges = np.linspace(r_lo, r_hi, bins + 1)
 
     fig, ax = plt.subplots(figsize=(10, 4))
-    ax.hist(res_norm, bins=r_edges, density=True,
-            histtype="stepfilled", color="mediumpurple", alpha=0.75,
-            label="(Q(w+LoRA) − w+LoRA) / a_w")
+    ax.hist(
+        res_norm,
+        bins=r_edges,
+        density=True,
+        histtype="stepfilled",
+        color="mediumpurple",
+        alpha=0.75,
+        label="(Q(w+LoRA) − w+LoRA) / a_w",
+    )
     ax.axvline(0.0, color="black", linewidth=0.9, linestyle="--")
     ax.set_xlabel("normalized residual  (residual / absmax per channel)")
     ax.set_ylabel("density")
@@ -598,7 +666,7 @@ def plot_overall_normalized_distribution(
     plt.close(fig)
 
     # ── stats JSON ───────────────────────────────────────────────────────
-    norm_nl  = float(np.linalg.norm(all_nl))
+    norm_nl = float(np.linalg.norm(all_nl))
     norm_res = float(np.linalg.norm(res_norm))
     stats = {
         "_note": (
@@ -608,25 +676,25 @@ def plot_overall_normalized_distribution(
         ),
         "numel": int(all_nl.size),
         "w_lora_norm": {
-            "mean":    float(np.mean(all_nl)),
-            "std":     float(np.std(all_nl)),
+            "mean": float(np.mean(all_nl)),
+            "std": float(np.std(all_nl)),
             "abs_max": float(np.abs(all_nl).max()),
-            "q001":    float(np.quantile(all_nl, 0.001)),
-            "q01":     float(np.quantile(all_nl, 0.01)),
-            "q99":     float(np.quantile(all_nl, 0.99)),
-            "q999":    float(np.quantile(all_nl, 0.999)),
+            "q001": float(np.quantile(all_nl, 0.001)),
+            "q01": float(np.quantile(all_nl, 0.01)),
+            "q99": float(np.quantile(all_nl, 0.99)),
+            "q999": float(np.quantile(all_nl, 0.999)),
         },
         "residual_norm": {
-            "mean":    float(np.mean(res_norm)),
-            "std":     float(np.std(res_norm)),
+            "mean": float(np.mean(res_norm)),
+            "std": float(np.std(res_norm)),
             "abs_max": float(np.abs(res_norm).max()),
-            "q001":    float(np.quantile(res_norm, 0.001)),
-            "q01":     float(np.quantile(res_norm, 0.01)),
-            "q99":     float(np.quantile(res_norm, 0.99)),
-            "q999":    float(np.quantile(res_norm, 0.999)),
-            "MAE":     float(np.mean(np.abs(res_norm))),
-            "RMSE":    float(np.sqrt(np.mean(res_norm ** 2))),
-            "rel_L2":  float(norm_res / norm_nl) if norm_nl > 0 else float("nan"),
+            "q001": float(np.quantile(res_norm, 0.001)),
+            "q01": float(np.quantile(res_norm, 0.01)),
+            "q99": float(np.quantile(res_norm, 0.99)),
+            "q999": float(np.quantile(res_norm, 0.999)),
+            "MAE": float(np.mean(np.abs(res_norm))),
+            "RMSE": float(np.sqrt(np.mean(res_norm**2))),
+            "rel_L2": float(norm_res / norm_nl) if norm_nl > 0 else float("nan"),
         },
     }
     (out_dir / "overall_normalized_stats.json").write_text(json.dumps(stats, indent=2))
@@ -636,6 +704,7 @@ def plot_overall_normalized_distribution(
 # ---------------------------------------------------------------------------
 # Per-layer metrics table + summary figures
 # ---------------------------------------------------------------------------
+
 
 def save_layerwise_metrics_table(metrics: List[Dict], out_dir: Path) -> None:
     """Save layerwise_metrics.json and layerwise_metrics.csv."""
@@ -668,12 +737,12 @@ def plot_layerwise_summary_figures(metrics: List[Dict], out_dir: Path) -> None:
     4. layerwise_q99_abs_rank_top20.png — top-20 layers by residual_q99_abs
     5. layerwise_numel_vs_rel_l2.png    — scatter: numel vs residual_rel_L2
     """
-    names     = [m["layer_name"] for m in metrics]
-    short     = [f"{m['idx']}:{_short_name(m['layer_name'])}" for m in metrics]
-    rel_l2    = np.array([m["residual_rel_L2"]   for m in metrics], dtype=float)
-    mae       = np.array([m["residual_MAE"]       for m in metrics], dtype=float)
-    q99_abs   = np.array([m["residual_q99_abs"]   for m in metrics], dtype=float)
-    numel     = np.array([m["numel"]              for m in metrics], dtype=float)
+    names = [m["layer_name"] for m in metrics]
+    short = [f"{m['idx']}:{_short_name(m['layer_name'])}" for m in metrics]
+    rel_l2 = np.array([m["residual_rel_L2"] for m in metrics], dtype=float)
+    mae = np.array([m["residual_MAE"] for m in metrics], dtype=float)
+    q99_abs = np.array([m["residual_q99_abs"] for m in metrics], dtype=float)
+    numel = np.array([m["numel"] for m in metrics], dtype=float)
 
     # ── 1. rel_L2 histogram ───────────────────────────────────────────────
     fig, ax = plt.subplots(figsize=(7, 4))
@@ -682,8 +751,13 @@ def plot_layerwise_summary_figures(metrics: List[Dict], out_dir: Path) -> None:
     ax.set_xlabel("residual_rel_L2  (‖residual‖ / ‖w+LoRA‖)")
     ax.set_ylabel("layer count")
     ax.set_title("Per-layer residual rel-L2 distribution", fontsize=9)
-    ax.axvline(float(np.nanmedian(rel_l2)), color="crimson", linestyle="--",
-               linewidth=1.0, label=f"median = {np.nanmedian(rel_l2):.4f}")
+    ax.axvline(
+        float(np.nanmedian(rel_l2)),
+        color="crimson",
+        linestyle="--",
+        linewidth=1.0,
+        label=f"median = {np.nanmedian(rel_l2):.4f}",
+    )
     ax.legend(fontsize=8)
     fig.tight_layout()
     fig.savefig(out_dir / "layerwise_rel_l2_hist.png", dpi=130, bbox_inches="tight")
@@ -695,8 +769,7 @@ def plot_layerwise_summary_figures(metrics: List[Dict], out_dir: Path) -> None:
     x = np.arange(len(top20_idx))
     ax.bar(x, rel_l2[top20_idx], color="steelblue", alpha=0.85)
     ax.set_xticks(x)
-    ax.set_xticklabels([short[i] for i in top20_idx], rotation=60,
-                       ha="right", fontsize=7)
+    ax.set_xticklabels([short[i] for i in top20_idx], rotation=60, ha="right", fontsize=7)
     ax.set_ylabel("residual_rel_L2")
     ax.set_title("Top-20 layers by residual rel-L2", fontsize=9)
     fig.tight_layout()
@@ -709,8 +782,13 @@ def plot_layerwise_summary_figures(metrics: List[Dict], out_dir: Path) -> None:
     ax.set_xlabel("residual_MAE")
     ax.set_ylabel("layer count")
     ax.set_title("Per-layer residual MAE distribution", fontsize=9)
-    ax.axvline(float(np.median(mae)), color="crimson", linestyle="--",
-               linewidth=1.0, label=f"median = {np.median(mae):.6f}")
+    ax.axvline(
+        float(np.median(mae)),
+        color="crimson",
+        linestyle="--",
+        linewidth=1.0,
+        label=f"median = {np.median(mae):.6f}",
+    )
     ax.legend(fontsize=8)
     fig.tight_layout()
     fig.savefig(out_dir / "layerwise_mae_hist.png", dpi=130, bbox_inches="tight")
@@ -722,8 +800,7 @@ def plot_layerwise_summary_figures(metrics: List[Dict], out_dir: Path) -> None:
     x = np.arange(len(top20q_idx))
     ax.bar(x, q99_abs[top20q_idx], color="mediumpurple", alpha=0.85)
     ax.set_xticks(x)
-    ax.set_xticklabels([short[i] for i in top20q_idx], rotation=60,
-                       ha="right", fontsize=7)
+    ax.set_xticklabels([short[i] for i in top20q_idx], rotation=60, ha="right", fontsize=7)
     ax.set_ylabel("residual_q99_abs  (q99 of |residual|)")
     ax.set_title("Top-20 layers by residual q99_abs", fontsize=9)
     fig.tight_layout()
@@ -733,8 +810,9 @@ def plot_layerwise_summary_figures(metrics: List[Dict], out_dir: Path) -> None:
     # ── 5. scatter: numel vs rel_L2 ──────────────────────────────────────
     fig, ax = plt.subplots(figsize=(7, 5))
     mask = ~np.isnan(rel_l2)
-    sc = ax.scatter(numel[mask], rel_l2[mask], c=rel_l2[mask],
-                    cmap="viridis", s=18, alpha=0.75, linewidths=0)
+    sc = ax.scatter(
+        numel[mask], rel_l2[mask], c=rel_l2[mask], cmap="viridis", s=18, alpha=0.75, linewidths=0
+    )
     plt.colorbar(sc, ax=ax, label="residual_rel_L2")
     ax.set_xlabel("numel  (number of weight parameters)")
     ax.set_ylabel("residual_rel_L2")
@@ -750,6 +828,7 @@ def plot_layerwise_summary_figures(metrics: List[Dict], out_dir: Path) -> None:
 # Main
 # ---------------------------------------------------------------------------
 
+
 def _setup_logging(level: str = "INFO") -> None:
     logging.basicConfig(
         format="%(asctime)s [%(levelname)s] %(name)s – %(message)s",
@@ -758,6 +837,7 @@ def _setup_logging(level: str = "INFO") -> None:
 
 
 def main(args: argparse.Namespace) -> None:
+    """Public function main."""
     _setup_logging()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     LOGGER.info("Device: %s", device)
@@ -816,27 +896,26 @@ def main(args: argparse.Namespace) -> None:
 
     # ── 5. Per-layer analysis + accumulate overall data ───────────────────────
     per_layer_dir = OUT_ROOT / "per_layer"
-    stats_dir     = OUT_ROOT / "stats"
-    raw_dir       = OUT_ROOT / "overall_raw"
-    norm_dir      = OUT_ROOT / "overall_normalized"
-    summ_dir      = OUT_ROOT / "overall_summary"
+    stats_dir = OUT_ROOT / "stats"
+    raw_dir = OUT_ROOT / "overall_raw"
+    norm_dir = OUT_ROOT / "overall_normalized"
+    summ_dir = OUT_ROOT / "overall_summary"
     for d in (per_layer_dir, stats_dir, raw_dir, norm_dir, summ_dir):
         d.mkdir(parents=True, exist_ok=True)
 
     all_layers_stats: List[Dict] = []
     # Containers for overall analysis (filled during per-layer loop)
-    acc_raw_wl:  List[np.ndarray] = []
+    acc_raw_wl: List[np.ndarray] = []
     acc_raw_wlq: List[np.ndarray] = []
-    acc_nl:      List[np.ndarray] = []   # normalized w_lora
-    acc_nlq:     List[np.ndarray] = []   # normalized w_lora_q
-    all_lm:      List[Dict] = []         # per-layer metrics
+    acc_nl: List[np.ndarray] = []  # normalized w_lora
+    acc_nlq: List[np.ndarray] = []  # normalized w_lora_q
+    all_lm: List[Dict] = []  # per-layer metrics
 
     for idx, (name, mod) in enumerate(lora_modules):
         LOGGER.info("[%d/%d] %s", idx + 1, len(lora_modules), name)
 
         # One call gives both raw and normalized arrays
-        w_lora, w_lora_q, w_lora_norm, w_lora_q_norm = \
-            extract_effective_weight_and_scale(mod)
+        w_lora, w_lora_q, w_lora_norm, w_lora_q_norm = extract_effective_weight_and_scale(mod)
 
         # ── per-layer plot ────────────────────────────────────────────────
         safe = name.replace(".", "_")
@@ -851,11 +930,11 @@ def main(args: argparse.Namespace) -> None:
 
         # ── per-layer stats JSON ──────────────────────────────────────────
         layer_stats = {
-            "idx":        idx,
+            "idx": idx,
             "layer_name": name,
-            "w_lora":     compute_distribution_stats(w_lora),
-            "w_lora_q":   compute_distribution_stats(w_lora_q),
-            "residual":   compute_residual_stats(w_lora, w_lora_q),
+            "w_lora": compute_distribution_stats(w_lora),
+            "w_lora_q": compute_distribution_stats(w_lora_q),
+            "residual": compute_residual_stats(w_lora, w_lora_q),
         }
         json_path = stats_dir / f"{idx:03d}_{safe}.json"
         json_path.write_text(json.dumps(layer_stats, indent=2))

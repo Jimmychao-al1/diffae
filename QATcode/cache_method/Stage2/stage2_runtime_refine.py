@@ -54,6 +54,7 @@ from QATcode.quantize_ver2.sample_lora_intmodel_v2 import (
     load_calibration_data,
     load_diffae_model,
 )
+from QATcode.quantize_ver2.common_utils import seed_all as _seed_all
 from experiment import LitModel
 
 _STAGE2_DIR = Path(__file__).resolve().parent
@@ -77,16 +78,6 @@ def _configure_stage2_logging() -> None:
 
 
 LOGGER = logging.getLogger("Stage2RuntimeRefine")
-
-
-def _seed_all(seed: int) -> None:
-    import random
-
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    if torch.cuda.is_available():
-        torch.cuda.manual_seed_all(seed)
 
 
 def _load_quant_model_for_sampling(
@@ -126,7 +117,9 @@ def _load_quant_model_for_sampling(
     _load_quant_and_ema_from_ckpt(base_model, quant_model, ckpt)
 
     if hasattr(base_model.ema_model, "set_runtime_mode"):
-        base_model.ema_model.set_runtime_mode(mode="infer", use_cached_aw=True, clear_cached_aw=True)
+        base_model.ema_model.set_runtime_mode(
+            mode="infer", use_cached_aw=True, clear_cached_aw=True
+        )
 
     base_model.to(device)
     base_model.eval()
@@ -392,6 +385,7 @@ def run_stage2_refine(
     eval_num_images: int = 4,
     eval_chunk_size: Optional[int] = None,
 ) -> Dict[str, Any]:
+    """Public function run_stage2_refine."""
     _configure_stage2_logging()
     device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
     _seed_all(seed)
@@ -444,7 +438,9 @@ def run_stage2_refine(
         total_eval_images = int(eval_num_images)
         if total_eval_images < 1:
             raise ValueError(f"eval_num_images must be >= 1, got {total_eval_images}")
-        chunk_size = int(eval_chunk_size) if eval_chunk_size is not None else min(4, total_eval_images)
+        chunk_size = (
+            int(eval_chunk_size) if eval_chunk_size is not None else min(4, total_eval_images)
+        )
         if chunk_size < 1:
             raise ValueError(f"eval_chunk_size must be >= 1, got {chunk_size}")
         chunk_size = min(chunk_size, total_eval_images)
@@ -478,7 +474,9 @@ def run_stage2_refine(
                     conds_std=base_model.conds_std,
                     cache_scheduler=None,
                 )
-                LOGGER.info("%s", collector.debug_snapshot_line(f"after_baseline_chunk_{chunk_idx}"))
+                LOGGER.info(
+                    "%s", collector.debug_snapshot_line(f"after_baseline_chunk_{chunk_idx}")
+                )
 
                 collector.set_run("cache")
                 _seed_all(seed + chunk_idx)
@@ -538,7 +536,9 @@ def run_stage2_refine(
             ),
         }
         if threshold_config_path:
-            blockwise_by_runtime, blockwise_by_id, tc_doc = _load_blockwise_threshold_config(threshold_config_path)
+            blockwise_by_runtime, blockwise_by_id, tc_doc = _load_blockwise_threshold_config(
+                threshold_config_path
+            )
             threshold_mode = "blockwise_quantile"
             threshold_meta_diag = {
                 "threshold_mode": threshold_mode,
@@ -566,7 +566,9 @@ def run_stage2_refine(
             "peak_l1_threshold": peak_l1_threshold,
             "seed": seed,
             "threshold_mode": threshold_mode,
-            "threshold_config_path": str(Path(threshold_config_path).resolve()) if threshold_config_path else None,
+            "threshold_config_path": str(Path(threshold_config_path).resolve())
+            if threshold_config_path
+            else None,
             "cache_runtime_overrides": {
                 "variant_label": override_meta.get("variant_label"),
                 "force_full_prefix_steps": int(force_full_prefix_steps),
@@ -584,7 +586,9 @@ def run_stage2_refine(
             rt = stage1_block_to_runtime_block(str(b["name"]))
             runtime_bid = runtime_name_to_block_id(rt)
             if blockwise_by_runtime is not None and rt not in blockwise_by_runtime:
-                raise RuntimeError(f"threshold config missing runtime_name {rt} (block id={b['id']})")
+                raise RuntimeError(
+                    f"threshold config missing runtime_name {rt} (block id={b['id']})"
+                )
             zone_thr_used = (
                 float(blockwise_by_runtime[rt]["zone_l1_threshold"])
                 if blockwise_by_runtime is not None
@@ -690,7 +694,11 @@ def run_stage2_refine(
             per_block_thr_summary = [
                 {
                     "block_id": int(blockwise_by_id[i]["block_id"]),
-                    "canonical_runtime_block_id": int(blockwise_by_id[i].get("canonical_runtime_block_id", blockwise_by_id[i]["block_id"])),
+                    "canonical_runtime_block_id": int(
+                        blockwise_by_id[i].get(
+                            "canonical_runtime_block_id", blockwise_by_id[i]["block_id"]
+                        )
+                    ),
                     "canonical_name": blockwise_by_id[i]["canonical_name"],
                     "runtime_name": blockwise_by_id[i]["runtime_name"],
                     "zone_l1_threshold": float(blockwise_by_id[i]["zone_l1_threshold"]),
@@ -766,6 +774,7 @@ def run_stage2_refine(
 
 
 def main() -> None:
+    """Public function main."""
     epilog = """
 Typical two-pass pipeline (from repo root):
   1) Pass 1 — omit --threshold-config; use global --zone_l1_threshold / --peak_l1_threshold
@@ -781,7 +790,9 @@ See QATcode/cache_method/Stage2/stage2ExperimentsGuide.md and README.md section 
         epilog=epilog,
     )
     g_in = p.add_argument_group("Stage1 input / output")
-    g_in.add_argument("--scheduler_config", type=str, required=True, help="Stage1 scheduler_config.json")
+    g_in.add_argument(
+        "--scheduler_config", type=str, required=True, help="Stage1 scheduler_config.json"
+    )
     g_in.add_argument("--output_dir", type=str, required=True)
     g_in.add_argument("--seed", type=int, default=0)
 
@@ -795,10 +806,20 @@ See QATcode/cache_method/Stage2/stage2ExperimentsGuide.md and README.md section 
         help="Optional: stage2_thresholds_blockwise.json（build_blockwise_thresholds.py）；若省略則用 --zone_l1_threshold / --peak_l1_threshold",
     )
 
-    g_model = p.add_argument_group("Model / calibration (paths relative to repo root unless absolute)")
-    g_model.add_argument("--model_path", type=str, default="checkpoints/ffhq128_autoenc_latent/last.ckpt")
-    g_model.add_argument("--best_ckpt", type=str, default="QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth")
-    g_model.add_argument("--calib", type=str, default="QATcode/quantize_ver2/calibration_diffae.pth")
+    g_model = p.add_argument_group(
+        "Model / calibration (paths relative to repo root unless absolute)"
+    )
+    g_model.add_argument(
+        "--model_path", type=str, default="checkpoints/ffhq128_autoenc_latent/last.ckpt"
+    )
+    g_model.add_argument(
+        "--best_ckpt",
+        type=str,
+        default="QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth",
+    )
+    g_model.add_argument(
+        "--calib", type=str, default="QATcode/quantize_ver2/calibration_diffae.pth"
+    )
 
     g_eval = p.add_argument_group("Diagnostics eval (Stage2 cache vs full)")
     g_eval.add_argument(

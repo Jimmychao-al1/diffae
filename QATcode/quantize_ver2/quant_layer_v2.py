@@ -1,104 +1,121 @@
-import warnings
+"""Core quantization layers and quantizer utilities for quantize_ver2."""
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from typing import Union
-import math
+
 
 class StraightThrough(nn.Module):
+    """Public class StraightThrough."""
+
     def __init__(self, channel_num: int = 1):
         super().__init__()
 
-    def forward(self, input):
+    def forward(self, input: "Any") -> "Any":
+        """Public function forward."""
         return input
 
 
-def round_ste(x: torch.Tensor):
+def round_ste(x: torch.Tensor) -> "Any":
     """
     Implement Straight-Through Estimator for rounding operation.
     """
     return (x.round() - x).detach() + x
 
-def differentiable_clamp(x, lower, upper):
+
+def differentiable_clamp(x: "Any", lower: "Any", upper: "Any") -> "Any":
+    """Public function differentiable_clamp."""
     x = x + F.relu(lower - x)
     x = x - F.relu(x - upper)
     return x
 
-def normalized_fake_quant(x: torch.Tensor, scale: torch.Tensor, eps: float = 1e-8):
+
+def normalized_fake_quant(x: torch.Tensor, scale: torch.Tensor, eps: float = 1e-8) -> "Any":
     """
     Normalized fake quantization: absmax normalize -> round to [-128,127] -> denormalize
-    
+
     Args:
         x: input tensor
         scale: absmax scale (scalar or per-channel)
         eps: small value to avoid division by zero
-        
+
     Returns:
         x_q: fake-quantized tensor (still float, range approximately [-1, 1])
     """
     scale = torch.clamp(scale, min=eps)
     x_norm = differentiable_clamp(x / scale, -1.0, 1.0)
-    #x_norm = torch.clamp(x / scale, -1.0, 1.0)
+    # x_norm = torch.clamp(x / scale, -1.0, 1.0)
     x_int = round_ste(x_norm * 127.0)
-    #x_int = torch.clamp(x_int, -128.0, 127.0)
+    # x_int = torch.clamp(x_int, -128.0, 127.0)
     x_q = x_int / 127.0  # normalized output in [-1, 1]
     return x_q
 
 
-def lp_loss(pred, tgt, p=2.0, reduction='none'):
+def lp_loss(pred: "Any", tgt: "Any", p: "Any" = 2.0, reduction: "Any" = "none") -> "Any":
     """
     loss function measured in L_p Norm
     """
-    if reduction == 'none':
-        return (pred-tgt).abs().pow(p).sum(1).mean()
+    if reduction == "none":
+        return (pred - tgt).abs().pow(p).sum(1).mean()
     else:
-        return (pred-tgt).abs().pow(p).mean()
+        return (pred - tgt).abs().pow(p).mean()
 
 
 class UniformAffineQuantizer(nn.Module):
     """
     Normalized fake quantization (absmax-based, symmetric int8: [-128, 127])
-    
+
     Changed from affine quantization to normalized quantization:
     - No longer uses delta/zero_point for [0, 255] mapping
     - Uses absmax scale to normalize to [-1, 1], then quantize to [-128, 127]
     - Returns normalized fake-quantized values in [-1, 1] range
-    
+
     :param n_bits: number of bit for quantization (only 8-bit supported for now)
     :param channel_wise: if True, compute per-channel absmax
     :param scale_method: 'absmax' for normalized quantization
     """
-    def __init__(self, n_bits: int = 8, symmetric: bool = True, channel_wise: bool = False, scale_method: str = 'absmax',
-                 leaf_param: bool = False, weight_tensor = None, need_init=True):
+
+    def __init__(
+        self,
+        n_bits: int = 8,
+        symmetric: bool = True,
+        channel_wise: bool = False,
+        scale_method: str = "absmax",
+        leaf_param: bool = False,
+        weight_tensor=None,
+        need_init=True,
+    ):
         super(UniformAffineQuantizer, self).__init__()
         self.sym = True  # Always symmetric for normalized quant
-        assert n_bits == 8, 'Only 8-bit supported for normalized quantization'
+        assert n_bits == 8, "Only 8-bit supported for normalized quantization"
         self.n_bits = n_bits
         self.n_levels = 256  # [-128, 127]
         self.leaf_param = leaf_param
         self.channel_wise = channel_wise
-        self.scale_method = 'absmax'  # Force absmax for normalized quant
+        self.scale_method = "absmax"  # Force absmax for normalized quant
         self.eps = 1e-8
-        
+
         # Keep delta/zero_point for compatibility, but not used in new flow
         # scale (absmax) will be computed dynamically in forward
         self.inited = True  # No initialization needed for absmax
         self.delta = None  # Placeholder for compatibility
         self.zero_point = None
-        
-    def clipping(self, x, lower, upper):
+
+    def clipping(self, x: "Any", lower: "Any", upper: "Any") -> "Any":
+        """Public function clipping."""
         # clip lower
         x = x + F.relu(lower - x)
         # clip upper
         x = x - F.relu(x - upper)
 
         return x
-    
-    def forward(self, x: torch.Tensor):
+
+    def forward(self, x: torch.Tensor) -> "Any":
         """
         Normalized fake quantization forward.
         Computes absmax dynamically, then applies normalized fake-quant.
-        
+
         Returns normalized quantized tensor in approximately [-1, 1] range.
         """
         # Compute absmax scale dynamically
@@ -113,68 +130,81 @@ class UniformAffineQuantizer(nn.Module):
         else:
             # Per-tensor absmax (for activations)
             scale = x.abs().max() + self.eps
-        
+
         # Apply normalized fake quantization
         x_q = normalized_fake_quant(x, scale, self.eps)
-        
+
         return x_q
 
-
-
-    def bitwidth_refactor(self, refactored_bit: int):
-        assert 2 <= refactored_bit <= 8, 'bitwidth not supported'
+    def bitwidth_refactor(self, refactored_bit: int) -> "Any":
+        """Public function bitwidth_refactor."""
+        assert 2 <= refactored_bit <= 8, "bitwidth not supported"
         self.n_bits = refactored_bit
-        self.n_levels = 2 ** self.n_bits
+        self.n_levels = 2**self.n_bits
 
-    def extra_repr(self):
-        s = 'bit={n_bits}, scale_method={scale_method}, symmetric={sym}, channel_wise={channel_wise},' \
-            ' leaf_param={leaf_param}'
+    def extra_repr(self) -> "Any":
+        """Public function extra_repr."""
+        s = (
+            "bit={n_bits}, scale_method={scale_method}, symmetric={sym}, channel_wise={channel_wise},"
+            " leaf_param={leaf_param}"
+        )
         return s.format(**self.__dict__)
+
 
 class INT_UniformAffineQuantizer(nn.Module):
     """
     Normalized fake quantization (absmax-based, symmetric int8: [-128, 127])
-    
+
     Changed from affine quantization to normalized quantization:
     - No longer uses delta/zero_point for [0, 255] mapping
     - Uses absmax scale to normalize to [-1, 1], then quantize to [-128, 127]
     - Returns normalized fake-quantized values in [-1, 1] range
-    
+
     :param n_bits: number of bit for quantization (only 8-bit supported for now)
     :param channel_wise: if True, compute per-channel absmax
     :param scale_method: 'absmax' for normalized quantization
     """
-    def __init__(self, n_bits: int = 8, symmetric: bool = True, channel_wise: bool = False, scale_method: str = 'absmax',
-                 leaf_param: bool = False, weight_tensor = None, need_init=True):
+
+    def __init__(
+        self,
+        n_bits: int = 8,
+        symmetric: bool = True,
+        channel_wise: bool = False,
+        scale_method: str = "absmax",
+        leaf_param: bool = False,
+        weight_tensor=None,
+        need_init=True,
+    ):
         super(UniformAffineQuantizer, self).__init__()
         self.sym = True  # Always symmetric for normalized quant
-        assert n_bits == 8, 'Only 8-bit supported for normalized quantization'
+        assert n_bits == 8, "Only 8-bit supported for normalized quantization"
         self.n_bits = n_bits
         self.n_levels = 256  # [-128, 127]
         self.leaf_param = leaf_param
         self.channel_wise = channel_wise
-        self.scale_method = 'absmax'  # Force absmax for normalized quant
+        self.scale_method = "absmax"  # Force absmax for normalized quant
         self.eps = 1e-8
-        
+
         # Keep delta/zero_point for compatibility, but not used in new flow
         # scale (absmax) will be computed dynamically in forward
         self.inited = True  # No initialization needed for absmax
         self.delta = None  # Placeholder for compatibility
         self.zero_point = None
-        
-    def clipping(self, x, lower, upper):
+
+    def clipping(self, x: "Any", lower: "Any", upper: "Any") -> "Any":
+        """Public function clipping."""
         # clip lower
         x = x + F.relu(lower - x)
         # clip upper
         x = x - F.relu(x - upper)
 
         return x
-    
-    def forward(self, x: torch.Tensor):
+
+    def forward(self, x: torch.Tensor) -> "Any":
         """
         Normalized fake quantization forward.
         Computes absmax dynamically, then applies normalized fake-quant.
-        
+
         Returns normalized quantized tensor in approximately [-1, 1] range.
         """
         # Compute absmax scale dynamically
@@ -189,41 +219,52 @@ class INT_UniformAffineQuantizer(nn.Module):
         else:
             # Per-tensor absmax (for activations)
             scale = x.abs().max() + self.eps
-        
+
         # Apply normalized fake quantization
         x_q = normalized_fake_quant(x, scale, self.eps)
-        
+
         return x_q
 
-
-
-    def bitwidth_refactor(self, refactored_bit: int):
-        assert 2 <= refactored_bit <= 8, 'bitwidth not supported'
+    def bitwidth_refactor(self, refactored_bit: int) -> "Any":
+        """Public function bitwidth_refactor."""
+        assert 2 <= refactored_bit <= 8, "bitwidth not supported"
         self.n_bits = refactored_bit
-        self.n_levels = 2 ** self.n_bits
+        self.n_levels = 2**self.n_bits
 
-    def extra_repr(self):
-        s = 'bit={n_bits}, scale_method={scale_method}, symmetric={sym}, channel_wise={channel_wise},' \
-            ' leaf_param={leaf_param}'
+    def extra_repr(self) -> "Any":
+        """Public function extra_repr."""
+        s = (
+            "bit={n_bits}, scale_method={scale_method}, symmetric={sym}, channel_wise={channel_wise},"
+            " leaf_param={leaf_param}"
+        )
         return s.format(**self.__dict__)
-    
+
+
 class TemporalActivationQuantizer(nn.Module):
     """
     Temporal (per-diffusion-step) activation quantizer with trainable scale.
-    
+
     Changed from delta_list/zp_list to scale_list (a_x[k]):
     - a_x[k] is a trainable scalar for each timestep k (0..99)
     - During forward: use a_x[current_step] as absmax scale
     - Calibration initializes a_x[k] from observed absmax
-    
+
     :param n_bits: 8-bit only
     :param num_steps: total diffusion steps (e.g., 100)
     """
-    def __init__(self, n_bits: int = 8, symmetric: bool = False, channel_wise: bool = False, scale_method: str = 'max',
-                 leaf_param: bool = False, num_steps = 100):
+
+    def __init__(
+        self,
+        n_bits: int = 8,
+        symmetric: bool = False,
+        channel_wise: bool = False,
+        scale_method: str = "max",
+        leaf_param: bool = False,
+        num_steps=100,
+    ):
         super(TemporalActivationQuantizer, self).__init__()
         self.sym = True  # Always symmetric for normalized quant
-        assert n_bits == 8, 'Only 8-bit supported for normalized quantization'
+        assert n_bits == 8, "Only 8-bit supported for normalized quantization"
         self.n_bits = n_bits
         self.n_levels = 256  # [-128, 127]
         self.eps = 1e-8
@@ -234,27 +275,27 @@ class TemporalActivationQuantizer(nn.Module):
         # Trainable per-step scale: a_x[k] for k=0..num_steps-1
         # Initialize with small positive values (will be calibrated)
         self.scale_list = nn.Parameter(torch.ones(num_steps) * 0.1, requires_grad=True)
-        
+
         self.inited = False  # Will be set True after first calibration pass
         self.leaf_param = leaf_param
         self.channel_wise = channel_wise
-        self.scale_method = 'absmax'  # Force absmax
-        
+        self.scale_method = "absmax"  # Force absmax
+
         # Compatibility placeholders (not used in normalized quant)
         self.delta = None
         self.zero_point = None
         self.calibration_mode = False
-    
-    def clipping(self, x, lower, upper):
+
+    def clipping(self, x: "Any", lower: "Any", upper: "Any") -> "Any":
         """Differentiable clipping for STE."""
         x = x + F.relu(lower - x)
         x = x - F.relu(x - upper)
         return x
-    
-    def calibrate_step(self, x: torch.Tensor, step: int):
+
+    def calibrate_step(self, x: torch.Tensor, step: int) -> "Any":
         """
         Calibrate scale for a specific timestep using observed absmax.
-        
+
         Args:
             x: activation tensor
             step: timestep index (0..total_steps-1)
@@ -262,8 +303,8 @@ class TemporalActivationQuantizer(nn.Module):
         with torch.no_grad():
             absmax = x.detach().abs().max().clamp(min=self.eps)
             self.scale_list.data[step] = absmax.to(self.scale_list.data.dtype)
-    
-    def forward(self, x: torch.Tensor):
+
+    def forward(self, x: torch.Tensor) -> "Any":
         """
         Temporal normalized fake quantization.
         Uses scale_list[current_step] as absmax scale.
@@ -272,7 +313,9 @@ class TemporalActivationQuantizer(nn.Module):
         """
         if self.calibration_mode:
             self.calibrate_step(x, self.current_step)
-            self.current_step = self.total_steps - 1 if self.current_step - 1 < 0 else self.current_step - 1
+            self.current_step = (
+                self.total_steps - 1 if self.current_step - 1 < 0 else self.current_step - 1
+            )
             return x
 
         if not self.inited:
@@ -291,30 +334,46 @@ class TemporalActivationQuantizer(nn.Module):
         step_idx = max(0, min(self.current_step, self.total_steps - 1))
         scale = self.scale_list[step_idx].clamp(min=self.eps)
         x_q = normalized_fake_quant(x, scale, self.eps)
-        self.current_step = self.total_steps - 1 if self.current_step - 1 < 0 else self.current_step - 1
+        self.current_step = (
+            self.total_steps - 1 if self.current_step - 1 < 0 else self.current_step - 1
+        )
         return x_q
 
-    def bitwidth_refactor(self, refactored_bit: int):
+    def bitwidth_refactor(self, refactored_bit: int) -> "Any":
         """Compatibility method (not used in v2)."""
-        assert refactored_bit == 8, 'Only 8-bit supported'
+        assert refactored_bit == 8, "Only 8-bit supported"
         self.n_bits = refactored_bit
         self.n_levels = 256
 
-    def extra_repr(self):
-        s = 'bit={n_bits}, scale_method=absmax, symmetric=True, total_steps={total_steps}'
+    def extra_repr(self) -> "Any":
+        """Public function extra_repr."""
+        s = "bit={n_bits}, scale_method=absmax, symmetric=True, total_steps={total_steps}"
         return s.format(**self.__dict__)
-    
+
+
 class QuantModule(nn.Module):
     """
     Quantized Module that can perform quantized convolution or normal convolution.
     To activate quantization, please use set_quant_state function.
     """
-    def __init__(self, org_module: Union[nn.Conv2d, nn.Linear], weight_quant_params: dict = {},
-                 act_quant_params: dict = {}, disable_act_quant: bool = False, se_module=None, need_init=True):
+
+    def __init__(
+        self,
+        org_module: Union[nn.Conv2d, nn.Linear],
+        weight_quant_params: dict = {},
+        act_quant_params: dict = {},
+        disable_act_quant: bool = False,
+        se_module=None,
+        need_init=True,
+    ):
         super(QuantModule, self).__init__()
         if isinstance(org_module, nn.Conv2d):
-            self.fwd_kwargs = dict(stride=org_module.stride, padding=org_module.padding,
-                                   dilation=org_module.dilation, groups=org_module.groups)
+            self.fwd_kwargs = dict(
+                stride=org_module.stride,
+                padding=org_module.padding,
+                dilation=org_module.dilation,
+                groups=org_module.groups,
+            )
             self.fwd_func = F.conv2d
         else:
             self.fwd_kwargs = dict()
@@ -333,7 +392,9 @@ class QuantModule(nn.Module):
         self.disable_act_quant = disable_act_quant
         # initialize quantizer
         if not need_init:
-            self.weight_quantizer = UniformAffineQuantizer(**weight_quant_params, weight_tensor=self.weight)
+            self.weight_quantizer = UniformAffineQuantizer(
+                **weight_quant_params, weight_tensor=self.weight
+            )
         else:
             self.weight_quantizer = UniformAffineQuantizer(**weight_quant_params)
 
@@ -344,7 +405,7 @@ class QuantModule(nn.Module):
         # runtime_mode:
         # - train: dynamic a_w every forward
         # - infer: optionally use cached a_w
-        self.runtime_mode = 'train'
+        self.runtime_mode = "train"
         self.use_cached_aw = False
         self.cached_a_w = None
 
@@ -359,16 +420,16 @@ class QuantModule(nn.Module):
         return weight.abs().max() + 1e-8
 
     def _get_a_w(self, weight: torch.Tensor):
-        if self.runtime_mode == 'infer' and self.use_cached_aw:
+        if self.runtime_mode == "infer" and self.use_cached_aw:
             if self.cached_a_w is None:
                 self.cached_a_w = self._compute_a_w(weight).detach()
             return self.cached_a_w.to(weight.device)
         return self._compute_a_w(weight)
 
-    def forward(self, input: torch.Tensor):
+    def forward(self, input: torch.Tensor) -> "Any":
         """
         Forward pass with normalized fake-quant + rescale + FP32 bias.
-        
+
         Flow:
         1. Quantize activation to x_norm (in [-1,1])
         2. Quantize weight to w_norm (in [-1,1])
@@ -378,27 +439,27 @@ class QuantModule(nn.Module):
         """
         if input.device != self.weight.device:
             input = input.to(self.weight.device)
-        
+
         # Keep original bias in FP32
         bias_fp32 = self.bias if self.bias is not None else None
-        
+
         if self.use_weight_quant and self.use_act_quant:
             # Both quant enabled: normalized quant + rescale
             # Step 1: Compute activation scale (a_x)
             a_x = input.abs().max().clamp(min=1e-8)
-            
+
             # Step 2: Quantize activation to normalized range
             x_norm = normalized_fake_quant(input, a_x, eps=1e-8)
-            
+
             # Step 3: Compute weight scale (a_w)
             a_w = self._get_a_w(self.weight)
-            
+
             # Step 4: Quantize weight to normalized range
             w_norm = normalized_fake_quant(self.weight, a_w, eps=1e-8)
-            
+
             # Step 5: Compute normalized output (bias=None)
             y_norm = self.fwd_func(x_norm, w_norm, None, **self.fwd_kwargs)
-            
+
             # Step 6: Rescale to original scale
             # For conv2d: a_w shape [Cout,1,1,1] -> broadcast to [1,Cout,1,1]
             # For linear: a_w shape [Cout,1] -> broadcast to [1,Cout]
@@ -406,16 +467,16 @@ class QuantModule(nn.Module):
                 scale_factor = (a_x * a_w).view(1, -1, 1, 1)
             else:
                 scale_factor = (a_x * a_w).view(1, -1)
-            
+
             out = y_norm * scale_factor
-            
+
             # Step 7: Add FP32 bias (if exists)
             if bias_fp32 is not None:
                 if len(self.weight.shape) == 4:
                     out = out + bias_fp32.view(1, -1, 1, 1)
                 else:
                     out = out + bias_fp32.view(1, -1)
-        
+
         elif self.use_weight_quant and not self.use_act_quant:
             # Only weight quant:
             # w_norm = quant(w / a_w) in [-1,1], so output must be rescaled by a_w.
@@ -434,7 +495,7 @@ class QuantModule(nn.Module):
                     out = out + bias_fp32.view(1, -1, 1, 1)
                 else:
                     out = out + bias_fp32.view(1, -1)
-        
+
         elif not self.use_weight_quant and self.use_act_quant:
             # Only act quant:
             # x_norm = quant(x / a_x) in [-1,1], so output must be rescaled by a_x.
@@ -449,28 +510,31 @@ class QuantModule(nn.Module):
                     out = out + bias_fp32.view(1, -1, 1, 1)
                 else:
                     out = out + bias_fp32.view(1, -1)
-        
+
         else:
             # No quantization
             weight = self.org_weight.to(input.device)
             bias = self.org_bias.to(input.device) if self.org_bias is not None else None
             out = self.fwd_func(input, weight, bias, **self.fwd_kwargs)
-        
+
         if self.se_module is not None:
             out = self.se_module(out)
         out = self.activation_function(out)
-        
+
         return out
 
-    def set_quant_state(self, weight_quant: bool = False, act_quant: bool = False):
+    def set_quant_state(self, weight_quant: bool = False, act_quant: bool = False) -> "Any":
+        """Public function set_quant_state."""
         self.use_weight_quant = weight_quant
         self.use_act_quant = act_quant
 
-    def set_runtime_mode(self, mode: str = 'train', use_cached_aw: bool = False, clear_cached_aw: bool = False):
+    def set_runtime_mode(
+        self, mode: str = "train", use_cached_aw: bool = False, clear_cached_aw: bool = False
+    ) -> "Any":
         """
         Set runtime behavior for a_w strategy.
         """
-        if mode not in ('train', 'infer'):
+        if mode not in ("train", "infer"):
             raise ValueError(f"Unsupported runtime mode: {mode}")
         self.runtime_mode = mode
         self.use_cached_aw = use_cached_aw
@@ -478,10 +542,8 @@ class QuantModule(nn.Module):
             self.cached_a_w = None
 
 
-
-
-
 class SimpleDequantizer(nn.Module):
+    """Public class SimpleDequantizer."""
 
     def __init__(self, uaq: UniformAffineQuantizer, weight):
         super(SimpleDequantizer, self).__init__()
@@ -497,21 +559,30 @@ class SimpleDequantizer(nn.Module):
         self.size_scale = int(8 // self.n_bits)
 
         if len(weight.shape) == 4:
-            self.delta = nn.Parameter(torch.randn(size=(weight.shape[0]*self.size_scale, 1, 1, 1)), requires_grad=False)
-            self.zero_point = nn.Parameter(torch.randn(size=(weight.shape[0]*self.size_scale, 1, 1, 1)), requires_grad=False)
+            self.delta = nn.Parameter(
+                torch.randn(size=(weight.shape[0] * self.size_scale, 1, 1, 1)), requires_grad=False
+            )
+            self.zero_point = nn.Parameter(
+                torch.randn(size=(weight.shape[0] * self.size_scale, 1, 1, 1)), requires_grad=False
+            )
         elif len(weight.shape) == 2:
-            self.delta = nn.Parameter(torch.randn(size=(weight.shape[0]*self.size_scale, 1)), requires_grad=False)
-            self.zero_point = nn.Parameter(torch.randn(size=(weight.shape[0]*self.size_scale, 1)), requires_grad=False)
+            self.delta = nn.Parameter(
+                torch.randn(size=(weight.shape[0] * self.size_scale, 1)), requires_grad=False
+            )
+            self.zero_point = nn.Parameter(
+                torch.randn(size=(weight.shape[0] * self.size_scale, 1)), requires_grad=False
+            )
         else:
-            print(weight.shape)
-            raise ValueError('shape not implemented')
+            raise ValueError(f"shape not implemented: {tuple(weight.shape)}")
 
-        self.gap = torch.tensor(list(range(0, 8, self.n_bits)), dtype=torch.uint8, device='cuda').unsqueeze(0)
+        self.gap = torch.tensor(
+            list(range(0, 8, self.n_bits)), dtype=torch.uint8, device="cuda"
+        ).unsqueeze(0)
 
-
-    def forward(self, x_int8):
+    def forward(self, x_int8: "Any") -> "Any":
+        """Public function forward."""
         ## unpack
-        #if len(x_int_pack8.shape) == 4:
+        # if len(x_int_pack8.shape) == 4:
         #  pass
         pass
 
@@ -534,6 +605,7 @@ class SimpleDequantizer(nn.Module):
 #   cast back to int8 before _int_mm.  The multiply-accumulate itself
 #   is int8 × int8 → int32 inside _int_mm.
 # ============================================================
+
 
 def _norm_to_int_code(x_norm: torch.Tensor, qmax: int = 127) -> torch.Tensor:
     """
@@ -590,11 +662,11 @@ def _int_linear_accum(x_int: torch.Tensor, w_int: torch.Tensor) -> torch.Tensor:
     x_flat = x_int.reshape(-1, orig_shape[-1])
 
     # int32 → int8 (values already in [-127,127], no clamp needed)
-    x_i8 = x_flat.to(torch.int8).contiguous()          # int8
-    w_i8 = w_int.to(torch.int8).t().contiguous()        # int8, [Cin, Cout]
+    x_i8 = x_flat.to(torch.int8).contiguous()  # int8
+    w_i8 = w_int.to(torch.int8).t().contiguous()  # int8, [Cin, Cout]
 
     # TRUE INT32 ACCUMULATION
-    y_flat = _int_mm_safe(x_i8, w_i8)                   # int32, [N, Cout]
+    y_flat = _int_mm_safe(x_i8, w_i8)  # int32, [N, Cout]
 
     assert y_flat.dtype == torch.int32
     return y_flat.reshape(orig_shape[:-1] + (w_int.shape[0],))
@@ -635,43 +707,43 @@ def _int_conv2d_accum(
     Cout = w_int.shape[0]
     kH, kW = w_int.shape[2], w_int.shape[3]
 
-    _stride = (stride, stride)   if isinstance(stride, int)  else tuple(stride)
-    _pad    = (padding, padding) if isinstance(padding, int) else tuple(padding)
-    _dil    = (dilation, dilation) if isinstance(dilation, int) else tuple(dilation)
+    _stride = (stride, stride) if isinstance(stride, int) else tuple(stride)
+    _pad = (padding, padding) if isinstance(padding, int) else tuple(padding)
+    _dil = (dilation, dilation) if isinstance(dilation, int) else tuple(dilation)
 
     Hout = (H + 2 * _pad[0] - _dil[0] * (kH - 1) - 1) // _stride[0] + 1
     Wout = (W + 2 * _pad[1] - _dil[1] * (kW - 1) - 1) // _stride[1] + 1
-    HW   = Hout * Wout
+    HW = Hout * Wout
 
     def _group_int_mm(x_g_int32, w_g_int32, Cout_g):
         """Per-group true int32 conv via unfold + _int_mm."""
         # F.unfold requires float; this is shape rearrangement only (no multiply)
-        x_col = F.unfold(                                # float32 [N, K, HW]
-            x_g_int32.float(),
-            kernel_size=(kH, kW), dilation=_dil, padding=_pad, stride=_stride)
-        K = x_col.shape[1]                               # Cin_g * kH * kW
+        x_col = F.unfold(  # float32 [N, K, HW]
+            x_g_int32.float(), kernel_size=(kH, kW), dilation=_dil, padding=_pad, stride=_stride
+        )
+        K = x_col.shape[1]  # Cin_g * kH * kW
 
         # [K, N*HW] float32 → int8   (back to int domain before multiply)
         x_col_2d = x_col.permute(1, 0, 2).reshape(K, N * HW)  # float32
-        x_col_i8 = x_col_2d.to(torch.int8).contiguous()        # int8
+        x_col_i8 = x_col_2d.to(torch.int8).contiguous()  # int8
 
         w_i8 = w_g_int32.reshape(Cout_g, -1).to(torch.int8).contiguous()  # int8 [Cout_g, K]
 
         # TRUE INT32 ACCUMULATION: int8 × int8 → int32
-        y_2d = _int_mm_safe(w_i8, x_col_i8)            # int32 [Cout_g, N*HW]
+        y_2d = _int_mm_safe(w_i8, x_col_i8)  # int32 [Cout_g, N*HW]
         return y_2d.reshape(Cout_g, N, HW).permute(1, 0, 2)  # int32 [N, Cout_g, HW]
 
     if groups == 1:
-        y = _group_int_mm(x_int, w_int, Cout)           # int32 [N, Cout, HW]
+        y = _group_int_mm(x_int, w_int, Cout)  # int32 [N, Cout, HW]
     else:
-        Cin_g  = Cin  // groups
+        Cin_g = Cin // groups
         Cout_g = Cout // groups
         outs = []
         for g in range(groups):
-            x_g = x_int[:, g * Cin_g:(g + 1) * Cin_g, :, :]
-            w_g = w_int[g * Cout_g:(g + 1) * Cout_g, :, :, :]
+            x_g = x_int[:, g * Cin_g : (g + 1) * Cin_g, :, :]
+            w_g = w_int[g * Cout_g : (g + 1) * Cout_g, :, :, :]
             outs.append(_group_int_mm(x_g, w_g, Cout_g))
-        y = torch.cat(outs, dim=1)                      # int32 [N, Cout, HW]
+        y = torch.cat(outs, dim=1)  # int32 [N, Cout, HW]
 
     assert y.dtype == torch.int32
     return y.reshape(N, Cout, Hout, Wout)

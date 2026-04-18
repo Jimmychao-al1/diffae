@@ -120,6 +120,7 @@ def _nonnegative_int(s: str) -> int:
 # Run-artifact helpers
 # ──────────────────────────────────────────────────────────────────────────────
 
+
 def _sanitize_name(s: str) -> str:
     """Make a string safe for use as a directory name component."""
     return re.sub(r"[^a-zA-Z0-9_\-]", "_", s)
@@ -153,11 +154,15 @@ def _repo_rel_path(p: Path) -> str:
 
 def _get_git_commit() -> Optional[str]:
     try:
-        return subprocess.check_output(
-            ["git", "rev-parse", "HEAD"],
-            cwd=str(_REPO_ROOT),
-            stderr=subprocess.DEVNULL,
-        ).decode().strip()
+        return (
+            subprocess.check_output(
+                ["git", "rev-parse", "HEAD"],
+                cwd=str(_REPO_ROOT),
+                stderr=subprocess.DEVNULL,
+            )
+            .decode()
+            .strip()
+        )
     except Exception:
         return None
 
@@ -539,6 +544,7 @@ def main_sample_with_optional_stage2_scheduler(
     scheduler_name: str = "unknown",
     runs_index_path: Optional[Path] = None,
 ) -> None:
+    """Public function main_sample_with_optional_stage2_scheduler."""
     import datetime as _dt
     import socket as _socket
     import traceback as _tb
@@ -607,7 +613,9 @@ def main_sample_with_optional_stage2_scheduler(
         ckpt = torch.load(CONFIG.BEST_CKPT_PATH, map_location="cpu", weights_only=False)
         _load_quant_and_ema_from_ckpt(base_model, quant_model, ckpt)
         if hasattr(base_model.ema_model, "set_runtime_mode"):
-            base_model.ema_model.set_runtime_mode(mode="infer", use_cached_aw=True, clear_cached_aw=True)
+            base_model.ema_model.set_runtime_mode(
+                mode="infer", use_cached_aw=True, clear_cached_aw=True
+            )
         LOGGER.info("✅ 量化模型權重載入成功")
 
         base_model.to(CONFIG.DEVICE)
@@ -633,7 +641,9 @@ def main_sample_with_optional_stage2_scheduler(
             )
             runtime_effective_cache_scheduler = runtime_cache_scheduler
             conf.cache_scheduler = runtime_cache_scheduler
-            LOGGER.info("✅ Stage2 cache scheduler enabled: %s", _resolve_repo_path(cache_scheduler_json))
+            LOGGER.info(
+                "✅ Stage2 cache scheduler enabled: %s", _resolve_repo_path(cache_scheduler_json)
+            )
             LOGGER.info("scheduler blocks=%d, T=%d", len(runtime_cache_scheduler), T)
             output_dir = f"{conf.generate_dir}_QAT_T{T}_cache_stage2"
         else:
@@ -672,13 +682,15 @@ def main_sample_with_optional_stage2_scheduler(
     except Exception as _run_exc:
         if run_output_dir is not None:
             _end_dt = _dt.datetime.now()
-            _manifest.update({
-                "status": "failed",
-                "end_time": _end_dt.isoformat(timespec="seconds"),
-                "duration_sec": round((_end_dt - start_dt).total_seconds(), 2),
-                "error_message": str(_run_exc),
-                "traceback": _tb.format_exc(),
-            })
+            _manifest.update(
+                {
+                    "status": "failed",
+                    "end_time": _end_dt.isoformat(timespec="seconds"),
+                    "duration_sec": round((_end_dt - start_dt).total_seconds(), 2),
+                    "error_message": str(_run_exc),
+                    "traceback": _tb.format_exc(),
+                }
+            )
             _write_json(run_output_dir / "run_manifest.json", _manifest)
             if runs_index_path is not None:
                 _n = int(CONFIG.EVAL_SAMPLES)
@@ -734,11 +746,13 @@ def main_sample_with_optional_stage2_scheduler(
             except Exception as _e:
                 LOGGER.warning("Could not write schedule stats/snapshot: %s", _e)
 
-        _manifest.update({
-            "status": "success",
-            "end_time": end_time_str,
-            "duration_sec": duration_sec,
-        })
+        _manifest.update(
+            {
+                "status": "success",
+                "end_time": end_time_str,
+                "duration_sec": duration_sec,
+            }
+        )
         _write_json(run_output_dir / "run_manifest.json", _manifest)
 
         _fps = int(force_full_prefix_steps)
@@ -785,7 +799,9 @@ def main_sample_with_optional_stage2_scheduler(
         if runtime_effective_cache_scheduler is not None:
             try:
                 _t_fr = int(sched_stats.get("T") or CONFIG.NUM_DIFFUSION_STEPS)
-                detail_stats_obj["effective_scheduler_fr_grid"] = _format_effective_scheduler_fr_grid(
+                detail_stats_obj[
+                    "effective_scheduler_fr_grid"
+                ] = _format_effective_scheduler_fr_grid(
                     runtime_effective_cache_scheduler,
                     T=_t_fr,
                 )
@@ -836,10 +852,13 @@ def _set_ckpt_for_mode(mode: str, num_steps: int) -> None:
     if num_steps == 100:
         CONFIG.BEST_CKPT_PATH = "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth"
     else:
-        CONFIG.BEST_CKPT_PATH = "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best_20steps.pth"
+        CONFIG.BEST_CKPT_PATH = (
+            "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best_20steps.pth"
+        )
 
 
 def main() -> None:
+    """Public function main."""
     epilog = """
 Examples (repo root):
   Baseline FID (do not pass --use_cache_scheduler):
@@ -868,7 +887,13 @@ Sampling how-to: QATcode/cache_method/start_run/sampleStage2FidGuide.md
     )
 
     g_samp = parser.add_argument_group("Sampling / FID")
-    g_samp.add_argument("--num_steps", "--n", type=int, default=100, help="DDIM steps T (also selects default QAT ckpt when mode=float)")
+    g_samp.add_argument(
+        "--num_steps",
+        "--n",
+        type=int,
+        default=100,
+        help="DDIM steps T (also selects default QAT ckpt when mode=float)",
+    )
     g_samp.add_argument(
         "--eval_samples",
         "--es",
@@ -971,7 +996,12 @@ Sampling how-to: QATcode/cache_method/start_run/sampleStage2FidGuide.md
     _setup_environment()
 
     LOGGER.info("Using device: %s", CONFIG.DEVICE)
-    LOGGER.info("num_steps=%s eval_samples=%s seed=%s", CONFIG.NUM_DIFFUSION_STEPS, CONFIG.EVAL_SAMPLES, CONFIG.SEED)
+    LOGGER.info(
+        "num_steps=%s eval_samples=%s seed=%s",
+        CONFIG.NUM_DIFFUSION_STEPS,
+        CONFIG.EVAL_SAMPLES,
+        CONFIG.SEED,
+    )
     LOGGER.info(
         "quant-state=%s -> weight=%s act=%s",
         args.quant_state,
@@ -1001,7 +1031,9 @@ Sampling how-to: QATcode/cache_method/start_run/sampleStage2FidGuide.md
         use_cache_scheduler=bool(args.use_cache_scheduler),
         cache_scheduler_json=str(args.cache_scheduler_json),
         force_full_prefix_steps=args.force_full_prefix_steps,
-        force_full_runtime_blocks=_parse_force_full_runtime_blocks(str(args.force_full_runtime_blocks)),
+        force_full_runtime_blocks=_parse_force_full_runtime_blocks(
+            str(args.force_full_runtime_blocks)
+        ),
         safety_first_input_block=bool(args.safety_first_input_block),
         allow_missing_k_per_zone=bool(args.allow_missing_k_per_zone),
         run_output_dir=Path(args.run_output_dir) if args.run_output_dir else None,

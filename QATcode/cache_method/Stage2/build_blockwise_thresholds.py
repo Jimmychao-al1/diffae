@@ -87,6 +87,7 @@ def build_blockwise_thresholds(
     q_peak: float,
     peak_over_zone_ratio_min: float,
 ) -> Dict[str, Any]:
+    """Public function build_blockwise_thresholds."""
     if not (peak_over_zone_ratio_min > 0.0) or math.isnan(peak_over_zone_ratio_min):
         raise ValueError(f"peak_over_zone_ratio_min must be > 0, got {peak_over_zone_ratio_min!r}")
 
@@ -95,7 +96,9 @@ def build_blockwise_thresholds(
     per_block_step = diag.get("per_block_step_error")
     per_block_zone = diag.get("per_block_zone_error")
     if not isinstance(per_block_step, dict) or not isinstance(per_block_zone, dict):
-        raise ValueError("diagnostics must contain per_block_step_error and per_block_zone_error objects")
+        raise ValueError(
+            "diagnostics must contain per_block_step_error and per_block_zone_error objects"
+        )
 
     per_block: List[Dict[str, Any]] = []
     for block_id, rt in enumerate(RUNTIME_LAYER_NAMES):
@@ -105,7 +108,9 @@ def build_blockwise_thresholds(
         peak_thr = _quantile_or_raise(pvals, q_peak, label=f"block {block_id} ({rt}) peak")
         peak_thr = max(peak_thr, peak_over_zone_ratio_min * zone_thr)
         if math.isnan(peak_thr) or math.isinf(peak_thr) or peak_thr <= 0.0:
-            raise ValueError(f"block {block_id} ({rt}): invalid peak_l1_threshold after constraint: {peak_thr!r}")
+            raise ValueError(
+                f"block {block_id} ({rt}): invalid peak_l1_threshold after constraint: {peak_thr!r}"
+            )
 
         canonical = runtime_block_to_stage1_name(rt)
         per_block.append(
@@ -144,11 +149,31 @@ def build_blockwise_thresholds(
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description="Build per-block quantile thresholds from Stage2 diagnostics JSON")
-    ap.add_argument("--diagnostics", type=str, required=True, help="Path to stage2_runtime_diagnostics.json")
-    ap.add_argument("--output", type=str, required=True, help="Output path, e.g. stage2_thresholds_blockwise.json")
-    ap.add_argument("--q_zone", type=float, default=0.75, help="Quantile over zone mean_l1 values per block (default 0.75)")
-    ap.add_argument("--q_peak", type=float, default=0.95, help="Quantile over per-step l1 values per block (default 0.95)")
+    """Public function main."""
+    ap = argparse.ArgumentParser(
+        description="Build per-block quantile thresholds from Stage2 diagnostics JSON"
+    )
+    ap.add_argument(
+        "--diagnostics", type=str, required=True, help="Path to stage2_runtime_diagnostics.json"
+    )
+    ap.add_argument(
+        "--output",
+        type=str,
+        required=True,
+        help="Output path, e.g. stage2_thresholds_blockwise.json",
+    )
+    ap.add_argument(
+        "--q_zone",
+        type=float,
+        default=0.75,
+        help="Quantile over zone mean_l1 values per block (default 0.75)",
+    )
+    ap.add_argument(
+        "--q_peak",
+        type=float,
+        default=0.95,
+        help="Quantile over per-step l1 values per block (default 0.95)",
+    )
     ap.add_argument(
         "--peak_over_zone_ratio_min",
         type=float,

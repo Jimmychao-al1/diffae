@@ -27,6 +27,8 @@ from torch.utils.data import DataLoader
 sys.path.append(".")
 sys.path.append("./model")
 
+from QATcode.quantize_ver2.common_utils import load_diffae_model as _common_load_diffae_model
+
 from QATcode.quant_model_lora import QuantModel_DiffAE_LoRA
 from QATcode.quant_model_lora import QuantModule_DiffAE_LoRA, INT_QuantModel_DiffAE_LoRA, INT_QuantModule_DiffAE_LoRA
 from QATcode.quant_layer import QuantModule, SimpleDequantizer
@@ -208,18 +210,7 @@ def load_diffae_model(model_path: str = CONFIG.MODEL_PATH) -> LitModel:
     Returns:
         LitModel: 加載的擴散模型
     """
-    LOGGER.info(f"載入 Diff-AE 模型: {model_path}")
-    
-    # 載入檢查點
-    ckpt = torch.load(model_path, map_location='cpu', weights_only=False)
-    conf = ffhq128_autoenc_latent()
-    model = LitModel(conf)
-    
-    # 載入權重
-    model.load_state_dict(ckpt['state_dict'], strict=False)
-    LOGGER.info("Diff-AE 模型載入完成")
-    
-    return model
+    return _common_load_diffae_model(model_path, LOGGER)
 
 @time_operation
 def create_float_quantized_model(

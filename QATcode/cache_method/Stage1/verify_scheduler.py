@@ -17,13 +17,12 @@ import numpy as np
 
 
 def load_config(path: str) -> Dict[str, Any]:
+    """Public function load_config."""
     with open(path, encoding="utf-8") as f:
         return json.load(f)
 
 
-def expand_zone_mask_ddim(
-    t_start: int, t_end: int, k: int, T: int
-) -> np.ndarray:
+def expand_zone_mask_ddim(t_start: int, t_end: int, k: int, T: int) -> np.ndarray:
     """與 stage1_scheduler 一致：回傳 (T,) bool，索引為步序 i（i=0 -> t=99）。"""
     L = t_start - t_end + 1
     mask_step = np.zeros(T, dtype=bool)
@@ -35,9 +34,8 @@ def expand_zone_mask_ddim(
     return mask_step
 
 
-def rebuild_mask(
-    shared_zones: List[Dict[str, Any]], k_per_zone: List[int], T: int
-) -> np.ndarray:
+def rebuild_mask(shared_zones: List[Dict[str, Any]], k_per_zone: List[int], T: int) -> np.ndarray:
+    """Public function rebuild_mask."""
     m = np.zeros(T, dtype=bool)
     for z, k in zip(shared_zones, k_per_zone):
         m |= expand_zone_mask_ddim(int(z["t_start"]), int(z["t_end"]), int(k), T)
@@ -66,6 +64,7 @@ def check_shared_zones_cover_ddim(shared_zones: List[Dict[str, Any]], T: int) ->
 
 
 def check_time_order(cfg: Dict[str, Any]) -> bool:
+    """Public function check_time_order."""
     order = cfg.get("time_order")
     if order != "ddim_99_to_0":
         print(f"❌ time_order 必須為 'ddim_99_to_0'，收到: {order!r}")
@@ -75,6 +74,7 @@ def check_time_order(cfg: Dict[str, Any]) -> bool:
 
 
 def check_block_ids(blocks: List[Dict[str, Any]]) -> bool:
+    """Public function check_block_ids."""
     B = len(blocks)
     seen: Set[int] = set()
     ok = True
@@ -106,6 +106,7 @@ def check_block_ids(blocks: List[Dict[str, Any]]) -> bool:
 
 
 def check_shared_zone_ids(shared_zones: List[Dict[str, Any]]) -> bool:
+    """Public function check_shared_zone_ids."""
     Z = len(shared_zones)
     seen: Set[int] = set()
     ok = True
@@ -140,6 +141,7 @@ def check_shared_zone_ids(shared_zones: List[Dict[str, Any]]) -> bool:
 
 
 def main() -> int:
+    """Public function main."""
     parser = argparse.ArgumentParser(description="Verify Stage-1 baseline scheduler JSON")
     parser.add_argument(
         "--config",

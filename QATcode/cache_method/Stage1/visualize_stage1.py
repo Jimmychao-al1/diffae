@@ -12,7 +12,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def load_stage1(output_dir: str):
+def load_stage1(output_dir: str) -> "Any":
+    """Public function load_stage1."""
     p = Path(output_dir)
     with open(p / "scheduler_config.json", encoding="utf-8") as f:
         config = json.load(f)
@@ -21,7 +22,7 @@ def load_stage1(output_dir: str):
     return config, diag
 
 
-def plot_global_cutting(config, diag, save_path: Path):
+def plot_global_cutting(config: "Any", diag: "Any", save_path: Path) -> "Any":
     """G（processing order）平滑、Δ、change points、zones（步序 i，i=0 為 t=99）。"""
     T = int(config["T"])
     g_raw = np.array(diag["G_processing_order_i0_is_t99"], dtype=np.float64)
@@ -62,7 +63,8 @@ def plot_global_cutting(config, diag, save_path: Path):
     print(f"✅ {save_path}")
 
 
-def plot_k_zone_heatmap(config, save_path: Path):
+def plot_k_zone_heatmap(config: "Any", save_path: Path) -> "Any":
+    """Public function plot_k_zone_heatmap."""
     blocks = config["blocks"]
     Z = len(config["shared_zones"])
     B = len(blocks)
@@ -92,7 +94,8 @@ def plot_k_zone_heatmap(config, save_path: Path):
     print(f"✅ {save_path}")
 
 
-def plot_expanded_mask_heatmap(config, save_path: Path):
+def plot_expanded_mask_heatmap(config: "Any", save_path: Path) -> "Any":
+    """Public function plot_expanded_mask_heatmap."""
     T = int(config["T"])
     blocks = config["blocks"]
     B = len(blocks)
@@ -104,7 +107,9 @@ def plot_expanded_mask_heatmap(config, save_path: Path):
     ax.set_xlabel("step index i (0=t=99 → T-1=t=0)")
     ax.set_ylabel("block")
     ax.set_yticks(range(B))
-    ax.set_yticklabels([str(blocks[i]["name"]).replace("model.", "")[:50] for i in range(B)], fontsize=5)
+    ax.set_yticklabels(
+        [str(blocks[i]["name"]).replace("model.", "")[:50] for i in range(B)], fontsize=5
+    )
     ax.set_title("expanded_mask: F=1 (green) / R=0 (red)")
     plt.colorbar(im, ax=ax, ticks=[0, 1], label="F=1")
     plt.tight_layout()
@@ -113,7 +118,7 @@ def plot_expanded_mask_heatmap(config, save_path: Path):
     print(f"✅ {save_path}")
 
 
-def plot_candidate_selected_summary(config, diag, save_path: Path):
+def plot_candidate_selected_summary(config: "Any", diag: "Any", save_path: Path) -> "Any":
     """每 zone：候選 k 數量 + 各 block 選中 k（小 multiples）。"""
     zones = config["shared_zones"]
     cands = diag.get("candidate_k_per_zone", [])
@@ -149,7 +154,8 @@ def plot_candidate_selected_summary(config, diag, save_path: Path):
     print(f"✅ {save_path}")
 
 
-def main():
+def main() -> "Any":
+    """Public function main."""
     parser = argparse.ArgumentParser(description="Visualize Stage-1 baseline")
     parser.add_argument(
         "--stage1_output_dir",

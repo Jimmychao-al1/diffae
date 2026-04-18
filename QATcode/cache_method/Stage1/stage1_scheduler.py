@@ -69,17 +69,13 @@ def ddim_t_to_step_index(t: int, T: int) -> int:
 
 
 def step_index_to_ddim_t(i: int, T: int) -> int:
+    """Public function step_index_to_ddim_t."""
     return (T - 1) - i
 
 
 def interval_j_to_reused_ddim_t(j: int, T: int) -> int:
     """Stage 0 interval 欄 j（0..T-2）→ reused DDIM timestep t（0..T-2）。"""
     return (T - 2) - j
-
-
-def reused_ddim_t_to_interval_j(t: int, T: int) -> int:
-    """reused timestep t（0..T-2）→ interval 欄 j。"""
-    return (T - 2) - t
 
 
 def load_stage0_formal(
@@ -99,7 +95,7 @@ def load_stage0_formal(
     for f in required:
         if not (p / f).exists():
             raise FileNotFoundError(f"缺少 Stage 0 正式檔案: {p / f}")
-    
+
     block_names = np.load(p / "block_names.npy", allow_pickle=True)
     l1 = np.load(p / "l1_interval_norm.npy")
     cos = np.load(p / "cosdist_interval_norm.npy")
@@ -107,7 +103,7 @@ def load_stage0_formal(
     fid_w = np.load(p / "fid_w_qdiffae_clip.npy")
     axis_def = np.load(p / "axis_interval_def.npy", allow_pickle=True)
     t_curr = np.load(p / "t_curr_interval.npy")
-    
+
     B = len(block_names)
     Tm1 = l1.shape[1] if l1.ndim == 2 else len(l1)
     T = Tm1 + 1
@@ -133,6 +129,7 @@ def load_stage0_formal(
         )
 
     def clip01(a: np.ndarray, name: str) -> np.ndarray:
+        """Public function clip01."""
         if a.min() < 0 or a.max() > 1:
             LOGGER.warning("%s 超出 [0,1]，已 clip", name)
             return np.clip(a, 0, 1)
@@ -262,6 +259,7 @@ def or_expanded_with_zone_mask(
 
 
 def moving_average(x: np.ndarray, window: int) -> np.ndarray:
+    """Public function moving_average."""
     if window <= 1:
         return x.copy()
     k = np.ones(window, dtype=np.float64) / window
@@ -432,6 +430,7 @@ def cost_J_for_k(
 
 
 def stats_dict(x: np.ndarray) -> Dict[str, float]:
+    """Public function stats_dict."""
     x = np.asarray(x, dtype=np.float64).ravel()
     return {
         "min": float(x.min()),
@@ -452,6 +451,7 @@ def run_stage1_synthesis(
     k_max: int = 4,
     min_zone_len: int = 2,
 ) -> Tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any]]:
+    """Public function run_stage1_synthesis."""
     block_names, l1, cos, svd, fid_w, axis_def_str, t_curr_arr = load_stage0_formal(stage0_dir)
     B = l1.shape[0]
     T = l1.shape[1] + 1
@@ -537,9 +537,7 @@ def run_stage1_synthesis(
     expanded = np.zeros((B, T), dtype=bool)
     for b in range(B):
         for zi, zd in enumerate(shared_zones):
-            ms, _, _ = expand_zone_mask_ddim(
-                zd["t_start"], zd["t_end"], int(k_chosen[b, zi]), T
-            )
+            ms, _, _ = expand_zone_mask_ddim(zd["t_start"], zd["t_end"], int(k_chosen[b, zi]), T)
             or_expanded_with_zone_mask(expanded[b, :], ms, block_id=b, zone_id=int(zd["id"]))
     # 強制 t=99（i=0）為 F
     expanded[:, 0] = True
@@ -628,9 +626,7 @@ def run_stage1_synthesis(
                 best_k = cand_k_per_zone[zi][0]
                 best_J = float("inf")
                 for k in cand_k_per_zone[zi]:
-                    J, _, _, _, _ = cost_J_for_k(
-                        I_cut[b], fid_w[b], ts, te, k, Lz, float(lam), T
-                    )
+                    J, _, _, _, _ = cost_J_for_k(I_cut[b], fid_w[b], ts, te, k, Lz, float(lam), T)
                     if J < best_J - 1e-15:
                         best_J = J
                         best_k = k
@@ -661,14 +657,10 @@ def run_stage1_synthesis(
     }
 
     # verification_summary
-    zone_boundary_list = [
-        {"t_start": z["t_start"], "t_end": z["t_end"]} for z in shared_zones
-    ]
+    zone_boundary_list = [{"t_start": z["t_start"], "t_end": z["t_end"]} for z in shared_zones]
     per_zone_ver: List[Dict[str, Any]] = []
     for zi, zd in enumerate(shared_zones):
-        per_block_J = [
-            float(cost_tables[zi]["per_block"][b]["selected_J"]) for b in range(B)
-        ]
+        per_block_J = [float(cost_tables[zi]["per_block"][b]["selected_J"]) for b in range(B)]
         per_zone_ver.append(
             {
                 "zone_id": zi,
@@ -767,7 +759,8 @@ def _self_test_merge_zones_cover_T() -> None:
     assert covered.all() and len(merged) >= 1
 
 
-def self_test():
+def self_test() -> "Any":
+    """Public function self_test."""
     T = 100
     B = 3
     Tm1 = T - 1
@@ -810,9 +803,10 @@ def self_test():
     print("self_test OK")
 
 
-def main():
+def main() -> "Any":
+    """Public function main."""
     import argparse
-    
+
     p = argparse.ArgumentParser(description="Stage-1 baseline scheduler")
     p.add_argument("--stage0_dir", type=str, default="QATcode/cache_method/Stage0/stage0e_output")
     p.add_argument("--output_dir", type=str, default="QATcode/cache_method/Stage1/stage1_output")
@@ -830,11 +824,11 @@ def main():
     p.add_argument("--min_zone_len", type=int, default=2)
     p.add_argument("--self_test", action="store_true")
     args = p.parse_args()
-    
+
     if args.self_test:
         self_test()
         return
-    
+
     sweep = tuple(float(x.strip()) for x in args.lambda_sweep.split(",") if x.strip())
     run_stage1_synthesis(
         args.stage0_dir,

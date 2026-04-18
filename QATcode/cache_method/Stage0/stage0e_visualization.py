@@ -10,13 +10,13 @@ Stage-0E Visualization
     python3 QATcode/cache_method/Stage0/stage0e_visualization.py
 """
 
-import os
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import List
 
 import numpy as np
 import matplotlib
-matplotlib.use('Agg')  # Non-interactive backend
+
+matplotlib.use("Agg")  # Non-interactive backend
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
@@ -25,12 +25,13 @@ import matplotlib.gridspec as gridspec
 # 一、讀取 Stage-0E 輸出
 # ============================================================
 
+
 def _build_default_t_curr(T_minus_1: int) -> np.ndarray:
     """Fallback: interval index j -> t_curr = (T-2) - j."""
     return (T_minus_1 - 1) - np.arange(T_minus_1, dtype=np.int32)
 
 
-def load_stage0e_outputs(output_dir: str):
+def load_stage0e_outputs(output_dir: str) -> "Any":
     """
     從 output_dir 讀取 Stage-0E 的結果。
 
@@ -74,6 +75,7 @@ def load_stage0e_outputs(output_dir: str):
 # 二、Per-block 三曲線圖
 # ============================================================
 
+
 def plot_block_curves(
     block_idx: int,
     block_name: str,
@@ -83,7 +85,7 @@ def plot_block_curves(
     fid_w: float,
     t_curr: np.ndarray,
     save_path: str,
-):
+) -> "Any":
     """
     對單一 block 繪製 L1 step mean / cosine distance / SVD interval distance 曲線。
 
@@ -108,7 +110,8 @@ def plot_block_curves(
     ax.set_ylabel("Normalized value  [0, 1]", fontsize=10)
     ax.set_title(
         f"{block_name}    (FID weight = {fid_w:.4f})",
-        fontsize=12, fontweight="bold",
+        fontsize=12,
+        fontweight="bold",
     )
     ax.set_xlim(0, T_minus_1 - 1)
     ax.set_ylim(-0.02, min(1.05, max(l1.max(), cos.max(), svd.max()) * 1.15 + 0.02))
@@ -137,7 +140,7 @@ def plot_selected_blocks(
     t_curr: np.ndarray,
     indices: List[int],
     save_dir: str,
-):
+) -> "Any":
     """
     對一組選定的 block 批次繪圖。
 
@@ -169,11 +172,12 @@ def plot_selected_blocks(
 # 三、FID weight bar chart
 # ============================================================
 
+
 def plot_fid_weight_bar(
     block_names: np.ndarray,
     fid_w: np.ndarray,
     save_path: str,
-):
+) -> "Any":
     """
     繪製所有 block 的 FID weight 條形圖（按 weight 遞減排序）。
     """
@@ -199,7 +203,9 @@ def plot_fid_weight_bar(
     ax.set_yticklabels(names_sorted, fontsize=7)
     ax.invert_yaxis()
     ax.set_xlabel("FID weight  w_b  [0, 1]", fontsize=10)
-    ax.set_title("Per-block FID Sensitivity Weight (T=100, Q-DiffAE)", fontsize=12, fontweight="bold")
+    ax.set_title(
+        "Per-block FID Sensitivity Weight (T=100, Q-DiffAE)", fontsize=12, fontweight="bold"
+    )
     ax.set_xlim(0, 1.08)
     ax.grid(axis="x", alpha=0.3)
 
@@ -218,6 +224,7 @@ def plot_fid_weight_bar(
 # 四、全局 Heatmap（三種指標各一張）
 # ============================================================
 
+
 def plot_heatmap(
     data: np.ndarray,
     block_names: np.ndarray,
@@ -225,7 +232,7 @@ def plot_heatmap(
     save_path: str,
     t_curr: np.ndarray,
     cmap: str = "YlOrRd",
-):
+) -> "Any":
     """
     繪製 (B, T-1) 的 heatmap。
     X 軸顯示 DDIM current timestep t_curr（底層資料順序仍為 analysis interval index）。
@@ -264,6 +271,7 @@ def plot_heatmap(
 # 五、Combined overview（3 指標 + FID weight，單張大圖）
 # ============================================================
 
+
 def plot_combined_overview(
     block_idx: int,
     block_name: str,
@@ -274,7 +282,7 @@ def plot_combined_overview(
     block_names: np.ndarray,
     t_curr: np.ndarray,
     save_path: str,
-):
+) -> "Any":
     """
     上半：三條曲線（selected block）
     下半：FID weight bar（highlight selected block）
@@ -282,7 +290,8 @@ def plot_combined_overview(
     T_minus_1 = len(l1)
     x = np.arange(T_minus_1)
     B = len(block_names)
-    order = np.argsort(fid_w_all)[::-1]
+    # 穩定排序：同權重時保留原始 block 順序，避免 tie 下位置跳動
+    order = np.argsort(-fid_w_all, kind="stable")
 
     fig = plt.figure(figsize=(16, 10))
     gs = gridspec.GridSpec(2, 1, height_ratios=[1.2, 1], hspace=0.3)
@@ -296,7 +305,8 @@ def plot_combined_overview(
     ax_top.set_ylabel("Normalized [0, 1]", fontsize=10)
     ax_top.set_title(
         f"Stage-0E: {block_name}  (w_b = {fid_w_all[block_idx]:.4f})",
-        fontsize=13, fontweight="bold",
+        fontsize=13,
+        fontweight="bold",
     )
     ax_top.set_xlim(0, T_minus_1 - 1)
     # tick labels 用 t_curr
@@ -314,6 +324,7 @@ def plot_combined_overview(
     ax_bot = fig.add_subplot(gs[1])
     names_sorted = [str(block_names[i]).replace("model.", "") for i in order]
     w_sorted = fid_w_all[order]
+    selected_pos = int(np.where(order == block_idx)[0][0])
 
     colors = []
     for i_sorted, orig_idx in enumerate(order):
@@ -326,12 +337,21 @@ def plot_combined_overview(
 
     ax_bot.barh(range(B), w_sorted, color=colors, edgecolor="white", linewidth=0.3)
     ax_bot.set_yticks(range(B))
-    ax_bot.set_yticklabels(names_sorted, fontsize=6)
+    display_names = list(names_sorted)
+    display_names[selected_pos] = f"> {display_names[selected_pos]}"
+    ax_bot.set_yticklabels(display_names, fontsize=6)
+    yticklabels = ax_bot.get_yticklabels()
+    yticklabels[selected_pos].set_color("#d62728")
+    yticklabels[selected_pos].set_fontweight("bold")
     ax_bot.invert_yaxis()
     ax_bot.set_xlabel("FID sensitivity weight w_b", fontsize=10)
-    ax_bot.set_title("FID Sensitivity (red = selected block)", fontsize=11)
+    ax_bot.set_title("FID Sensitivity (red row/label = selected block)", fontsize=11)
     ax_bot.set_xlim(0, 1.08)
     ax_bot.grid(axis="x", alpha=0.3)
+    # 即使 w=0，也用底色帶與箭頭保證可視性
+    ax_bot.axhspan(selected_pos - 0.45, selected_pos + 0.45, color="#d62728", alpha=0.12, zorder=0)
+    marker_x = max(float(w_sorted[selected_pos]) + 0.015, 0.015)
+    ax_bot.scatter([marker_x], [selected_pos], color="#d62728", s=20, marker=">", zorder=3)
 
     fig.savefig(save_path, dpi=150, bbox_inches="tight")
     plt.close(fig)
@@ -339,56 +359,14 @@ def plot_combined_overview(
 
 
 # ============================================================
-# 六、自動選出代表性 block
-# ============================================================
-
-def select_representative_blocks(
-    block_names: np.ndarray,
-    fid_w: np.ndarray,
-    n_top: int = 3,
-    n_bottom: int = 2,
-    extra: Optional[List[str]] = None,
-) -> List[int]:
-    """
-    自動選出代表性 block：
-    - FID weight 最高的 n_top 個
-    - FID weight 最低（或 = 0）的 n_bottom 個
-    - 額外指定的 block（若存在）
-
-    Returns:
-        indices: 去重後的 block index 列表
-    """
-    order_desc = np.argsort(fid_w)[::-1]
-    order_asc = np.argsort(fid_w)
-
-    selected = set()
-
-    # Top FID weight
-    for i in range(min(n_top, len(order_desc))):
-        selected.add(int(order_desc[i]))
-
-    # Bottom FID weight
-    for i in range(min(n_bottom, len(order_asc))):
-        selected.add(int(order_asc[i]))
-
-    # Extra
-    if extra:
-        name_to_idx = {str(n): i for i, n in enumerate(block_names)}
-        for name in extra:
-            if name in name_to_idx:
-                selected.add(name_to_idx[name])
-
-    return sorted(selected)
-
-
-# ============================================================
 # 七、主入口
 # ============================================================
+
 
 def main(
     input_dir: str,
     output_dir: str,
-):
+) -> "Any":
     """
     Stage-0E 可視化主流程。
 
@@ -407,7 +385,9 @@ def main(
 
     # 1. 讀取
     print("\n[1] 載入 Stage-0E 輸出...")
-    block_names, l1_norm, cos_norm, svd_norm, fid_w, t_curr, axis_def = load_stage0e_outputs(input_dir)
+    block_names, l1_norm, cos_norm, svd_norm, fid_w, t_curr, axis_def = load_stage0e_outputs(
+        input_dir
+    )
     B, T_minus_1 = l1_norm.shape
     print(f"    B={B}, T-1={T_minus_1}")
     print(f"    axis: {axis_def}")
@@ -424,8 +404,14 @@ def main(
     print("\n[3] 繪製 per-block 三曲線圖...")
     curves_dir = out / "block_curves"
     plot_selected_blocks(
-        block_names, l1_norm, cos_norm, svd_norm, fid_w,
-        t_curr=t_curr, indices=indices, save_dir=str(curves_dir),
+        block_names,
+        l1_norm,
+        cos_norm,
+        svd_norm,
+        fid_w,
+        t_curr=t_curr,
+        indices=indices,
+        save_dir=str(curves_dir),
     )
 
     # 4. Combined overview（每個 selected block 一張大圖）
@@ -454,9 +440,30 @@ def main(
     print("\n[6] 繪製全局 heatmap...")
     heatmap_dir = out / "heatmaps"
     heatmap_dir.mkdir(parents=True, exist_ok=True)
-    plot_heatmap(l1_norm, block_names, "L1 step mean (normalized)", str(heatmap_dir / "heatmap_l1.png"), t_curr=t_curr, cmap="YlOrRd")
-    plot_heatmap(cos_norm, block_names, "Cosine distance (normalized)", str(heatmap_dir / "heatmap_cosdist.png"), t_curr=t_curr, cmap="YlOrRd")
-    plot_heatmap(svd_norm, block_names, "SVD interval distance (normalized)", str(heatmap_dir / "heatmap_svd.png"), t_curr=t_curr, cmap="YlOrRd")
+    plot_heatmap(
+        l1_norm,
+        block_names,
+        "L1 step mean (normalized)",
+        str(heatmap_dir / "heatmap_l1.png"),
+        t_curr=t_curr,
+        cmap="YlOrRd",
+    )
+    plot_heatmap(
+        cos_norm,
+        block_names,
+        "Cosine distance (normalized)",
+        str(heatmap_dir / "heatmap_cosdist.png"),
+        t_curr=t_curr,
+        cmap="YlOrRd",
+    )
+    plot_heatmap(
+        svd_norm,
+        block_names,
+        "SVD interval distance (normalized)",
+        str(heatmap_dir / "heatmap_svd.png"),
+        t_curr=t_curr,
+        cmap="YlOrRd",
+    )
 
     print("\n" + "=" * 60)
     print(f"✅ 所有圖片已儲存至: {out}")

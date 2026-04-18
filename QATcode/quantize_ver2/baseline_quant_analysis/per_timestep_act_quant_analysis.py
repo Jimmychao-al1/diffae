@@ -44,6 +44,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
@@ -73,6 +74,7 @@ LOGGER = logging.getLogger("per_timestep_act_quant_analysis")
 # Per-step statistics accumulator
 # ============================================================
 
+
 @dataclass
 class _StepAccum:
     """Online accumulator for one (layer, timestep) cell.
@@ -83,6 +85,7 @@ class _StepAccum:
     All tensor work stays on ``x.device`` (typically CUDA during inference)
     until ``summary()``; only Python floats are returned for JSON.
     """
+
     # online moments
     n: int = 0
     sum_v: float = 0.0
@@ -100,6 +103,7 @@ class _StepAccum:
     clip_count: int = 0
 
     def update(self, x: torch.Tensor, scale: Optional[float] = None) -> None:
+        """Public function update."""
         # Keep activations on the same device as the model (GPU in normal runs).
         flat = x.detach().reshape(-1).float()
         dev = flat.device
@@ -138,6 +142,7 @@ class _StepAccum:
             self.clip_count += 1
 
     def summary(self) -> Dict[str, Any]:
+        """Public function summary."""
         if self.n == 0:
             return {}
         mean = self.sum_v / self.n
@@ -174,6 +179,7 @@ class _StepAccum:
 # JSON serialization helper
 # ============================================================
 
+
 def _json_safe(x: Any) -> Any:
     if isinstance(x, dict):
         return {str(k): _json_safe(v) for k, v in x.items()}
@@ -197,6 +203,7 @@ def _json_safe(x: Any) -> Any:
 # Representative layer selection
 # ============================================================
 
+
 def _get_block_key(module_path: str) -> str:
     """Map a quant-model module path to a UNet block identifier.
 
@@ -205,7 +212,7 @@ def _get_block_key(module_path: str) -> str:
       'model.middle_block.0.in_layers.1'   -> 'middle_block'
       'model.output_blocks.2.0.out_layers.3' -> 'output_blocks.2'
     """
-    p = module_path[len("model."):] if module_path.startswith("model.") else module_path
+    p = module_path[len("model.") :] if module_path.startswith("model.") else module_path
     parts = p.split(".")
     if not parts:
         return "unknown"
@@ -241,7 +248,7 @@ def _select_representative_layers(
         parent_path = name[: -len(".act_quantizer")]
         block_key = _get_block_key(parent_path)
         baseline_path = (
-            parent_path[len("model."):] if parent_path.startswith("model.") else parent_path
+            parent_path[len("model.") :] if parent_path.startswith("model.") else parent_path
         )
         entry: Dict[str, str] = {
             "act_quant_path": name,
@@ -259,7 +266,8 @@ def _select_representative_layers(
 
     LOGGER.info(
         "Found %d blocks with TemporalActivationQuantizer (max_layers=%d)",
-        len(per_block), max_layers,
+        len(per_block),
+        max_layers,
     )
 
     if len(per_block) <= max_layers:
@@ -269,8 +277,11 @@ def _select_representative_layers(
     encoder = [x for x in per_block if x["block_key"].startswith("input_blocks")]
     mid = [x for x in per_block if x["block_key"] == "middle_block"]
     decoder = [x for x in per_block if x["block_key"].startswith("output_blocks")]
-    other = [x for x in per_block if x["block_key"] not in
-             {x2["block_key"] for x2 in encoder + mid + decoder}]
+    other = [
+        x
+        for x in per_block
+        if x["block_key"] not in {x2["block_key"] for x2 in encoder + mid + decoder}
+    ]
 
     budget = max(0, max_layers - len(mid) - len(other))
     n_enc = max(2, budget // 2)
@@ -291,6 +302,7 @@ def _select_representative_layers(
 # ============================================================
 # Model loading
 # ============================================================
+
 
 def _build_tt_model(
     *,
@@ -359,6 +371,7 @@ def _build_baseline_model(
 # Timestep tracking (wrap model.forward to capture 't')
 # ============================================================
 
+
 def _patch_t_tracking(model: nn.Module, t_ref: Dict) -> Any:
     """Wrap model.forward to intercept the 't' argument and store in t_ref."""
     orig_forward = model.forward
@@ -378,6 +391,7 @@ def _patch_t_tracking(model: nn.Module, t_ref: Dict) -> Any:
 # ============================================================
 # Stats collection
 # ============================================================
+
 
 @torch.no_grad()
 def _collect_stats(
@@ -413,8 +427,11 @@ def _collect_stats(
                 m.inited = True
                 m.current_step = m.total_steps - 1
                 n_reset += 1
-        LOGGER.info("[%s] set_quant_state(True,True), reset current_step to T-1 for %d quantizers",
-                    label, n_reset)
+        LOGGER.info(
+            "[%s] set_quant_state(True,True), reset current_step to T-1 for %d quantizers",
+            label,
+            n_reset,
+        )
     else:
         LOGGER.info("[%s] using original float model (no quant_state change)", label)
 
@@ -425,13 +442,14 @@ def _collect_stats(
     handles: List = []
 
     for layer in selected_layers:
-        layer_key = layer["parent_path"]          # canonical key shared by both models
+        layer_key = layer["parent_path"]  # canonical key shared by both models
         hook_path = layer["act_quant_path"] if is_tt else layer["baseline_path"]
         target = name_to_module.get(hook_path)
 
         if target is None:
-            LOGGER.warning("[%s] Module not found in named_modules: '%s' -- skipping",
-                           label, hook_path)
+            LOGGER.warning(
+                "[%s] Module not found in named_modules: '%s' -- skipping", label, hook_path
+            )
             continue
 
         def _make_hook(key: str, _is_tt: bool) -> Any:
@@ -456,6 +474,7 @@ def _collect_stats(
                     scale = float(module.scale_list[step_idx].item())
 
                 acc_map[key][t].update(x, scale=scale)
+
             return _hook
 
         handles.append(target.register_forward_pre_hook(_make_hook(layer_key, is_tt)))
@@ -513,8 +532,8 @@ def _collect_stats(
         for h in handles:
             try:
                 h.remove()
-            except Exception:
-                pass
+            except Exception as e:
+                LOGGER.warning("Failed to remove forward hook: %s", e)
 
     # Compile final results
     results: Dict[str, Dict[int, Dict[str, Any]]] = {}
@@ -525,8 +544,7 @@ def _collect_stats(
             LOGGER.warning("[%s] No data collected for layer: %s", label, key)
             continue
         results[key] = {
-            int(t): acc.summary()
-            for t, acc in sorted(t_map.items(), key=lambda kv: kv[0])
+            int(t): acc.summary() for t, acc in sorted(t_map.items(), key=lambda kv: kv[0])
         }
         LOGGER.info("[%s] Layer '%s': collected %d timesteps", label, key, len(results[key]))
 
@@ -536,6 +554,7 @@ def _collect_stats(
 # ============================================================
 # Output: JSON
 # ============================================================
+
 
 def _save_stats_json(
     stats: Dict[str, Dict[int, Dict[str, Any]]],
@@ -565,6 +584,7 @@ def _save_stats_json(
 # ============================================================
 # Output: per-layer line plots (q01 / mean / q99)
 # ============================================================
+
 
 def _plot_layer_curves(
     tt_stats: Dict[str, Dict[int, Dict[str, Any]]],
@@ -607,8 +627,9 @@ def _plot_layer_curves(
                     [tt_t[t].get(metric, np.nan) if t in tt_t else np.nan for t in all_t],
                     dtype=np.float64,
                 )
-                ax.plot(t_arr, vals, color=color, linestyle="-", linewidth=1.8,
-                        label=f"TT {label_base}")
+                ax.plot(
+                    t_arr, vals, color=color, linestyle="-", linewidth=1.8, label=f"TT {label_base}"
+                )
 
             # BASELINE: dashed lines
             if bl_t:
@@ -616,13 +637,19 @@ def _plot_layer_curves(
                     [bl_t[t].get(metric, np.nan) if t in bl_t else np.nan for t in all_t],
                     dtype=np.float64,
                 )
-                ax.plot(t_arr, vals, color=color, linestyle="--", linewidth=1.5,
-                        label=f"BL {label_base}")
+                ax.plot(
+                    t_arr,
+                    vals,
+                    color=color,
+                    linestyle="--",
+                    linewidth=1.5,
+                    label=f"BL {label_base}",
+                )
 
         ax.set_xlabel("Diffusion timestep  t  (high noise → low noise)")
         ax.set_ylabel("Activation value")
         ax.set_title(f"{key}\nq01 / mean / q99  |  solid=TT  dashed=BASELINE", fontsize=9)
-        ax.invert_xaxis()          # t goes high → low (left to right = denoising direction)
+        ax.invert_xaxis()  # t goes high → low (left to right = denoising direction)
         ax.grid(True, alpha=0.25)
 
         # Build a tidy legend (deduplicate color-only entries)
@@ -640,7 +667,9 @@ def _plot_layer_curves(
 # Main analysis runner
 # ============================================================
 
+
 def run_analysis(args: argparse.Namespace) -> None:
+    """Public function run_analysis."""
     _seed_all(int(args.seed))
     device = torch.device(
         "cuda" if (args.device == "auto" and torch.cuda.is_available()) else args.device
@@ -738,14 +767,22 @@ def run_analysis(args: argparse.Namespace) -> None:
     # ---- Save JSON ----
     LOGGER.info("=== Saving JSON outputs ===")
     _save_stats_json(
-        tt_stats, out_root / "stats_TT.json",
-        label="TT", selected_layers=selected_layers,
-        T=T, num_samples=num_samples, seed=int(args.seed),
+        tt_stats,
+        out_root / "stats_TT.json",
+        label="TT",
+        selected_layers=selected_layers,
+        T=T,
+        num_samples=num_samples,
+        seed=int(args.seed),
     )
     _save_stats_json(
-        baseline_stats, out_root / "stats_BASELINE.json",
-        label="BASELINE", selected_layers=selected_layers,
-        T=T, num_samples=num_samples, seed=int(args.seed),
+        baseline_stats,
+        out_root / "stats_BASELINE.json",
+        label="BASELINE",
+        selected_layers=selected_layers,
+        T=T,
+        num_samples=num_samples,
+        seed=int(args.seed),
     )
 
     # ---- Plots ----
@@ -764,6 +801,7 @@ def run_analysis(args: argparse.Namespace) -> None:
 # CLI entry point
 # ============================================================
 
+
 def _setup_logging(log_file: Optional[str] = None) -> None:
     fmt = "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
     handlers: List[logging.Handler] = [logging.StreamHandler()]
@@ -774,44 +812,54 @@ def _setup_logging(log_file: Optional[str] = None) -> None:
 
 
 def main() -> None:
+    """Public function main."""
     parser = argparse.ArgumentParser(
         description="Per-Timestep Act-Quantizer Activation Distribution Analysis"
     )
     parser.add_argument(
-        "--ckpt", type=str,
+        "--ckpt",
+        type=str,
         default="checkpoints/ffhq128_autoenc_latent/last.ckpt",
         help="Path to Diff-AE base checkpoint (used by both TT and BASELINE)",
     )
     parser.add_argument(
-        "--lora-ckpt", type=str,
+        "--lora-ckpt",
+        type=str,
         default="QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth",
         help="Path to TT (Q-DiffAE) LoRA+quant checkpoint",
     )
     parser.add_argument(
-        "--output-root", type=str,
+        "--output-root",
+        type=str,
         default="QATcode/quantize_ver2/results/act_quant_per_timestep",
         help="Root directory for all outputs",
     )
     parser.add_argument("--T", type=int, default=100, help="DDIM steps (default: 100)")
     parser.add_argument(
-        "--num-samples", type=int, default=64,
+        "--num-samples",
+        type=int,
+        default=64,
         help="Number of images to generate for analysis (divisible by --batch-size)",
     )
     parser.add_argument("--batch-size", type=int, default=8, help="Chunk batch size")
     parser.add_argument(
-        "--max-layers", type=int, default=12,
+        "--max-layers",
+        type=int,
+        default=12,
         help="Maximum representative layers to analyze (8–15 recommended)",
     )
     parser.add_argument(
-        "--max-batches", type=int, default=None,
+        "--max-batches",
+        type=int,
+        default=None,
         help="Limit number of batches per model (for quick testing)",
     )
-    parser.add_argument(
-        "--image-size", type=int, default=128, help="Image spatial size"
-    )
+    parser.add_argument("--image-size", type=int, default=128, help="Image spatial size")
     parser.add_argument("--seed", type=int, default=42, help="Random seed")
     parser.add_argument(
-        "--device", type=str, default="auto",
+        "--device",
+        type=str,
+        default="auto",
         help="Device: 'auto', 'cuda', 'cpu', or 'cuda:N'",
     )
     parser.add_argument("--log-file", type=str, default=None, help="Optional log file path")
@@ -822,8 +870,14 @@ def main() -> None:
     LOGGER.info("  ckpt        : %s", args.ckpt)
     LOGGER.info("  lora_ckpt   : %s", args.lora_ckpt)
     LOGGER.info("  output_root : %s", args.output_root)
-    LOGGER.info("  T=%d  num_samples=%d  batch=%d  max_layers=%d  seed=%d",
-                args.T, args.num_samples, args.batch_size, args.max_layers, args.seed)
+    LOGGER.info(
+        "  T=%d  num_samples=%d  batch=%d  max_layers=%d  seed=%d",
+        args.T,
+        args.num_samples,
+        args.batch_size,
+        args.max_layers,
+        args.seed,
+    )
 
     run_analysis(args)
 

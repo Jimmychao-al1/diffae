@@ -8,6 +8,7 @@ import os
 import sys
 import time
 import logging
+
 # === DEBUG/DIAG ===
 import math
 import shutil
@@ -28,10 +29,24 @@ sys.path.append(".")
 sys.path.append("./model")
 
 from QATcode.quant_model_lora import QuantModel_DiffAE_LoRA
-from QATcode.quant_model_lora import QuantModule_DiffAE_LoRA, INT_QuantModel_DiffAE_LoRA, INT_QuantModule_DiffAE_LoRA
+from QATcode.quant_model_lora import (
+    QuantModule_DiffAE_LoRA,
+    INT_QuantModel_DiffAE_LoRA,
+    INT_QuantModule_DiffAE_LoRA,
+)
 from QATcode.quant_layer import QuantModule, SimpleDequantizer
 from QATcode.quant_dataset import DiffusionInputDataset
 from QATcode.diffae_trainer import *
+from QATcode.quantize_ver2.common_utils import (
+    seed_all as _seed_all,
+    print_trainable_parameters as _common_print_trainable_parameters,
+    make_time_operation,
+    sync_ema_once as _common_sync_ema_once,
+    make_state_dict as _common_make_state_dict,
+    remap_keys as _common_remap_keys,
+    load_diffae_model as _common_load_diffae_model,
+)
+from QATcode.utils.args import add_common_generation_args
 from diffusion.diffusion import _WrappedModel
 from model.unet_autoenc import BeatGANsAutoencModel
 from experiment import *
@@ -45,57 +60,63 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 from tqdm.auto import tqdm
-#from thop import profile, clever_format
+
+# from thop import profile, clever_format
 from model.blocks import QKVAttention, QKVAttentionLegacy
 from model.nn import timestep_embedding
 import seaborn as sns
+
 # 添加快取分析功能
 try:
     from cache_analysis.simple_collector import SimpleBlockCollector
+
     CACHE_ANALYSIS_AVAILABLE = True
 except ImportError:
     CACHE_ANALYSIS_AVAILABLE = False
-    print("⚠️ 快取分析功能不可用，請檢查 cache_analysis 模組")
+    logging.getLogger(__name__).warning("⚠️ 快取分析功能不可用，請檢查 cache_analysis 模組")
 
 # 添加方向2分析功能
 try:
     from cache_analysis.emb_output_collector import EmbOutputCollector
     from cache_analysis.correlation_analyzer import CorrelationAnalyzer
+
     DIRECTION2_AVAILABLE = True
 except ImportError:
     DIRECTION2_AVAILABLE = False
-    print("⚠️ 方向2分析功能不可用，請檢查 cache_analysis 模組")
+    logging.getLogger(__name__).warning("⚠️ 方向2分析功能不可用，請檢查 cache_analysis 模組")
 
-#=============================================================================
+# =============================================================================
 # 配置與常量
-#=============================================================================
+# =============================================================================
+
 
 # 訓練配置
 class TrainingConfig:
     """訓練與量化相關配置 - EfficientDM 風格"""
+
     # 硬體設定
-    DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    GPU_ID = '0'
+    DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    GPU_ID = "0"
     SEED = 0
-    MODE = 'train'
-    CACHE_METHOD = 'Res' #Res or Att
+    MODE = "train"
+    CACHE_METHOD = "Res"  # Res or Att
     # 訓練參數 - 按 EfficientDM 設定
-    BATCH_SIZE = 12     # 適中的 batch size
+    BATCH_SIZE = 12  # 適中的 batch size
     LORA_RANK = 32
     NUM_DIFFUSION_STEPS = 100  # 對齊原作的 ddim_steps=100
-    
+
     # 快取分析參數
-    ENABLE_CACHE_ANALYSIS = False   # 是否啟用快取分析 (方向1)
-    CACHE_ANALYSIS_SAMPLES = 5     # 快取分析樣本數
-    
+    ENABLE_CACHE_ANALYSIS = False  # 是否啟用快取分析 (方向1)
+    CACHE_ANALYSIS_SAMPLES = 5  # 快取分析樣本數
+
     # 方向2分析參數
     ENABLE_DIRECTION2_ANALYSIS = False  # 是否啟用方向2分析
-    DIRECTION2_SAMPLES = 10            # 方向2分析樣本數 (較少樣本以加快分析)
-    
+    DIRECTION2_SAMPLES = 10  # 方向2分析樣本數 (較少樣本以加快分析)
+
     # Cache Scheduler 參數
     ENABLE_CACHE = False  # 是否啟用 cache scheduler
     CACHE_THRESHOLD = 0.1  # L1rel 閾值
-    
+
     # 定量分析參數
     ENABLE_QUANTITATIVE_ANALYSIS = False  # 是否啟用定量分析
     ANALYSIS_NUM_SAMPLES = 10  # 生成時間測試的樣本數
@@ -108,35 +129,41 @@ class TrainingConfig:
     SIMILARITY_OUTPUT_ROOT = "QATcode/cache_method/a_L1_L2_cosine"
     SIMILARITY_SAVE_DTYPE = "float16"  # npz 儲存精度：float16 / float32
     SIMILARITY_PLOT_COSINE_STEP = False  # cosine 只做 heatmap 時可關閉
-    
+
     # 量化參數
     N_BITS_W = 8  # 權重量化位元數
     N_BITS_A = 8  # 激活量化位元數
-    
+
     # 文件路徑
     MODEL_PATH = "checkpoints/ffhq128_autoenc_latent/last.ckpt"
-    BEST_CKPT_PATH = "QATcode/diffae_step6_lora_best.pth" 
+    BEST_CKPT_PATH = "QATcode/diffae_step6_lora_best.pth"
 
     CALIB_DATA_PATH = "QATcode/calibration_diffae.pth"
 
     EVAL_SAMPLES = 50_000
     CALIB_SAMPLES = 1024
-    
-    LOG_FILE = 'QATcode/cache_method/a_L1_L2_cosine/log/similarity_calculation.log'  # 預設 log 檔案路徑
 
-    
-    
+    LOG_FILE = "QATcode/cache_method/a_L1_L2_cosine/log/similarity_calculation.log"  # 預設 log 檔案路徑
+
 
 class AverageMeter:
+    """Public class AverageMeter."""
+
     def __init__(self):
         self.reset()
-    def reset(self):
+
+    def reset(self) -> "Any":
+        """Public function reset."""
         self.sum = 0.0
         self.cnt = 0
+
     @property
-    def avg(self):
+    def avg(self) -> "Any":
+        """Public function avg."""
         return self.sum / max(1, self.cnt)
-    def update(self, val, n=1):
+
+    def update(self, val: "Any", n: "Any" = 1) -> "Any":
+        """Public function update."""
         self.sum += float(val) * n
         self.cnt += n
 
@@ -145,123 +172,65 @@ class AverageMeter:
 CONFIG = TrainingConfig()
 LOGGER = logging.getLogger("QuantTraining")
 
-#=============================================================================
+# =============================================================================
 # 工具函數
-#=============================================================================
-
-def _seed_all(seed: int) -> None:
-    """統一設定 random/numpy/torch 的隨機種子。"""
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    if torch.cuda.is_available():
-        torch.cuda.manual_seed_all(seed)
-
+# =============================================================================
 
 
 def print_trainable_parameters(model: nn.Module) -> Tuple[int, int]:
     """
     打印可訓練參數統計
-    
+
     Args:
         model: 要分析的模型
-        
+
     Returns:
         (trainable_params, all_param): 可訓練參數數量和總參數數量
     """
-    trainable_params = 0
-    all_param = 0
-    
-    for name, param in model.named_parameters():
-        all_param += param.numel()
-        if param.requires_grad:
-            trainable_params += param.numel()
-            
-    LOGGER.info(f"可訓練參數: {trainable_params:,} || "
-          f"總參數: {all_param:,} || "
-          f"可訓練比例: {100 * trainable_params / all_param:.2f}%")
-    
-    return trainable_params, all_param
+    return _common_print_trainable_parameters(model, LOGGER)
 
 
+time_operation = make_time_operation(LOGGER)
 
-def time_operation(func: Callable) -> Callable:
-    """
-    用於測量函數執行時間的裝飾器
-    
-    Args:
-        func: 要測量的函數
-        
-    Returns:
-        包裝後的函數，會打印執行時間
-    """
-    def wrapper(*args, **kwargs):
-        start_time = time.time()
-        result = func(*args, **kwargs)
-        elapsed = time.time() - start_time
-        LOGGER.info(f"執行 '{func.__name__}' 完成，耗時: {elapsed:.2f} 秒")
-        return result
-    return wrapper
-
-#=============================================================================
+# =============================================================================
 # 模型載入與創建函數
-#=============================================================================
+# =============================================================================
+
 
 @time_operation
 def load_diffae_model(model_path: str = CONFIG.MODEL_PATH) -> LitModel:
     """
     載入預訓練的 Diff-AE 模型
-    
+
     Args:
         model_path: 檢查點路徑
-        
+
     Returns:
         LitModel: 加載的擴散模型
     """
-    LOGGER.info(f"載入 Diff-AE 模型: {model_path}")
-    
-    # 載入檢查點
-    ckpt = torch.load(model_path, map_location='cpu', weights_only=False)
-    conf = ffhq128_autoenc_latent()
-    model = LitModel(conf)
-    
-    # 載入權重
-    model.load_state_dict(ckpt['state_dict'], strict=False)
-    LOGGER.info("Diff-AE 模型載入完成")
-    
-    return model
-
+    return _common_load_diffae_model(model_path, LOGGER)
 
 
 @torch.no_grad()
-def sync_ema_once(base_model: LitModel):
-    model = base_model.model
-    ema_model = copy.deepcopy(model)
-    setattr(base_model, 'ema_model', ema_model)
-    return base_model
+def sync_ema_once(base_model: LitModel) -> "Any":
+    """Public function sync_ema_once."""
+    return _common_sync_ema_once(base_model)
 
-def make_state_dict(m: torch.nn.Module, drop_uint8: bool = True):
+
+def make_state_dict(m: torch.nn.Module, drop_uint8: bool = True) -> "Any":
     """輸出乾淨的 state_dict；預設移除 uint8 權重（你之後另行導出 INT8 時再存）。"""
-    out = {}
-    for k, v in m.state_dict().items():
-        if drop_uint8 and getattr(v, "dtype", None) == torch.uint8:
-            continue
-        out[k] = v.detach().cpu()
-    return out
+    return _common_make_state_dict(m, drop_uint8=drop_uint8)
 
-def remap_keys(sd, drop_prefix=None, add_prefix=None):
-    out = {}
-    for k, v in sd.items():
-        if drop_prefix and k.startswith(drop_prefix):
-            k = k[len(drop_prefix):]
-        if add_prefix:
-            k = add_prefix + k
-        out[k] = v
-    return out
 
-#=============================================================================
+def remap_keys(sd: "Any", drop_prefix: "Any" = None, add_prefix: "Any" = None) -> "Any":
+    """Public function remap_keys."""
+    return _common_remap_keys(sd, drop_prefix=drop_prefix, add_prefix=add_prefix)
+
+
+# =============================================================================
 # Similarity Analysis (L1rel / L2rel / Cosine)
-#=============================================================================
+# =============================================================================
+
 
 class SimilarityCollector:
     """收集 TimestepEmbedSequential 輸出並計算 L1/L2/Cosine 矩陣與 step-change 曲線。"""
@@ -287,10 +256,10 @@ class SimilarityCollector:
         self.base_image_size = base_image_size
         # 設置設備：優先使用傳入的 device，否則自動檢測
         if device is None:
-            self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+            self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         else:
             self.device = device
-        
+
         # 採樣策略：用於增加多樣性
         # "first": 取前 N 個（默認，最快）
         # "random": 隨機選擇 N 個（增加多樣性）
@@ -317,7 +286,7 @@ class SimilarityCollector:
         # per-batch storage: {block_name: {step_idx: tensor(B,C,H,W)}}
         self._batch_outputs: Dict[str, Dict[int, torch.Tensor]] = {}
         self._batch_size = None
-        
+
         # 樣本計數器：追蹤已收集的樣本數
         self._collected_samples = 0
         self._collection_active = True
@@ -336,7 +305,7 @@ class SimilarityCollector:
         self.tier_step_sums = {}
         self.tier_step_sumsq = {}
         self.tier_step_counts = {}
-        
+
         # per-batch 資料收集（用於多組折線圖）
         # 格式：{block_name: [batch_0_data, batch_1_data, ...]}
         # 每個 batch_data 是 {metric: {sums, sumsq, counts}}
@@ -346,7 +315,7 @@ class SimilarityCollector:
         # 當前 batch 的累加器（用於累積當前 batch 的資料，直到達到 collect_samples）
         self.current_batch_accumulator = {}  # {block_name: {l1: {...}, l2: {...}, cos: {...}}}
 
-    def register_hooks(self, model: nn.Module, sampler):
+    def register_hooks(self, model: nn.Module, sampler: "Any") -> "Any":
         """註冊 block hook + model step hook。"""
         from model.blocks import TimestepEmbedSequential
 
@@ -377,35 +346,45 @@ class SimilarityCollector:
         self.hooks.append(model.register_forward_hook(self._create_model_post_hook()))
         LOGGER.info("[Similarity] 註冊 model step hook 完成")
 
-    def remove_hooks(self):
+    def remove_hooks(self) -> "Any":
+        """Public function remove_hooks."""
         for hook in self.hooks:
             hook.remove()
         self.hooks.clear()
 
     def _create_step_pre_hook(self):
-        def pre_hook(module, args, kwargs):
+        def pre_hook(module: "Any", args: "Any", kwargs: "Any") -> "Any":
+            """Public function pre_hook."""
             self._step_counter = (self._step_counter + 1) % self.max_timesteps
             self.current_step_idx = self.max_timesteps - 1 - self._step_counter
             if self.mapped_t_list and 0 <= self.current_step_idx < len(self.mapped_t_list):
                 self.current_mapped_t = int(self.mapped_t_list[self.current_step_idx])
             else:
                 self.current_mapped_t = None
+
         return pre_hook
 
     def _create_model_post_hook(self):
-        def post_hook(module, input, output):
+        def post_hook(module: "Any", input: "Any", output: "Any") -> "Any":
+            """Public function post_hook."""
             if self.current_step_idx == 0:
                 self._finalize_current_batch()
                 self._step_counter = -1
                 # 清除當前 batch 的採樣索引緩存，為下一個 batch 做準備
                 # 只清除當前 batch 的緩存，保留其他 block 的緩存（如果有的話）
-                keys_to_remove = [k for k in self._sample_indices_cache.keys() if f"_batch_{self.current_batch_idx}" in k]
+                keys_to_remove = [
+                    k
+                    for k in self._sample_indices_cache.keys()
+                    if f"_batch_{self.current_batch_idx}" in k
+                ]
                 for k in keys_to_remove:
                     del self._sample_indices_cache[k]
+
         return post_hook
 
     def _create_block_hook(self, block_name: str):
-        def hook_fn(module, input, output):
+        def hook_fn(module: "Any", input: "Any", output: "Any") -> "Any":
+            """Public function hook_fn."""
             # 如果已收集足夠樣本，直接跳過
             if not self._collection_active:
                 return
@@ -415,21 +394,21 @@ class SimilarityCollector:
             step_idx = int(self._step_counter)
             if not (0 <= step_idx < self.max_timesteps):
                 return
-            
+
             # 計算還需要收集多少樣本
             remaining = self.num_samples - self._collected_samples
             if remaining <= 0:
                 self._collection_active = False
                 return
-            
+
             # 先保持在 GPU，避免阻塞；dtype 轉換也在 GPU 上做
             out = output.detach()
             out = out.to(dtype=torch.float16 if self.save_dtype == np.float16 else torch.float32)
-            
+
             # 只取需要的樣本數（batch 內截斷）
             batch_size = out.shape[0]
             n_collect = min(batch_size, remaining)
-            
+
             # 根據採樣策略選擇樣本
             if n_collect < batch_size:
                 # 需要從 batch 中選擇樣本
@@ -452,22 +431,27 @@ class SimilarityCollector:
                     if cache_key not in self._sample_indices_cache:
                         # 計算均勻分佈的步長
                         step = batch_size / n_collect
-                        indices = torch.tensor([int(i * step) for i in range(n_collect)], device=out.device, dtype=torch.long)
+                        indices = torch.tensor(
+                            [int(i * step) for i in range(n_collect)],
+                            device=out.device,
+                            dtype=torch.long,
+                        )
                         self._sample_indices_cache[cache_key] = indices
                     else:
                         indices = self._sample_indices_cache[cache_key]
                 else:
                     # 默認：取前 N 個
                     indices = torch.arange(n_collect, device=out.device)
-                
+
                 out = out[indices]
             else:
                 # 不需要選擇，使用全部樣本
                 indices = torch.arange(batch_size, device=out.device)
-            
+
             self._batch_outputs.setdefault(block_name, {})[step_idx] = out
             if self._batch_size is None:
                 self._batch_size = n_collect
+
         return hook_fn
 
     def _ensure_block_accumulators(self, block_name: str):
@@ -481,8 +465,12 @@ class SimilarityCollector:
             "l2": torch.zeros((T, T), dtype=torch.float64, device=self.device),
             "cos": torch.zeros((T, T), dtype=torch.float64, device=self.device),
         }
-        self.block_counts[block_name] = torch.zeros((T, T), dtype=torch.int64, device=self.device)  # 用於 L1/L2
-        self.block_counts_cos[block_name] = torch.zeros((T, T), dtype=torch.int64, device=self.device)  # 用於 cosine
+        self.block_counts[block_name] = torch.zeros(
+            (T, T), dtype=torch.int64, device=self.device
+        )  # 用於 L1/L2
+        self.block_counts_cos[block_name] = torch.zeros(
+            (T, T), dtype=torch.int64, device=self.device
+        )  # 用於 cosine
         self.block_step_sums[block_name] = {
             "l1": torch.zeros((T - 1,), dtype=torch.float64, device=self.device),
             "l1_rate": torch.zeros((T - 1,), dtype=torch.float64, device=self.device),
@@ -495,7 +483,9 @@ class SimilarityCollector:
             "l2": torch.zeros((T - 1,), dtype=torch.float64, device=self.device),
             "cos": torch.zeros((T - 1,), dtype=torch.float64, device=self.device),
         }
-        self.block_step_counts[block_name] = torch.zeros((T - 1,), dtype=torch.int64, device=self.device)
+        self.block_step_counts[block_name] = torch.zeros(
+            (T - 1,), dtype=torch.int64, device=self.device
+        )
 
     def _assign_tier(self, block_name: str, h: int, w: int, base: int):
         if h == base and w == base:
@@ -530,20 +520,22 @@ class SimilarityCollector:
     def _finalize_current_batch(self):
         if not self._batch_outputs:
             return
-        
+
         T = self.max_timesteps
         for block_name, step_dict in self._batch_outputs.items():
             if len(step_dict) != T:
-                LOGGER.warning(f"[Similarity] block {block_name} timesteps 不完整: {len(step_dict)}/{T}")
+                LOGGER.warning(
+                    f"[Similarity] block {block_name} timesteps 不完整: {len(step_dict)}/{T}"
+                )
                 continue
 
             self._ensure_block_accumulators(block_name)
             # 保持在 GPU 上，不轉移到 CPU（所有計算在 GPU 上進行）
             outputs = [step_dict[i] for i in range(T)]
-            
+
             # 更新已收集樣本數（基於實際收集的樣本）
             actual_batch_size = outputs[0].shape[0]
-            
+
             # 計算當前 batch 實際應該收集多少樣本
             # 考慮全侷限制和每個 batch 的限制
             if self._collection_active and self._batch_collect_limit is not None:
@@ -551,10 +543,10 @@ class SimilarityCollector:
                 remaining_for_batch = self._batch_collect_limit - self.current_batch_collected
                 # 計算全局還剩多少樣本
                 remaining_global = self.num_samples - self._collected_samples
-                
+
                 # 實際收集的樣本數 = min(實際 batch 大小, batch 剩餘, 全局剩餘)
                 actual_collected = min(actual_batch_size, remaining_for_batch, remaining_global)
-                
+
                 # 如果實際 batch 大小超過需要收集的數量，只處理前 actual_collected 個樣本
                 if actual_batch_size > actual_collected:
                     outputs = [out[:actual_collected] for out in outputs]
@@ -562,21 +554,25 @@ class SimilarityCollector:
             else:
                 # 如果沒有 batch 限制或已停止收集，使用實際 batch 大小
                 remaining_global = self.num_samples - self._collected_samples
-                actual_collected = min(actual_batch_size, remaining_global) if self._collection_active else 0
+                actual_collected = (
+                    min(actual_batch_size, remaining_global) if self._collection_active else 0
+                )
                 if actual_batch_size > actual_collected:
                     outputs = [out[:actual_collected] for out in outputs]
                     actual_batch_size = actual_collected
-            
+
             self._collected_samples += actual_collected
-            
+
             # 只有當還在收集時，才累加到當前 batch 和累加器
             if self._collection_active:
                 self.current_batch_collected += actual_collected
-                
+
                 # 檢查是否已收集足夠樣本（全局）
                 # 注意：即使達到全侷限制，也要先保存當前 batch 的資料，然後再停止
                 if self._collected_samples >= self.num_samples:
-                    LOGGER.info(f"[Similarity] 已收集 {self._collected_samples} 個樣本，停止資料收集（目標: {self.num_samples}）")
+                    LOGGER.info(
+                        f"[Similarity] 已收集 {self._collected_samples} 個樣本，停止資料收集（目標: {self.num_samples}）"
+                    )
                     # 不立即設置 _collection_active = False，讓後續邏輯有機會保存當前 batch
 
             # 記錄 block 空間尺寸，用於 tier 分組
@@ -600,38 +596,42 @@ class SimilarityCollector:
                         self.block_sums[block_name]["l1_rate"][j, i] += l1_rate_vals.sum()
                         self.block_sums[block_name]["l2"][j, i] += l2_vals.sum()
                         self.block_counts[block_name][j, i] += l1_vals.numel()
-            
+
             # 計算 Cosine 相似度矩陣（使用矩陣運算，參考 metrics.py）
             # 對每個樣本分別計算 cosine 矩陣，然後平均
             # outputs[i] shape: (batch_size, C, H, W)
             batch_size = outputs[0].shape[0]
             cosine_matrices = []
-            
+
             for b in range(batch_size):
                 # 對每個樣本，擷取所有 timestep 的特徵
                 features_list = []
                 for i in range(T):
                     feat = outputs[i][b].flatten().to(torch.float64)  # shape: (C*H*W,)
                     features_list.append(feat)
-                
+
                 # 堆疊所有 timestep 的特徵
                 features = torch.stack(features_list)  # shape: (T, C*H*W)
-                
+
                 # 計算 cosine similarity（參考 metrics.py 的實現）
                 norms = torch.norm(features, p=2, dim=1, keepdim=True)  # shape: (T, 1)
                 normalized_features = features / (norms + 1e-8)  # 避免除零，shape: (T, C*H*W)
-                cosine_matrix = torch.mm(normalized_features, normalized_features.T)  # shape: (T, T)
+                cosine_matrix = torch.mm(
+                    normalized_features, normalized_features.T
+                )  # shape: (T, T)
                 cosine_matrices.append(cosine_matrix)
-            
+
             # 對所有樣本求平均
             cosine_matrix_avg = torch.stack(cosine_matrices).mean(dim=0)  # shape: (T, T)，在 GPU 上
-            
+
             # 累加到累加器（對角線自動是 1），直接在 GPU 上累加
             self.block_sums[block_name]["cos"] += cosine_matrix_avg
             # counts：每個 batch 貢獻 1（因為是矩陣運算，每個 batch 計算一次）
             # 使用獨立的 counts 矩陣，避免與 L1/L2 的 counts 混淆
             # L1/L2 的 counts 累加的是樣本數，cosine 的 counts 累加的是 batch 數
-            self.block_counts_cos[block_name] += torch.ones(cosine_matrix_avg.shape, dtype=torch.int64, device=self.device)
+            self.block_counts_cos[block_name] += torch.ones(
+                cosine_matrix_avg.shape, dtype=torch.int64, device=self.device
+            )
 
             # 計算 step-change：outputs[s-1]→outputs[s]，s 為 _step_counter（0→99）。
             # 寫入 l1_rate 的 index [s-1]；與 npz「l1_rate_step_mean」欄位一致。
@@ -640,78 +640,147 @@ class SimilarityCollector:
             # 初始化當前 batch 的累加器（如果還沒有），使用 GPU tensor
             if block_name not in self.current_batch_accumulator:
                 self.current_batch_accumulator[block_name] = {
-                    "l1": {"sums": torch.zeros(T - 1, dtype=torch.float64, device=self.device), "sumsq": torch.zeros(T - 1, dtype=torch.float64, device=self.device), "counts": torch.zeros(T - 1, dtype=torch.int64, device=self.device)},
-                    "l1_rate": {"sums": torch.zeros(T - 1, dtype=torch.float64, device=self.device), "sumsq": torch.zeros(T - 1, dtype=torch.float64, device=self.device), "counts": torch.zeros(T - 1, dtype=torch.int64, device=self.device)},
-                    "l2": {"sums": torch.zeros(T - 1, dtype=torch.float64, device=self.device), "sumsq": torch.zeros(T - 1, dtype=torch.float64, device=self.device), "counts": torch.zeros(T - 1, dtype=torch.int64, device=self.device)},
-                    "cos": {"sums": torch.zeros(T - 1, dtype=torch.float64, device=self.device), "sumsq": torch.zeros(T - 1, dtype=torch.float64, device=self.device), "counts": torch.zeros(T - 1, dtype=torch.int64, device=self.device)},
+                    "l1": {
+                        "sums": torch.zeros(T - 1, dtype=torch.float64, device=self.device),
+                        "sumsq": torch.zeros(T - 1, dtype=torch.float64, device=self.device),
+                        "counts": torch.zeros(T - 1, dtype=torch.int64, device=self.device),
+                    },
+                    "l1_rate": {
+                        "sums": torch.zeros(T - 1, dtype=torch.float64, device=self.device),
+                        "sumsq": torch.zeros(T - 1, dtype=torch.float64, device=self.device),
+                        "counts": torch.zeros(T - 1, dtype=torch.int64, device=self.device),
+                    },
+                    "l2": {
+                        "sums": torch.zeros(T - 1, dtype=torch.float64, device=self.device),
+                        "sumsq": torch.zeros(T - 1, dtype=torch.float64, device=self.device),
+                        "counts": torch.zeros(T - 1, dtype=torch.int64, device=self.device),
+                    },
+                    "cos": {
+                        "sums": torch.zeros(T - 1, dtype=torch.float64, device=self.device),
+                        "sumsq": torch.zeros(T - 1, dtype=torch.float64, device=self.device),
+                        "counts": torch.zeros(T - 1, dtype=torch.int64, device=self.device),
+                    },
                 }
                 if block_name not in self.batch_step_data:
                     self.batch_step_data[block_name] = []
-            
+
             for s in range(1, T):
                 t_prev = outputs[s - 1]  # _step_counter = s-1
-                t_curr = outputs[s]      # _step_counter = s
+                t_curr = outputs[s]  # _step_counter = s
                 l1_vals, l1_rate_vals, l2_vals, cos_vals = self._calc_metrics_batch(t_prev, t_curr)
-                
+
                 # 累加到全局累加器
                 self.block_step_sums[block_name]["l1"][s - 1] += l1_vals.sum()
                 self.block_step_sums[block_name]["l1_rate"][s - 1] += l1_rate_vals.sum()
                 self.block_step_sums[block_name]["l2"][s - 1] += l2_vals.sum()
                 self.block_step_sums[block_name]["cos"][s - 1] += cos_vals.sum()
-                self.block_step_sumsq[block_name]["l1"][s - 1] += (l1_vals ** 2).sum()
-                self.block_step_sumsq[block_name]["l1_rate"][s - 1] += (l1_rate_vals ** 2).sum()
-                self.block_step_sumsq[block_name]["l2"][s - 1] += (l2_vals ** 2).sum()
-                self.block_step_sumsq[block_name]["cos"][s - 1] += (cos_vals ** 2).sum()
+                self.block_step_sumsq[block_name]["l1"][s - 1] += (l1_vals**2).sum()
+                self.block_step_sumsq[block_name]["l1_rate"][s - 1] += (l1_rate_vals**2).sum()
+                self.block_step_sumsq[block_name]["l2"][s - 1] += (l2_vals**2).sum()
+                self.block_step_sumsq[block_name]["cos"][s - 1] += (cos_vals**2).sum()
                 self.block_step_counts[block_name][s - 1] += l1_vals.numel()
-                
+
                 # 只有當還在收集時，才累加到當前 batch 的累加器
                 if self._collection_active:
                     self.current_batch_accumulator[block_name]["l1"]["sums"][s - 1] += l1_vals.sum()
-                    self.current_batch_accumulator[block_name]["l1"]["sumsq"][s - 1] += (l1_vals ** 2).sum()
-                    self.current_batch_accumulator[block_name]["l1"]["counts"][s - 1] += l1_vals.numel()
-                    self.current_batch_accumulator[block_name]["l1_rate"]["sums"][s - 1] += l1_rate_vals.sum()
-                    self.current_batch_accumulator[block_name]["l1_rate"]["sumsq"][s - 1] += (l1_rate_vals ** 2).sum()
-                    self.current_batch_accumulator[block_name]["l1_rate"]["counts"][s - 1] += l1_rate_vals.numel()
+                    self.current_batch_accumulator[block_name]["l1"]["sumsq"][s - 1] += (
+                        l1_vals**2
+                    ).sum()
+                    self.current_batch_accumulator[block_name]["l1"]["counts"][
+                        s - 1
+                    ] += l1_vals.numel()
+                    self.current_batch_accumulator[block_name]["l1_rate"]["sums"][
+                        s - 1
+                    ] += l1_rate_vals.sum()
+                    self.current_batch_accumulator[block_name]["l1_rate"]["sumsq"][s - 1] += (
+                        l1_rate_vals**2
+                    ).sum()
+                    self.current_batch_accumulator[block_name]["l1_rate"]["counts"][
+                        s - 1
+                    ] += l1_rate_vals.numel()
                     self.current_batch_accumulator[block_name]["l2"]["sums"][s - 1] += l2_vals.sum()
-                    self.current_batch_accumulator[block_name]["l2"]["sumsq"][s - 1] += (l2_vals ** 2).sum()
-                    self.current_batch_accumulator[block_name]["l2"]["counts"][s - 1] += l2_vals.numel()
-                    self.current_batch_accumulator[block_name]["cos"]["sums"][s - 1] += cos_vals.sum()
-                    self.current_batch_accumulator[block_name]["cos"]["sumsq"][s - 1] += (cos_vals ** 2).sum()
-                    self.current_batch_accumulator[block_name]["cos"]["counts"][s - 1] += cos_vals.numel()
-            
+                    self.current_batch_accumulator[block_name]["l2"]["sumsq"][s - 1] += (
+                        l2_vals**2
+                    ).sum()
+                    self.current_batch_accumulator[block_name]["l2"]["counts"][
+                        s - 1
+                    ] += l2_vals.numel()
+                    self.current_batch_accumulator[block_name]["cos"]["sums"][
+                        s - 1
+                    ] += cos_vals.sum()
+                    self.current_batch_accumulator[block_name]["cos"]["sumsq"][s - 1] += (
+                        cos_vals**2
+                    ).sum()
+                    self.current_batch_accumulator[block_name]["cos"]["counts"][
+                        s - 1
+                    ] += cos_vals.numel()
+
             # 檢查當前 batch 是否收集完足夠的樣本（每個 batch 收集 _batch_collect_limit 個樣本）
             # _batch_collect_limit 在 register_hooks 時設定為 similarity_collect_samples
             # 或者已經達到全侷限制（需要保存最後一個 batch）
             should_save_batch = False
-            if self._batch_collect_limit is not None and self.current_batch_collected >= self._batch_collect_limit:
+            if (
+                self._batch_collect_limit is not None
+                and self.current_batch_collected >= self._batch_collect_limit
+            ):
                 should_save_batch = True
             elif self._collected_samples >= self.num_samples and self.current_batch_collected > 0:
                 # 達到全侷限制，但當前 batch 有資料，也要保存
                 should_save_batch = True
-            
+
             if should_save_batch:
                 # 當前 batch 已收集足夠的樣本，保存資料並開始新 batch
                 # 轉移到 CPU 並轉換為 numpy（用於保存和後續繪圖）
                 batch_data = {
-                    "l1": {k: v.cpu().clone().numpy() if isinstance(v, torch.Tensor) else v.copy() for k, v in self.current_batch_accumulator[block_name]["l1"].items()},
-                    "l1_rate": {k: v.cpu().clone().numpy() if isinstance(v, torch.Tensor) else v.copy() for k, v in self.current_batch_accumulator[block_name]["l1_rate"].items()},
-                    "l2": {k: v.cpu().clone().numpy() if isinstance(v, torch.Tensor) else v.copy() for k, v in self.current_batch_accumulator[block_name]["l2"].items()},
-                    "cos": {k: v.cpu().clone().numpy() if isinstance(v, torch.Tensor) else v.copy() for k, v in self.current_batch_accumulator[block_name]["cos"].items()},
+                    "l1": {
+                        k: v.cpu().clone().numpy() if isinstance(v, torch.Tensor) else v.copy()
+                        for k, v in self.current_batch_accumulator[block_name]["l1"].items()
+                    },
+                    "l1_rate": {
+                        k: v.cpu().clone().numpy() if isinstance(v, torch.Tensor) else v.copy()
+                        for k, v in self.current_batch_accumulator[block_name]["l1_rate"].items()
+                    },
+                    "l2": {
+                        k: v.cpu().clone().numpy() if isinstance(v, torch.Tensor) else v.copy()
+                        for k, v in self.current_batch_accumulator[block_name]["l2"].items()
+                    },
+                    "cos": {
+                        k: v.cpu().clone().numpy() if isinstance(v, torch.Tensor) else v.copy()
+                        for k, v in self.current_batch_accumulator[block_name]["cos"].items()
+                    },
                 }
                 self.batch_step_data[block_name].append(batch_data)
-                LOGGER.info(f"[Similarity] Batch {self.current_batch_idx} 完成，已收集 {self.current_batch_collected} 個樣本")
-                
+                LOGGER.info(
+                    f"[Similarity] Batch {self.current_batch_idx} 完成，已收集 {self.current_batch_collected} 個樣本"
+                )
+
                 # 如果已達到全侷限制，停止收集
                 if self._collected_samples >= self.num_samples:
                     self._collection_active = False
-                
+
                 # 重置當前 batch 的累加器（GPU tensor）
                 T = self.max_timesteps
                 self.current_batch_accumulator[block_name] = {
-                    "l1": {"sums": torch.zeros(T - 1, dtype=torch.float64, device=self.device), "sumsq": torch.zeros(T - 1, dtype=torch.float64, device=self.device), "counts": torch.zeros(T - 1, dtype=torch.int64, device=self.device)},
-                    "l1_rate": {"sums": torch.zeros(T - 1, dtype=torch.float64, device=self.device), "sumsq": torch.zeros(T - 1, dtype=torch.float64, device=self.device), "counts": torch.zeros(T - 1, dtype=torch.int64, device=self.device)},
-                    "l2": {"sums": torch.zeros(T - 1, dtype=torch.float64, device=self.device), "sumsq": torch.zeros(T - 1, dtype=torch.float64, device=self.device), "counts": torch.zeros(T - 1, dtype=torch.int64, device=self.device)},
-                    "cos": {"sums": torch.zeros(T - 1, dtype=torch.float64, device=self.device), "sumsq": torch.zeros(T - 1, dtype=torch.float64, device=self.device), "counts": torch.zeros(T - 1, dtype=torch.int64, device=self.device)},
+                    "l1": {
+                        "sums": torch.zeros(T - 1, dtype=torch.float64, device=self.device),
+                        "sumsq": torch.zeros(T - 1, dtype=torch.float64, device=self.device),
+                        "counts": torch.zeros(T - 1, dtype=torch.int64, device=self.device),
+                    },
+                    "l1_rate": {
+                        "sums": torch.zeros(T - 1, dtype=torch.float64, device=self.device),
+                        "sumsq": torch.zeros(T - 1, dtype=torch.float64, device=self.device),
+                        "counts": torch.zeros(T - 1, dtype=torch.int64, device=self.device),
+                    },
+                    "l2": {
+                        "sums": torch.zeros(T - 1, dtype=torch.float64, device=self.device),
+                        "sumsq": torch.zeros(T - 1, dtype=torch.float64, device=self.device),
+                        "counts": torch.zeros(T - 1, dtype=torch.int64, device=self.device),
+                    },
+                    "cos": {
+                        "sums": torch.zeros(T - 1, dtype=torch.float64, device=self.device),
+                        "sumsq": torch.zeros(T - 1, dtype=torch.float64, device=self.device),
+                        "counts": torch.zeros(T - 1, dtype=torch.int64, device=self.device),
+                    },
                 }
                 self.current_batch_collected = 0
                 self.current_batch_idx += 1
@@ -723,16 +792,18 @@ class SimilarityCollector:
                 self._init_tier_accumulators(tier)
                 for s in range(1, T):
                     t_prev = outputs[s - 1]  # _step_counter = s-1
-                    t_curr = outputs[s]      # _step_counter = s
-                    l1_vals, l1_rate_vals, l2_vals, cos_vals = self._calc_metrics_batch(t_prev, t_curr)
+                    t_curr = outputs[s]  # _step_counter = s
+                    l1_vals, l1_rate_vals, l2_vals, cos_vals = self._calc_metrics_batch(
+                        t_prev, t_curr
+                    )
                     self.tier_step_sums[tier]["l1"][s - 1] += l1_vals.sum()
                     self.tier_step_sums[tier]["l1_rate"][s - 1] += l1_rate_vals.sum()
                     self.tier_step_sums[tier]["l2"][s - 1] += l2_vals.sum()
                     self.tier_step_sums[tier]["cos"][s - 1] += cos_vals.sum()
-                    self.tier_step_sumsq[tier]["l1"][s - 1] += (l1_vals ** 2).sum()
-                    self.tier_step_sumsq[tier]["l1_rate"][s - 1] += (l1_rate_vals ** 2).sum()
-                    self.tier_step_sumsq[tier]["l2"][s - 1] += (l2_vals ** 2).sum()
-                    self.tier_step_sumsq[tier]["cos"][s - 1] += (cos_vals ** 2).sum()
+                    self.tier_step_sumsq[tier]["l1"][s - 1] += (l1_vals**2).sum()
+                    self.tier_step_sumsq[tier]["l1_rate"][s - 1] += (l1_rate_vals**2).sum()
+                    self.tier_step_sumsq[tier]["l2"][s - 1] += (l2_vals**2).sum()
+                    self.tier_step_sumsq[tier]["cos"][s - 1] += (cos_vals**2).sum()
                     self.tier_step_counts[tier][s - 1] += l1_vals.numel()
 
         self._batch_outputs = {}
@@ -753,7 +824,9 @@ class SimilarityCollector:
 
         # L2rel: ||x-y||2 / (||x||2 + ||y||2)/2
         diff_sq = (t1 - t2).pow(2).mean(dim=(1, 2, 3)).sqrt()
-        l2_ref = (t1.pow(2).mean(dim=(1, 2, 3)).sqrt() + t2.pow(2).mean(dim=(1, 2, 3)).sqrt()) / 2.0 + eps
+        l2_ref = (
+            t1.pow(2).mean(dim=(1, 2, 3)).sqrt() + t2.pow(2).mean(dim=(1, 2, 3)).sqrt()
+        ) / 2.0 + eps
         l2_vals = diff_sq / l2_ref
 
         # Cosine similarity
@@ -765,29 +838,55 @@ class SimilarityCollector:
 
         return l1_vals, l1_rate_vals, l2_vals, cos_vals
 
-    def finalize(self):
+    def finalize(self) -> "Any":
         """只輸出：L1 / cosine"""
         for block_name in self.block_sums.keys():
             # 在 GPU 上計算 mean，然後轉移到 CPU
-            l1_mean_tensor = self._safe_div(self.block_sums[block_name]["l1"], self.block_counts[block_name])
-            l1_rate_mean_tensor = self._safe_div(self.block_sums[block_name]["l1_rate"], self.block_counts[block_name])
-            l2_mean_tensor = self._safe_div(self.block_sums[block_name]["l2"], self.block_counts[block_name])
+            l1_mean_tensor = self._safe_div(
+                self.block_sums[block_name]["l1"], self.block_counts[block_name]
+            )
+            l1_rate_mean_tensor = self._safe_div(
+                self.block_sums[block_name]["l1_rate"], self.block_counts[block_name]
+            )
+            l2_mean_tensor = self._safe_div(
+                self.block_sums[block_name]["l2"], self.block_counts[block_name]
+            )
             # cosine 使用獨立的 counts，因為累加方式不同（batch 數 vs 樣本數）
-            cos_mean_tensor = self._safe_div(self.block_sums[block_name]["cos"], self.block_counts_cos[block_name])
-            
+            cos_mean_tensor = self._safe_div(
+                self.block_sums[block_name]["cos"], self.block_counts_cos[block_name]
+            )
+
             # 轉移到 CPU 並轉換為 numpy
-            l1_mean = l1_mean_tensor.cpu().numpy() if isinstance(l1_mean_tensor, torch.Tensor) else l1_mean_tensor
-            l1_rate_mean = l1_rate_mean_tensor.cpu().numpy() if isinstance(l1_rate_mean_tensor, torch.Tensor) else l1_rate_mean_tensor
-            l2_mean = l2_mean_tensor.cpu().numpy() if isinstance(l2_mean_tensor, torch.Tensor) else l2_mean_tensor
-            cos_mean = cos_mean_tensor.cpu().numpy() if isinstance(cos_mean_tensor, torch.Tensor) else cos_mean_tensor
-            
+            l1_mean = (
+                l1_mean_tensor.cpu().numpy()
+                if isinstance(l1_mean_tensor, torch.Tensor)
+                else l1_mean_tensor
+            )
+            l1_rate_mean = (
+                l1_rate_mean_tensor.cpu().numpy()
+                if isinstance(l1_rate_mean_tensor, torch.Tensor)
+                else l1_rate_mean_tensor
+            )
+            l2_mean = (
+                l2_mean_tensor.cpu().numpy()
+                if isinstance(l2_mean_tensor, torch.Tensor)
+                else l2_mean_tensor
+            )
+            cos_mean = (
+                cos_mean_tensor.cpu().numpy()
+                if isinstance(cos_mean_tensor, torch.Tensor)
+                else cos_mean_tensor
+            )
+
             # 調試信息：檢查 cosine 矩陣的統計信息
             cos_min, cos_max = cos_mean.min(), cos_mean.max()
             cos_diag = np.diag(cos_mean)
             cos_off_diag = cos_mean[~np.eye(cos_mean.shape[0], dtype=bool)]
-            LOGGER.info(f"[Similarity] {block_name} cosine: min={cos_min:.6f}, max={cos_max:.6f}, "
-                       f"diag_mean={cos_diag.mean():.6f}, off_diag_mean={cos_off_diag.mean():.6f}, "
-                       f"off_diag_std={cos_off_diag.std():.6f}")
+            LOGGER.info(
+                f"[Similarity] {block_name} cosine: min={cos_min:.6f}, max={cos_max:.6f}, "
+                f"diag_mean={cos_diag.mean():.6f}, off_diag_mean={cos_off_diag.mean():.6f}, "
+                f"off_diag_std={cos_off_diag.std():.6f}"
+            )
 
             l1_step_mean, l1_step_std = self._step_mean_std(block_name, "l1")
             cos_step_mean, cos_step_std = self._step_mean_std(block_name, "cos")
@@ -801,14 +900,21 @@ class SimilarityCollector:
             self._save_matrix_csv(l1_mean, l1_block_dir / f"{block_slug}_l1rel.csv")
 
             # 繪製單組折線圖（原有功能）
-            self._plot_step_curve(l1_step_mean, l1_step_std, l1_block_dir / f"{block_slug}_l1.png", "L1rel")
-            
+            self._plot_step_curve(
+                l1_step_mean, l1_step_std, l1_block_dir / f"{block_slug}_l1.png", "L1rel"
+            )
+
             # 如果有 per-batch 資料，繪製多組折線圖
             if block_name in self.batch_step_data and len(self.batch_step_data[block_name]) > 0:
                 self._plot_multi_batch_curves(
-                    block_name, "l1", l1_block_dir / f"{block_slug}_l1_multi_batch.png", "L1rel (Multi-Batch)"
+                    block_name,
+                    "l1",
+                    l1_block_dir / f"{block_slug}_l1_multi_batch.png",
+                    "L1rel (Multi-Batch)",
                 )
-            self._plot_heatmap(cos_mean, cos_block_dir / f"{block_slug}_cosine_heatmap.png", "Cosine similarity")
+            self._plot_heatmap(
+                cos_mean, cos_block_dir / f"{block_slug}_cosine_heatmap.png", "Cosine similarity"
+            )
         # 不輸出 tier 聚合圖
 
     def _plot_tiers(self):
@@ -827,7 +933,7 @@ class SimilarityCollector:
         sums_sq = self.block_step_sumsq[block_name][metric]
         counts = self.block_step_counts[block_name]
         mean = self._safe_div(sums, counts)
-        var = self._safe_div(sums_sq, counts) - mean ** 2
+        var = self._safe_div(sums_sq, counts) - mean**2
         # 支援 GPU tensor 和 numpy array
         if isinstance(var, torch.Tensor):
             std = torch.sqrt(torch.clamp(var, min=0.0))
@@ -842,7 +948,7 @@ class SimilarityCollector:
         sums_sq = self.tier_step_sumsq[tier][metric]
         counts = self.tier_step_counts[tier]
         mean = self._safe_div(sums, counts)
-        var = self._safe_div(sums_sq, counts) - mean ** 2
+        var = self._safe_div(sums_sq, counts) - mean**2
         # 支援 GPU tensor 和 numpy array
         if isinstance(var, torch.Tensor):
             std = torch.sqrt(torch.clamp(var, min=0.0))
@@ -851,14 +957,14 @@ class SimilarityCollector:
         else:
             std = np.sqrt(np.maximum(var, 0.0))
             return mean, std
-    
+
     def _batch_mean_std(self, batch_data: dict, metric: str):
         """計算單個 batch 的 mean 和 std"""
         sums = batch_data[metric]["sums"]
         sums_sq = batch_data[metric]["sumsq"]
         counts = batch_data[metric]["counts"]
         mean = self._safe_div(sums, counts)
-        var = self._safe_div(sums_sq, counts) - mean ** 2
+        var = self._safe_div(sums_sq, counts) - mean**2
         std = np.sqrt(np.maximum(var, 0.0))
         return mean, std
 
@@ -887,15 +993,15 @@ class SimilarityCollector:
         plt.tight_layout()
         plt.savefig(out_path, dpi=200)
         plt.close()
-    
+
     def _plot_multi_batch_curves(self, block_name: str, metric: str, out_path: Path, title: str):
         """繪製多組 batch 的折線圖（4 組資料在同一張圖上）"""
         if block_name not in self.batch_step_data or len(self.batch_step_data[block_name]) == 0:
             return
-        
+
         batch_data_list = self.batch_step_data[block_name]
         num_batches = len(batch_data_list)
-        
+
         # 計算每組的 mean 和 std
         means_list = []
         stds_list = []
@@ -903,22 +1009,22 @@ class SimilarityCollector:
             mean, std = self._batch_mean_std(batch_data, metric)
             means_list.append(mean)
             stds_list.append(std)
-        
+
         # X 軸：從 t0→t1, t1→t2, ..., t98→t99
         x = np.arange(len(means_list[0]))
         plt.figure(figsize=(10, 6))
-        
+
         # 繪製每組的線條和陰影（相同顏色，alpha 疊加會讓重疊區域變深）
         line_color = "blue"
         fill_color = "blue"
         line_width = 1.0  # 統一調細
-        
+
         for mean, std in zip(means_list, stds_list):
             # 繪製線條（相同顏色、相同粗細）
             plt.plot(x, mean, color=line_color, linewidth=line_width, alpha=0.8)
             # 繪製陰影（相同顏色，alpha 疊加）
             plt.fill_between(x, mean - std, mean + std, color=fill_color, alpha=0.15)
-        
+
         plt.title(title)
         plt.xlabel("t_curr (interval x_{t+1} -> x_t), left=T-2 noise -> right=0 clear")
         plt.ylabel("Relative metric")
@@ -934,20 +1040,24 @@ class SimilarityCollector:
             tick_positions.append(len(means_list[0]) - 1)
             tick_labels.append(str(int(t_curr_left_to_right[len(means_list[0]) - 1])))
         plt.xticks(tick_positions, tick_labels)
-        
+
         # 添加圖例說明有多少組資料
-        plt.text(0.02, 0.98, f"{num_batches} batches", 
-                transform=plt.gca().transAxes, 
-                verticalalignment='top',
-                bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
-        
+        plt.text(
+            0.02,
+            0.98,
+            f"{num_batches} batches",
+            transform=plt.gca().transAxes,
+            verticalalignment="top",
+            bbox=dict(boxstyle="round", facecolor="wheat", alpha=0.5),
+        )
+
         plt.tight_layout()
         plt.savefig(out_path, dpi=200)
         plt.close()
 
     def _plot_heatmap(self, matrix: np.ndarray, out_path: Path, title: str):
         # 參考 metrics.py 的實現
-        
+
         # 1) 轉成 float，避免 object / weird dtype
         m = np.array(matrix, dtype=np.float64)
 
@@ -965,7 +1075,7 @@ class SimilarityCollector:
         if "cosine" in title.lower():
             # 確保值在 [0, 1] 範圍內（避免數值誤差）
             m = np.clip(m, 0.0, 1.0)
-            
+
             # 檢查實際值域，如果範圍很小（比如都在 0.9-1.0），可以放大顯示
             actual_min, actual_max = np.nanmin(m), np.nanmax(m)
             if actual_max - actual_min < 0.1 and actual_min > 0.8:
@@ -974,7 +1084,7 @@ class SimilarityCollector:
                 vmax = min(actual_max + 0.05, 1.0)
             else:
                 vmin, vmax = 0.0, 1.0  # 使用完整範圍
-            
+
             # 使用 sequential colormap，讓顏色漸變更清晰易讀
             # plasma: 紫→粉→黃，對比度高，適合顯示細微差異
             # inferno: 黑→紫→紅→黃，也很適合
@@ -994,14 +1104,14 @@ class SimilarityCollector:
         # 5) 使用 seaborn heatmap（參考 metrics.py）
         # 增大圖片尺寸以容納更多標籤
         plt.figure(figsize=(10, 8))
-        
+
         # 設定 x/y 軸標籤：根據矩陣大小動態調整間隔
         # 如果矩陣很大（>50），每 5 個顯示一次；否則每 2 個顯示一次
         if m.shape[0] > 50:
             tick_interval = 5
         else:
             tick_interval = 2
-        
+
         tick_positions = list(range(0, m.shape[0], tick_interval))
         # point-wise:
         # analysis axis index i (0..T-1) 對應顯示 t=(T-1)-i
@@ -1011,27 +1121,29 @@ class SimilarityCollector:
         if m.shape[0] - 1 not in tick_positions:
             tick_positions.append(m.shape[0] - 1)
             tick_labels.append(str(int((T - 1) - (m.shape[0] - 1))))
-        
+
         # 使用 seaborn heatmap，但不直接設定 ticklabels（會導致擠在一起）
         # 先繪製 heatmap，然後手動設定 ticks
-        ax = sns.heatmap(mm, 
-                        cmap=cmap, 
-                        annot=False, 
-                        vmin=vmin, 
-                        vmax=vmax,
-                        linewidths=0.1,
-                        xticklabels=False,  # 先不顯示標籤
-                        yticklabels=False,  # 先不顯示標籤
-                        cbar_kws={'label': 'Similarity'})
-        
+        ax = sns.heatmap(
+            mm,
+            cmap=cmap,
+            annot=False,
+            vmin=vmin,
+            vmax=vmax,
+            linewidths=0.1,
+            xticklabels=False,  # 先不顯示標籤
+            yticklabels=False,  # 先不顯示標籤
+            cbar_kws={"label": "Similarity"},
+        )
+
         # 手動設定 x 軸 ticks 和標籤（旋轉 45 度避免重疊）
         ax.set_xticks(tick_positions)
-        ax.set_xticklabels(tick_labels, rotation=45, ha='right', fontsize=9)
-        
+        ax.set_xticklabels(tick_labels, rotation=45, ha="right", fontsize=9)
+
         # 手動設定 y 軸 ticks 和標籤
         ax.set_yticks(tick_positions)
         ax.set_yticklabels(tick_labels, rotation=0, fontsize=9)
-        
+
         plt.title(title, fontsize=12)
         plt.xlabel("t (point-wise DDIM timestep), left=T-1 noise -> right=0 clear", fontsize=10)
         plt.ylabel("t (point-wise DDIM timestep), left=T-1 noise -> right=0 clear", fontsize=10)
@@ -1062,16 +1174,16 @@ class SimilarityCollector:
             return out
 
 
-
-#=============================================================================
+# =============================================================================
 # 主生成流程
-#=============================================================================
+# =============================================================================
+
 
 @time_operation
-def main_float_model():
+def main_float_model() -> "Any":
     """
     Diff-AE EfficientDM Step 6 訓練主流程
-    
+
     流程概要:
     1. 載入預訓練模型
     2. 創建並設定量化模型
@@ -1081,35 +1193,29 @@ def main_float_model():
     LOGGER.info("=" * 50)
     LOGGER.info("Diff-AE EfficientDM Step 7 : 生成圖片")
     LOGGER.info("=" * 50)
-    
+
     # 設置執行環境（已在參數解析後設置，此處不再重複調用）
     # CONFIG.setup_environment()
     _seed_all(CONFIG.SEED)
 
     LOGGER.info(f"使用設備: {CONFIG.DEVICE}")
-    
+
     # 記錄新功能狀態
     LOGGER.info("=== 新功能狀態 ===")
 
-    
     try:
         # 1. 載入基礎模型
-        base_model : LitModel = load_diffae_model()
+        base_model: LitModel = load_diffae_model()
         LOGGER.info("✅ Diff-AE 模型載入成功")
 
         # 從LitModel獲取關鍵組件
-        LOGGER.info(f'base_model.conf.train_mode: {base_model.conf.train_mode}')
-        
-        
-        
-        
+        LOGGER.info(f"base_model.conf.train_mode: {base_model.conf.train_mode}")
+
         # 5. 準備基礎模型設定
         base_model.to(CONFIG.DEVICE)
         base_model.eval()
         base_model.setup()
         LOGGER.info("✅ 基礎模型設定完成")
-        
-
 
         T = CONFIG.NUM_DIFFUSION_STEPS
         T_latent = CONFIG.NUM_DIFFUSION_STEPS
@@ -1119,7 +1225,7 @@ def main_float_model():
         conf = base_model.conf.clone()
         if CONFIG.ENABLE_CACHE_ANALYSIS and CONFIG.ENABLE_SIMILARITY_ANALYSIS:
             LOGGER.warning("同時啟用 Cache Analysis 與 Similarity Analysis，優先執行 Cache Analysis")
-        
+
         if CONFIG.ENABLE_CACHE_ANALYSIS:
             pass
         elif CONFIG.ENABLE_SIMILARITY_ANALYSIS:
@@ -1134,7 +1240,9 @@ def main_float_model():
             # 計算總共要收集的樣本數：每個 batch 收集 similarity_collect_samples 個
             # 如果 similarity_samples = 128, batch_size = 32，會有 4 個 batch
             # 每個 batch 收集 15 個，總共收集 60 個（但實際上會收集 4 組資料，每組 15 個）
-            total_collect_samples = CONFIG.SIMILARITY_COLLECT_SAMPLES * (CONFIG.SIMILARITY_SAMPLES // 32)  # 假設 batch_size = 32
+            total_collect_samples = CONFIG.SIMILARITY_COLLECT_SAMPLES * (
+                CONFIG.SIMILARITY_SAMPLES // 32
+            )  # 假設 batch_size = 32
             similarity_collector = SimilarityCollector(
                 save_root=similarity_root,
                 max_timesteps=T,
@@ -1164,9 +1272,9 @@ def main_float_model():
                 remove_cache=True,
                 clip_latent_noise=False,
                 T=T,
-                output_dir=f'{conf.generate_dir}_QAT_T{T}_similarity'
+                output_dir=f"{conf.generate_dir}_QAT_T{T}_similarity",
             )
-            LOGGER.info(f'[Similarity] FID@{CONFIG.SIMILARITY_SAMPLES} {T} steps score: {score}')
+            LOGGER.info(f"[Similarity] FID@{CONFIG.SIMILARITY_SAMPLES} {T} steps score: {score}")
 
             similarity_collector.remove_hooks()
             similarity_collector.finalize()
@@ -1186,14 +1294,12 @@ def main_float_model():
                 remove_cache=False,
                 clip_latent_noise=False,
                 T=T,
-                output_dir=f'{conf.generate_dir}_QAT_T{T}'
+                output_dir=f"{conf.generate_dir}_QAT_T{T}",
             )
-            LOGGER.info(f'FID@{CONFIG.EVAL_SAMPLES} {T} steps score: {score}')
-            LOGGER.info('=' * 50)
-            LOGGER.info('=' * 50)
-        
-        
-        
+            LOGGER.info(f"FID@{CONFIG.EVAL_SAMPLES} {T} steps score: {score}")
+            LOGGER.info("=" * 50)
+            LOGGER.info("=" * 50)
+
         torch.cuda.empty_cache()
         global start_time
         start_time = time.time()
@@ -1203,40 +1309,54 @@ def main_float_model():
         raise e
 
 
-
-        
-        
-
 if __name__ == "__main__":
     import argparse
+
     parser = argparse.ArgumentParser()
-    parser.add_argument('--num_steps','--n', type=int, default=100)
-    parser.add_argument('--samples', '--s', type=int, default=5)
-    parser.add_argument('--eval_samples', '--es', type=int, default=50000)
-    parser.add_argument('--mode', '--m', type=str, default='float')
-    parser.add_argument('--enable_similarity', action='store_true',
-                        help='啟用 Similarity Analysis (L1/L2/Cosine)')
-    parser.add_argument('--similarity_samples', type=int, default=64,
-                        help='Similarity FID 評估樣本數（總生成數量）')
-    parser.add_argument('--similarity_collect_samples', type=int, default=15,
-                        help='實際收集用於相似度計算的樣本數（建議 10-15，用於加速）')
-    parser.add_argument('--similarity_target_block', type=str, default=None,
-                        help='只分析單一 block (例如 model.input_blocks.0)')
-    parser.add_argument('--similarity_output_root', type=str,
-                        default="QATcode/cache_method/a_L1_L2_cosine",
-                        help='Similarity 結果輸出根目錄')
-    parser.add_argument('--similarity_dtype', type=str, default="float16",
-                        choices=["float16", "float32"],
-                        help='npz 儲存精度')
-    parser.add_argument('--similarity_cosine_step_plot', action='store_true',
-                        help='Cosine 也輸出 step-change 折線圖')
-    parser.add_argument('--similarity_sample_strategy', type=str, default="first",
-                        choices=["first", "random", "uniform"],
-                        help='樣本採樣策略: first=取前N個(最快), random=隨機選擇(增加多樣性), uniform=均勻分佈')
-    parser.add_argument('--log_file','--lf', type=str, default=None,
-                        help='指定 log 檔案路徑（預設: QATcode/cache_method/a_L1_L2_cosine/log/similarity_calculation.log）')
-    parser.add_argument('--run_all_blocks', action='store_true',
-                        help='自動執行所有 31 個 block 的實驗（類似 run_similarity_experiments.sh）')
+    add_common_generation_args(parser)
+    parser.add_argument(
+        "--enable_similarity", action="store_true", help="啟用 Similarity Analysis (L1/L2/Cosine)"
+    )
+    parser.add_argument(
+        "--similarity_samples", type=int, default=64, help="Similarity FID 評估樣本數（總生成數量）"
+    )
+    parser.add_argument(
+        "--similarity_collect_samples", type=int, default=15, help="實際收集用於相似度計算的樣本數（建議 10-15，用於加速）"
+    )
+    parser.add_argument(
+        "--similarity_target_block",
+        type=str,
+        default=None,
+        help="只分析單一 block (例如 model.input_blocks.0)",
+    )
+    parser.add_argument(
+        "--similarity_output_root",
+        type=str,
+        default="QATcode/cache_method/a_L1_L2_cosine",
+        help="Similarity 結果輸出根目錄",
+    )
+    parser.add_argument(
+        "--similarity_dtype",
+        type=str,
+        default="float16",
+        choices=["float16", "float32"],
+        help="npz 儲存精度",
+    )
+    parser.add_argument(
+        "--similarity_cosine_step_plot", action="store_true", help="Cosine 也輸出 step-change 折線圖"
+    )
+    parser.add_argument(
+        "--similarity_sample_strategy",
+        type=str,
+        default="first",
+        choices=["first", "random", "uniform"],
+        help="樣本採樣策略: first=取前N個(最快), random=隨機選擇(增加多樣性), uniform=均勻分佈",
+    )
+    parser.add_argument(
+        "--run_all_blocks",
+        action="store_true",
+        help="自動執行所有 31 個 block 的實驗（類似 run_similarity_experiments.sh）",
+    )
     args = parser.parse_args()
     CONFIG.NUM_DIFFUSION_STEPS = args.num_steps
     CONFIG.CACHE_ANALYSIS_SAMPLES = args.samples
@@ -1258,28 +1378,32 @@ if __name__ == "__main__":
     if args.log_file is not None:
         CONFIG.LOG_FILE = args.log_file
         print(f"[設定] Log 檔案已設為: {CONFIG.LOG_FILE}", flush=True)
-    
+
     def setup_environment(cls) -> None:
         """設置執行環境"""
-        os.environ['CUDA_VISIBLE_DEVICES'] = cls.GPU_ID
-        #torch.cuda.manual_seed(cls.SEED)
-        
+        os.environ["CUDA_VISIBLE_DEVICES"] = cls.GPU_ID
+        # torch.cuda.manual_seed(cls.SEED)
+
         # 重新配置 logging
         logging.basicConfig(
             level=logging.INFO,
-            format='%(asctime)s [%(levelname)s] %(message)s',
+            format="%(asctime)s [%(levelname)s] %(message)s",
             handlers=[logging.StreamHandler(), logging.FileHandler(cls.LOG_FILE)],
-            force=True  # Python 3.8+ 強制重新配置
+            force=True,  # Python 3.8+ 強制重新配置
         )
-    
+
     setup_environment(CONFIG)
-    
+
     LOGGER.info(f"Using {CONFIG.NUM_DIFFUSION_STEPS} steps")
     LOGGER.info(f"Using {CONFIG.EVAL_SAMPLES} evaluation samples")
-    LOGGER.info(f"Cache enabled: {CONFIG.ENABLE_CACHE}, method: {CONFIG.CACHE_METHOD}, threshold: {CONFIG.CACHE_THRESHOLD}")
-    LOGGER.info(f"Quantitative analysis enabled: {CONFIG.ENABLE_QUANTITATIVE_ANALYSIS}, samples: {CONFIG.ANALYSIS_NUM_SAMPLES}")
+    LOGGER.info(
+        f"Cache enabled: {CONFIG.ENABLE_CACHE}, method: {CONFIG.CACHE_METHOD}, threshold: {CONFIG.CACHE_THRESHOLD}"
+    )
+    LOGGER.info(
+        f"Quantitative analysis enabled: {CONFIG.ENABLE_QUANTITATIVE_ANALYSIS}, samples: {CONFIG.ANALYSIS_NUM_SAMPLES}"
+    )
     LOGGER.info(f"Log file: {CONFIG.LOG_FILE}")
-    
+
     # 定義所有 31 個 block 名稱（與 run_similarity_experiments.sh 一致）
     ALL_BLOCKS = [
         "model.input_blocks.0",
@@ -1314,79 +1438,96 @@ if __name__ == "__main__":
         "model.output_blocks.13",
         "model.output_blocks.14",
     ]
-    
+
     # 如果啟用 run_all_blocks，循環處理所有 block
     if args.run_all_blocks and args.enable_similarity:
         LOGGER.info("=" * 50)
         LOGGER.info("啟用自動執行所有 block 實驗")
         LOGGER.info(f"總共 {len(ALL_BLOCKS)} 個 block")
         LOGGER.info("=" * 50)
-        
+
         # 設置 log 目錄
         log_dir = Path(CONFIG.SIMILARITY_OUTPUT_ROOT) / "logs"
         log_dir.mkdir(parents=True, exist_ok=True)
-        
+
         # 保存原始參數
         original_log_file = CONFIG.LOG_FILE
         original_target_block = CONFIG.SIMILARITY_TARGET_BLOCK
-        
+
         # 循環處理每個 block
         for idx, block in enumerate(ALL_BLOCKS, 1):
-            safe_name = block.replace('.', '_')
+            safe_name = block.replace(".", "_")
             log_file = log_dir / f"similarity_{safe_name}.log"
-            
+
             LOGGER.info("=" * 50)
             LOGGER.info(f"[{idx}/{len(ALL_BLOCKS)}] Running similarity for block: {block}")
             LOGGER.info(f"Log: {log_file}")
             LOGGER.info("=" * 50)
-            
+
             # 更新配置
             CONFIG.SIMILARITY_TARGET_BLOCK = block
             CONFIG.LOG_FILE = str(log_file)
-            
+
             # 重新配置 logging（為每個 block 使用獨立的 log 文件）
             logging.basicConfig(
                 level=logging.INFO,
-                format='%(asctime)s [%(levelname)s] %(message)s',
+                format="%(asctime)s [%(levelname)s] %(message)s",
                 handlers=[logging.StreamHandler(), logging.FileHandler(CONFIG.LOG_FILE)],
-                force=True
+                force=True,
             )
-            
+
             try:
-                if args.mode == 'float':
-                    CONFIG.BEST_CKPT_PATH = "QATcode/diffae_step6_lora_best.pth" if CONFIG.NUM_DIFFUSION_STEPS == 100 else "QATcode/diffae_step6_lora_best_20steps.pth"
+                if args.mode == "float":
+                    CONFIG.BEST_CKPT_PATH = (
+                        "QATcode/diffae_step6_lora_best.pth"
+                        if CONFIG.NUM_DIFFUSION_STEPS == 100
+                        else "QATcode/diffae_step6_lora_best_20steps.pth"
+                    )
                     main_float_model()
-                elif args.mode == 'int':
-                    CONFIG.BEST_CKPT_PATH = "QATcode/checkpoints/diffae_step6_lora_best.pth" if CONFIG.NUM_DIFFUSION_STEPS == 100 else "QATcode/checkpoints/diffae_step6_lora_best_20steps.pth"
-                    #main_int_model()
+                elif args.mode == "int":
+                    CONFIG.BEST_CKPT_PATH = (
+                        "QATcode/checkpoints/diffae_step6_lora_best.pth"
+                        if CONFIG.NUM_DIFFUSION_STEPS == 100
+                        else "QATcode/checkpoints/diffae_step6_lora_best_20steps.pth"
+                    )
+                    # main_int_model()
                     pass
                 else:
                     LOGGER.error(f"Invalid mode: {args.mode}")
                     exit(1)
-                
+
                 LOGGER.info(f"✅ Block {block} 完成")
             except Exception as e:
                 LOGGER.error(f"❌ Block {block} 失敗: {e}")
                 import traceback
+
                 LOGGER.error(traceback.format_exc())
                 # 繼續處理下一個 block，不中斷整個流程
                 continue
-        
+
         # 恢復原始配置
         CONFIG.SIMILARITY_TARGET_BLOCK = original_target_block
         CONFIG.LOG_FILE = original_log_file
-        
+
         LOGGER.info("=" * 50)
         LOGGER.info("✅ 所有 block 實驗完成")
         LOGGER.info("=" * 50)
     else:
         # 單個 block 模式（原有邏輯）
-        if args.mode == 'float':
-            CONFIG.BEST_CKPT_PATH = "QATcode/diffae_step6_lora_best.pth" if CONFIG.NUM_DIFFUSION_STEPS == 100 else "QATcode/diffae_step6_lora_best_20steps.pth"
+        if args.mode == "float":
+            CONFIG.BEST_CKPT_PATH = (
+                "QATcode/diffae_step6_lora_best.pth"
+                if CONFIG.NUM_DIFFUSION_STEPS == 100
+                else "QATcode/diffae_step6_lora_best_20steps.pth"
+            )
             main_float_model()
-        elif args.mode == 'int':
-            CONFIG.BEST_CKPT_PATH = "QATcode/checkpoints/diffae_step6_lora_best.pth" if CONFIG.NUM_DIFFUSION_STEPS == 100 else "QATcode/checkpoints/diffae_step6_lora_best_20steps.pth"
-            #main_int_model()
+        elif args.mode == "int":
+            CONFIG.BEST_CKPT_PATH = (
+                "QATcode/checkpoints/diffae_step6_lora_best.pth"
+                if CONFIG.NUM_DIFFUSION_STEPS == 100
+                else "QATcode/checkpoints/diffae_step6_lora_best_20steps.pth"
+            )
+            # main_int_model()
             pass
         else:
             LOGGER.error(f"Invalid mode: {args.mode}")

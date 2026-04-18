@@ -112,7 +112,9 @@ def _resolve_run_dirs(root: Path, T: int, seed: int, images_mode: str) -> Dict[s
     }
 
 
-def _ensure_activation_legacy_symlinks(out_root: Path, models_root: Path, comparisons_root: Path) -> None:
+def _ensure_activation_legacy_symlinks(
+    out_root: Path, models_root: Path, comparisons_root: Path
+) -> None:
     """Backward compat: seed dir/FF -> models/FF, seed dir/FF_vs_FT -> comparisons/ff_vs_ft."""
     legacy_models = [("FF", "FF"), ("FT", "FT"), ("TT", "TT"), ("BASELINE", "BASELINE")]
     for legacy_name, sub in legacy_models:
@@ -354,7 +356,9 @@ def _build_quant_model(
     ckpt = torch.load(ckpt_path, map_location="cpu", weights_only=False)
     _load_quant_and_ema_from_ckpt(base_model, quant_model, ckpt)
     if hasattr(base_model.ema_model, "set_runtime_mode"):
-        base_model.ema_model.set_runtime_mode(mode="infer", use_cached_aw=True, clear_cached_aw=True)
+        base_model.ema_model.set_runtime_mode(
+            mode="infer", use_cached_aw=True, clear_cached_aw=True
+        )
     return base_model, base_model.ema_model
 
 
@@ -420,8 +424,11 @@ def _register_input_hooks(
                 if name_key not in acc_map:
                     acc_map[name_key] = {}
                 if t_idx not in acc_map[name_key]:
-                    acc_map[name_key][t_idx] = TimestepActivationAccumulator(sample_cap=sample_cap_per_t)
+                    acc_map[name_key][t_idx] = TimestepActivationAccumulator(
+                        sample_cap=sample_cap_per_t
+                    )
                 acc_map[name_key][t_idx].update(x)
+
             return _hook
 
         handles.append(module.register_forward_pre_hook(_make_hook(layer_name)))
@@ -431,7 +438,8 @@ def _register_input_hooks(
 def _patch_timestep_tracking(model: nn.Module, current_t_ref: Dict[str, int]) -> Tuple[Any, Any]:
     original_forward = model.forward
 
-    def wrapped_forward(*args, **kwargs):
+    def wrapped_forward(*args: "Any", **kwargs: "Any") -> "Any":
+        """Public function wrapped_forward."""
         t_tensor = kwargs.get("t", None)
         if t_tensor is None and len(args) >= 2:
             t_tensor = args[1]
@@ -525,7 +533,9 @@ def _collect_mode_stats(
             if not t_map:
                 LOGGER.warning("[mode=%s] no data collected for layer: %s", mode, name)
                 continue
-            layer_stats[name] = {int(t): acc.summary() for t, acc in sorted(t_map.items(), key=lambda kv: kv[0])}
+            layer_stats[name] = {
+                int(t): acc.summary() for t, acc in sorted(t_map.items(), key=lambda kv: kv[0])
+            }
         return layer_stats
     finally:
         model.forward = original_forward  # type: ignore[method-assign]
@@ -564,11 +574,30 @@ def _save_mode_outputs(
                 continue
             ts = np.array(sorted(t_map.keys()), dtype=np.int32)
             keys = [
-                "numel", "mean", "std", "min", "max", "abs_mean", "abs_max",
-                "q001", "q01", "q05", "q50", "q95", "q99", "q999",
-                "zero_ratio", "pos_ratio", "neg_ratio", "kurtosis", "skewness",
+                "numel",
+                "mean",
+                "std",
+                "min",
+                "max",
+                "abs_mean",
+                "abs_max",
+                "q001",
+                "q01",
+                "q05",
+                "q50",
+                "q95",
+                "q99",
+                "q999",
+                "zero_ratio",
+                "pos_ratio",
+                "neg_ratio",
+                "kurtosis",
+                "skewness",
             ]
-            arrs = {k: np.array([t_map[int(t)].get(k, np.nan) for t in ts], dtype=np.float64) for k in keys}
+            arrs = {
+                k: np.array([t_map[int(t)].get(k, np.nan) for t in ts], dtype=np.float64)
+                for k in keys
+            }
             np.savez_compressed(npz_dir / f"layer_{safe}_{mode}.npz", t=ts, **arrs)
 
     # Intentionally no per-mode plots in FF/FT dirs for formal version.
@@ -659,8 +688,16 @@ def _build_compare_summary(
             "mean_q99_ratio": mean_q99_ratio,
             "mean_q95_ratio": mean_q95_ratio,
             "mean_zero_ratio_delta": mean_zero_ratio_delta,
-            "max_abs_std_ratio_deviation": float(np.nanmax(np.abs(np.array(std_ratios, dtype=np.float64) - 1.0))) if std_ratios else float("nan"),
-            "max_abs_q999_ratio_deviation": float(np.nanmax(np.abs(np.array(q999_ratios, dtype=np.float64) - 1.0))) if q999_ratios else float("nan"),
+            "max_abs_std_ratio_deviation": float(
+                np.nanmax(np.abs(np.array(std_ratios, dtype=np.float64) - 1.0))
+            )
+            if std_ratios
+            else float("nan"),
+            "max_abs_q999_ratio_deviation": float(
+                np.nanmax(np.abs(np.array(q999_ratios, dtype=np.float64) - 1.0))
+            )
+            if q999_ratios
+            else float("nan"),
             "effect_summary": _effect_summary_from_metrics(
                 mean_q999_ratio=mean_q999_ratio,
                 mean_std_ratio=mean_std_ratio,
@@ -719,7 +756,9 @@ def _build_block_summary(compare_summary: Dict[str, Any], topk: int = 3) -> Dict
             "mean_q999_ratio": m_q999,
             "mean_q99_ratio": m_q99,
             "mean_zero_ratio_delta": m_zero_d,
-            "top_changed_layers": [n for _s, n in sorted(changed, key=lambda x: x[0], reverse=True)[:topk]],
+            "top_changed_layers": [
+                n for _s, n in sorted(changed, key=lambda x: x[0], reverse=True)[:topk]
+            ],
             "effect_summary": _effect_summary_from_metrics(
                 mean_q999_ratio=m_q999,
                 mean_std_ratio=m_std,
@@ -730,7 +769,9 @@ def _build_block_summary(compare_summary: Dict[str, Any], topk: int = 3) -> Dict
     return out
 
 
-def _make_rankings(compare_summary: Dict[str, Any], block_summary: Dict[str, Any], topk: int = 10) -> Dict[str, Any]:
+def _make_rankings(
+    compare_summary: Dict[str, Any], block_summary: Dict[str, Any], topk: int = 10
+) -> Dict[str, Any]:
     layers = compare_summary.get("layers", {})
     blocks = block_summary.get("blocks", {})
 
@@ -813,7 +854,9 @@ def _pick_representative_layers(rankings: Dict[str, Any], topk: int) -> List[str
     return out[: max(5, topk)]
 
 
-def _plot_block_bars(block_summary: Dict[str, Any], out_dir: Path, *, filename_prefix: str = "") -> None:
+def _plot_block_bars(
+    block_summary: Dict[str, Any], out_dir: Path, *, filename_prefix: str = ""
+) -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
     blocks = block_summary.get("blocks", {})
     if not blocks:
@@ -892,7 +935,8 @@ def _plot_compare_curves_for_layers(
             plt.legend(loc="best")
             plt.tight_layout()
             plt.savefig(
-                out_dir / f"{filename_prefix}layer_{safe}_{metric}_curve_{mode_a.lower()}_vs_{mode_b.lower()}.png",
+                out_dir
+                / f"{filename_prefix}layer_{safe}_{metric}_curve_{mode_a.lower()}_vs_{mode_b.lower()}.png",
                 dpi=180,
             )
             plt.close()
@@ -923,7 +967,8 @@ def _generate_md_report(
     lines.append(
         "- Per-layer input activation statistics during DDIM sampling; pairwise ratio/delta under `comparisons/<a>_vs_<b>/`."
     )
-    lines.append("- `BASELINE`: original Diff-AE `ema` (no QAT/LoRA ckpt). FF/FT/TT: quantized graph with shared `w+lora` from `--lora-ckpt`."
+    lines.append(
+        "- `BASELINE`: original Diff-AE `ema` (no QAT/LoRA ckpt). FF/FT/TT: quantized graph with shared `w+lora` from `--lora-ckpt`."
     )
     lines.append("")
     lines.append("## Layer selection")
@@ -949,13 +994,19 @@ def _generate_md_report(
         for _lname, e in compare_summary.get("layers", {}).items():
             ef = e.get("global_summary", {}).get("effect_summary", "mixed_effect")
             effect_counts[ef] = effect_counts.get(ef, 0) + 1
-        dom_effect = sorted(effect_counts.items(), key=lambda x: x[1], reverse=True)[0][0] if effect_counts else "unknown"
+        dom_effect = (
+            sorted(effect_counts.items(), key=lambda x: x[1], reverse=True)[0][0]
+            if effect_counts
+            else "unknown"
+        )
         cmp_rel = sec.get("cmp_rel", "")
         plots_prefix = sec.get("plots_prefix", "")
 
         lines.append(f"## Pair: `{pair_name}`")
         lines.append(f"- modes: {meta.get('modes')}")
-        lines.append(f"- T / seed / num_samples: {meta.get('T')} / {meta.get('seed')} / {meta.get('num_samples')}")
+        lines.append(
+            f"- T / seed / num_samples: {meta.get('T')} / {meta.get('seed')} / {meta.get('num_samples')}"
+        )
         lines.append(f"- dominant effect label (layer vote): `{dom_effect}`")
         lines.append("")
         lines.append("- top changed layers (by q999 ratio deviation):")
@@ -970,7 +1021,11 @@ def _generate_md_report(
                 f"  - `{e.get('name')}` | q999_ratio={_fmt(e.get('mean_q999_ratio'))} | std_ratio={_fmt(e.get('mean_std_ratio'))}"
             )
         lines.append("")
-        lines.append(f"- artifacts: `{output_base / cmp_rel}`" if cmp_rel else "- artifacts: (see comparisons directory)")
+        lines.append(
+            f"- artifacts: `{output_base / cmp_rel}`"
+            if cmp_rel
+            else "- artifacts: (see comparisons directory)"
+        )
         if plots_prefix:
             lines.append(f"- plot filename prefix: `{plots_prefix}` under `plots/pairwise/`")
         lines.append("")
@@ -979,6 +1034,7 @@ def _generate_md_report(
 
 
 def run_analysis(args: argparse.Namespace) -> Dict[str, Any]:
+    """Public function run_analysis."""
     if int(args.T) != 100:
         LOGGER.warning("目前第一版預期 T=100；你給的是 T=%s，仍會繼續執行。", args.T)
     _seed_all(int(args.seed))
@@ -1037,7 +1093,9 @@ def run_analysis(args: argparse.Namespace) -> Dict[str, Any]:
         layer_pick_stat["skipped_internal_aux_submodules"],
     )
     if len(selected_layers) == 0:
-        raise RuntimeError("No target layers selected. 請檢查 --target-module-types / --target-name-patterns。")
+        raise RuntimeError(
+            "No target layers selected. 請檢查 --target-module-types / --target-name-patterns。"
+        )
 
     modes = [m.strip().upper() for m in args.collect_modes.split(",") if m.strip()]
     compare_pairs = _parse_compare_pairs(str(getattr(args, "compare_pairs", "") or "").strip())
@@ -1053,13 +1111,17 @@ def run_analysis(args: argparse.Namespace) -> Dict[str, Any]:
     baseline_lit: Any = None
     baseline_model: Optional[nn.Module] = None
     if need_baseline:
-        baseline_lit, baseline_model = _load_baseline_lit_model(model_path=str(args.ckpt), device=device)
+        baseline_lit, baseline_model = _load_baseline_lit_model(
+            model_path=str(args.ckpt), device=device
+        )
 
     per_mode_stats: Dict[str, Dict[str, Dict[int, Dict[str, float]]]] = {}
     for mode in modes:
         if mode == "BASELINE":
             if baseline_model is None:
-                baseline_lit, baseline_model = _load_baseline_lit_model(model_path=str(args.ckpt), device=device)
+                baseline_lit, baseline_model = _load_baseline_lit_model(
+                    model_path=str(args.ckpt), device=device
+                )
             layer_stats = _collect_mode_stats(
                 mode="BASELINE",
                 model=baseline_model,
@@ -1105,9 +1167,15 @@ def run_analysis(args: argparse.Namespace) -> Dict[str, Any]:
         )
 
     if not compare_pairs:
-        LOGGER.warning("No compare pairs (--compare-pairs or --compare-modes); pairwise outputs skipped.")
+        LOGGER.warning(
+            "No compare pairs (--compare-pairs or --compare-modes); pairwise outputs skipped."
+        )
         _ensure_activation_legacy_symlinks(dirs["base"], dirs["models"], dirs["comparisons"])
-        return {"selected_layers": selected_layers, "per_mode": list(per_mode_stats.keys()), "output_root": str(dirs["base"])}
+        return {
+            "selected_layers": selected_layers,
+            "per_mode": list(per_mode_stats.keys()),
+            "output_root": str(dirs["base"]),
+        }
 
     pair_sections: List[Dict[str, Any]] = []
     completed_pairs: List[str] = []
@@ -1143,28 +1211,38 @@ def run_analysis(args: argparse.Namespace) -> Dict[str, Any]:
                 "Module paths align with quant wrappers; interpret ratios as structural alignment, not identical weights."
             )
         else:
-            compare.setdefault("meta", {})["comparison_focus"] = "activation_quant_effect_within_quant_graph"
+            compare.setdefault("meta", {})[
+                "comparison_focus"
+            ] = "activation_quant_effect_within_quant_graph"
 
         with open(cmp_dir / "activation_compare_summary.json", "w", encoding="utf-8") as f:
             json.dump(_json_safe(compare), f, indent=2, ensure_ascii=False)
 
         if _to_bool(args.generate_block_summary, True):
-            block_summary = _build_block_summary(compare, topk=max(3, int(args.representative_topk)))
+            block_summary = _build_block_summary(
+                compare, topk=max(3, int(args.representative_topk))
+            )
             with open(cmp_dir / "block_compare_summary.json", "w", encoding="utf-8") as f:
                 json.dump(_json_safe(block_summary), f, indent=2, ensure_ascii=False)
         else:
             block_summary = {"meta": compare.get("meta", {}), "blocks": {}}
 
         if _to_bool(args.generate_rankings, True):
-            rankings = _make_rankings(compare, block_summary, topk=max(10, int(args.representative_topk)))
+            rankings = _make_rankings(
+                compare, block_summary, topk=max(10, int(args.representative_topk))
+            )
             with open(cmp_dir / "rankings.json", "w", encoding="utf-8") as f:
                 json.dump(_json_safe(rankings), f, indent=2, ensure_ascii=False)
         else:
             rankings = {}
 
-        representative_layers = _pick_representative_layers(rankings, int(args.representative_topk)) if rankings else []
+        representative_layers = (
+            _pick_representative_layers(rankings, int(args.representative_topk)) if rankings else []
+        )
         with open(cmp_dir / "representative_layers.json", "w", encoding="utf-8") as f:
-            json.dump(_json_safe({"layers": representative_layers}), f, indent=2, ensure_ascii=False)
+            json.dump(
+                _json_safe({"layers": representative_layers}), f, indent=2, ensure_ascii=False
+            )
 
         if _to_bool(args.save_representative_plots, True):
             _plot_compare_curves_for_layers(
@@ -1218,7 +1296,10 @@ def run_analysis(args: argparse.Namespace) -> Dict[str, Any]:
 
 
 def build_argparser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(description="Activation input distribution analysis (multi-mode / multi-pair)")
+    """Public function build_argparser."""
+    p = argparse.ArgumentParser(
+        description="Activation input distribution analysis (multi-mode / multi-pair)"
+    )
     p.add_argument("--run", action="store_true", help="required flag to execute")
     p.add_argument("--ckpt", type=str, default="checkpoints/ffhq128_autoenc_latent/last.ckpt")
     p.add_argument(
@@ -1280,7 +1361,11 @@ def build_argparser() -> argparse.ArgumentParser:
         help="optional regex/substring list separated by comma",
     )
     p.add_argument("--save-per-timestep-npz", action="store_true")
-    p.add_argument("--save-plots", action="store_true", help="(deprecated) kept for compatibility; compare plots are controlled by specific flags below.")
+    p.add_argument(
+        "--save-plots",
+        action="store_true",
+        help="(deprecated) kept for compatibility; compare plots are controlled by specific flags below.",
+    )
     p.add_argument("--max-layers", type=int, default=None)
     p.add_argument("--max-batches", type=int, default=None)
     p.add_argument("--quantile-sample-cap", type=int, default=4096)
@@ -1301,7 +1386,9 @@ if __name__ == "__main__":
     if not args.run:
         parser.print_help()
         raise SystemExit(0)
-    dirs = _resolve_run_dirs(Path(args.output_root), int(args.T), int(args.seed), str(args.images_mode))
+    dirs = _resolve_run_dirs(
+        Path(args.output_root), int(args.T), int(args.seed), str(args.images_mode)
+    )
     log_file = dirs["LOG"] / f"activation_distribution_T{int(args.T)}_seed{int(args.seed)}.log"
     _setup_logging(str(log_file))
     LOGGER.info("Start activation distribution analysis")

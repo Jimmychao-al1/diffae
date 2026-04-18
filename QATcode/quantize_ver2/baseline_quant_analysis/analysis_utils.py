@@ -1,3 +1,5 @@
+"""Utility functions for baseline quantization analysis scripts."""
+
 from __future__ import annotations
 
 import math
@@ -5,21 +7,23 @@ import re
 from dataclasses import dataclass, field
 from typing import Dict, Iterable, List, Optional
 
-import numpy as np
 import torch
 
 
 def safe_layer_name(name: str) -> str:
+    """Public function safe_layer_name."""
     return re.sub(r"[^0-9A-Za-z._-]+", "_", name).strip("_")
 
 
 def parse_target_patterns(patterns: Optional[str]) -> List[str]:
+    """Public function parse_target_patterns."""
     if not patterns:
         return []
     return [x.strip() for x in patterns.split(",") if x.strip()]
 
 
 def match_any_pattern(text: str, patterns: Iterable[str]) -> bool:
+    """Public function match_any_pattern."""
     ps = list(patterns)
     if not ps:
         return True
@@ -34,11 +38,13 @@ def match_any_pattern(text: str, patterns: Iterable[str]) -> bool:
 
 
 def parse_module_types(spec: str) -> List[str]:
+    """Public function parse_module_types."""
     out = [x.strip() for x in spec.split(",") if x.strip()]
     return out if out else ["Conv2d", "Linear"]
 
 
 def quant_state_from_mode(mode: str) -> tuple[bool, bool]:
+    """Public function quant_state_from_mode."""
     mode_u = mode.strip().upper()
     if mode_u not in {"FF", "FT", "TF", "TT"}:
         raise ValueError(f"Unsupported mode: {mode}")
@@ -47,6 +53,8 @@ def quant_state_from_mode(mode: str) -> tuple[bool, bool]:
 
 @dataclass
 class TimestepActivationAccumulator:
+    """Public class TimestepActivationAccumulator."""
+
     sample_cap: int = 4096
     device: Optional[torch.device] = None
     # running moments / counts
@@ -65,6 +73,7 @@ class TimestepActivationAccumulator:
     sample_numel: int = 0
 
     def update(self, x: torch.Tensor) -> None:
+        """Public function update."""
         if x is None:
             return
         flat = x.detach().reshape(-1)
@@ -125,12 +134,15 @@ class TimestepActivationAccumulator:
         return merged
 
     def summary(self, include_shape: bool = True) -> Dict[str, float]:
+        """Public function summary."""
         if self.numel <= 0:
             return {}
         mean = self.sum_v / self.numel
         var = max(0.0, self.sum_sq / self.numel - mean * mean)
         std = math.sqrt(var)
-        qvec = torch.tensor([0.001, 0.01, 0.05, 0.50, 0.95, 0.99, 0.999], dtype=torch.float32, device=self.device)
+        qvec = torch.tensor(
+            [0.001, 0.01, 0.05, 0.50, 0.95, 0.99, 0.999], dtype=torch.float32, device=self.device
+        )
         smp = self._merged_samples().to(dtype=torch.float32)
         if int(smp.numel()) > 0:
             q = torch.quantile(smp, qvec)
@@ -170,7 +182,10 @@ class TimestepActivationAccumulator:
         return out
 
 
-def calc_delta_and_ratio(ff: Dict[str, float], ft: Dict[str, float], eps: float = 1e-12) -> Dict[str, Dict[str, float]]:
+def calc_delta_and_ratio(
+    ff: Dict[str, float], ft: Dict[str, float], eps: float = 1e-12
+) -> Dict[str, Dict[str, float]]:
+    """Public function calc_delta_and_ratio."""
     delta = {
         "delta_std": float(ft["std"] - ff["std"]),
         "delta_abs_max": float(ft["abs_max"] - ff["abs_max"]),

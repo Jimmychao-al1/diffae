@@ -64,6 +64,7 @@ class Stage2ErrorCollector:
         }
 
     def set_run(self, name: str) -> None:
+        """Public function set_run."""
         if name not in ("baseline", "cache"):
             raise ValueError("run name must be 'baseline' or 'cache'")
         self._run_name = name
@@ -77,7 +78,9 @@ class Stage2ErrorCollector:
         """傳給 conf.cache_debug_collector / BeatGANsAutoencModel.forward。"""
         return self.on_layer_output
 
-    def on_layer_output(self, layer_key: str, h: torch.Tensor, *, recompute: bool, t: torch.Tensor) -> None:
+    def on_layer_output(
+        self, layer_key: str, h: torch.Tensor, *, recompute: bool, t: torch.Tensor
+    ) -> None:
         """與 unet_autoenc._cache_dbg 簽名一致；recompute 僅供除錯，不比對用。
 
         參數 t 必須為 raw DDIM timestep i（0..T-1），與 ddim 迴圈及 cache_scheduler 一致；
@@ -85,22 +88,6 @@ class Stage2ErrorCollector:
         """
         t0 = float(t[0].item())
         raw_i = int(t0)
-        step_idx_if_ok = (self.T - 1) - raw_i if 0 <= raw_i < self.T else None
-        #_LOG_T.info(
-        #    "[collector t] run=%s layer=%s recompute=%s T=%s t.shape=%s t[0]=%s dtype=%s device=%s "
-        #    "-> raw_i=%s step_idx=%s in_range=%s",
-        #    self._run_name,
-        #    layer_key,
-        #    recompute,
-        #    self.T,
-        #    tuple(t.shape),
-        #    t0,
-        #    t.dtype,
-        #    t.device,
-        #    raw_i,
-        #    step_idx_if_ok,
-        #    0 <= raw_i < self.T,
-        #)
         if not (0 <= raw_i < self.T):
             LOGGER.warning(
                 "[Stage2] on_layer_output: expected raw DDIM timestep in [0, %s); got t[0]=%s (layer=%s). "
@@ -131,6 +118,7 @@ class Stage2ErrorCollector:
         self,
         shared_zones: List[Dict[str, Any]],
     ) -> Dict[str, Any]:
+        """Public function compute_diagnostics."""
         per_block_step_error: Dict[str, Dict[str, Dict[str, float]]] = {}
         per_block_zone_error: Dict[str, Dict[str, Dict[str, Any]]] = {}
         zone_ts = _zone_ddim_timesteps(shared_zones)
@@ -154,7 +142,9 @@ class Stage2ErrorCollector:
                     )
                 a, b = bmap[step_idx], cmap[step_idx]
                 if a.shape != b.shape:
-                    raise RuntimeError(f"{rt} step {step_idx}: shape mismatch {a.shape} vs {b.shape}")
+                    raise RuntimeError(
+                        f"{rt} step {step_idx}: shape mismatch {a.shape} vs {b.shape}"
+                    )
                 l1 = float(_l1_scalar(a, b))
                 l2 = float(_l2_rms(a, b))
                 cos = float(_flatten_cosine(a, b).mean())
@@ -214,6 +204,7 @@ class Stage2ErrorCollector:
 def aggregate_per_timestep(
     per_block_step_error: Dict[str, Dict[str, Dict[str, float]]],
 ) -> Dict[str, Dict[str, float]]:
+    """Public function aggregate_per_timestep."""
     by_t: Dict[str, List[float]] = {}
     for rt, steps in per_block_step_error.items():
         for ti, m in steps.items():

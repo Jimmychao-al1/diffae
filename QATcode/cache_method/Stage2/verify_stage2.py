@@ -36,7 +36,10 @@ from QATcode.cache_method.Stage2.stage2_scheduler_adapter import (
 )
 
 
-def verify_refined_scheduler_config(cfg: Dict[str, Any], *, require_full_coverage: bool = True) -> None:
+def verify_refined_scheduler_config(
+    cfg: Dict[str, Any], *, require_full_coverage: bool = True
+) -> None:
+    """Public function verify_refined_scheduler_config."""
     if cfg.get("time_order") != TIME_ORDER_EXPECTED:
         raise ValueError(
             f"time_order must be {TIME_ORDER_EXPECTED!r}, got {cfg.get('time_order')!r}"
@@ -56,9 +59,7 @@ def verify_refined_scheduler_config(cfg: Dict[str, Any], *, require_full_coverag
     if not isinstance(blocks, list):
         raise TypeError("blocks must be a list")
     if require_full_coverage and len(blocks) != EXPECTED_NUM_BLOCKS:
-        raise ValueError(
-            f"blocks must have length {EXPECTED_NUM_BLOCKS}, got {len(blocks)}"
-        )
+        raise ValueError(f"blocks must have length {EXPECTED_NUM_BLOCKS}, got {len(blocks)}")
     if not require_full_coverage and len(blocks) < 1:
         raise ValueError("blocks must be non-empty when require_full_coverage=False")
 
@@ -96,9 +97,7 @@ def verify_refined_scheduler_config(cfg: Dict[str, Any], *, require_full_coverag
             )
 
     if len(set(mapped_runtime_names)) != len(mapped_runtime_names):
-        raise ValueError(
-            "mapped runtime block names from blocks[].name must be unique"
-        )
+        raise ValueError("mapped runtime block names from blocks[].name must be unique")
     if require_full_coverage:
         if set(mapped_runtime_names) != set(RUNTIME_LAYER_NAMES):
             missing = sorted(set(RUNTIME_LAYER_NAMES) - set(mapped_runtime_names))
@@ -129,9 +128,7 @@ def verify_refined_scheduler_config(cfg: Dict[str, Any], *, require_full_coverag
         if not isinstance(kz, list):
             raise TypeError(f"block id={bid}: k_per_zone must be a list")
         if len(kz) != nz:
-            raise ValueError(
-                f"block id={bid}: len(k_per_zone)={len(kz)} != len(shared_zones)={nz}"
-            )
+            raise ValueError(f"block id={bid}: len(k_per_zone)={len(kz)} != len(shared_zones)={nz}")
         for j, kv in enumerate(kz):
             if int(kv) < 1:
                 raise ValueError(f"block id={bid}: k_per_zone[{j}] must be >= 1, got {kv}")
@@ -201,9 +198,13 @@ def verify_blockwise_threshold_config_dict(data: Dict[str, Any], *, eps: float =
         zt = float(entry["zone_l1_threshold"])
         pt = float(entry["peak_l1_threshold"])
         if math.isnan(zt) or math.isinf(zt) or zt <= 0.0:
-            raise ValueError(f"block_id {bid}: zone_l1_threshold must be finite and > 0, got {zt!r}")
+            raise ValueError(
+                f"block_id {bid}: zone_l1_threshold must be finite and > 0, got {zt!r}"
+            )
         if math.isnan(pt) or math.isinf(pt) or pt <= 0.0:
-            raise ValueError(f"block_id {bid}: peak_l1_threshold must be finite and > 0, got {pt!r}")
+            raise ValueError(
+                f"block_id {bid}: peak_l1_threshold must be finite and > 0, got {pt!r}"
+            )
         if pt + eps < ratio_min * zt:
             raise ValueError(
                 f"block_id {bid}: need peak_l1_threshold >= peak_over_zone_ratio_min * zone_l1_threshold "
@@ -211,10 +212,13 @@ def verify_blockwise_threshold_config_dict(data: Dict[str, Any], *, eps: float =
             )
 
     if seen_ids != set(range(EXPECTED_NUM_BLOCKS)):
-        raise ValueError(f"block_id set must be 0..{EXPECTED_NUM_BLOCKS - 1} exactly once, got {sorted(seen_ids)}")
+        raise ValueError(
+            f"block_id set must be 0..{EXPECTED_NUM_BLOCKS - 1} exactly once, got {sorted(seen_ids)}"
+        )
 
 
 def main() -> None:
+    """Public function main."""
     ap = argparse.ArgumentParser()
     ap.add_argument(
         "config_path",
