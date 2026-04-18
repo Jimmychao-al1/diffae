@@ -31,7 +31,7 @@ data_paths = {
     'horse256':
     os.path.expanduser('datasets/horse256.lmdb'),
     'bedroom256':
-    os.path.expanduser('datasets/bedroom256.lmdb'),
+    os.path.expanduser('datasets/bedroom256_lmdb'),
     'celeba_anno':
     os.path.expanduser('datasets/celeba_anno/list_attr_celeba.txt'),
     'celebahq_anno':

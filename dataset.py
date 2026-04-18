@@ -312,7 +312,7 @@ class Horse_lmdb(Dataset):
 
 class Bedroom_lmdb(Dataset):
     def __init__(self,
-                 path=os.path.expanduser('datasets/bedroom256.lmdb'),
+                 path=os.path.expanduser('datasets/bedroom256_lmdb'),
                  image_size=128,
                  original_resolution=256,
                  do_augment: bool = True,
