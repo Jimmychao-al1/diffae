@@ -110,7 +110,7 @@ J = w_b \cdot \frac{1}{L_z}\sum_{t\in\mathcal{R}} I_{\mathrm{cut}}[b,t]
 | **`scheduler_diagnostics.json`** | `I_l1cos_stats` / `I_cut_stats`、`G_ddim`、\(G_{\mathrm{proc}}\)、\(G_{\mathrm{smooth}}\)、\(\Delta\)、change points、step zones 合併前後、每 zone **候選 k**、**cost_tables_per_zone**、baseline **\(\lambda\)**、**lambda_sweep** 對照等 |
 | **`verification_summary.json`** | zone 邊界、每 block **k**、**#F/#R**、**total cost**、每 zone 候選 k 與選後 **J** 摘要 |
 
-`stage1_baseline_params` 內含 **`K_effective_used`**（與 CLI 的 `--K` 取 **min(K, T-1)** 等一致）、**`W_L1_branch` / `W_COS_branch`**（舊名 `W_L1_sim` 已廢除，若下游仍解析舊鍵需更新）。
+`stage1_baseline_params` 內含 **`K_effective_used`**（與 CLI 的 `--K` 取 **min(K, T-1)** 等一致）、**`W_L1_branch` / `W_COS_branch`**。
 
 ---
 

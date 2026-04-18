@@ -1,6 +1,6 @@
 # Stage2：Runtime 對齊與單輪 Refinement
 
-**批次實驗指令與環境變數**：見同目錄 [`SUMMARY.md`](SUMMARY.md)（`run_stage2_full_experiments.sh`）。
+**批次實驗指令與環境變數**：見同目錄 [`SUMMARY.md`](SUMMARY.md)；批次腳本為 `run_stage2_full_experiments.sh`。
 
 ## 定位
 
