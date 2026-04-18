@@ -113,17 +113,17 @@ class AverageMeter:
     def __init__(self):
         self.reset()
 
-    def reset(self) -> "Any":
+    def reset(self) -> Any:
         """Public function reset."""
         self.sum = 0.0
         self.cnt = 0
 
     @property
-    def avg(self) -> "Any":
+    def avg(self) -> Any:
         """Public function avg."""
         return self.sum / max(1, self.cnt)
 
-    def update(self, val: "Any", n: "Any" = 1) -> "Any":
+    def update(self, val: Any, n: Any = 1) -> Any:
         """Public function update."""
         self.sum += float(val) * n
         self.cnt += n
@@ -295,17 +295,17 @@ def load_calibration_data() -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
 
 
 @torch.no_grad()
-def sync_ema_once(base_model: LitModel) -> "Any":
+def sync_ema_once(base_model: LitModel) -> Any:
     """Public function sync_ema_once."""
     return _common_sync_ema_once(base_model)
 
 
-def make_state_dict(m: torch.nn.Module, drop_uint8: bool = True) -> "Any":
+def make_state_dict(m: torch.nn.Module, drop_uint8: bool = True) -> Any:
     """輸出乾淨的 state_dict；預設移除 uint8 權重（你之後另行導出 INT8 時再存）。"""
     return _common_make_state_dict(m, drop_uint8=drop_uint8)
 
 
-def remap_keys(sd: "Any", drop_prefix: "Any" = None, add_prefix: "Any" = None) -> "Any":
+def remap_keys(sd: Any, drop_prefix: Any = None, add_prefix: Any = None) -> Any:
     """Public function remap_keys."""
     return _common_remap_keys(sd, drop_prefix=drop_prefix, add_prefix=add_prefix)
 
@@ -392,7 +392,7 @@ def load_results(json_path: str) -> dict:
         }
 
 
-def save_results(results: dict, json_path: str) -> "Any":
+def save_results(results: dict, json_path: str) -> Any:
     """
     保存實驗結果 (支援增量更新)
 
@@ -779,7 +779,7 @@ def evaluate_fid_with_cache(
 @time_operation
 def main_float_model(
     target_layer: Optional[str] = None, k_value: Optional[int] = None, baseline_only: bool = False
-) -> "Any":
+) -> Any:
     """
     FID Cache Sensitivity 實驗主流程
 

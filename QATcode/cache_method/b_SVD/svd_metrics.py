@@ -9,6 +9,7 @@ SVD 指標計算腳本
 - 可選：計算 energy ratio 曲線
 - 輸出：svd_metrics/<block_slug>.json
 """
+from typing import Any
 
 import json
 import argparse
@@ -390,7 +391,7 @@ def process_single_block(
     representative_t: int,
     energy_threshold: float,
     compute_energy: bool = True,
-) -> "Any":
+) -> Any:
     """
     處理單一 block 的 SVD 指標計算
 
@@ -417,7 +418,7 @@ def process_single_block(
     )
 
 
-def main() -> "Any":
+def main() -> Any:
     """Public function main."""
     parser = argparse.ArgumentParser(description="SVD Metrics Calculation")
     parser.add_argument(

@@ -152,17 +152,17 @@ class AverageMeter:
     def __init__(self):
         self.reset()
 
-    def reset(self) -> "Any":
+    def reset(self) -> Any:
         """Public function reset."""
         self.sum = 0.0
         self.cnt = 0
 
     @property
-    def avg(self) -> "Any":
+    def avg(self) -> Any:
         """Public function avg."""
         return self.sum / max(1, self.cnt)
 
-    def update(self, val: "Any", n: "Any" = 1) -> "Any":
+    def update(self, val: Any, n: Any = 1) -> Any:
         """Public function update."""
         self.sum += float(val) * n
         self.cnt += n
@@ -212,17 +212,17 @@ def load_diffae_model(model_path: str = CONFIG.MODEL_PATH) -> LitModel:
 
 
 @torch.no_grad()
-def sync_ema_once(base_model: LitModel) -> "Any":
+def sync_ema_once(base_model: LitModel) -> Any:
     """Public function sync_ema_once."""
     return _common_sync_ema_once(base_model)
 
 
-def make_state_dict(m: torch.nn.Module, drop_uint8: bool = True) -> "Any":
+def make_state_dict(m: torch.nn.Module, drop_uint8: bool = True) -> Any:
     """輸出乾淨的 state_dict；預設移除 uint8 權重（你之後另行導出 INT8 時再存）。"""
     return _common_make_state_dict(m, drop_uint8=drop_uint8)
 
 
-def remap_keys(sd: "Any", drop_prefix: "Any" = None, add_prefix: "Any" = None) -> "Any":
+def remap_keys(sd: Any, drop_prefix: Any = None, add_prefix: Any = None) -> Any:
     """Public function remap_keys."""
     return _common_remap_keys(sd, drop_prefix=drop_prefix, add_prefix=add_prefix)
 
@@ -315,7 +315,7 @@ class SimilarityCollector:
         # 當前 batch 的累加器（用於累積當前 batch 的資料，直到達到 collect_samples）
         self.current_batch_accumulator = {}  # {block_name: {l1: {...}, l2: {...}, cos: {...}}}
 
-    def register_hooks(self, model: nn.Module, sampler: "Any") -> "Any":
+    def register_hooks(self, model: nn.Module, sampler: Any) -> Any:
         """註冊 block hook + model step hook。"""
         from model.blocks import TimestepEmbedSequential
 
@@ -346,14 +346,14 @@ class SimilarityCollector:
         self.hooks.append(model.register_forward_hook(self._create_model_post_hook()))
         LOGGER.info("[Similarity] 註冊 model step hook 完成")
 
-    def remove_hooks(self) -> "Any":
+    def remove_hooks(self) -> Any:
         """Public function remove_hooks."""
         for hook in self.hooks:
             hook.remove()
         self.hooks.clear()
 
     def _create_step_pre_hook(self):
-        def pre_hook(module: "Any", args: "Any", kwargs: "Any") -> "Any":
+        def pre_hook(module: Any, args: Any, kwargs: Any) -> Any:
             """Public function pre_hook."""
             self._step_counter = (self._step_counter + 1) % self.max_timesteps
             self.current_step_idx = self.max_timesteps - 1 - self._step_counter
@@ -365,7 +365,7 @@ class SimilarityCollector:
         return pre_hook
 
     def _create_model_post_hook(self):
-        def post_hook(module: "Any", input: "Any", output: "Any") -> "Any":
+        def post_hook(module: Any, input: Any, output: Any) -> Any:
             """Public function post_hook."""
             if self.current_step_idx == 0:
                 self._finalize_current_batch()
@@ -383,7 +383,7 @@ class SimilarityCollector:
         return post_hook
 
     def _create_block_hook(self, block_name: str):
-        def hook_fn(module: "Any", input: "Any", output: "Any") -> "Any":
+        def hook_fn(module: Any, input: Any, output: Any) -> Any:
             """Public function hook_fn."""
             # 如果已收集足夠樣本，直接跳過
             if not self._collection_active:
@@ -838,7 +838,7 @@ class SimilarityCollector:
 
         return l1_vals, l1_rate_vals, l2_vals, cos_vals
 
-    def finalize(self) -> "Any":
+    def finalize(self) -> Any:
         """只輸出：L1 / cosine"""
         for block_name in self.block_sums.keys():
             # 在 GPU 上計算 mean，然後轉移到 CPU
@@ -1180,7 +1180,7 @@ class SimilarityCollector:
 
 
 @time_operation
-def main_float_model() -> "Any":
+def main_float_model() -> Any:
     """
     Diff-AE EfficientDM Step 6 訓練主流程
 

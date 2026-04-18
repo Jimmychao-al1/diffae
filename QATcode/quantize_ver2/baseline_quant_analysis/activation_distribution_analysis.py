@@ -438,7 +438,7 @@ def _register_input_hooks(
 def _patch_timestep_tracking(model: nn.Module, current_t_ref: Dict[str, int]) -> Tuple[Any, Any]:
     original_forward = model.forward
 
-    def wrapped_forward(*args: "Any", **kwargs: "Any") -> "Any":
+    def wrapped_forward(*args: Any, **kwargs: Any) -> Any:
         """Public function wrapped_forward."""
         t_tensor = kwargs.get("t", None)
         if t_tensor is None and len(args) >= 2:

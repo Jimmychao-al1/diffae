@@ -10,6 +10,7 @@ SVD Feature 收集腳本
 
 參考：similarity_calculation.py 的 hook 架構與 evaluate_fid 呼叫方式 (非 similarity_calculation_baseline.py)
 """
+from typing import Any
 
 import os
 import sys
@@ -173,7 +174,7 @@ class SvdFeatureCollector:
             f"[SVD] 初始化 SvdFeatureCollector: block={target_block}, target_N={target_N}, T={max_timesteps}"
         )
 
-    def register_hooks(self, model: nn.Module, sampler: "Any") -> "Any":
+    def register_hooks(self, model: nn.Module, sampler: Any) -> Any:
         """註冊 hook"""
         # 對 target_block 註冊 forward hook
         registered = False
@@ -202,7 +203,7 @@ class SvdFeatureCollector:
         )
         LOGGER.info("[SVD] 註冊 model step hook 完成")
 
-    def remove_hooks(self) -> "Any":
+    def remove_hooks(self) -> Any:
         """移除 hook"""
         for hook in self.hooks:
             hook.remove()
@@ -212,7 +213,7 @@ class SvdFeatureCollector:
     def _create_step_pre_hook(self):
         """創建 step pre-hook：更新 analysis index 與顯示用 DDIM timestep。"""
 
-        def pre_hook(module: "Any", args: "Any", kwargs: "Any") -> "Any":
+        def pre_hook(module: Any, args: Any, kwargs: Any) -> Any:
             """Public function pre_hook."""
             self._step_counter = (self._step_counter + 1) % self.max_timesteps
             self.current_step_idx = self.max_timesteps - 1 - self._step_counter
@@ -222,7 +223,7 @@ class SvdFeatureCollector:
     def _create_block_hook(self, block_name: str):
         """創建 block forward hook"""
 
-        def hook_fn(module: "Any", input: "Any", output: "Any") -> "Any":
+        def hook_fn(module: Any, input: Any, output: Any) -> Any:
             """Public function hook_fn."""
             if self._step_counter is None or self._step_counter < 0:
                 return
@@ -253,7 +254,7 @@ class SvdFeatureCollector:
 
         return hook_fn
 
-    def finalize(self) -> "Any":
+    def finalize(self) -> Any:
         """
         完成收集並落地寫出 t_{t}.pt 與 meta.json（僅非 in-memory 流程使用）
 
@@ -280,7 +281,7 @@ class SvdFeatureCollector:
         )
         LOGGER.info(f"[SVD] 輸出目錄: {output_dir}")
 
-    def build_feature_tensors(self) -> "Any":
+    def build_feature_tensors(self) -> Any:
         """
         將 buffer 整理成可直接計算 SVD 的 features 與 meta（不落地）
         """
@@ -322,7 +323,7 @@ class SvdFeatureCollector:
 
 
 # ==================== 主流程 ====================
-def main() -> "Any":
+def main() -> Any:
     """主流程：複用 similarity_calculation.py 的架構"""
 
     LOGGER.info("=" * 80)

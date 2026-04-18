@@ -1,4 +1,5 @@
 """Core quantization layers and quantizer utilities for quantize_ver2."""
+from typing import Any
 
 import torch
 import torch.nn as nn
@@ -12,26 +13,26 @@ class StraightThrough(nn.Module):
     def __init__(self, channel_num: int = 1):
         super().__init__()
 
-    def forward(self, input: "Any") -> "Any":
+    def forward(self, input: Any) -> Any:
         """Public function forward."""
         return input
 
 
-def round_ste(x: torch.Tensor) -> "Any":
+def round_ste(x: torch.Tensor) -> Any:
     """
     Implement Straight-Through Estimator for rounding operation.
     """
     return (x.round() - x).detach() + x
 
 
-def differentiable_clamp(x: "Any", lower: "Any", upper: "Any") -> "Any":
+def differentiable_clamp(x: Any, lower: Any, upper: Any) -> Any:
     """Public function differentiable_clamp."""
     x = x + F.relu(lower - x)
     x = x - F.relu(x - upper)
     return x
 
 
-def normalized_fake_quant(x: torch.Tensor, scale: torch.Tensor, eps: float = 1e-8) -> "Any":
+def normalized_fake_quant(x: torch.Tensor, scale: torch.Tensor, eps: float = 1e-8) -> Any:
     """
     Normalized fake quantization: absmax normalize -> round to [-128,127] -> denormalize
 
@@ -52,7 +53,7 @@ def normalized_fake_quant(x: torch.Tensor, scale: torch.Tensor, eps: float = 1e-
     return x_q
 
 
-def lp_loss(pred: "Any", tgt: "Any", p: "Any" = 2.0, reduction: "Any" = "none") -> "Any":
+def lp_loss(pred: Any, tgt: Any, p: Any = 2.0, reduction: Any = "none") -> Any:
     """
     loss function measured in L_p Norm
     """
@@ -102,7 +103,7 @@ class UniformAffineQuantizer(nn.Module):
         self.delta = None  # Placeholder for compatibility
         self.zero_point = None
 
-    def clipping(self, x: "Any", lower: "Any", upper: "Any") -> "Any":
+    def clipping(self, x: Any, lower: Any, upper: Any) -> Any:
         """Public function clipping."""
         # clip lower
         x = x + F.relu(lower - x)
@@ -111,7 +112,7 @@ class UniformAffineQuantizer(nn.Module):
 
         return x
 
-    def forward(self, x: torch.Tensor) -> "Any":
+    def forward(self, x: torch.Tensor) -> Any:
         """
         Normalized fake quantization forward.
         Computes absmax dynamically, then applies normalized fake-quant.
@@ -136,13 +137,13 @@ class UniformAffineQuantizer(nn.Module):
 
         return x_q
 
-    def bitwidth_refactor(self, refactored_bit: int) -> "Any":
+    def bitwidth_refactor(self, refactored_bit: int) -> Any:
         """Public function bitwidth_refactor."""
         assert 2 <= refactored_bit <= 8, "bitwidth not supported"
         self.n_bits = refactored_bit
         self.n_levels = 2**self.n_bits
 
-    def extra_repr(self) -> "Any":
+    def extra_repr(self) -> Any:
         """Public function extra_repr."""
         s = (
             "bit={n_bits}, scale_method={scale_method}, symmetric={sym}, channel_wise={channel_wise},"
@@ -191,7 +192,7 @@ class INT_UniformAffineQuantizer(nn.Module):
         self.delta = None  # Placeholder for compatibility
         self.zero_point = None
 
-    def clipping(self, x: "Any", lower: "Any", upper: "Any") -> "Any":
+    def clipping(self, x: Any, lower: Any, upper: Any) -> Any:
         """Public function clipping."""
         # clip lower
         x = x + F.relu(lower - x)
@@ -200,7 +201,7 @@ class INT_UniformAffineQuantizer(nn.Module):
 
         return x
 
-    def forward(self, x: torch.Tensor) -> "Any":
+    def forward(self, x: torch.Tensor) -> Any:
         """
         Normalized fake quantization forward.
         Computes absmax dynamically, then applies normalized fake-quant.
@@ -225,13 +226,13 @@ class INT_UniformAffineQuantizer(nn.Module):
 
         return x_q
 
-    def bitwidth_refactor(self, refactored_bit: int) -> "Any":
+    def bitwidth_refactor(self, refactored_bit: int) -> Any:
         """Public function bitwidth_refactor."""
         assert 2 <= refactored_bit <= 8, "bitwidth not supported"
         self.n_bits = refactored_bit
         self.n_levels = 2**self.n_bits
 
-    def extra_repr(self) -> "Any":
+    def extra_repr(self) -> Any:
         """Public function extra_repr."""
         s = (
             "bit={n_bits}, scale_method={scale_method}, symmetric={sym}, channel_wise={channel_wise},"
@@ -286,13 +287,13 @@ class TemporalActivationQuantizer(nn.Module):
         self.zero_point = None
         self.calibration_mode = False
 
-    def clipping(self, x: "Any", lower: "Any", upper: "Any") -> "Any":
+    def clipping(self, x: Any, lower: Any, upper: Any) -> Any:
         """Differentiable clipping for STE."""
         x = x + F.relu(lower - x)
         x = x - F.relu(x - upper)
         return x
 
-    def calibrate_step(self, x: torch.Tensor, step: int) -> "Any":
+    def calibrate_step(self, x: torch.Tensor, step: int) -> Any:
         """
         Calibrate scale for a specific timestep using observed absmax.
 
@@ -304,7 +305,7 @@ class TemporalActivationQuantizer(nn.Module):
             absmax = x.detach().abs().max().clamp(min=self.eps)
             self.scale_list.data[step] = absmax.to(self.scale_list.data.dtype)
 
-    def forward(self, x: torch.Tensor) -> "Any":
+    def forward(self, x: torch.Tensor) -> Any:
         """
         Temporal normalized fake quantization.
         Uses scale_list[current_step] as absmax scale.
@@ -339,13 +340,13 @@ class TemporalActivationQuantizer(nn.Module):
         )
         return x_q
 
-    def bitwidth_refactor(self, refactored_bit: int) -> "Any":
+    def bitwidth_refactor(self, refactored_bit: int) -> Any:
         """Compatibility method (not used in v2)."""
         assert refactored_bit == 8, "Only 8-bit supported"
         self.n_bits = refactored_bit
         self.n_levels = 256
 
-    def extra_repr(self) -> "Any":
+    def extra_repr(self) -> Any:
         """Public function extra_repr."""
         s = "bit={n_bits}, scale_method=absmax, symmetric=True, total_steps={total_steps}"
         return s.format(**self.__dict__)
@@ -426,7 +427,7 @@ class QuantModule(nn.Module):
             return self.cached_a_w.to(weight.device)
         return self._compute_a_w(weight)
 
-    def forward(self, input: torch.Tensor) -> "Any":
+    def forward(self, input: torch.Tensor) -> Any:
         """
         Forward pass with normalized fake-quant + rescale + FP32 bias.
 
@@ -523,14 +524,14 @@ class QuantModule(nn.Module):
 
         return out
 
-    def set_quant_state(self, weight_quant: bool = False, act_quant: bool = False) -> "Any":
+    def set_quant_state(self, weight_quant: bool = False, act_quant: bool = False) -> Any:
         """Public function set_quant_state."""
         self.use_weight_quant = weight_quant
         self.use_act_quant = act_quant
 
     def set_runtime_mode(
         self, mode: str = "train", use_cached_aw: bool = False, clear_cached_aw: bool = False
-    ) -> "Any":
+    ) -> Any:
         """
         Set runtime behavior for a_w strategy.
         """
@@ -579,7 +580,7 @@ class SimpleDequantizer(nn.Module):
             list(range(0, 8, self.n_bits)), dtype=torch.uint8, device="cuda"
         ).unsqueeze(0)
 
-    def forward(self, x_int8: "Any") -> "Any":
+    def forward(self, x_int8: Any) -> Any:
         """Public function forward."""
         ## unpack
         # if len(x_int_pack8.shape) == 4:

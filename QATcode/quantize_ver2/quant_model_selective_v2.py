@@ -1,4 +1,5 @@
 """Selective quantization model wrappers used in Step4 tooling."""
+from typing import Any
 
 import logging
 import torch
@@ -35,7 +36,7 @@ class SelectiveQuantModel(nn.Module):
         # 對指定的 UNet 模組進行量化
         self.quant_unet_modules(need_init)
 
-    def quant_unet_modules(self, need_init: bool = True) -> "Any":
+    def quant_unet_modules(self, need_init: bool = True) -> Any:
         """
         只對 UNet 的核心模組進行量化：
         - time_embed
@@ -63,12 +64,12 @@ class SelectiveQuantModel(nn.Module):
 
     def quant_module_refactor(
         self,
-        module: "Any",
-        weight_quant_params: "Any",
-        act_quant_params: "Any",
+        module: Any,
+        weight_quant_params: Any,
+        act_quant_params: Any,
         need_init: bool = True,
-        target_modules: "Any" = None,
-    ) -> "Any":
+        target_modules: Any = None,
+    ) -> Any:
         """
         遞歸替換 Conv2d 和 Linear 層為 QuantModule
         可選擇性跳過 skip connection 相關層
@@ -101,8 +102,8 @@ class SelectiveQuantModel(nn.Module):
                 )
 
     def set_quant_state(
-        self, weight_quant: bool = False, act_quant: bool = False, target_modules: "Any" = None
-    ) -> "Any":
+        self, weight_quant: bool = False, act_quant: bool = False, target_modules: Any = None
+    ) -> Any:
         """設置量化狀態（傳遞到所有 QuantModule）。"""
         for m in self.model.modules():
             if isinstance(m, QuantModule):
@@ -110,7 +111,7 @@ class SelectiveQuantModel(nn.Module):
 
     def set_runtime_mode(
         self, mode: str = "train", use_cached_aw: bool = False, clear_cached_aw: bool = False
-    ) -> "Any":
+    ) -> Any:
         """
         設置 runtime mode（傳遞到所有 QuantModule）。
         """
@@ -120,14 +121,14 @@ class SelectiveQuantModel(nn.Module):
                     mode=mode, use_cached_aw=use_cached_aw, clear_cached_aw=clear_cached_aw
                 )
 
-    def forward(self, *args: "Any", **kwargs: "Any") -> "Any":
+    def forward(self, *args: Any, **kwargs: Any) -> Any:
         """前向傳播，直接調用原始模型。"""
         return self.model(*args, **kwargs)
 
 
 def count_quantized_modules(
-    model: "Any", target_modules: "Any" = ["input_blocks", "middle_block", "output_blocks", "out"]
-) -> "Any":
+    model: Any, target_modules: Any = ["input_blocks", "middle_block", "output_blocks", "out"]
+) -> Any:
     """
     統計指定模組中的量化層數量
     """
@@ -163,7 +164,7 @@ def count_quantized_modules(
     return total_quant, total_conv_linear
 
 
-def analyze_unet_structure(model: "Any") -> "Any":
+def analyze_unet_structure(model: Any) -> Any:
     """
     分析 UNet 結構中的 Conv2d 和 Linear 層
     """

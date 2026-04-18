@@ -1,4 +1,5 @@
 """Base quantized model wrappers for module replacement and state control."""
+from typing import Any
 
 import torch
 import torch.nn as nn
@@ -28,8 +29,8 @@ class QuantModel(nn.Module):
         module: nn.Module,
         weight_quant_params: dict = {},
         act_quant_params: dict = {},
-        need_init: "Any" = True,
-    ) -> "Any":
+        need_init: Any = True,
+    ) -> Any:
         """
         Recursively replace the normal conv2d and Linear layer to QuantModule
         :param module: nn.Module with nn.Conv2d or nn.Linear in its children
@@ -59,17 +60,17 @@ class QuantModel(nn.Module):
                     child_module, weight_quant_params, act_quant_params, need_init=need_init
                 )
 
-    def set_quant_state(self, weight_quant: bool = False, act_quant: bool = False) -> "Any":
+    def set_quant_state(self, weight_quant: bool = False, act_quant: bool = False) -> Any:
         """Public function set_quant_state."""
         for m in self.model.modules():
             if isinstance(m, QuantModule):  ## remove BaseQuantBlock
                 m.set_quant_state(weight_quant, act_quant)
 
-    def forward(self, image: "Any", t: "Any", context: "Any" = None) -> "Any":
+    def forward(self, image: Any, t: Any, context: Any = None) -> Any:
         """Public function forward."""
         return self.model(image, t, context)
 
-    def set_first_last_layer_to_8bit(self) -> "Any":
+    def set_first_last_layer_to_8bit(self) -> Any:
         """Public function set_first_last_layer_to_8bit."""
         module_list = []
         for m in self.model.modules():
@@ -92,7 +93,7 @@ class QuantModel(nn.Module):
         # module_list[2].ignore_reconstruction = True  ## for debug
         module_list[-1].ignore_reconstruction = True
 
-    def disable_network_output_quantization(self) -> "Any":
+    def disable_network_output_quantization(self) -> Any:
         """Public function disable_network_output_quantization."""
         module_list = []
         for m in self.model.modules():
@@ -129,7 +130,7 @@ class QuantModel_intnlora(nn.Module):
 
     def quant_module_refactor(
         self, module: nn.Module, weight_quant_params: dict = {}, act_quant_params: dict = {}
-    ) -> "Any":
+    ) -> Any:
         """
         Recursively replace the normal conv2d and Linear layer to QuantModule
         :param module: nn.Module with nn.Conv2d or nn.Linear in its children
@@ -170,17 +171,17 @@ class QuantModel_intnlora(nn.Module):
             else:
                 self.quant_module_refactor(child_module, weight_quant_params, act_quant_params)
 
-    def set_quant_state(self, weight_quant: bool = False, act_quant: bool = False) -> "Any":
+    def set_quant_state(self, weight_quant: bool = False, act_quant: bool = False) -> Any:
         """Public function set_quant_state."""
         for m in self.model.modules():
             if isinstance(m, (QuantModule_intnlora, QuantModule)):  ## remove BaseQuantBlock
                 m.set_quant_state(weight_quant, act_quant)
 
-    def forward(self, image: "Any", t: "Any", context: "Any" = None) -> "Any":
+    def forward(self, image: Any, t: Any, context: Any = None) -> Any:
         """Public function forward."""
         return self.model(image, t, context)
 
-    def set_first_last_layer_to_8bit(self) -> "Any":
+    def set_first_last_layer_to_8bit(self) -> Any:
         """Public function set_first_last_layer_to_8bit."""
         module_list = []
         for m in self.model.modules():
@@ -204,7 +205,7 @@ class QuantModel_intnlora(nn.Module):
         # module_list[2].ignore_reconstruction = True  ## for debug
         module_list[-1].ignore_reconstruction = True
 
-    def disable_network_output_quantization(self) -> "Any":
+    def disable_network_output_quantization(self) -> Any:
         """Public function disable_network_output_quantization."""
         module_list = []
         for m in self.model.modules():

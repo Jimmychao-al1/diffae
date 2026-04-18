@@ -8,6 +8,7 @@ SVD vs Similarity 相關性分析
 - 可選：畫對齊曲線圖與散點圖
 - 輸出：correlation/<block_slug>.json
 """
+from typing import Any
 
 import json
 import argparse
@@ -118,7 +119,7 @@ def plot_alignment(
     block_slug: str,
     output_path: Path,
     t_curr_interval: Optional[np.ndarray] = None,
-) -> "Any":
+) -> Any:
     """
     畫對齊曲線圖
 
@@ -200,7 +201,7 @@ def plot_scatter(
     output_path: Path,
     l1_corr: Dict,
     cos_corr: Dict,
-) -> "Any":
+) -> Any:
     """
     畫散點圖
 
@@ -249,7 +250,7 @@ def plot_scatter(
 
 def process_single_correlation(
     svd_json_path: Path, similarity_npz_path: Path, output_dir: Path, plot_figures: bool = True
-) -> "Any":
+) -> Any:
     """
     處理單一 block 的相關性分析
 
@@ -371,7 +372,7 @@ def process_single_correlation(
 # ==================== 主流程 ====================
 
 
-def main() -> "Any":
+def main() -> Any:
     """Public function main."""
     parser = argparse.ArgumentParser(description="SVD vs Similarity Correlation Analysis")
     parser.add_argument("--svd_metrics", type=str, help="SVD 指標 JSON 路徑（單一 block）")

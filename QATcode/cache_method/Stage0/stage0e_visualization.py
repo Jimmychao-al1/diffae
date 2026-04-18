@@ -9,6 +9,7 @@ Stage-0E Visualization
 用法：
     python3 QATcode/cache_method/Stage0/stage0e_visualization.py
 """
+from typing import Any
 
 from pathlib import Path
 from typing import List
@@ -31,7 +32,7 @@ def _build_default_t_curr(T_minus_1: int) -> np.ndarray:
     return (T_minus_1 - 1) - np.arange(T_minus_1, dtype=np.int32)
 
 
-def load_stage0e_outputs(output_dir: str) -> "Any":
+def load_stage0e_outputs(output_dir: str) -> Any:
     """
     從 output_dir 讀取 Stage-0E 的結果。
 
@@ -85,7 +86,7 @@ def plot_block_curves(
     fid_w: float,
     t_curr: np.ndarray,
     save_path: str,
-) -> "Any":
+) -> Any:
     """
     對單一 block 繪製 L1 step mean / cosine distance / SVD interval distance 曲線。
 
@@ -140,7 +141,7 @@ def plot_selected_blocks(
     t_curr: np.ndarray,
     indices: List[int],
     save_dir: str,
-) -> "Any":
+) -> Any:
     """
     對一組選定的 block 批次繪圖。
 
@@ -177,7 +178,7 @@ def plot_fid_weight_bar(
     block_names: np.ndarray,
     fid_w: np.ndarray,
     save_path: str,
-) -> "Any":
+) -> Any:
     """
     繪製所有 block 的 FID weight 條形圖（按 weight 遞減排序）。
     """
@@ -232,7 +233,7 @@ def plot_heatmap(
     save_path: str,
     t_curr: np.ndarray,
     cmap: str = "YlOrRd",
-) -> "Any":
+) -> Any:
     """
     繪製 (B, T-1) 的 heatmap。
     X 軸顯示 DDIM current timestep t_curr（底層資料順序仍為 analysis interval index）。
@@ -282,7 +283,7 @@ def plot_combined_overview(
     block_names: np.ndarray,
     t_curr: np.ndarray,
     save_path: str,
-) -> "Any":
+) -> Any:
     """
     上半：三條曲線（selected block）
     下半：FID weight bar（highlight selected block）
@@ -366,7 +367,7 @@ def plot_combined_overview(
 def main(
     input_dir: str,
     output_dir: str,
-) -> "Any":
+) -> Any:
     """
     Stage-0E 可視化主流程。
 

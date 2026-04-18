@@ -4,7 +4,7 @@ import os
 import sys
 import time
 import logging
-
+from typing import Any
 from torch.utils.data import DataLoader
 
 sys.path.append(".")
@@ -430,12 +430,12 @@ class ActivationCollector:
             return np.array(x).tolist()
         return x
 
-    def set_mode(self, mode: "Any") -> "Any":
+    def set_mode(self, mode: Any) -> Any:
         """Public function set_mode."""
         assert mode in ("pre", "post")
         self._mode = mode
 
-    def dump_results(self, out_dir: "Any" = None, n_workers: "Any" = 10) -> "Any":
+    def dump_results(self, out_dir: Any = None, n_workers: Any = 10) -> Any:
         """Public function dump_results."""
         od = out_dir or self.out_dir
         os.makedirs(od, exist_ok=True)
@@ -670,7 +670,7 @@ class ActivationCollector:
 
         return meta_path, stats_path
 
-    def close(self) -> "Any":
+    def close(self) -> Any:
         """Public function close."""
         for h in self._handles:
             try:
@@ -680,7 +680,7 @@ class ActivationCollector:
         self._handles = []
 
 
-def load_calibration_data() -> "Any":
+def load_calibration_data() -> Any:
     """載入校準資料"""
     print("=" * 100)
     print("2. Loading calibration data...")
@@ -695,7 +695,7 @@ def load_calibration_data() -> "Any":
     return dataset, data_loader
 
 
-def setup_quantization_params() -> "Any":
+def setup_quantization_params() -> Any:
     """設置量化參數"""
     print("=" * 100)
     print("3. Setting up quantization parameters...")
@@ -713,8 +713,8 @@ def setup_quantization_params() -> "Any":
 
 
 def create_quantized_model(
-    model: "Any", wq_params: "Any", aq_params: "Any", quantize_skip_connections: "Any" = False
-) -> "Any":
+    model: Any, wq_params: Any, aq_params: Any, quantize_skip_connections: Any = False
+) -> Any:
     """創建選擇性量化模型"""
     print("=" * 100)
     print("4. Creating selective quantized model...")
@@ -743,7 +743,7 @@ def create_quantized_model(
     return qnn, total_quant
 
 
-def setup_first_last_layers(qnn: "Any") -> "Any":
+def setup_first_last_layers(qnn: Any) -> Any:
     """設置首尾層為 8-bit"""
     print("=" * 100)
     print("5. Setting first and last layers to 8-bit...")
@@ -775,7 +775,7 @@ def setup_first_last_layers(qnn: "Any") -> "Any":
         print(f"  Set last layer ({name}) to 8-bit")
 
 
-def get_train_samples(train_loader: "Any", num_samples: "Any") -> "Any":
+def get_train_samples(train_loader: Any, num_samples: Any) -> Any:
     """Public function get_train_samples."""
     image_data, t_data, y_data = [], [], []
     for image, t, y in train_loader:
@@ -793,8 +793,8 @@ def get_train_samples(train_loader: "Any", num_samples: "Any") -> "Any":
 
 
 def calibrate_quantized_model(
-    qnn: "Any", model: LitModel, cali_images: "Any", cali_t: "Any", cali_y: "Any"
-) -> "Any":
+    qnn: Any, model: LitModel, cali_images: Any, cali_t: Any, cali_y: Any
+) -> Any:
     """校準量化模型"""
     print("=" * 100)
     print("7. Calibrating quantized model...")
@@ -838,7 +838,7 @@ def calibrate_quantized_model(
     return calibration_success
 
 
-def save_quantized_model(qnn: "Any", total_quant: "Any") -> "Any":
+def save_quantized_model(qnn: Any, total_quant: Any) -> Any:
     """保存量化模型和配置"""
     print("=" * 100)
     print("9. Saving quantized model...")
@@ -867,7 +867,7 @@ def save_quantized_model(qnn: "Any", total_quant: "Any") -> "Any":
     return model_path, config_path
 
 
-def main() -> "Any":
+def main() -> Any:
     """主函數 - Diff-AE Step 4: 選擇性量化 UNet 架構"""
     print("=== Diff-AE Step 4: 選擇性量化 UNet 架構 ===")
 

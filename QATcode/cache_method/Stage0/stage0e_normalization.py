@@ -593,7 +593,7 @@ def run_stage0e(
     # 4. 檢查數值有效性
     LOGGER.info("\n[步驟 4] 檢查數值有效性...")
 
-    def check_array(arr: "Any", name: "Any") -> "Any":
+    def check_array(arr: Any, name: Any) -> Any:
         """Public function check_array."""
         has_nan = np.isnan(arr).any()
         has_inf = np.isinf(arr).any()

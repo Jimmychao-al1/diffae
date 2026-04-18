@@ -119,17 +119,17 @@ class AverageMeter:
     def __init__(self):
         self.reset()
 
-    def reset(self) -> "Any":
+    def reset(self) -> Any:
         """Public function reset."""
         self.sum = 0.0
         self.cnt = 0
 
     @property
-    def avg(self) -> "Any":
+    def avg(self) -> Any:
         """Public function avg."""
         return self.sum / max(1, self.cnt)
 
-    def update(self, val: "Any", n: "Any" = 1) -> "Any":
+    def update(self, val: Any, n: Any = 1) -> Any:
         """Public function update."""
         self.sum += float(val) * n
         self.cnt += n
@@ -909,7 +909,7 @@ def save_checkpoint(
     optimizer: torch.optim.Optimizer,
     epoch: int,
     loss: float,
-    ema_helper: "Any" = None,
+    ema_helper: Any = None,
     is_best: bool = False,
 ) -> None:
     """
@@ -975,7 +975,7 @@ def save_checkpoint(
 
 
 @time_operation
-def main() -> "Any":
+def main() -> Any:
     """
     Diff-AE EfficientDM Step 6 訓練主流程
 

@@ -701,13 +701,13 @@ class SpacedDiffusionBeatGans_Trainer(SpacedDiffusionBeatGans):
         self._chunk_total_losses = []
         self._chunk_distill_losses = []
 
-    def pop_completed_loss_chunks(self) -> "Any":
+    def pop_completed_loss_chunks(self) -> Any:
         """取出並清空本輪新產生的 chunk summaries。"""
         chunks = self._completed_loss_chunks
         self._completed_loss_chunks = []
         return chunks
 
-    def pop_rollout_step_records(self) -> "Any":
+    def pop_rollout_step_records(self) -> Any:
         """取出並清空本輪 rollout 的逐 DDIM step loss 記錄。"""
         records = self._rollout_step_records
         self._rollout_step_records = []
@@ -773,7 +773,7 @@ class SpacedDiffusionBeatGans_Trainer(SpacedDiffusionBeatGans):
         assert t.shape == (B,)
 
         # 手動處理時間步轉換，模擬 _WrappedModel 的行為
-        def convert_timesteps(t: "Any") -> "Any":
+        def convert_timesteps(t: Any) -> Any:
             """將時間步轉換為原始範圍"""
             if hasattr(self, "timestep_map") and len(self.timestep_map) > 0:
                 map_tensor = torch.tensor(self.timestep_map, device=t.device, dtype=t.dtype)
@@ -891,7 +891,7 @@ class SpacedDiffusionBeatGans_Trainer(SpacedDiffusionBeatGans):
             model_log_variance = _extract_into_tensor(model_log_variance, t, x.shape)
 
         # 裁剪預測的 x_start
-        def process_xstart(x: "Any") -> "Any":
+        def process_xstart(x: Any) -> Any:
             """Public function process_xstart."""
             if denoised_fn is not None:
                 x = denoised_fn(x)
@@ -1341,7 +1341,7 @@ class SpacedDiffusionBeatGans_Sampler(SpacedDiffusionBeatGans):
 
 
 def create_diffae_trainer(
-    base_sampler: "Any",
+    base_sampler: Any,
     fp_model: BeatGANsAutoencModel,
     quant_model: QuantModel_DiffAE_LoRA,
     optimizer: torch.optim.Optimizer,

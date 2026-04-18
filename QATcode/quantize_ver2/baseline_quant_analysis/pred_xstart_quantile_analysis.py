@@ -2449,7 +2449,7 @@ def plot_pred_xstart_quantile_overlay(*, npz_baseline: Path, npz_v2: Path, out_p
     q_v = nv["quantiles"]
     t = nb["t"]  # (T,)
 
-    def bands(q_arr: np.ndarray) -> "Any":
+    def bands(q_arr: np.ndarray) -> Any:
         """Public function bands."""
         q01 = q_arr[:, 0]
         q25 = q_arr[:, 2]

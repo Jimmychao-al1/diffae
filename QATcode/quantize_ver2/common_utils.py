@@ -56,7 +56,7 @@ def make_time_operation(logger: logging.Logger) -> Callable:
     def time_operation(func: Callable) -> Callable:
         """Public function time_operation."""
 
-        def wrapper(*args: "Any", **kwargs: "Any") -> "Any":
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             """Public function wrapper."""
             start_time = time.time()
             result = func(*args, **kwargs)
@@ -137,7 +137,7 @@ def sync_ema_once(base_model: Any) -> Any:
     return base_model
 
 
-def make_state_dict(m: torch.nn.Module, drop_uint8: bool = True) -> "Any":
+def make_state_dict(m: torch.nn.Module, drop_uint8: bool = True) -> Any:
     """
     Export state_dict on CPU; optionally drop uint8 tensors.
     """

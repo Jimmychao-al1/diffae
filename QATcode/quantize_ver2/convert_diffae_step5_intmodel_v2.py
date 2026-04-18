@@ -4,6 +4,7 @@ import os
 import sys
 import time
 import atexit
+from typing import Any
 
 sys.path.append(".")
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
@@ -23,13 +24,13 @@ class _Tee:
     def __init__(self, *streams):
         self.streams = streams
 
-    def write(self, data: "Any") -> "Any":
+    def write(self, data: Any) -> Any:
         """Public function write."""
         for s in self.streams:
             s.write(data)
             s.flush()
 
-    def flush(self) -> "Any":
+    def flush(self) -> Any:
         """Public function flush."""
         for s in self.streams:
             s.flush()
@@ -50,7 +51,7 @@ def setup_log_file(log_name: str = "step5.log") -> str:
     return log_path
 
 
-def setup_first_last_layers(qnn: "Any") -> "Any":
+def setup_first_last_layers(qnn: Any) -> Any:
     """設置首尾層為 8-bit"""
     print("=" * 100)
     print("5. Setting first and last layers to 8-bit...")
@@ -83,7 +84,7 @@ def setup_first_last_layers(qnn: "Any") -> "Any":
     return qnn
 
 
-def load_quantized_model() -> "Any":
+def load_quantized_model() -> Any:
     """載入 Step 4 的量化模型和配置"""
     print("=" * 100)
     print("1. Loading quantized model from Step 4...")
@@ -153,7 +154,7 @@ def load_quantized_model() -> "Any":
     return qnn, config
 
 
-def main() -> "Any":
+def main() -> Any:
     """主函數 - Diff-AE Step 5: 轉換為整數模型"""
     log_path = setup_log_file("step5.log")
     print("=== Diff-AE Step 5: Convert Quantized Model to Integer Model ===")

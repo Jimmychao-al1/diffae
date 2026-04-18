@@ -1,4 +1,5 @@
 """LoRA-enabled quantized Diff-AE model definitions for quantize_ver2."""
+from typing import Any
 
 import logging
 import math
@@ -134,7 +135,7 @@ class QuantModule_DiffAE_LoRA(nn.Module):
             return self.cached_a_w.to(weight_eff.device)
         return self._compute_a_w(weight_eff)
 
-    def forward(self, input: torch.Tensor) -> "Any":
+    def forward(self, input: torch.Tensor) -> Any:
         """
         Forward pass with LoRA + normalized fake-quant + rescale + FP32 bias.
 
@@ -235,14 +236,14 @@ class QuantModule_DiffAE_LoRA(nn.Module):
 
         return out
 
-    def set_quant_state(self, weight_quant: bool = False, act_quant: bool = False) -> "Any":
+    def set_quant_state(self, weight_quant: bool = False, act_quant: bool = False) -> Any:
         """Public function set_quant_state."""
         self.use_weight_quant = weight_quant
         self.use_act_quant = act_quant
 
     def set_runtime_mode(
         self, mode: str = "train", use_cached_aw: bool = False, clear_cached_aw: bool = False
-    ) -> "Any":
+    ) -> Any:
         """
         Set runtime behavior for a_w strategy.
         """
@@ -285,8 +286,8 @@ class QuantModel_DiffAE_LoRA(nn.Module):
         self.quant_unet_modules_with_lora(weight_quant_params, act_quant_params)
 
     def quant_unet_modules_with_lora(
-        self, weight_quant_params: "Any", act_quant_params: "Any"
-    ) -> "Any":
+        self, weight_quant_params: Any, act_quant_params: Any
+    ) -> Any:
         """
         對 UNet 核心模組進行 LoRA 量化改造
         """
@@ -304,11 +305,11 @@ class QuantModel_DiffAE_LoRA(nn.Module):
 
     def quant_module_refactor_with_lora(
         self,
-        module: "Any",
-        weight_quant_params: "Any",
-        act_quant_params: "Any",
-        target_modules: "Any" = None,
-    ) -> "Any":
+        module: Any,
+        weight_quant_params: Any,
+        act_quant_params: Any,
+        target_modules: Any = None,
+    ) -> Any:
         """
         遞歸替換 Conv2d 和 Linear 層為 LoRA 量化層
         """
@@ -357,8 +358,8 @@ class QuantModel_DiffAE_LoRA(nn.Module):
                 )
 
     def set_quant_state(
-        self, weight_quant: bool = False, act_quant: bool = False, target_modules: "Any" = None
-    ) -> "Any":
+        self, weight_quant: bool = False, act_quant: bool = False, target_modules: Any = None
+    ) -> Any:
         """設置量化狀態"""
         # for m in self.model.modules():
         #    if isinstance(m, (QuantModule_DiffAE_LoRA, QuantModule)):
@@ -402,7 +403,7 @@ class QuantModel_DiffAE_LoRA(nn.Module):
                 count += 1
                 m.set_quant_state(weight_quant, act_quant)
 
-    def set_quant_step(self, step: int) -> "Any":
+    def set_quant_step(self, step: int) -> Any:
         """
         設置所有 TemporalActivationQuantizer 的 current_step
 
@@ -418,7 +419,7 @@ class QuantModel_DiffAE_LoRA(nn.Module):
 
     def set_runtime_mode(
         self, mode: str = "train", use_cached_aw: bool = False, clear_cached_aw: bool = False
-    ) -> "Any":
+    ) -> Any:
         """
         Propagate runtime_mode to all quantized modules.
         """
@@ -429,7 +430,7 @@ class QuantModel_DiffAE_LoRA(nn.Module):
                         mode=mode, use_cached_aw=use_cached_aw, clear_cached_aw=clear_cached_aw
                     )
 
-    def set_first_last_layer_to_8bit(self) -> "Any":
+    def set_first_last_layer_to_8bit(self) -> Any:
         """設置首尾層為 8-bit (按 EfficientDM 邏輯)"""
         logger.info("=" * 50)
         logger.info("5. Setting first and last layers to 8-bit...")
@@ -451,54 +452,54 @@ class QuantModel_DiffAE_LoRA(nn.Module):
 
         logger.info("✅ 首尾層 8-bit 設定完成")
 
-    def forward(self, *args: "Any", **kwargs: "Any") -> "Any":
+    def forward(self, *args: Any, **kwargs: Any) -> Any:
         """前向傳播"""
         return self.model(*args, **kwargs)
 
-    def reparameterize(self, mu: torch.Tensor, logvar: torch.Tensor) -> "Any":
+    def reparameterize(self, mu: torch.Tensor, logvar: torch.Tensor) -> Any:
         """
         重參數化 (reparameterization) 採樣
         """
         return self.model.reparameterize(mu, logvar)
 
-    def sample_z(self, n: int, device: "Any") -> "Any":
+    def sample_z(self, n: int, device: Any) -> Any:
         """
         生成 z
         """
         return self.model.sample_z(n, device)
 
-    def noise_to_cond(self, noise: torch.Tensor) -> "Any":
+    def noise_to_cond(self, noise: torch.Tensor) -> Any:
         """Public function noise_to_cond."""
         return self.model.noise_to_cond(noise)
 
-    def encode(self, x: "Any") -> "Any":
+    def encode(self, x: Any) -> Any:
         """Public function encode."""
         cond = self.model.encoder.forward(x)
         return {"cond": cond}
 
-    def encode_stylespace(self, x: "Any", return_vector: bool = True) -> "Any":
+    def encode_stylespace(self, x: Any, return_vector: bool = True) -> Any:
         """
         將圖片編碼到風格空間
         """
         return self.model.encode_stylespace(x, return_vector)
 
     @property
-    def stylespace_sizes(self) -> "Any":
+    def stylespace_sizes(self) -> Any:
         """Public function stylespace_sizes."""
         return self.model.stylespace_sizes
 
     @property
-    def dtype(self) -> "Any":
+    def dtype(self) -> Any:
         """Public function dtype."""
         return self.model.dtype
 
     @property
-    def device(self) -> "Any":
+    def device(self) -> Any:
         """Public function device."""
         return self.model.device
 
     @property
-    def conf(self) -> "Any":
+    def conf(self) -> Any:
         """Public function conf."""
         return self.model.conf
 
@@ -628,7 +629,7 @@ class INT_QuantModule_DiffAE_LoRA(nn.Module):
             return self.cached_a_w.to(weight_eff.device)
         return self._compute_a_w(weight_eff)
 
-    def forward(self, input: torch.Tensor) -> "Any":
+    def forward(self, input: torch.Tensor) -> Any:
         """
         INT32-ACCUM forward (full-quant branch).
 
@@ -732,14 +733,14 @@ class INT_QuantModule_DiffAE_LoRA(nn.Module):
 
         return out
 
-    def set_quant_state(self, weight_quant: bool = False, act_quant: bool = False) -> "Any":
+    def set_quant_state(self, weight_quant: bool = False, act_quant: bool = False) -> Any:
         """Public function set_quant_state."""
         self.use_weight_quant = weight_quant
         self.use_act_quant = act_quant
 
     def set_runtime_mode(
         self, mode: str = "train", use_cached_aw: bool = False, clear_cached_aw: bool = False
-    ) -> "Any":
+    ) -> Any:
         """Public function set_runtime_mode."""
         if mode not in ("train", "infer"):
             raise ValueError(f"Unsupported runtime mode: {mode}")
@@ -829,8 +830,8 @@ class INT_QuantModel_DiffAE_LoRA(nn.Module):
 
     # ------------------------------------------------------------------
     def set_quant_state(
-        self, weight_quant: bool = False, act_quant: bool = False, target_modules: "Any" = None
-    ) -> "Any":
+        self, weight_quant: bool = False, act_quant: bool = False, target_modules: Any = None
+    ) -> Any:
         """Public function set_quant_state."""
         count = 0
         for m in self.model.modules():
@@ -853,7 +854,7 @@ class INT_QuantModel_DiffAE_LoRA(nn.Module):
                 count += 1
                 m.set_quant_state(weight_quant, act_quant)
 
-    def set_quant_step(self, step: int) -> "Any":
+    def set_quant_step(self, step: int) -> Any:
         """Public function set_quant_step."""
         for m in self.model.modules():
             if isinstance(m, (INT_QuantModule_DiffAE_LoRA, QuantModule)):
@@ -862,7 +863,7 @@ class INT_QuantModel_DiffAE_LoRA(nn.Module):
 
     def set_runtime_mode(
         self, mode: str = "train", use_cached_aw: bool = False, clear_cached_aw: bool = False
-    ) -> "Any":
+    ) -> Any:
         """Public function set_runtime_mode."""
         for m in self.model.modules():
             if isinstance(m, (INT_QuantModule_DiffAE_LoRA, QuantModule)):
@@ -871,7 +872,7 @@ class INT_QuantModel_DiffAE_LoRA(nn.Module):
                         mode=mode, use_cached_aw=use_cached_aw, clear_cached_aw=clear_cached_aw
                     )
 
-    def set_first_last_layer_to_8bit(self) -> "Any":
+    def set_first_last_layer_to_8bit(self) -> Any:
         """Public function set_first_last_layer_to_8bit."""
         logger.info("Setting first/last layers to 8-bit (INT model)...")
         quant_modules_list = [
@@ -887,47 +888,47 @@ class INT_QuantModel_DiffAE_LoRA(nn.Module):
         logger.info("首尾層 8-bit 設定完成")
 
     # ------------------------------------------------------------------
-    def forward(self, *args: "Any", **kwargs: "Any") -> "Any":
+    def forward(self, *args: Any, **kwargs: Any) -> Any:
         """Public function forward."""
         return self.model(*args, **kwargs)
 
-    def reparameterize(self, mu: torch.Tensor, logvar: torch.Tensor) -> "Any":
+    def reparameterize(self, mu: torch.Tensor, logvar: torch.Tensor) -> Any:
         """Public function reparameterize."""
         return self.model.reparameterize(mu, logvar)
 
-    def sample_z(self, n: int, device: "Any") -> "Any":
+    def sample_z(self, n: int, device: Any) -> Any:
         """Public function sample_z."""
         return self.model.sample_z(n, device)
 
-    def noise_to_cond(self, noise: torch.Tensor) -> "Any":
+    def noise_to_cond(self, noise: torch.Tensor) -> Any:
         """Public function noise_to_cond."""
         return self.model.noise_to_cond(noise)
 
-    def encode(self, x: "Any") -> "Any":
+    def encode(self, x: Any) -> Any:
         """Public function encode."""
         return {"cond": self.model.encoder.forward(x)}
 
-    def encode_stylespace(self, x: "Any", return_vector: bool = True) -> "Any":
+    def encode_stylespace(self, x: Any, return_vector: bool = True) -> Any:
         """Public function encode_stylespace."""
         return self.model.encode_stylespace(x, return_vector)
 
     @property
-    def stylespace_sizes(self) -> "Any":
+    def stylespace_sizes(self) -> Any:
         """Public function stylespace_sizes."""
         return self.model.stylespace_sizes
 
     @property
-    def dtype(self) -> "Any":
+    def dtype(self) -> Any:
         """Public function dtype."""
         return self.model.dtype
 
     @property
-    def device(self) -> "Any":
+    def device(self) -> Any:
         """Public function device."""
         return self.model.device
 
     @property
-    def conf(self) -> "Any":
+    def conf(self) -> Any:
         """Public function conf."""
         return self.model.conf
 

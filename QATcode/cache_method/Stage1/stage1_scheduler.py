@@ -759,7 +759,7 @@ def _self_test_merge_zones_cover_T() -> None:
     assert covered.all() and len(merged) >= 1
 
 
-def self_test() -> "Any":
+def self_test() -> Any:
     """Public function self_test."""
     T = 100
     B = 3
@@ -803,7 +803,7 @@ def self_test() -> "Any":
     print("self_test OK")
 
 
-def main() -> "Any":
+def main() -> Any:
     """Public function main."""
     import argparse
 

@@ -179,7 +179,7 @@ def load_results(json_path: str) -> dict:
         }
 
 
-def save_results(results: dict, json_path: str) -> "Any":
+def save_results(results: dict, json_path: str) -> Any:
     """
     保存實驗結果 (支援增量更新)
 
@@ -451,7 +451,7 @@ def main_original_model(
     baseline_only: bool = False,
     use_train_mode: bool = False,
     gpus: List[int] = None,
-) -> "Any":
+) -> Any:
     """
     FID Cache Sensitivity 實驗主流程（原本 Diff-AE）
 
