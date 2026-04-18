@@ -3,10 +3,7 @@
 本目錄實作 **Stage 1 baseline v1**：在 diffusion 推理時間軸上，從 Stage 0 的 interval-wise 證據合成 **全域共用的時間分段（shared zones）**，再對 **每個 block、每個 zone** 以代價函數選出 reuse 週期 \(k\)，最後展開成逐步的 **full-compute / reuse（F/R）** 排程。  
 Stage 1 **不**做 inference 端最終 refinement；該步留給 Stage 2（cache-run 微調）。
 
-更完整的方法敘述、符號與 baseline 選取討論見同目錄：
-
-- `stage1_summary_zh.md`（中文總結）
-- `stage1_summary_thesis.md`（英文、論述取向）
+方法敘述、符號與 baseline 選取討論見同目錄 `SUMMARY.md`。
 
 ---
 
@@ -204,10 +201,8 @@ QATcode/cache_method/Stage1/
 ├── verify_scheduler.py
 ├── visualize_stage1.py
 ├── run_stage1_sweep.sh
-├── README.md                 # 本檔
-├── QUICKSTART.md             # 最短指令
-├── stage1_summary_zh.md
-├── stage1_summary_thesis.md
+├── README.md                 # 本檔（含 Quick Start）
+├── SUMMARY.md                # 方法設計、baseline 選取、實驗觀察
 ├── stage1_output/            # 執行輸出（可 gitignore）
 └── stage1_figures/
 ```
@@ -219,3 +214,61 @@ QATcode/cache_method/Stage1/
 舊版 **\(A[b,z]\to k\)** 線性映射、zone risk ceiling、舊 regularization **主路徑已移除**。現行 baseline 為：**全域 \(G\) → smoothing → top‑K → merge** 得 **shared zones**，再以 **\(J(b,z,k)\)** 選 **\(k\)**，主輸出為 **DDIM 步序上的 `expanded_mask`**，而非以 analysis axis 為主的舊 mask 敘述。
 
 **版本字串**：見 `scheduler_config.json` 的 **`version`**（目前 **`stage1_baseline_v1`**）。
+
+---
+
+## 12. Quick Start
+
+**時間軸**：對外輸出以 **DDIM 99→0** 為準；`expanded_mask[b,i]` 的 **i=0 為 t=99**。interval ↔ reused timestep 對應見 §2 與 `scheduler_diagnostics.json` 的 `mapping_note`。
+
+**前置**：`t_curr_interval.npy` 須與 Stage 0 正式定義 `arange(T-2,-1,-1)` 一致，否則排程器直接報錯。**FID 全零**時 `G[t]` 改為均匀加權（log warning）。
+
+### 一鍵執行
+
+```bash
+cd /home/jimmy/diffae
+
+# 執行 Stage 1（預設參數）
+python3 QATcode/cache_method/Stage1/stage1_scheduler.py \
+  --stage0_dir QATcode/cache_method/Stage0/stage0e_output \
+  --output_dir QATcode/cache_method/Stage1/stage1_output
+
+# 驗證輸出
+python3 QATcode/cache_method/Stage1/verify_scheduler.py \
+  --config QATcode/cache_method/Stage1/stage1_output/scheduler_config.json
+
+# 視覺化
+python3 QATcode/cache_method/Stage1/visualize_stage1.py \
+  --stage1_output_dir QATcode/cache_method/Stage1/stage1_output \
+  --output_dir QATcode/cache_method/Stage1/stage1_figures
+```
+
+### 輸出位置
+
+```
+stage1_output/
+├── scheduler_config.json
+├── scheduler_diagnostics.json
+└── verification_summary.json
+
+stage1_figures/
+├── 1_global_cutting_and_zones.png
+├── 2_k_zone_heatmap.png
+├── 3_expanded_mask_heatmap.png
+└── 4_candidate_selected_k.png
+```
+
+### 常用參數
+
+- `--K`：top-K change points（內部會與 T 一齊 cap）
+- `--smooth_window`：對 `G`（步序）的 moving average 視窗
+- `--lambda`：`J(b,z,k)` 中 compute penalty 係數（預設 1.0）
+- `--k_min` / `--k_max`：候選 k 範圍（pattern 去重後評估）
+
+Sweep 範例：`bash QATcode/cache_method/Stage1/run_stage1_sweep.sh`（編輯腳本內 `K_LIST` 等陣列）。
+
+### Self-test
+
+```bash
+python3 QATcode/cache_method/Stage1/stage1_scheduler.py --self_test
+```
