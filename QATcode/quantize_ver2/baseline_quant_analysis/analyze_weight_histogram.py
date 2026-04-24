@@ -237,81 +237,126 @@ def _make_stats_table(stats: Dict, keys: List[str]) -> str:
 # ---------------------------------------------------------------------------
 
 
+def _subsample_pair(
+    a: np.ndarray, b: np.ndarray, n_max: int = 100_000, seed: int = 0
+) -> Tuple[np.ndarray, np.ndarray, int]:
+    """Return (a_s, b_s, effective_n) with paired subsampling for large arrays."""
+    n = a.size
+    if n <= n_max:
+        return a, b, n
+    rng = np.random.default_rng(seed)
+    sel = rng.choice(n, n_max, replace=False)
+    return a[sel], b[sel], n_max
+
+
+def _compute_ks_distance(a_sorted: np.ndarray, b_sorted: np.ndarray) -> float:
+    """Kolmogorov–Smirnov distance between two empirical CDFs."""
+    n_a = a_sorted.size
+    n_b = b_sorted.size
+    common = np.sort(np.unique(np.concatenate([a_sorted, b_sorted])))
+    ecdf_a = np.searchsorted(a_sorted, common, side="right") / n_a
+    ecdf_b = np.searchsorted(b_sorted, common, side="right") / n_b
+    return float(np.max(np.abs(ecdf_a - ecdf_b)))
+
+
 def plot_effective_weight_analysis(
     layer_name: str,
     w_lora: np.ndarray,
     w_lora_q: np.ndarray,
+    w_lora_norm: np.ndarray,
+    w_lora_q_norm: np.ndarray,
     out_path: Path,
     zoom_quantile: float = 0.01,
-    bins: int = 300,
-) -> None:
+    bins: int = 301,
+) -> Dict:
     """
-    Three-panel figure for one layer.
+    Four-panel figure for one layer — designed to avoid histogram binning
+    artifacts that show up when a continuous pre-quant distribution is
+    overlaid with a discrete post-quant distribution.
 
-    Panel A (top)    — symmetric clipped overview of w_lora vs Q(w_lora)
-                       x-axis: ±L where L = max(|q0.1%|, |q99.9%|) of union
-                       → 0.0 is centred; extreme outliers don't distort the view
-                       text box: pre/post comparison table (5 metrics)
+    Panel A — raw overlay using matplotlib.stairs (no vertical connector
+              artifact at bin edges).  Odd `bins` puts 0 inside a bin, not
+              on an edge.
 
-    Panel B (middle) — zoomed overlay, x-axis = q{zoom}…q{1−zoom} of w_lora
-                       → reveals centre-region differences hidden in Panel A
+    Panel B — normalized view (x / a_w).  Pre-quant drawn as a filled
+              histogram; post-quant drawn as a *stem plot* at the exact
+              quantization levels k/127, k ∈ [-127, 127], which is the
+              true support after `round_ste` in normalized_fake_quant().
+              Heights shown as PMF × 127 so area ≈ pre-quant density.
 
-    Panel C (bottom) — residual histogram  Q(w_lora) − w_lora
-                       text box: error stats table (7 metrics)
+    Panel C — ECDF overlay (no binning at all).  Annotated KS distance
+              gives a single-number summary of the distribution gap.
+
+    Panel D — residual in LSB units  (LSB = a_w / 127).  Expected to be
+              approximately uniform on [-0.5, 0.5] under rounding
+              quantization; the theoretical U(-0.5, 0.5) is overlaid for
+              direct correctness inspection.
+
+    Returns the per-layer KS distance (also embedded in Panel C title).
     """
-    residual = w_lora_q - w_lora
     dist_wl = compute_distribution_stats(w_lora)
     dist_wlq = compute_distribution_stats(w_lora_q)
     res_stats = compute_residual_stats(w_lora, w_lora_q)
 
-    # ── Panel A x-axis: symmetric around 0, clipped at ±q99.9% of union ─────
+    # ── Panel A: raw histogram edges (symmetric, clipped at q99.9%) ─────────
     all_sym = np.concatenate([w_lora, w_lora_q])
     q_lo_a = float(np.quantile(all_sym, 0.001))
     q_hi_a = float(np.quantile(all_sym, 0.999))
     L_a = max(abs(q_lo_a), abs(q_hi_a))
     edges_a = np.linspace(-L_a, L_a, bins + 1)
+    hist_pre_a, _ = np.histogram(w_lora, bins=edges_a, density=True)
+    hist_post_a, _ = np.histogram(w_lora_q, bins=edges_a, density=True)
 
-    # ── Panel B x-axis: percentile-based zoom on w_lora ──────────────────────
-    zoom_lo = float(np.quantile(w_lora, zoom_quantile))
-    zoom_hi = float(np.quantile(w_lora, 1.0 - zoom_quantile))
-    bins_b = 100  # coarser than Panel A to suppress discrete spikes
-    edges_b = np.linspace(zoom_lo, zoom_hi, bins_b + 1)
+    # ── Panel B: normalized pre-quant histogram + post-quant PMF stem ──────
+    bins_b_norm = 200
+    edges_b = np.linspace(-1.0, 1.0, bins_b_norm + 1)
+    hist_pre_b, _ = np.histogram(w_lora_norm, bins=edges_b, density=True)
+    k_values = np.clip(np.round(w_lora_q_norm * 127.0).astype(np.int64), -127, 127)
+    level_counts = np.bincount(k_values + 127, minlength=255)
+    pmf = level_counts / max(1, level_counts.sum())
+    stem_density = pmf * 127.0  # convert PMF → density using level spacing 1/127
+    levels_x = np.arange(-127, 128) / 127.0
 
-    # ── Panel C x-axis: full residual range ──────────────────────────────────
-    edges_c = np.linspace(residual.min(), residual.max(), bins + 1)
+    # ── Panel C: ECDF (subsample to cap plotting cost) ─────────────────────
+    wl_s, wlq_s, n_eff = _subsample_pair(w_lora, w_lora_q, n_max=100_000)
+    wl_sorted = np.sort(wl_s)
+    wlq_sorted = np.sort(wlq_s)
+    ecdf_y = np.arange(1, n_eff + 1, dtype=float) / n_eff
+    ks_dist = _compute_ks_distance(wl_sorted, wlq_sorted)
 
-    # ── Figure layout ─────────────────────────────────────────────────────────
-    fig, axes = plt.subplots(
-        3,
-        1,
-        figsize=(10, 11),
-        gridspec_kw={"hspace": 0.50},
-    )
-    # y=0.975 pulls suptitle slightly away from the top edge;
-    # rect leaves enough headroom so it doesn't collide with Panel A title.
-    fig.suptitle(layer_name, fontsize=9, y=0.975)
+    # ── Panel D: residual in LSB units  (post_norm − pre_norm) × 127 ───────
+    residual_lsb = (w_lora_q_norm - w_lora_norm) * 127.0
+    edges_d = np.linspace(-0.6, 0.6, 121)
+    hist_r, _ = np.histogram(residual_lsb, bins=edges_d, density=True)
 
-    hist_kw_wl = dict(
-        density=True, histtype="step", linewidth=1.9, label="w+LoRA  (pre-quant)", color="steelblue"
-    )
-    hist_kw_wlq = dict(
-        density=True,
-        histtype="step",
-        linewidth=1.2,
-        label="Q(w+LoRA)  (post-quant)",
-        color="crimson",
-        linestyle="--",
-    )
+    # ── Figure layout ──────────────────────────────────────────────────────
+    fig, axes = plt.subplots(4, 1, figsize=(10, 14.5), gridspec_kw={"hspace": 0.55})
+    fig.suptitle(layer_name, fontsize=9, y=0.985)
 
-    # ── Panel A ───────────────────────────────────────────────────────────────
+    # ── Panel A ────────────────────────────────────────────────────────────
     ax_a = axes[0]
-    ax_a.hist(w_lora, bins=edges_a, **hist_kw_wl)
-    ax_a.hist(w_lora_q, bins=edges_a, **hist_kw_wlq)
-    ax_a.set_xlim(-L_a, L_a)
+    ax_a.stairs(
+        hist_pre_a,
+        edges_a,
+        color="steelblue",
+        linewidth=1.8,
+        fill=False,
+        label="w+LoRA  (pre-quant)",
+    )
+    ax_a.stairs(
+        hist_post_a,
+        edges_a,
+        color="crimson",
+        linewidth=1.2,
+        linestyle="--",
+        fill=False,
+        label="Q(w+LoRA)  (post-quant)",
+    )
     ax_a.axvline(0.0, color="gray", linewidth=0.7, linestyle=":")
+    ax_a.set_xlim(-L_a, L_a)
     ax_a.set_ylabel("density")
     ax_a.set_title(
-        f"Panel A — symmetric overview  (x = ±{L_a:.4g},  clipped at q0.1%/q99.9%)",
+        f"Panel A — raw overlay  (x = ±{L_a:.4g}, clipped at q0.1%/q99.9%, bins={bins}, stairs)",
         fontsize=8,
     )
     ax_a.legend(fontsize=7, loc="upper left")
@@ -327,42 +372,101 @@ def plot_effective_weight_analysis(
         bbox=_TEXT_BOX_STYLE,
     )
 
-    # ── Panel B ───────────────────────────────────────────────────────────────
+    # ── Panel B ────────────────────────────────────────────────────────────
     ax_b = axes[1]
-    ax_b.hist(w_lora, bins=edges_b, **hist_kw_wl)
-    ax_b.hist(w_lora_q, bins=edges_b, **hist_kw_wlq)
-    ax_b.set_xlim(zoom_lo, zoom_hi)
-    zoom_pct = zoom_quantile * 100
+    ax_b.stairs(
+        hist_pre_b,
+        edges_b,
+        color="steelblue",
+        linewidth=1.3,
+        fill=True,
+        alpha=0.30,
+        label="w+LoRA / a_w  (pre-quant, filled hist)",
+    )
+    ax_b.stairs(hist_pre_b, edges_b, color="steelblue", linewidth=1.3, fill=False)
+    ax_b.vlines(
+        levels_x,
+        0,
+        stem_density,
+        colors="crimson",
+        linewidth=0.7,
+        alpha=0.85,
+        label="Q(w+LoRA) / a_w  (PMF × 127 at k/127)",
+    )
+    ax_b.scatter(levels_x, stem_density, c="crimson", s=3, alpha=0.9)
+    ax_b.axvline(0.0, color="gray", linewidth=0.5, linestyle=":")
+    ax_b.set_xlim(-1.0, 1.0)
     ax_b.set_ylabel("density")
     ax_b.set_title(
-        f"Panel B — zoomed overlay  "
-        f"(x = q{zoom_pct:.1f}% … q{100 - zoom_pct:.1f}%  of w+LoRA,  bins={bins_b})",
+        "Panel B — normalized view  (post-quant drawn as PMF stem at exact k/127 levels)",
         fontsize=8,
     )
-    # legend intentionally omitted in Panel B (same series as Panel A)
+    ax_b.legend(fontsize=7, loc="upper right")
 
-    # ── Panel C ───────────────────────────────────────────────────────────────
+    # ── Panel C ────────────────────────────────────────────────────────────
     ax_c = axes[2]
-    ax_c.hist(
-        residual,
-        bins=edges_c,
-        density=True,
-        histtype="stepfilled",
-        linewidth=1.2,
-        color="mediumpurple",
-        alpha=0.75,
-        label="Q(w+LoRA) − w+LoRA",
+    ax_c.step(
+        wl_sorted,
+        ecdf_y,
+        where="post",
+        color="steelblue",
+        linewidth=1.5,
+        label="ECDF  pre-quant",
     )
-    ax_c.axvline(0.0, color="black", linewidth=0.9, linestyle="--")
-    ax_c.set_xlabel("residual value")
-    ax_c.set_ylabel("density")
-    ax_c.set_title("Panel C — quantization residual  Q(w+LoRA) − w+LoRA", fontsize=8)
+    ax_c.step(
+        wlq_sorted,
+        ecdf_y,
+        where="post",
+        color="crimson",
+        linewidth=1.2,
+        linestyle="--",
+        label="ECDF  post-quant",
+    )
+    ax_c.set_xlim(-L_a, L_a)
+    ax_c.set_ylim(0.0, 1.0)
+    ax_c.set_ylabel("cumulative prob.")
+    sample_str = f"N={n_eff:,}" + (f" (sub-sampled from {w_lora.size:,})" if n_eff < w_lora.size else "")
+    ax_c.set_title(
+        f"Panel C — ECDF overlay  (no binning artifact;  KS distance = {ks_dist:.4f};  {sample_str})",
+        fontsize=8,
+    )
     ax_c.legend(fontsize=7, loc="upper left")
-    ax_c.text(
+    ax_c.grid(alpha=0.25)
+
+    # ── Panel D ────────────────────────────────────────────────────────────
+    ax_d = axes[3]
+    ax_d.stairs(
+        hist_r,
+        edges_d,
+        fill=True,
+        color="mediumpurple",
+        alpha=0.70,
+        label="residual in LSB",
+    )
+    ax_d.hlines(
+        1.0,
+        -0.5,
+        0.5,
+        colors="black",
+        linestyles="--",
+        linewidth=1.0,
+        label="theoretical U(-0.5, 0.5)",
+    )
+    ax_d.axvline(-0.5, color="gray", linewidth=0.5, linestyle=":")
+    ax_d.axvline(0.5, color="gray", linewidth=0.5, linestyle=":")
+    ax_d.axvline(0.0, color="black", linewidth=0.7, linestyle=":")
+    ax_d.set_xlabel("residual in LSB units  (LSB = a_w / 127;  expected: uniform on [-0.5, 0.5])")
+    ax_d.set_ylabel("density")
+    ax_d.set_title(
+        "Panel D — quantization residual in LSB units  (rounding quantization → approx. uniform)",
+        fontsize=8,
+    )
+    ax_d.legend(fontsize=7, loc="upper left")
+    ax_d.text(
         0.985,
         0.97,
         _make_stats_table(res_stats, _PANEL_C_KEYS),
-        transform=ax_c.transAxes,
+        transform=ax_d.transAxes,
         fontsize=6.5,
         fontfamily="monospace",
         verticalalignment="top",
@@ -370,10 +474,11 @@ def plot_effective_weight_analysis(
         bbox=_TEXT_BOX_STYLE,
     )
 
-    fig.tight_layout(rect=[0, 0, 1, 0.958])
+    fig.tight_layout(rect=[0, 0, 1, 0.975])
     fig.savefig(out_path, dpi=130, bbox_inches="tight")
     plt.close(fig)
     LOGGER.debug("Saved → %s", out_path)
+    return {"ks_distance": ks_dist, "level_counts": level_counts}
 
 
 # ---------------------------------------------------------------------------
@@ -468,30 +573,23 @@ def plot_overall_raw_distribution(
     raw concatenation conflates multiple scales.  Use the normalized view
     for cross-layer comparisons.
     """
-    # ── figure 1: w_lora vs w_lora_q overlay ────────────────────────────
+    # ── figure 1: w_lora vs w_lora_q overlay (stairs — no step artifact) ──
     all_cat = np.concatenate([all_wl, all_wlq])
     lo = float(np.quantile(all_cat, 0.001))
     hi = float(np.quantile(all_cat, 0.999))
-    edges = np.linspace(lo, hi, bins + 1)
+    # Use odd bin count so 0 falls inside a bin rather than on a bin edge.
+    n_bins = bins + 1 if bins % 2 == 0 else bins
+    edges = np.linspace(lo, hi, n_bins + 1)
+    hist_pre, _ = np.histogram(all_wl, bins=edges, density=True)
+    hist_post, _ = np.histogram(all_wlq, bins=edges, density=True)
 
     fig, ax = plt.subplots(figsize=(10, 4))
-    ax.hist(
-        all_wl,
-        bins=edges,
-        density=True,
-        histtype="step",
-        linewidth=1.8,
-        color="steelblue",
+    ax.stairs(
+        hist_pre, edges, color="steelblue", linewidth=1.6, fill=False,
         label="w+LoRA  (pre-quant)",
     )
-    ax.hist(
-        all_wlq,
-        bins=edges,
-        density=True,
-        histtype="step",
-        linewidth=1.2,
-        color="crimson",
-        linestyle="--",
+    ax.stairs(
+        hist_post, edges, color="crimson", linewidth=1.1, linestyle="--", fill=False,
         label="Q(w+LoRA)  (post-quant)",
     )
     ax.axvline(0.0, color="gray", linewidth=0.7, linestyle=":")
@@ -511,16 +609,12 @@ def plot_overall_raw_distribution(
     residual = all_wlq - all_wl
     r_lo = float(np.quantile(residual, 0.001))
     r_hi = float(np.quantile(residual, 0.999))
-    r_edges = np.linspace(r_lo, r_hi, bins + 1)
+    r_edges = np.linspace(r_lo, r_hi, n_bins + 1)
+    hist_res, _ = np.histogram(residual, bins=r_edges, density=True)
 
     fig, ax = plt.subplots(figsize=(10, 4))
-    ax.hist(
-        residual,
-        bins=r_edges,
-        density=True,
-        histtype="stepfilled",
-        color="mediumpurple",
-        alpha=0.75,
+    ax.stairs(
+        hist_res, r_edges, fill=True, color="mediumpurple", alpha=0.75,
         label="Q(w+LoRA) − w+LoRA",
     )
     ax.axvline(0.0, color="black", linewidth=0.9, linestyle="--")
@@ -589,80 +683,133 @@ def plot_overall_normalized_distribution(
     """
     Plot overall normalized distribution (w / a_w for each channel).
 
+    Three figures are produced:
+      1. overall_w_norm_vs_q_norm.png  —  pre-quant filled histogram
+         overlaid with the post-quant PMF drawn as a stem plot at the
+         *exact* quantization levels k/127.  This removes the step-
+         histogram "downward spike" artifact at bin edges.
+      2. overall_residual_norm.png     —  residual expressed in LSB units
+         with theoretical U(-0.5, 0.5) overlaid for rounding-quantization
+         correctness inspection.
+      3. overall_ecdf_norm.png         —  ECDF overlay (no binning of any
+         kind) with KS distance.
+
     Normalized overall view is more interpretable than raw because it
     removes the per-channel / per-layer scale differences, mapping every
-    channel into [-1, 1].  This lets you compare quantization noise
-    characteristics across layers on a common axis.
+    channel into [-1, 1].
 
     After normalization, the effective values should lie in [-1, 1] and
     the quantized values should cluster at multiples of 1/127 (~0.00787).
     """
-    # ── figure 1: normalized overlay ────────────────────────────────────
-    all_cat = np.concatenate([all_nl, all_nlq])
-    lo = max(-1.05, float(np.quantile(all_cat, 0.001)))
-    hi = min(1.05, float(np.quantile(all_cat, 0.999)))
-    edges = np.linspace(lo, hi, bins + 1)
+    # ── figure 1: pre-quant filled histogram + post-quant PMF stem ──────
+    n_bins = bins + 1 if bins % 2 == 0 else bins  # odd → 0 inside a bin
+    edges = np.linspace(-1.0, 1.0, n_bins + 1)
+    hist_pre, _ = np.histogram(all_nl, bins=edges, density=True)
 
-    fig, ax = plt.subplots(figsize=(10, 4))
-    ax.hist(
-        all_nl,
-        bins=edges,
-        density=True,
-        histtype="step",
-        linewidth=1.8,
-        color="steelblue",
-        label="w+LoRA / a_w  (pre-quant, normalized)",
+    k_values = np.clip(np.round(all_nlq * 127.0).astype(np.int64), -127, 127)
+    level_counts = np.bincount(k_values + 127, minlength=255)
+    pmf = level_counts / max(1, level_counts.sum())
+    stem_density = pmf * 127.0
+    levels_x = np.arange(-127, 128) / 127.0
+
+    fig, ax = plt.subplots(figsize=(11, 4.5))
+    ax.stairs(
+        hist_pre, edges, color="steelblue", linewidth=1.4, fill=True, alpha=0.30,
+        label="w+LoRA / a_w  (pre-quant, filled hist)",
     )
-    ax.hist(
-        all_nlq,
-        bins=edges,
-        density=True,
-        histtype="step",
-        linewidth=1.2,
-        color="crimson",
-        linestyle="--",
-        label="Q(w+LoRA) / a_w  (post-quant, normalized)",
+    ax.stairs(hist_pre, edges, color="steelblue", linewidth=1.4, fill=False)
+    ax.vlines(
+        levels_x, 0, stem_density, colors="crimson", linewidth=0.7, alpha=0.85,
+        label="Q(w+LoRA) / a_w  (PMF × 127 at k/127)",
     )
+    ax.scatter(levels_x, stem_density, c="crimson", s=3, alpha=0.9)
     ax.axvline(0.0, color="gray", linewidth=0.7, linestyle=":")
     ax.set_xlabel("normalized weight value  (w / absmax per channel)")
     ax.set_ylabel("density")
+    ax.set_xlim(-1.0, 1.0)
     ax.set_title(
-        "Overall normalized distribution — all layers, per-channel scale removed\n"
-        "(more interpretable than raw: every channel mapped to [-1, 1])",
+        "Overall normalized distribution — all layers  "
+        "(post-quant as stem plot at the exact k/127 levels)",
         fontsize=9,
     )
-    ax.legend(fontsize=8)
+    ax.legend(fontsize=8, loc="upper right")
     fig.tight_layout()
     fig.savefig(out_dir / "overall_w_norm_vs_q_norm.png", dpi=130, bbox_inches="tight")
     plt.close(fig)
 
-    # ── figure 2: normalized residual ───────────────────────────────────
-    res_norm = all_nlq - all_nl
-    r_lo = float(np.quantile(res_norm, 0.001))
-    r_hi = float(np.quantile(res_norm, 0.999))
-    r_edges = np.linspace(r_lo, r_hi, bins + 1)
+    # ── figure 2: residual in LSB units + theoretical uniform ──────────
+    residual_lsb = (all_nlq - all_nl) * 127.0
+    edges_r = np.linspace(-0.6, 0.6, 121)
+    hist_r, _ = np.histogram(residual_lsb, bins=edges_r, density=True)
 
     fig, ax = plt.subplots(figsize=(10, 4))
-    ax.hist(
-        res_norm,
-        bins=r_edges,
-        density=True,
-        histtype="stepfilled",
-        color="mediumpurple",
-        alpha=0.75,
-        label="(Q(w+LoRA) − w+LoRA) / a_w",
+    ax.stairs(
+        hist_r, edges_r, fill=True, color="mediumpurple", alpha=0.75,
+        label="residual in LSB  ((Q − w) · 127 / a_w)",
     )
-    ax.axvline(0.0, color="black", linewidth=0.9, linestyle="--")
-    ax.set_xlabel("normalized residual  (residual / absmax per channel)")
+    ax.hlines(
+        1.0, -0.5, 0.5, colors="black", linestyles="--", linewidth=1.0,
+        label="theoretical U(-0.5, 0.5)",
+    )
+    ax.axvline(-0.5, color="gray", linewidth=0.5, linestyle=":")
+    ax.axvline(0.5, color="gray", linewidth=0.5, linestyle=":")
+    ax.axvline(0.0, color="black", linewidth=0.7, linestyle=":")
+    ax.set_xlabel("residual in LSB units  (LSB = a_w / 127)")
     ax.set_ylabel("density")
     ax.set_title(
-        "Overall normalized residual — all layers, per-channel scale removed\n"
-        "Expected: discrete spikes at multiples of 1/127 ≈ 0.00787",
+        "Overall normalized residual — all layers  "
+        "(rounding quantization → approx. uniform on [-0.5, 0.5])",
         fontsize=9,
     )
-    ax.legend(fontsize=8)
+    ax.legend(fontsize=8, loc="upper left")
     fig.tight_layout()
     fig.savefig(out_dir / "overall_residual_norm.png", dpi=130, bbox_inches="tight")
+    plt.close(fig)
+
+    res_norm = all_nlq - all_nl  # kept for the stats JSON below
+
+    # ── figure 3: ECDF overlay (no binning artifact) ───────────────────
+    n = all_nl.size
+    n_max = 300_000
+    if n > n_max:
+        rng = np.random.default_rng(0)
+        sel = rng.choice(n, n_max, replace=False)
+        nl_s = all_nl[sel]
+        nlq_s = all_nlq[sel]
+        n_eff = n_max
+    else:
+        nl_s = all_nl
+        nlq_s = all_nlq
+        n_eff = n
+    nl_sorted = np.sort(nl_s)
+    nlq_sorted = np.sort(nlq_s)
+    ecdf_y = np.arange(1, n_eff + 1, dtype=float) / n_eff
+    ks_dist = _compute_ks_distance(nl_sorted, nlq_sorted)
+
+    fig, ax = plt.subplots(figsize=(10, 4.5))
+    ax.step(
+        nl_sorted, ecdf_y, where="post", color="steelblue", linewidth=1.6,
+        label="ECDF  pre-quant  (w+LoRA / a_w)",
+    )
+    ax.step(
+        nlq_sorted, ecdf_y, where="post", color="crimson", linewidth=1.2,
+        linestyle="--", label="ECDF  post-quant  (Q(w+LoRA) / a_w)",
+    )
+    ax.axvline(0.0, color="gray", linewidth=0.7, linestyle=":")
+    ax.set_xlim(-1.0, 1.0)
+    ax.set_ylim(0.0, 1.0)
+    ax.set_xlabel("normalized weight value")
+    ax.set_ylabel("cumulative prob.")
+    sample_str = f"N={n_eff:,}" + (f" (sub-sampled from {n:,})" if n_eff < n else "")
+    ax.set_title(
+        f"Overall normalized ECDF — no binning artifact  "
+        f"(KS distance = {ks_dist:.4f};  {sample_str})",
+        fontsize=9,
+    )
+    ax.legend(fontsize=8, loc="upper left")
+    ax.grid(alpha=0.25)
+    fig.tight_layout()
+    fig.savefig(out_dir / "overall_ecdf_norm.png", dpi=130, bbox_inches="tight")
     plt.close(fig)
 
     # ── stats JSON ───────────────────────────────────────────────────────
@@ -824,6 +971,73 @@ def plot_layerwise_summary_figures(metrics: List[Dict], out_dir: Path) -> None:
     LOGGER.info("Saved 5 layerwise summary figures → %s", out_dir)
 
 
+def plot_overall_level_occupancy(
+    level_counts_per_layer: np.ndarray,
+    layer_names: List[str],
+    out_dir: Path,
+) -> None:
+    """
+    Heat-map showing each layer's usage of the 255 quantization levels
+    k ∈ [-127, 127].
+
+    Rows = layers (ordered by idx),
+    Columns = 255 integer levels,
+    Color = fraction of weights landing on that level (log-scaled for
+    dynamic range).
+
+    Useful for spotting layers that:
+      · waste levels (most weights compressed into a narrow central strip),
+      · saturate at ±127 (clamp activated).
+    """
+    # Row-normalize → fraction per layer (so colour is comparable across rows)
+    row_sums = level_counts_per_layer.sum(axis=1, keepdims=True).clip(min=1)
+    frac = level_counts_per_layer / row_sums
+
+    # log1p so near-empty levels are visible without being overshadowed by k=0
+    frac_log = np.log1p(frac * 1000.0)
+
+    n_layers = frac.shape[0]
+    fig, ax = plt.subplots(figsize=(12, max(4, 0.06 * n_layers + 2)))
+    im = ax.imshow(
+        frac_log,
+        aspect="auto",
+        cmap="viridis",
+        interpolation="nearest",
+        extent=[-127.5, 127.5, n_layers - 0.5, -0.5],
+    )
+    plt.colorbar(im, ax=ax, label="log1p(fraction × 1000)")
+    ax.set_xlabel("quantization level  k  (∈ [-127, 127])")
+    ax.set_ylabel("layer idx")
+    ax.set_title(
+        f"Per-layer level-occupancy heat-map  ({n_layers} layers × 255 levels)\n"
+        "bright band near k=0 is expected (weights concentrate near zero)",
+        fontsize=9,
+    )
+    ax.axvline(0.0, color="white", linewidth=0.4, linestyle=":")
+    fig.tight_layout()
+    fig.savefig(out_dir / "overall_level_occupancy.png", dpi=130, bbox_inches="tight")
+    plt.close(fig)
+
+    # Companion line-plot: aggregate PMF over all layers
+    total_counts = level_counts_per_layer.sum(axis=0)
+    total_pmf = total_counts / max(1, total_counts.sum())
+    k_grid = np.arange(-127, 128)
+
+    fig, ax = plt.subplots(figsize=(11, 4))
+    ax.vlines(k_grid, 0, total_pmf, colors="crimson", linewidth=0.7, alpha=0.85)
+    ax.scatter(k_grid, total_pmf, c="crimson", s=4, alpha=0.9)
+    ax.set_xlabel("quantization level  k")
+    ax.set_ylabel("aggregate PMF")
+    ax.set_title("Aggregate level PMF — all layers concatenated", fontsize=9)
+    ax.axvline(0.0, color="gray", linewidth=0.5, linestyle=":")
+    ax.set_xlim(-128, 128)
+    fig.tight_layout()
+    fig.savefig(out_dir / "overall_level_pmf.png", dpi=130, bbox_inches="tight")
+    plt.close(fig)
+
+    LOGGER.info("Saved level-occupancy heat-map + aggregate PMF → %s", out_dir)
+
+
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
@@ -910,6 +1124,8 @@ def main(args: argparse.Namespace) -> None:
     acc_nl: List[np.ndarray] = []  # normalized w_lora
     acc_nlq: List[np.ndarray] = []  # normalized w_lora_q
     all_lm: List[Dict] = []  # per-layer metrics
+    all_level_counts: List[np.ndarray] = []  # per-layer [255] k-level counts
+    all_layer_names: List[str] = []
 
     for idx, (name, mod) in enumerate(lora_modules):
         LOGGER.info("[%d/%d] %s", idx + 1, len(lora_modules), name)
@@ -920,10 +1136,12 @@ def main(args: argparse.Namespace) -> None:
         # ── per-layer plot ────────────────────────────────────────────────
         safe = name.replace(".", "_")
         png_path = per_layer_dir / f"{idx:03d}_{safe}.png"
-        plot_effective_weight_analysis(
+        plot_info = plot_effective_weight_analysis(
             layer_name=name,
             w_lora=w_lora,
             w_lora_q=w_lora_q,
+            w_lora_norm=w_lora_norm,
+            w_lora_q_norm=w_lora_q_norm,
             out_path=png_path,
             zoom_quantile=args.zoom_quantile,
         )
@@ -935,6 +1153,7 @@ def main(args: argparse.Namespace) -> None:
             "w_lora": compute_distribution_stats(w_lora),
             "w_lora_q": compute_distribution_stats(w_lora_q),
             "residual": compute_residual_stats(w_lora, w_lora_q),
+            "ks_distance": plot_info["ks_distance"],
         }
         json_path = stats_dir / f"{idx:03d}_{safe}.json"
         json_path.write_text(json.dumps(layer_stats, indent=2))
@@ -945,7 +1164,11 @@ def main(args: argparse.Namespace) -> None:
         acc_raw_wlq.append(w_lora_q)
         acc_nl.append(w_lora_norm)
         acc_nlq.append(w_lora_q_norm)
-        all_lm.append(compute_layerwise_metrics(name, idx, w_lora, w_lora_q))
+        lm = compute_layerwise_metrics(name, idx, w_lora, w_lora_q)
+        lm["ks_distance"] = plot_info["ks_distance"]
+        all_lm.append(lm)
+        all_level_counts.append(plot_info["level_counts"])
+        all_layer_names.append(name)
 
     LOGGER.info("Saved %d per-layer PNGs → %s", len(lora_modules), per_layer_dir)
 
@@ -967,6 +1190,14 @@ def main(args: argparse.Namespace) -> None:
     plot_overall_normalized_distribution(
         np.concatenate(acc_nl),
         np.concatenate(acc_nlq),
+        norm_dir,
+    )
+
+    # ── 8b. Overall level-occupancy heat-map + aggregate PMF ─────────────────
+    LOGGER.info("Generating overall level-occupancy heat-map …")
+    plot_overall_level_occupancy(
+        np.stack(all_level_counts, axis=0),
+        all_layer_names,
         norm_dir,
     )
 
