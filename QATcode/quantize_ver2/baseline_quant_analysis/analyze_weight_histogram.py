@@ -41,6 +41,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torch.nn.functional as F
+from scipy.stats import gaussian_kde
 
 sys.path.append(".")
 sys.path.append("./model")
@@ -259,6 +260,34 @@ def _compute_ks_distance(a_sorted: np.ndarray, b_sorted: np.ndarray) -> float:
     return float(np.max(np.abs(ecdf_a - ecdf_b)))
 
 
+def _kde_curve(
+    arr: np.ndarray, x_grid: np.ndarray, n_max: int = 50_000, seed: int = 0
+) -> np.ndarray:
+    """
+    Evaluate a 1D Gaussian KDE on ``x_grid``.
+
+    For very large arrays (>> n_max), a random subsample is used so that
+    KDE evaluation stays cheap.  The Scott bandwidth on a subsample of
+    50K points is statistically indistinguishable from the full array
+    for visualization purposes.
+    """
+    if arr.size > n_max:
+        rng = np.random.default_rng(seed)
+        sel = rng.choice(arr.size, n_max, replace=False)
+        a = arr[sel]
+    else:
+        a = arr
+    # Guard against degenerate (constant) arrays which break gaussian_kde.
+    if a.size < 2 or float(np.std(a)) <= 1e-30:
+        out = np.zeros_like(x_grid, dtype=float)
+        # place a tall delta at the closest grid point
+        idx = int(np.argmin(np.abs(x_grid - float(a.mean()))))
+        out[idx] = 1.0
+        return out
+    kde = gaussian_kde(a)
+    return kde(x_grid)
+
+
 def plot_effective_weight_analysis(
     layer_name: str,
     w_lora: np.ndarray,
@@ -274,15 +303,18 @@ def plot_effective_weight_analysis(
     artifacts that show up when a continuous pre-quant distribution is
     overlaid with a discrete post-quant distribution.
 
-    Panel A — raw overlay using matplotlib.stairs (no vertical connector
-              artifact at bin edges).  Odd `bins` puts 0 inside a bin, not
-              on an edge.
+    Panel A — KDE *difference* curve  (KDE_post − KDE_pre) on a 500-pt
+              grid.  Positive (crimson) regions are where quantization
+              concentrates extra mass; negative (steelblue) regions are
+              where mass is removed.  A flat line at 0 means the two
+              distributions are indistinguishable at this resolution.
 
     Panel B — normalized view (x / a_w).  Pre-quant drawn as a filled
-              histogram; post-quant drawn as a *stem plot* at the exact
-              quantization levels k/127, k ∈ [-127, 127], which is the
-              true support after `round_ste` in normalized_fake_quant().
-              Heights shown as PMF × 127 so area ≈ pre-quant density.
+              KDE curve (500-point grid); post-quant drawn as a *stem
+              plot* at the exact quantization levels k/127, k ∈ [-127, 127],
+              which is the true support after `round_ste` in
+              normalized_fake_quant().  Heights shown as PMF × 127 so
+              area ≈ pre-quant density.
 
     Panel C — ECDF overlay (no binning at all).  Annotated KS distance
               gives a single-number summary of the distribution gap.
@@ -298,19 +330,20 @@ def plot_effective_weight_analysis(
     dist_wlq = compute_distribution_stats(w_lora_q)
     res_stats = compute_residual_stats(w_lora, w_lora_q)
 
-    # ── Panel A: raw histogram edges (symmetric, clipped at q99.9%) ─────────
+    # ── Panel A: KDE on a 500-point grid (no histogram artifact) ───────────
     all_sym = np.concatenate([w_lora, w_lora_q])
     q_lo_a = float(np.quantile(all_sym, 0.001))
     q_hi_a = float(np.quantile(all_sym, 0.999))
     L_a = max(abs(q_lo_a), abs(q_hi_a))
-    edges_a = np.linspace(-L_a, L_a, bins + 1)
-    hist_pre_a, _ = np.histogram(w_lora, bins=edges_a, density=True)
-    hist_post_a, _ = np.histogram(w_lora_q, bins=edges_a, density=True)
+    edges_a = np.linspace(-L_a, L_a, bins + 1)  # kept for downstream consumers
+    x_grid_a = np.linspace(-L_a, L_a, 500)
+    kde_pre_a = _kde_curve(w_lora, x_grid_a)
+    kde_post_a = _kde_curve(w_lora_q, x_grid_a)
 
-    # ── Panel B: normalized pre-quant histogram + post-quant PMF stem ──────
-    bins_b_norm = 200
-    edges_b = np.linspace(-1.0, 1.0, bins_b_norm + 1)
-    hist_pre_b, _ = np.histogram(w_lora_norm, bins=edges_b, density=True)
+    # ── Panel B: pre-quant KDE (500 pts) + post-quant PMF stem at k/127 ────
+    edges_b = np.linspace(-1.0, 1.0, 201)  # kept for downstream consumers
+    x_grid_b = np.linspace(-1.0, 1.0, 500)
+    kde_pre_b = _kde_curve(w_lora_norm, x_grid_b)
     k_values = np.clip(np.round(w_lora_q_norm * 127.0).astype(np.int64), -127, 127)
     level_counts = np.bincount(k_values + 127, minlength=255)
     pmf = level_counts / max(1, level_counts.sum())
@@ -334,29 +367,36 @@ def plot_effective_weight_analysis(
     fig.suptitle(layer_name, fontsize=9, y=0.985)
 
     # ── Panel A ────────────────────────────────────────────────────────────
+    # KDE difference: where post-quant gains/loses density relative to pre.
+    kde_diff_a = kde_post_a - kde_pre_a
+
     ax_a = axes[0]
-    ax_a.stairs(
-        hist_pre_a,
-        edges_a,
-        color="steelblue",
-        linewidth=1.8,
-        fill=False,
-        label="w+LoRA  (pre-quant)",
-    )
-    ax_a.stairs(
-        hist_post_a,
-        edges_a,
+    ax_a.fill_between(
+        x_grid_a,
+        kde_diff_a,
+        0,
+        where=kde_diff_a > 0,
+        interpolate=True,
         color="crimson",
-        linewidth=1.2,
-        linestyle="--",
-        fill=False,
-        label="Q(w+LoRA)  (post-quant)",
+        alpha=0.55,
+        label="density gain (post > pre)",
     )
+    ax_a.fill_between(
+        x_grid_a,
+        kde_diff_a,
+        0,
+        where=kde_diff_a < 0,
+        interpolate=True,
+        color="steelblue",
+        alpha=0.55,
+        label="density loss (post < pre)",
+    )
+    ax_a.axhline(0.0, color="black", linewidth=0.8, linestyle="-")
     ax_a.axvline(0.0, color="gray", linewidth=0.7, linestyle=":")
     ax_a.set_xlim(-L_a, L_a)
-    ax_a.set_ylabel("density")
+    ax_a.set_ylabel("Δ density  (post − pre)")
     ax_a.set_title(
-        f"Panel A — raw overlay  (x = ±{L_a:.4g}, clipped at q0.1%/q99.9%, bins={bins}, stairs)",
+        f"Panel A — KDE difference  (post − pre;  x = ±{L_a:.4g},  KDE @ 500 pts)",
         fontsize=8,
     )
     ax_a.legend(fontsize=7, loc="upper left")
@@ -374,16 +414,15 @@ def plot_effective_weight_analysis(
 
     # ── Panel B ────────────────────────────────────────────────────────────
     ax_b = axes[1]
-    ax_b.stairs(
-        hist_pre_b,
-        edges_b,
+    ax_b.fill_between(
+        x_grid_b,
+        0,
+        kde_pre_b,
         color="steelblue",
-        linewidth=1.3,
-        fill=True,
         alpha=0.30,
-        label="w+LoRA / a_w  (pre-quant, filled hist)",
+        label="w+LoRA / a_w  (pre-quant, KDE)",
     )
-    ax_b.stairs(hist_pre_b, edges_b, color="steelblue", linewidth=1.3, fill=False)
+    ax_b.plot(x_grid_b, kde_pre_b, color="steelblue", linewidth=1.3)
     ax_b.vlines(
         levels_x,
         0,
@@ -398,7 +437,7 @@ def plot_effective_weight_analysis(
     ax_b.set_xlim(-1.0, 1.0)
     ax_b.set_ylabel("density")
     ax_b.set_title(
-        "Panel B — normalized view  (post-quant drawn as PMF stem at exact k/127 levels)",
+        "Panel B — normalized view  (pre-quant: KDE @ 500 pts;  post-quant: PMF stem at k/127)",
         fontsize=8,
     )
     ax_b.legend(fontsize=7, loc="upper right")
