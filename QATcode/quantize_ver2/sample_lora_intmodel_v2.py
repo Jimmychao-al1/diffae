@@ -410,7 +410,6 @@ def main_int_model() -> Any:
         from QATcode.cache_method.a_L1_L2_cosine.similarity_calculation import (
             _load_quant_and_ema_from_ckpt,
         )
-
         _load_quant_and_ema_from_ckpt(base_model, quant_model, ckpt)
         if hasattr(base_model.ema_model, "set_runtime_mode"):
             base_model.ema_model.set_runtime_mode(
@@ -528,6 +527,7 @@ def main_float_model() -> Any:
         )
 
         _load_quant_and_ema_from_ckpt(base_model, quant_model, ckpt)
+        LOGGER.info("base_model.ema_model: %s", base_model.ema_model)
         if hasattr(base_model.ema_model, "set_runtime_mode"):
             # final sampling stage can reuse cached a_w
             base_model.ema_model.set_runtime_mode(
