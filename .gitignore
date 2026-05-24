@@ -87,3 +87,5 @@ ckpts/
 cache_analysis/collected_outputs/
 QATcode/quantize_ver2/baseline_quant_analysis/weight_hist/stats
 QATcode/quantize_ver2/results/act_quant_per_timestep
+QATcode/cache_method/thesis_context
+QATcode/cache_method/results/fid_fullExperiments6/20260524
