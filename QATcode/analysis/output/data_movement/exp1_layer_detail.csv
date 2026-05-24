@@ -1,0 +1,172 @@
+model,block_id,block_name,layer_name,layer_type,weight_shape,weight_bytes,act_bytes,dm_per_exec,cim_rows,cim_cols,cim_max_dim,cim_array_size,is_quantized,seq_len
+qdiffae,0,encoder_layer_0,encoder_layer_0[0].conv,conv2d,"(128, 3, 3, 3)",3456,49152,52608,27,128,128,3456,True,1
+qdiffae,1,encoder_layer_1,encoder_layer_1[0].in_layers.conv,conv2d,"(128, 128, 3, 3)",147456,2097152,2244608,1152,128,1152,147456,True,1
+qdiffae,1,encoder_layer_1,encoder_layer_1[0].emb_layers.linear,linear,"(256, 512)",131072,512,131584,512,256,512,131072,True,1
+qdiffae,1,encoder_layer_1,encoder_layer_1[0].cond_emb_layers.linear,linear,"(128, 512)",65536,512,66048,512,128,512,65536,True,1
+qdiffae,1,encoder_layer_1,encoder_layer_1[0].out_layers.conv,conv2d,"(128, 128, 3, 3)",147456,2097152,2244608,1152,128,1152,147456,True,1
+qdiffae,2,encoder_layer_2,encoder_layer_2[0].in_layers.conv,conv2d,"(128, 128, 3, 3)",147456,2097152,2244608,1152,128,1152,147456,True,1
+qdiffae,2,encoder_layer_2,encoder_layer_2[0].emb_layers.linear,linear,"(256, 512)",131072,512,131584,512,256,512,131072,True,1
+qdiffae,2,encoder_layer_2,encoder_layer_2[0].cond_emb_layers.linear,linear,"(128, 512)",65536,512,66048,512,128,512,65536,True,1
+qdiffae,2,encoder_layer_2,encoder_layer_2[0].out_layers.conv,conv2d,"(128, 128, 3, 3)",147456,2097152,2244608,1152,128,1152,147456,True,1
+qdiffae,3,encoder_layer_3,encoder_layer_3[0].in_layers.conv,conv2d,"(128, 128, 3, 3)",147456,524288,671744,1152,128,1152,147456,True,1
+qdiffae,3,encoder_layer_3,encoder_layer_3[0].emb_layers.linear,linear,"(256, 512)",131072,512,131584,512,256,512,131072,True,1
+qdiffae,3,encoder_layer_3,encoder_layer_3[0].cond_emb_layers.linear,linear,"(128, 512)",65536,512,66048,512,128,512,65536,True,1
+qdiffae,3,encoder_layer_3,encoder_layer_3[0].out_layers.conv,conv2d,"(128, 128, 3, 3)",147456,524288,671744,1152,128,1152,147456,True,1
+qdiffae,4,encoder_layer_4,encoder_layer_4[0].in_layers.conv,conv2d,"(128, 128, 3, 3)",147456,524288,671744,1152,128,1152,147456,True,1
+qdiffae,4,encoder_layer_4,encoder_layer_4[0].emb_layers.linear,linear,"(256, 512)",131072,512,131584,512,256,512,131072,True,1
+qdiffae,4,encoder_layer_4,encoder_layer_4[0].cond_emb_layers.linear,linear,"(128, 512)",65536,512,66048,512,128,512,65536,True,1
+qdiffae,4,encoder_layer_4,encoder_layer_4[0].out_layers.conv,conv2d,"(128, 128, 3, 3)",147456,524288,671744,1152,128,1152,147456,True,1
+qdiffae,5,encoder_layer_5,encoder_layer_5[0].in_layers.conv,conv2d,"(128, 128, 3, 3)",147456,524288,671744,1152,128,1152,147456,True,1
+qdiffae,5,encoder_layer_5,encoder_layer_5[0].emb_layers.linear,linear,"(256, 512)",131072,512,131584,512,256,512,131072,True,1
+qdiffae,5,encoder_layer_5,encoder_layer_5[0].cond_emb_layers.linear,linear,"(128, 512)",65536,512,66048,512,128,512,65536,True,1
+qdiffae,5,encoder_layer_5,encoder_layer_5[0].out_layers.conv,conv2d,"(128, 128, 3, 3)",147456,524288,671744,1152,128,1152,147456,True,1
+qdiffae,6,encoder_layer_6,encoder_layer_6[0].in_layers.conv,conv2d,"(128, 128, 3, 3)",147456,131072,278528,1152,128,1152,147456,True,1
+qdiffae,6,encoder_layer_6,encoder_layer_6[0].emb_layers.linear,linear,"(256, 512)",131072,512,131584,512,256,512,131072,True,1
+qdiffae,6,encoder_layer_6,encoder_layer_6[0].cond_emb_layers.linear,linear,"(128, 512)",65536,512,66048,512,128,512,65536,True,1
+qdiffae,6,encoder_layer_6,encoder_layer_6[0].out_layers.conv,conv2d,"(128, 128, 3, 3)",147456,131072,278528,1152,128,1152,147456,True,1
+qdiffae,7,encoder_layer_7,encoder_layer_7[0].in_layers.conv,conv2d,"(256, 128, 3, 3)",294912,131072,425984,1152,256,1152,294912,True,1
+qdiffae,7,encoder_layer_7,encoder_layer_7[0].emb_layers.linear,linear,"(512, 512)",262144,512,262656,512,512,512,262144,True,1
+qdiffae,7,encoder_layer_7,encoder_layer_7[0].cond_emb_layers.linear,linear,"(256, 512)",131072,512,131584,512,256,512,131072,True,1
+qdiffae,7,encoder_layer_7,encoder_layer_7[0].out_layers.conv,conv2d,"(256, 256, 3, 3)",589824,262144,851968,2304,256,2304,589824,True,1
+qdiffae,7,encoder_layer_7,encoder_layer_7[0].skip_connection,conv2d,"(256, 128, 1, 1)",32768,131072,163840,128,256,256,32768,False,1
+qdiffae,8,encoder_layer_8,encoder_layer_8[0].in_layers.conv,conv2d,"(256, 256, 3, 3)",589824,262144,851968,2304,256,2304,589824,True,1
+qdiffae,8,encoder_layer_8,encoder_layer_8[0].emb_layers.linear,linear,"(512, 512)",262144,512,262656,512,512,512,262144,True,1
+qdiffae,8,encoder_layer_8,encoder_layer_8[0].cond_emb_layers.linear,linear,"(256, 512)",131072,512,131584,512,256,512,131072,True,1
+qdiffae,8,encoder_layer_8,encoder_layer_8[0].out_layers.conv,conv2d,"(256, 256, 3, 3)",589824,262144,851968,2304,256,2304,589824,True,1
+qdiffae,9,encoder_layer_9,encoder_layer_9[0].in_layers.conv,conv2d,"(256, 256, 3, 3)",589824,65536,655360,2304,256,2304,589824,True,1
+qdiffae,9,encoder_layer_9,encoder_layer_9[0].emb_layers.linear,linear,"(512, 512)",262144,512,262656,512,512,512,262144,True,1
+qdiffae,9,encoder_layer_9,encoder_layer_9[0].cond_emb_layers.linear,linear,"(256, 512)",131072,512,131584,512,256,512,131072,True,1
+qdiffae,9,encoder_layer_9,encoder_layer_9[0].out_layers.conv,conv2d,"(256, 256, 3, 3)",589824,65536,655360,2304,256,2304,589824,True,1
+qdiffae,10,encoder_layer_10,encoder_layer_10[0].in_layers.conv,conv2d,"(384, 256, 3, 3)",884736,65536,950272,2304,384,2304,884736,True,1
+qdiffae,10,encoder_layer_10,encoder_layer_10[0].emb_layers.linear,linear,"(768, 512)",393216,512,393728,512,768,768,393216,True,1
+qdiffae,10,encoder_layer_10,encoder_layer_10[0].cond_emb_layers.linear,linear,"(384, 512)",196608,512,197120,512,384,512,196608,True,1
+qdiffae,10,encoder_layer_10,encoder_layer_10[0].out_layers.conv,conv2d,"(384, 384, 3, 3)",1327104,98304,1425408,3456,384,3456,1327104,True,1
+qdiffae,10,encoder_layer_10,encoder_layer_10[0].skip_connection,conv2d,"(384, 256, 1, 1)",98304,65536,163840,256,384,384,98304,False,1
+qdiffae,10,encoder_layer_10,encoder_layer_10[1].qkv,conv1d,"(1152, 384, 1)",442368,98304,540672,384,1152,1152,442368,False,1
+qdiffae,10,encoder_layer_10,encoder_layer_10[1].proj_out,conv1d,"(384, 384, 1)",147456,98304,245760,384,384,384,147456,False,1
+qdiffae,11,encoder_layer_11,encoder_layer_11[0].in_layers.conv,conv2d,"(384, 384, 3, 3)",1327104,98304,1425408,3456,384,3456,1327104,True,1
+qdiffae,11,encoder_layer_11,encoder_layer_11[0].emb_layers.linear,linear,"(768, 512)",393216,512,393728,512,768,768,393216,True,1
+qdiffae,11,encoder_layer_11,encoder_layer_11[0].cond_emb_layers.linear,linear,"(384, 512)",196608,512,197120,512,384,512,196608,True,1
+qdiffae,11,encoder_layer_11,encoder_layer_11[0].out_layers.conv,conv2d,"(384, 384, 3, 3)",1327104,98304,1425408,3456,384,3456,1327104,True,1
+qdiffae,11,encoder_layer_11,encoder_layer_11[1].qkv,conv1d,"(1152, 384, 1)",442368,98304,540672,384,1152,1152,442368,False,1
+qdiffae,11,encoder_layer_11,encoder_layer_11[1].proj_out,conv1d,"(384, 384, 1)",147456,98304,245760,384,384,384,147456,False,1
+qdiffae,12,encoder_layer_12,encoder_layer_12[0].in_layers.conv,conv2d,"(384, 384, 3, 3)",1327104,24576,1351680,3456,384,3456,1327104,True,1
+qdiffae,12,encoder_layer_12,encoder_layer_12[0].emb_layers.linear,linear,"(768, 512)",393216,512,393728,512,768,768,393216,True,1
+qdiffae,12,encoder_layer_12,encoder_layer_12[0].cond_emb_layers.linear,linear,"(384, 512)",196608,512,197120,512,384,512,196608,True,1
+qdiffae,12,encoder_layer_12,encoder_layer_12[0].out_layers.conv,conv2d,"(384, 384, 3, 3)",1327104,24576,1351680,3456,384,3456,1327104,True,1
+qdiffae,13,encoder_layer_13,encoder_layer_13[0].in_layers.conv,conv2d,"(512, 384, 3, 3)",1769472,24576,1794048,3456,512,3456,1769472,True,1
+qdiffae,13,encoder_layer_13,encoder_layer_13[0].emb_layers.linear,linear,"(1024, 512)",524288,512,524800,512,1024,1024,524288,True,1
+qdiffae,13,encoder_layer_13,encoder_layer_13[0].cond_emb_layers.linear,linear,"(512, 512)",262144,512,262656,512,512,512,262144,True,1
+qdiffae,13,encoder_layer_13,encoder_layer_13[0].out_layers.conv,conv2d,"(512, 512, 3, 3)",2359296,32768,2392064,4608,512,4608,2359296,True,1
+qdiffae,13,encoder_layer_13,encoder_layer_13[0].skip_connection,conv2d,"(512, 384, 1, 1)",196608,24576,221184,384,512,512,196608,False,1
+qdiffae,14,encoder_layer_14,encoder_layer_14[0].in_layers.conv,conv2d,"(512, 512, 3, 3)",2359296,32768,2392064,4608,512,4608,2359296,True,1
+qdiffae,14,encoder_layer_14,encoder_layer_14[0].emb_layers.linear,linear,"(1024, 512)",524288,512,524800,512,1024,1024,524288,True,1
+qdiffae,14,encoder_layer_14,encoder_layer_14[0].cond_emb_layers.linear,linear,"(512, 512)",262144,512,262656,512,512,512,262144,True,1
+qdiffae,14,encoder_layer_14,encoder_layer_14[0].out_layers.conv,conv2d,"(512, 512, 3, 3)",2359296,32768,2392064,4608,512,4608,2359296,True,1
+qdiffae,15,middle_layer,middle_layer[0].in_layers.conv,conv2d,"(512, 512, 3, 3)",2359296,32768,2392064,4608,512,4608,2359296,True,1
+qdiffae,15,middle_layer,middle_layer[0].emb_layers.linear,linear,"(1024, 512)",524288,512,524800,512,1024,1024,524288,True,1
+qdiffae,15,middle_layer,middle_layer[0].cond_emb_layers.linear,linear,"(512, 512)",262144,512,262656,512,512,512,262144,True,1
+qdiffae,15,middle_layer,middle_layer[0].out_layers.conv,conv2d,"(512, 512, 3, 3)",2359296,32768,2392064,4608,512,4608,2359296,True,1
+qdiffae,15,middle_layer,middle_layer[1].qkv,conv1d,"(1536, 512, 1)",786432,32768,819200,512,1536,1536,786432,False,1
+qdiffae,15,middle_layer,middle_layer[1].proj_out,conv1d,"(512, 512, 1)",262144,32768,294912,512,512,512,262144,False,1
+qdiffae,15,middle_layer,middle_layer[2].in_layers.conv,conv2d,"(512, 512, 3, 3)",2359296,32768,2392064,4608,512,4608,2359296,True,1
+qdiffae,15,middle_layer,middle_layer[2].emb_layers.linear,linear,"(1024, 512)",524288,512,524800,512,1024,1024,524288,True,1
+qdiffae,15,middle_layer,middle_layer[2].cond_emb_layers.linear,linear,"(512, 512)",262144,512,262656,512,512,512,262144,True,1
+qdiffae,15,middle_layer,middle_layer[2].out_layers.conv,conv2d,"(512, 512, 3, 3)",2359296,32768,2392064,4608,512,4608,2359296,True,1
+qdiffae,16,decoder_layer_0,decoder_layer_0[0].in_layers.conv,conv2d,"(512, 1024, 3, 3)",4718592,65536,4784128,9216,512,9216,4718592,True,1
+qdiffae,16,decoder_layer_0,decoder_layer_0[0].emb_layers.linear,linear,"(1024, 512)",524288,512,524800,512,1024,1024,524288,True,1
+qdiffae,16,decoder_layer_0,decoder_layer_0[0].cond_emb_layers.linear,linear,"(512, 512)",262144,512,262656,512,512,512,262144,True,1
+qdiffae,16,decoder_layer_0,decoder_layer_0[0].out_layers.conv,conv2d,"(512, 512, 3, 3)",2359296,32768,2392064,4608,512,4608,2359296,True,1
+qdiffae,16,decoder_layer_0,decoder_layer_0[0].skip_connection,conv2d,"(512, 1024, 1, 1)",524288,65536,589824,1024,512,1024,524288,False,1
+qdiffae,17,decoder_layer_1,decoder_layer_1[0].in_layers.conv,conv2d,"(512, 1024, 3, 3)",4718592,65536,4784128,9216,512,9216,4718592,True,1
+qdiffae,17,decoder_layer_1,decoder_layer_1[0].emb_layers.linear,linear,"(1024, 512)",524288,512,524800,512,1024,1024,524288,True,1
+qdiffae,17,decoder_layer_1,decoder_layer_1[0].cond_emb_layers.linear,linear,"(512, 512)",262144,512,262656,512,512,512,262144,True,1
+qdiffae,17,decoder_layer_1,decoder_layer_1[0].out_layers.conv,conv2d,"(512, 512, 3, 3)",2359296,32768,2392064,4608,512,4608,2359296,True,1
+qdiffae,17,decoder_layer_1,decoder_layer_1[0].skip_connection,conv2d,"(512, 1024, 1, 1)",524288,65536,589824,1024,512,1024,524288,False,1
+qdiffae,18,decoder_layer_2,decoder_layer_2[0].in_layers.conv,conv2d,"(512, 896, 3, 3)",4128768,57344,4186112,8064,512,8064,4128768,True,1
+qdiffae,18,decoder_layer_2,decoder_layer_2[0].emb_layers.linear,linear,"(1024, 512)",524288,512,524800,512,1024,1024,524288,True,1
+qdiffae,18,decoder_layer_2,decoder_layer_2[0].cond_emb_layers.linear,linear,"(512, 512)",262144,512,262656,512,512,512,262144,True,1
+qdiffae,18,decoder_layer_2,decoder_layer_2[0].out_layers.conv,conv2d,"(512, 512, 3, 3)",2359296,32768,2392064,4608,512,4608,2359296,True,1
+qdiffae,18,decoder_layer_2,decoder_layer_2[0].skip_connection,conv2d,"(512, 896, 1, 1)",458752,57344,516096,896,512,896,458752,False,1
+qdiffae,18,decoder_layer_2,decoder_layer_2[1].in_layers.conv,conv2d,"(512, 512, 3, 3)",2359296,131072,2490368,4608,512,4608,2359296,True,1
+qdiffae,18,decoder_layer_2,decoder_layer_2[1].emb_layers.linear,linear,"(1024, 512)",524288,512,524800,512,1024,1024,524288,True,1
+qdiffae,18,decoder_layer_2,decoder_layer_2[1].cond_emb_layers.linear,linear,"(512, 512)",262144,512,262656,512,512,512,262144,True,1
+qdiffae,18,decoder_layer_2,decoder_layer_2[1].out_layers.conv,conv2d,"(512, 512, 3, 3)",2359296,131072,2490368,4608,512,4608,2359296,True,1
+qdiffae,19,decoder_layer_3,decoder_layer_3[0].in_layers.conv,conv2d,"(384, 896, 3, 3)",3096576,229376,3325952,8064,384,8064,3096576,True,1
+qdiffae,19,decoder_layer_3,decoder_layer_3[0].emb_layers.linear,linear,"(768, 512)",393216,512,393728,512,768,768,393216,True,1
+qdiffae,19,decoder_layer_3,decoder_layer_3[0].cond_emb_layers.linear,linear,"(384, 512)",196608,512,197120,512,384,512,196608,True,1
+qdiffae,19,decoder_layer_3,decoder_layer_3[0].out_layers.conv,conv2d,"(384, 384, 3, 3)",1327104,98304,1425408,3456,384,3456,1327104,True,1
+qdiffae,19,decoder_layer_3,decoder_layer_3[0].skip_connection,conv2d,"(384, 896, 1, 1)",344064,229376,573440,896,384,896,344064,False,1
+qdiffae,19,decoder_layer_3,decoder_layer_3[1].qkv,conv1d,"(1152, 384, 1)",442368,98304,540672,384,1152,1152,442368,False,1
+qdiffae,19,decoder_layer_3,decoder_layer_3[1].proj_out,conv1d,"(384, 384, 1)",147456,98304,245760,384,384,384,147456,False,1
+qdiffae,20,decoder_layer_4,decoder_layer_4[0].in_layers.conv,conv2d,"(384, 768, 3, 3)",2654208,196608,2850816,6912,384,6912,2654208,True,1
+qdiffae,20,decoder_layer_4,decoder_layer_4[0].emb_layers.linear,linear,"(768, 512)",393216,512,393728,512,768,768,393216,True,1
+qdiffae,20,decoder_layer_4,decoder_layer_4[0].cond_emb_layers.linear,linear,"(384, 512)",196608,512,197120,512,384,512,196608,True,1
+qdiffae,20,decoder_layer_4,decoder_layer_4[0].out_layers.conv,conv2d,"(384, 384, 3, 3)",1327104,98304,1425408,3456,384,3456,1327104,True,1
+qdiffae,20,decoder_layer_4,decoder_layer_4[0].skip_connection,conv2d,"(384, 768, 1, 1)",294912,196608,491520,768,384,768,294912,False,1
+qdiffae,20,decoder_layer_4,decoder_layer_4[1].qkv,conv1d,"(1152, 384, 1)",442368,98304,540672,384,1152,1152,442368,False,1
+qdiffae,20,decoder_layer_4,decoder_layer_4[1].proj_out,conv1d,"(384, 384, 1)",147456,98304,245760,384,384,384,147456,False,1
+qdiffae,21,decoder_layer_5,decoder_layer_5[0].in_layers.conv,conv2d,"(384, 640, 3, 3)",2211840,163840,2375680,5760,384,5760,2211840,True,1
+qdiffae,21,decoder_layer_5,decoder_layer_5[0].emb_layers.linear,linear,"(768, 512)",393216,512,393728,512,768,768,393216,True,1
+qdiffae,21,decoder_layer_5,decoder_layer_5[0].cond_emb_layers.linear,linear,"(384, 512)",196608,512,197120,512,384,512,196608,True,1
+qdiffae,21,decoder_layer_5,decoder_layer_5[0].out_layers.conv,conv2d,"(384, 384, 3, 3)",1327104,98304,1425408,3456,384,3456,1327104,True,1
+qdiffae,21,decoder_layer_5,decoder_layer_5[0].skip_connection,conv2d,"(384, 640, 1, 1)",245760,163840,409600,640,384,640,245760,False,1
+qdiffae,21,decoder_layer_5,decoder_layer_5[1].qkv,conv1d,"(1152, 384, 1)",442368,98304,540672,384,1152,1152,442368,False,1
+qdiffae,21,decoder_layer_5,decoder_layer_5[1].proj_out,conv1d,"(384, 384, 1)",147456,98304,245760,384,384,384,147456,False,1
+qdiffae,21,decoder_layer_5,decoder_layer_5[2].in_layers.conv,conv2d,"(384, 384, 3, 3)",1327104,393216,1720320,3456,384,3456,1327104,True,1
+qdiffae,21,decoder_layer_5,decoder_layer_5[2].emb_layers.linear,linear,"(768, 512)",393216,512,393728,512,768,768,393216,True,1
+qdiffae,21,decoder_layer_5,decoder_layer_5[2].cond_emb_layers.linear,linear,"(384, 512)",196608,512,197120,512,384,512,196608,True,1
+qdiffae,21,decoder_layer_5,decoder_layer_5[2].out_layers.conv,conv2d,"(384, 384, 3, 3)",1327104,393216,1720320,3456,384,3456,1327104,True,1
+qdiffae,22,decoder_layer_6,decoder_layer_6[0].in_layers.conv,conv2d,"(256, 640, 3, 3)",1474560,655360,2129920,5760,256,5760,1474560,True,1
+qdiffae,22,decoder_layer_6,decoder_layer_6[0].emb_layers.linear,linear,"(512, 512)",262144,512,262656,512,512,512,262144,True,1
+qdiffae,22,decoder_layer_6,decoder_layer_6[0].cond_emb_layers.linear,linear,"(256, 512)",131072,512,131584,512,256,512,131072,True,1
+qdiffae,22,decoder_layer_6,decoder_layer_6[0].out_layers.conv,conv2d,"(256, 256, 3, 3)",589824,262144,851968,2304,256,2304,589824,True,1
+qdiffae,22,decoder_layer_6,decoder_layer_6[0].skip_connection,conv2d,"(256, 640, 1, 1)",163840,655360,819200,640,256,640,163840,False,1
+qdiffae,23,decoder_layer_7,decoder_layer_7[0].in_layers.conv,conv2d,"(256, 512, 3, 3)",1179648,524288,1703936,4608,256,4608,1179648,True,1
+qdiffae,23,decoder_layer_7,decoder_layer_7[0].emb_layers.linear,linear,"(512, 512)",262144,512,262656,512,512,512,262144,True,1
+qdiffae,23,decoder_layer_7,decoder_layer_7[0].cond_emb_layers.linear,linear,"(256, 512)",131072,512,131584,512,256,512,131072,True,1
+qdiffae,23,decoder_layer_7,decoder_layer_7[0].out_layers.conv,conv2d,"(256, 256, 3, 3)",589824,262144,851968,2304,256,2304,589824,True,1
+qdiffae,23,decoder_layer_7,decoder_layer_7[0].skip_connection,conv2d,"(256, 512, 1, 1)",131072,524288,655360,512,256,512,131072,False,1
+qdiffae,24,decoder_layer_8,decoder_layer_8[0].in_layers.conv,conv2d,"(256, 384, 3, 3)",884736,393216,1277952,3456,256,3456,884736,True,1
+qdiffae,24,decoder_layer_8,decoder_layer_8[0].emb_layers.linear,linear,"(512, 512)",262144,512,262656,512,512,512,262144,True,1
+qdiffae,24,decoder_layer_8,decoder_layer_8[0].cond_emb_layers.linear,linear,"(256, 512)",131072,512,131584,512,256,512,131072,True,1
+qdiffae,24,decoder_layer_8,decoder_layer_8[0].out_layers.conv,conv2d,"(256, 256, 3, 3)",589824,262144,851968,2304,256,2304,589824,True,1
+qdiffae,24,decoder_layer_8,decoder_layer_8[0].skip_connection,conv2d,"(256, 384, 1, 1)",98304,393216,491520,384,256,384,98304,False,1
+qdiffae,24,decoder_layer_8,decoder_layer_8[1].in_layers.conv,conv2d,"(256, 256, 3, 3)",589824,1048576,1638400,2304,256,2304,589824,True,1
+qdiffae,24,decoder_layer_8,decoder_layer_8[1].emb_layers.linear,linear,"(512, 512)",262144,512,262656,512,512,512,262144,True,1
+qdiffae,24,decoder_layer_8,decoder_layer_8[1].cond_emb_layers.linear,linear,"(256, 512)",131072,512,131584,512,256,512,131072,True,1
+qdiffae,24,decoder_layer_8,decoder_layer_8[1].out_layers.conv,conv2d,"(256, 256, 3, 3)",589824,1048576,1638400,2304,256,2304,589824,True,1
+qdiffae,25,decoder_layer_9,decoder_layer_9[0].in_layers.conv,conv2d,"(128, 384, 3, 3)",442368,1572864,2015232,3456,128,3456,442368,True,1
+qdiffae,25,decoder_layer_9,decoder_layer_9[0].emb_layers.linear,linear,"(256, 512)",131072,512,131584,512,256,512,131072,True,1
+qdiffae,25,decoder_layer_9,decoder_layer_9[0].cond_emb_layers.linear,linear,"(128, 512)",65536,512,66048,512,128,512,65536,True,1
+qdiffae,25,decoder_layer_9,decoder_layer_9[0].out_layers.conv,conv2d,"(128, 128, 3, 3)",147456,524288,671744,1152,128,1152,147456,True,1
+qdiffae,25,decoder_layer_9,decoder_layer_9[0].skip_connection,conv2d,"(128, 384, 1, 1)",49152,1572864,1622016,384,128,384,49152,False,1
+qdiffae,26,decoder_layer_10,decoder_layer_10[0].in_layers.conv,conv2d,"(128, 256, 3, 3)",294912,1048576,1343488,2304,128,2304,294912,True,1
+qdiffae,26,decoder_layer_10,decoder_layer_10[0].emb_layers.linear,linear,"(256, 512)",131072,512,131584,512,256,512,131072,True,1
+qdiffae,26,decoder_layer_10,decoder_layer_10[0].cond_emb_layers.linear,linear,"(128, 512)",65536,512,66048,512,128,512,65536,True,1
+qdiffae,26,decoder_layer_10,decoder_layer_10[0].out_layers.conv,conv2d,"(128, 128, 3, 3)",147456,524288,671744,1152,128,1152,147456,True,1
+qdiffae,26,decoder_layer_10,decoder_layer_10[0].skip_connection,conv2d,"(128, 256, 1, 1)",32768,1048576,1081344,256,128,256,32768,False,1
+qdiffae,27,decoder_layer_11,decoder_layer_11[0].in_layers.conv,conv2d,"(128, 256, 3, 3)",294912,1048576,1343488,2304,128,2304,294912,True,1
+qdiffae,27,decoder_layer_11,decoder_layer_11[0].emb_layers.linear,linear,"(256, 512)",131072,512,131584,512,256,512,131072,True,1
+qdiffae,27,decoder_layer_11,decoder_layer_11[0].cond_emb_layers.linear,linear,"(128, 512)",65536,512,66048,512,128,512,65536,True,1
+qdiffae,27,decoder_layer_11,decoder_layer_11[0].out_layers.conv,conv2d,"(128, 128, 3, 3)",147456,524288,671744,1152,128,1152,147456,True,1
+qdiffae,27,decoder_layer_11,decoder_layer_11[0].skip_connection,conv2d,"(128, 256, 1, 1)",32768,1048576,1081344,256,128,256,32768,False,1
+qdiffae,27,decoder_layer_11,decoder_layer_11[1].in_layers.conv,conv2d,"(128, 128, 3, 3)",147456,2097152,2244608,1152,128,1152,147456,True,1
+qdiffae,27,decoder_layer_11,decoder_layer_11[1].emb_layers.linear,linear,"(256, 512)",131072,512,131584,512,256,512,131072,True,1
+qdiffae,27,decoder_layer_11,decoder_layer_11[1].cond_emb_layers.linear,linear,"(128, 512)",65536,512,66048,512,128,512,65536,True,1
+qdiffae,27,decoder_layer_11,decoder_layer_11[1].out_layers.conv,conv2d,"(128, 128, 3, 3)",147456,2097152,2244608,1152,128,1152,147456,True,1
+qdiffae,28,decoder_layer_12,decoder_layer_12[0].in_layers.conv,conv2d,"(128, 256, 3, 3)",294912,4194304,4489216,2304,128,2304,294912,True,1
+qdiffae,28,decoder_layer_12,decoder_layer_12[0].emb_layers.linear,linear,"(256, 512)",131072,512,131584,512,256,512,131072,True,1
+qdiffae,28,decoder_layer_12,decoder_layer_12[0].cond_emb_layers.linear,linear,"(128, 512)",65536,512,66048,512,128,512,65536,True,1
+qdiffae,28,decoder_layer_12,decoder_layer_12[0].out_layers.conv,conv2d,"(128, 128, 3, 3)",147456,2097152,2244608,1152,128,1152,147456,True,1
+qdiffae,28,decoder_layer_12,decoder_layer_12[0].skip_connection,conv2d,"(128, 256, 1, 1)",32768,4194304,4227072,256,128,256,32768,False,1
+qdiffae,29,decoder_layer_13,decoder_layer_13[0].in_layers.conv,conv2d,"(128, 256, 3, 3)",294912,4194304,4489216,2304,128,2304,294912,True,1
+qdiffae,29,decoder_layer_13,decoder_layer_13[0].emb_layers.linear,linear,"(256, 512)",131072,512,131584,512,256,512,131072,True,1
+qdiffae,29,decoder_layer_13,decoder_layer_13[0].cond_emb_layers.linear,linear,"(128, 512)",65536,512,66048,512,128,512,65536,True,1
+qdiffae,29,decoder_layer_13,decoder_layer_13[0].out_layers.conv,conv2d,"(128, 128, 3, 3)",147456,2097152,2244608,1152,128,1152,147456,True,1
+qdiffae,29,decoder_layer_13,decoder_layer_13[0].skip_connection,conv2d,"(128, 256, 1, 1)",32768,4194304,4227072,256,128,256,32768,False,1
+qdiffae,30,decoder_layer_14,decoder_layer_14[0].in_layers.conv,conv2d,"(128, 256, 3, 3)",294912,4194304,4489216,2304,128,2304,294912,True,1
+qdiffae,30,decoder_layer_14,decoder_layer_14[0].emb_layers.linear,linear,"(256, 512)",131072,512,131584,512,256,512,131072,True,1
+qdiffae,30,decoder_layer_14,decoder_layer_14[0].cond_emb_layers.linear,linear,"(128, 512)",65536,512,66048,512,128,512,65536,True,1
+qdiffae,30,decoder_layer_14,decoder_layer_14[0].out_layers.conv,conv2d,"(128, 128, 3, 3)",147456,2097152,2244608,1152,128,1152,147456,True,1
+qdiffae,30,decoder_layer_14,decoder_layer_14[0].skip_connection,conv2d,"(128, 256, 1, 1)",32768,4194304,4227072,256,128,256,32768,False,1
