@@ -1,0 +1,46 @@
+{
+  "experiment": "Layer1_PyHessian_Sharpness",
+  "date": "2026-05-31",
+  "config": {
+    "n_samples": 128,
+    "batch_size": 1,
+    "seed": 42,
+    "loss": "epsilon_prediction_MSE",
+    "target": "ema_model",
+    "T": 1000,
+    "dataset": "/home/jimmy/diffae/datasets/ffhq256_lmdb",
+    "image_size": 128,
+    "do_augment": false,
+    "pixel_range": "[-1, 1]",
+    "eig_iter": 100,
+    "eig_tol": 0.001,
+    "trace_iter": 100,
+    "trace_tol": 0.001,
+    "fp16_loss_enabled": false,
+    "fp_model_path": "/home/jimmy/diffae/checkpoints/ffhq128_autoenc_latent/last.ckpt",
+    "qat_ckpt_path": "/home/jimmy/diffae/QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth"
+  },
+  "diffae_fp32": {
+    "top_eigenvalue": 25.069400787353516,
+    "trace": 283.0431141100432,
+    "trace_std": 56.95289335967329,
+    "trace_num_samples": 19,
+    "n_params_grad": 128545155,
+    "n_param_tensors_disabled_unused": 60,
+    "n_params_disabled_unused": 54109696
+  },
+  "qdiffae_w8a8": {
+    "top_eigenvalue": 1.2996660470962524,
+    "trace": 49.66440232594808,
+    "trace_std": 3.1263752219283623,
+    "trace_num_samples": 12,
+    "n_params_grad": 42252976,
+    "n_param_tensors_disabled_unused": 62,
+    "n_params_disabled_unused": 54113155
+  },
+  "ratio": {
+    "top_eigenvalue_qdiffae_over_diffae": 0.0518,
+    "trace_qdiffae_over_diffae": 0.1755
+  },
+  "interpretation": "ratio < 1.0 supports flat minima hypothesis"
+}
