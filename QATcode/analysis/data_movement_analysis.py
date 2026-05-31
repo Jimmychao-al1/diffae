@@ -38,6 +38,9 @@ ACTIVATION_BYTES_PER_ELEMENT = 4
 CACHE_OUTPUT_BYTES_PER_ELEMENT = 4
 INPUT_RESOLUTION = 128
 BATCH_SIZE = 1
+CIM_WEIGHT_BITS = 8
+CIM_ARRAY_256_CELLS = 256 * 256
+CIM_ARRAY_32_CELLS = 32 * 32
 
 
 @dataclass(frozen=True)
@@ -62,6 +65,11 @@ class LayerRecord:
     cim_cols: int
     cim_max_dim: int
     cim_array_size: int
+    num_params: int
+    cim_weight_bits: int
+    cim_cell_count_w8: int
+    cim_arrays_256x256: int
+    cim_arrays_32x32: int
     is_quantized: bool
     seq_len: int
 
@@ -78,6 +86,8 @@ class BlockRecord:
     output_channels: int
     weight_bytes_per_exec: int
     act_bytes_per_exec: int
+    output_write_bytes: int
+    total_dm_bytes: int
     dm_per_exec: int
     exec_count_baseline: int
     exec_count_cached: int
@@ -115,6 +125,21 @@ def count_summary_fields(prefix: str, n: int | float, unit: str) -> dict[str, An
         f"{prefix}_readable": f"{n:,.0f} {unit}",
         f"{prefix}_K": n / 1_000,
         f"{prefix}_M": n / 1_000_000,
+    }
+
+
+def ceil_div(n: int, d: int) -> int:
+    return (n + d - 1) // d
+
+
+def cim_storage_fields(num_params: int) -> dict[str, int]:
+    cells = num_params * CIM_WEIGHT_BITS
+    return {
+        "num_params": num_params,
+        "cim_weight_bits": CIM_WEIGHT_BITS,
+        "cim_cell_count_w8": cells,
+        "cim_arrays_256x256": ceil_div(cells, CIM_ARRAY_256_CELLS),
+        "cim_arrays_32x32": ceil_div(cells, CIM_ARRAY_32_CELLS),
     }
 
 
@@ -206,6 +231,7 @@ def _conv2d_record(
     act_bytes = BATCH_SIZE * c_in * shape.h * shape.w * ACTIVATION_BYTES_PER_ELEMENT
     rows = c_in * kh * kw
     cols = c_out
+    num_params = rows * cols
     rec = LayerRecord(
         model=MODEL_KEY,
         block_id=block_id,
@@ -219,7 +245,8 @@ def _conv2d_record(
         cim_rows=rows,
         cim_cols=cols,
         cim_max_dim=max(rows, cols),
-        cim_array_size=rows * cols,
+        cim_array_size=num_params,
+        **cim_storage_fields(num_params),
         is_quantized=_is_quantized(module),
         seq_len=1,
     )
@@ -243,6 +270,7 @@ def _conv1d_record(
     act_bytes = BATCH_SIZE * c_in * length * ACTIVATION_BYTES_PER_ELEMENT
     rows = c_in * k
     cols = c_out
+    num_params = rows * cols
     return LayerRecord(
         model=MODEL_KEY,
         block_id=block_id,
@@ -256,7 +284,8 @@ def _conv1d_record(
         cim_rows=rows,
         cim_cols=cols,
         cim_max_dim=max(rows, cols),
-        cim_array_size=rows * cols,
+        cim_array_size=num_params,
+        **cim_storage_fields(num_params),
         is_quantized=_is_quantized(module),
         seq_len=1,
     )
@@ -274,6 +303,7 @@ def _linear_record(
     if w is None or int(w.ndim) != 2:
         raise ValueError(f"{layer_name}: expected 2D weight")
     out_f, in_f = [int(x) for x in w.shape]
+    num_params = out_f * in_f
     weight_bytes = out_f * in_f * WEIGHT_BYTES_PER_ELEMENT
     act_bytes = BATCH_SIZE * seq_len * in_f * ACTIVATION_BYTES_PER_ELEMENT
     return LayerRecord(
@@ -289,7 +319,8 @@ def _linear_record(
         cim_rows=in_f,
         cim_cols=out_f,
         cim_max_dim=max(in_f, out_f),
-        cim_array_size=in_f * out_f,
+        cim_array_size=num_params,
+        **cim_storage_fields(num_params),
         is_quantized=_is_quantized(module),
         seq_len=seq_len,
     )
@@ -541,7 +572,9 @@ def analyze() -> tuple[list[BlockRecord], list[LayerRecord], dict[str, Any]]:
         weight_sum = sum(r.weight_bytes for r in recs)
         act_sum = sum(r.act_bytes for r in recs)
         exec_cached = sum(bool(x) for x in b["expanded_mask"])
+        output_write_bytes = BATCH_SIZE * out_shape.c * out_shape.h * out_shape.w * ACTIVATION_BYTES_PER_ELEMENT
         dm_exec = weight_sum + act_sum
+        total_dm = dm_exec + output_write_bytes
         block_records.append(
             BlockRecord(
                 model=MODEL_KEY,
@@ -554,11 +587,13 @@ def analyze() -> tuple[list[BlockRecord], list[LayerRecord], dict[str, Any]]:
                 output_channels=out_shape.c,
                 weight_bytes_per_exec=weight_sum,
                 act_bytes_per_exec=act_sum,
+                output_write_bytes=output_write_bytes,
+                total_dm_bytes=total_dm,
                 dm_per_exec=dm_exec,
                 exec_count_baseline=t,
                 exec_count_cached=exec_cached,
-                dm_baseline=dm_exec * t,
-                dm_cached=dm_exec * exec_cached,
+                dm_baseline=total_dm * t,
+                dm_cached=total_dm * exec_cached,
                 cim_block_max_dim=max(r.cim_max_dim for r in recs),
                 cim_block_max_array_size=max(r.cim_array_size for r in recs),
                 s3_cache_output_bytes=(
@@ -599,9 +634,15 @@ def validate_records(t: int, blocks: list[BlockRecord], layers: list[LayerRecord
             raise ValueError(f"Weight sum mismatch for {b.block_name}")
         if b.act_bytes_per_exec != sum(r.act_bytes for r in child):
             raise ValueError(f"Activation sum mismatch for {b.block_name}")
-        if b.dm_baseline != b.dm_per_exec * t:
+        if b.output_write_bytes <= 0:
+            raise ValueError(f"Invalid output write bytes for {b.block_name}")
+        if b.dm_per_exec != b.weight_bytes_per_exec + b.act_bytes_per_exec:
+            raise ValueError(f"Read-only DM mismatch for {b.block_name}")
+        if b.total_dm_bytes != b.weight_bytes_per_exec + b.act_bytes_per_exec + b.output_write_bytes:
+            raise ValueError(f"Total DM mismatch for {b.block_name}")
+        if b.dm_baseline != b.total_dm_bytes * t:
             raise ValueError(f"Baseline mismatch for {b.block_name}")
-        if b.dm_cached != b.dm_per_exec * b.exec_count_cached:
+        if b.dm_cached != b.total_dm_bytes * b.exec_count_cached:
             raise ValueError(f"Cached mismatch for {b.block_name}")
 
 
@@ -679,13 +720,16 @@ def print_report(blocks: list[BlockRecord], layers: list[LayerRecord], summary: 
     print(f"CIM max array size: {summary['global_cim_max_array_size']:,}")
     print_table(
         "Block-Level Data Movement",
-        ["id", "block", "shape", "DM/exec", "exec", "cached DM", "CIM"],
+        ["id", "block", "shape", "weight", "act", "output_write", "total/exec", "exec", "cached DM", "CIM"],
         [
             [
                 b.block_id,
                 b.block_name,
                 f"{b.input_channels}x{b.spatial_h}x{b.spatial_w}",
-                format_bytes(b.dm_per_exec),
+                format_bytes(b.weight_bytes_per_exec),
+                format_bytes(b.act_bytes_per_exec),
+                format_bytes(b.output_write_bytes),
+                format_bytes(b.total_dm_bytes),
                 b.exec_count_cached,
                 format_bytes(b.dm_cached),
                 b.cim_block_max_dim,
