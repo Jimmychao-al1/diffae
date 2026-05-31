@@ -1,0 +1,26 @@
+{
+  "fp32": {
+    "precision": 0.851,
+    "recall": 0.5671073717948718,
+    "density": 1.2221600000000001,
+    "coverage": 0.9332932692307693
+  },
+  "qat": {
+    "precision": 0.8472,
+    "recall": 0.5705128205128205,
+    "density": 1.2432,
+    "coverage": 0.9381009615384616
+  },
+  "config": {
+    "real_n": 4992,
+    "fake_fp_n": 5000,
+    "fake_qat_n": 5000,
+    "nearest_k": 5,
+    "feature_dim": 2048,
+    "feature_extractor": "InceptionV3_pool3",
+    "real_dir": "/home/jimmy/diffae/mycache/eval_images/ffhqlmdb256_size128_5000_5000",
+    "fake_fp_dir": "/home/jimmy/diffae/mycache/gen_images/ffhq128_autoenc_latent_T100",
+    "fake_qat_dir": "/home/jimmy/diffae/mycache/gen_images/ffhq128_autoenc_latent_QAT_T100",
+    "feature_cache_dir": "/home/jimmy/diffae/analysis_L3b_results/features"
+  }
+}
