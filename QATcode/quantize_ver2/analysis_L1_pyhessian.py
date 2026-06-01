@@ -18,7 +18,7 @@ import os
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, List, Tuple
 
 import numpy as np
 import torch
@@ -34,6 +34,7 @@ os.chdir(str(REPO_ROOT))
 
 from dataset import FFHQlmdb  # noqa: E402
 from QATcode.quantize_ver2 import analysis_L2_mse as l2_loader  # noqa: E402
+from QATcode.quantize_ver2.quant_model_lora_v2 import QuantModule_DiffAE_LoRA  # noqa: E402
 
 
 FP_MODEL_PATH = "checkpoints/ffhq128_autoenc_latent/last.ckpt"
@@ -235,6 +236,81 @@ def load_qdiffae(
     return base_model, ema_model, base_model.sampler
 
 
+def collect_lora_matched_weight_names(qat_ema_model: nn.Module) -> List[str]:
+    """Map Q-DiffAE LoRA module locations back to FP32 module weight names."""
+    matched_names: List[str] = []
+    for module_name, module in qat_ema_model.named_modules():
+        if not isinstance(module, QuantModule_DiffAE_LoRA):
+            continue
+
+        # QAT ema_model is QuantModel_DiffAE_LoRA(model=<BeatGANsAutoencModel>),
+        # so module names are prefixed with "model.".  FP32 ema_model has the
+        # same underlying path without that wrapper prefix.
+        fp_module_name = module_name.removeprefix("model.")
+        matched_names.append(f"{fp_module_name}.weight")
+
+    return sorted(set(matched_names))
+
+
+def freeze_fp32_to_matched_weights(
+    fp_ema_model: nn.Module,
+    matched_weight_names: List[str],
+) -> Dict[str, Any]:
+    """Freeze FP32 parameters except the original weights matching QAT LoRA locations."""
+    matched_set = set(matched_weight_names)
+    found_names: List[str] = []
+    missing_names = sorted(matched_set)
+
+    for param in fp_ema_model.parameters():
+        param.requires_grad_(False)
+
+    missing_set = set(missing_names)
+    for name, param in fp_ema_model.named_parameters():
+        if name in matched_set:
+            param.requires_grad_(True)
+            found_names.append(name)
+            missing_set.discard(name)
+
+    matched_params = sum(
+        p.numel() for name, p in fp_ema_model.named_parameters() if name in set(found_names)
+    )
+    return {
+        "matched_layers": found_names,
+        "missing_layers": sorted(missing_set),
+        "matched_count": len(found_names),
+        "matched_params": int(matched_params),
+    }
+
+
+def validate_lora_matched_param_count(
+    matched_params: int,
+    qat_params: int,
+    allow_mismatch: bool = False,
+) -> None:
+    """Stop before Hessian if the matched FP32 parameter count is clearly inconsistent."""
+    if qat_params <= 0:
+        LOGGER.warning("Cannot validate matched parameter count because qat_params=%d", qat_params)
+        return
+
+    ratio = matched_params / float(qat_params)
+    LOGGER.info(
+        "LoRA-matched FP32 params=%d vs QAT grad params=%d (ratio=%.4f)",
+        matched_params,
+        qat_params,
+        ratio,
+    )
+    if ratio > 2.0 or ratio < 0.5:
+        message = (
+            "LoRA-matched FP32 parameter count differs from QAT by more than 2x: "
+            f"matched={matched_params}, qat={qat_params}, ratio={ratio:.4f}. "
+            "This is allowed only when explicitly requested."
+        )
+        if allow_mismatch:
+            LOGGER.warning(message)
+        else:
+            raise RuntimeError(message)
+
+
 def prepare_sampler_for_hessian(sampler: Any, disable_fp16_loss: bool) -> None:
     """Use full precision loss evaluation for stable second-order derivatives."""
     if disable_fp16_loss and hasattr(sampler, "conf") and hasattr(sampler.conf, "fp16"):
@@ -350,6 +426,182 @@ def print_results(fp32_results: Dict[str, float], qat_results: Dict[str, float])
     print("\nInterpretation: ratio < 1.0 -> Q-DiffAE has flatter loss landscape")
 
 
+def print_lora_matched_results(results: Dict[str, Any]) -> None:
+    """Print terminal comparison table with the LoRA-matched FP32 control."""
+    fp32 = results["diffae_fp32"]
+    matched = results["diffae_fp32_lora_matched"]
+    qat = results["qdiffae_w8a8"]
+    ratio = results["ratio_lora_matched"]
+
+    print("\n=== PyHessian Sharpness Results (with LoRA-Matched Control) ===")
+    print(f"{'Model':<30} | {'n_params_grad':>13} | {'Top Eigenvalue':>15} | {'Trace':>15}")
+    print("-" * 86)
+    print(
+        f"{'Diff-AE FP32 (all params)':<30} | {int(fp32['n_params_grad']):>13} | "
+        f"{float(fp32['top_eigenvalue']):>15.4f} | {float(fp32['trace']):>15.4f}"
+    )
+    print(
+        f"{'Diff-AE FP32 (LoRA-matched)':<30} | {int(matched['n_params_grad']):>13} | "
+        f"{float(matched['top_eigenvalue']):>15.4f} | {float(matched['trace']):>15.4f}"
+    )
+    print(
+        f"{'Q-DiffAE W8A8 (LoRA)':<30} | {int(qat['n_params_grad']):>13} | "
+        f"{float(qat['top_eigenvalue']):>15.4f} | {float(qat['trace']):>15.4f}"
+    )
+    print("-" * 86)
+    print(
+        f"{'Ratio (Q / F_matched)':<30} | {'':>13} | "
+        f"{float(ratio['top_eigenvalue_qdiffae_over_diffae_matched']):>15.4f} | "
+        f"{float(ratio['trace_qdiffae_over_diffae_matched']):>15.4f}"
+    )
+
+
+def load_existing_results(output_path: Path) -> Dict[str, Any]:
+    """Load the main Layer 1 JSON that will receive the matched-control results."""
+    if not output_path.exists():
+        raise FileNotFoundError(
+            f"Main result JSON not found: {output_path}. "
+            "Run the main FP32/QAT PyHessian experiment first."
+        )
+    with output_path.open("r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def run_lora_matched_control(args: argparse.Namespace, output_dir: Path, device: torch.device) -> None:
+    """Compute FP32 Hessian on original weights corresponding to QAT LoRA module positions."""
+    output_path = output_dir / args.output_name
+    results = load_existing_results(output_path)
+    if "qdiffae_w8a8" not in results:
+        raise KeyError("Existing JSON does not contain 'qdiffae_w8a8'")
+
+    dataloader, t_fixed, noise_fixed = build_dataloader(
+        n_samples=args.n_samples,
+        batch_size=args.batch_size,
+        num_workers=args.num_workers,
+        seed=args.seed,
+        dataset_path=args.dataset_path,
+        pin_memory=device.type == "cuda",
+    )
+    LOGGER.info(
+        "Fixed Hessian data prepared for LoRA-matched control: "
+        "n=%d, batch_size=%d, t_range=[%d, %d], noise_shape=%s",
+        args.n_samples,
+        args.batch_size,
+        int(t_fixed.min().item()),
+        int(t_fixed.max().item()),
+        tuple(noise_fixed.shape),
+    )
+
+    LOGGER.info("=== Loading Q-DiffAE W8A8 for LoRA location mapping ===")
+    qat_base, qat_ema, qat_sampler = load_qdiffae(device, args.fp_model_path, args.qat_ckpt_path)
+    del qat_sampler
+    matched_weight_names = collect_lora_matched_weight_names(qat_ema)
+    qat_grad_params = int(results["qdiffae_w8a8"].get("n_params_grad", 0))
+    LOGGER.info("Collected %d LoRA-matched FP32 weight names", len(matched_weight_names))
+    for name in matched_weight_names[:20]:
+        LOGGER.info("  matched candidate: %s", name)
+    if len(matched_weight_names) > 20:
+        LOGGER.info("  ... %d more matched candidates", len(matched_weight_names) - 20)
+
+    del qat_ema, qat_base
+    gc.collect()
+    if device.type == "cuda":
+        torch.cuda.empty_cache()
+
+    LOGGER.info("=== Loading Diff-AE FP32 for LoRA-matched Hessian ===")
+    fp_base, fp_ema, fp_sampler = load_fp32(device, args.fp_model_path)
+    mapping_info = freeze_fp32_to_matched_weights(fp_ema, matched_weight_names)
+    if mapping_info["missing_layers"]:
+        LOGGER.warning(
+            "Missing %d mapped FP32 weights; first missing entries: %s",
+            len(mapping_info["missing_layers"]),
+            mapping_info["missing_layers"][:20],
+        )
+
+    LOGGER.info(
+        "Matched FP32 weights: %d tensors, %d scalars",
+        mapping_info["matched_count"],
+        mapping_info["matched_params"],
+    )
+
+    if args.lora_matched_dry_run:
+        ratio = (
+            float(mapping_info["matched_params"]) / float(qat_grad_params)
+            if qat_grad_params > 0
+            else float("nan")
+        )
+        LOGGER.info("Dry run requested; not computing PyHessian.")
+        print(
+            "LoRA-matched dry run: "
+            f"{mapping_info['matched_count']} tensors, {mapping_info['matched_params']} params; "
+            f"QAT grad params={qat_grad_params}; ratio={ratio:.4f}"
+        )
+        if qat_grad_params > 0 and (ratio > 2.0 or ratio < 0.5):
+            print(
+                "WARNING: matched FP32 parameter count differs from QAT by more than 2x. "
+                "Inspect mapping before running PyHessian."
+            )
+        return
+
+    validate_lora_matched_param_count(
+        int(mapping_info["matched_params"]),
+        qat_grad_params,
+        allow_mismatch=args.allow_lora_matched_param_mismatch,
+    )
+
+    prepare_sampler_for_hessian(fp_sampler, disable_fp16_loss=not args.keep_fp16_loss)
+    fp_wrapper = EpsilonMSEHessianWrapper(
+        fp_ema,
+        fp_sampler,
+        suppress_loss_stdout=not args.show_loss_timesteps,
+    )
+    matched_results = compute_hessian_metrics(
+        wrapper_model=fp_wrapper,
+        dataloader=dataloader,
+        device=device,
+        eig_iter=args.eig_iter,
+        eig_tol=args.eig_tol,
+        trace_iter=args.trace_iter,
+        trace_tol=args.trace_tol,
+    )
+    matched_results["matched_layers"] = mapping_info["matched_layers"]
+    matched_results["missing_layers"] = mapping_info["missing_layers"]
+    matched_results["pre_hessian_matched_count"] = int(mapping_info["matched_count"])
+    matched_results["pre_hessian_matched_params"] = int(mapping_info["matched_params"])
+
+    qat_results = results["qdiffae_w8a8"]
+    results["diffae_fp32_lora_matched"] = matched_results
+    results["ratio_lora_matched"] = {
+        "top_eigenvalue_qdiffae_over_diffae_matched": round(
+            safe_ratio(float(qat_results["top_eigenvalue"]), matched_results["top_eigenvalue"]),
+            4,
+        ),
+        "trace_qdiffae_over_diffae_matched": round(
+            safe_ratio(float(qat_results["trace"]), matched_results["trace"]),
+            4,
+        ),
+    }
+    results.setdefault("config", {})["lora_matched_control"] = {
+        "mapping": "QAT QuantModule_DiffAE_LoRA module path -> FP32 same path .weight",
+        "n_candidates_from_qat_lora_modules": len(matched_weight_names),
+        "n_matched_fp32_weight_tensors": int(mapping_info["matched_count"]),
+        "n_matched_fp32_weight_params": int(mapping_info["matched_params"]),
+        "n_missing_fp32_weight_tensors": len(mapping_info["missing_layers"]),
+    }
+
+    with output_path.open("w", encoding="utf-8") as f:
+        json.dump(results, f, indent=2)
+        f.write("\n")
+
+    print_lora_matched_results(results)
+    print(f"Updated results saved to {output_path}")
+
+    del fp_wrapper, fp_ema, fp_base, fp_sampler
+    gc.collect()
+    if device.type == "cuda":
+        torch.cuda.empty_cache()
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Layer 1 PyHessian sharpness comparison for Diff-AE vs Q-DiffAE"
@@ -378,6 +630,21 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Do not suppress the timestep prints emitted by training_losses().",
     )
+    parser.add_argument(
+        "--lora-matched-control",
+        action="store_true",
+        help="Append FP32 LoRA-matched Hessian control to the existing result JSON.",
+    )
+    parser.add_argument(
+        "--lora-matched-dry-run",
+        action="store_true",
+        help="Only report LoRA-matched FP32 parameter mapping/counts; no Hessian.",
+    )
+    parser.add_argument(
+        "--allow-lora-matched-param-mismatch",
+        action="store_true",
+        help="Allow FP32 matched full-weight params to differ from QAT LoRA params by >2x.",
+    )
     return parser
 
 
@@ -392,6 +659,10 @@ def main() -> None:
         raise RuntimeError("CUDA was requested but torch.cuda.is_available() is False")
 
     LOGGER.info("args=%s", vars(args))
+    if args.lora_matched_control or args.lora_matched_dry_run:
+        run_lora_matched_control(args, output_dir, device)
+        return
+
     dataloader, t_fixed, noise_fixed = build_dataloader(
         n_samples=args.n_samples,
         batch_size=args.batch_size,
