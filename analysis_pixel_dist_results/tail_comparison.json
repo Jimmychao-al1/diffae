@@ -1,0 +1,97 @@
+{
+  "num_pairs": 4992,
+  "metrics": {
+    "pixel_range": {
+      "fp32_vs_real": {
+        "statistic": 4212305.5,
+        "p_value": 0.0,
+        "mean_fp32": 241.52504,
+        "mean_real": 245.074519,
+        "direction": "fp32_lower"
+      },
+      "qat_vs_real": {
+        "statistic": 4557390.5,
+        "p_value": 0.0,
+        "mean_qat": 242.234175,
+        "mean_real": 245.074519,
+        "direction": "qat_lower"
+      },
+      "fp32_vs_qat": {
+        "statistic": 3448715.0,
+        "p_value": 0.0,
+        "mean_fp32": 241.52504,
+        "mean_qat": 242.234175,
+        "direction": "fp32_lower"
+      }
+    },
+    "tail_low_ratio": {
+      "fp32_vs_real": {
+        "statistic": 5113199.5,
+        "p_value": 0.0,
+        "mean_fp32": 0.032935,
+        "mean_real": 0.041594,
+        "direction": "fp32_lower"
+      },
+      "qat_vs_real": {
+        "statistic": 5224444.0,
+        "p_value": 0.0,
+        "mean_qat": 0.033646,
+        "mean_real": 0.041594,
+        "direction": "qat_lower"
+      },
+      "fp32_vs_qat": {
+        "statistic": 4258849.0,
+        "p_value": 0.0,
+        "mean_fp32": 0.032935,
+        "mean_qat": 0.033646,
+        "direction": "fp32_lower"
+      }
+    },
+    "tail_high_ratio": {
+      "fp32_vs_real": {
+        "statistic": 4853574.0,
+        "p_value": 0.0,
+        "mean_fp32": 0.019265,
+        "mean_real": 0.024548,
+        "direction": "fp32_lower"
+      },
+      "qat_vs_real": {
+        "statistic": 4974068.5,
+        "p_value": 0.0,
+        "mean_qat": 0.020097,
+        "mean_real": 0.024548,
+        "direction": "qat_lower"
+      },
+      "fp32_vs_qat": {
+        "statistic": 3531352.0,
+        "p_value": 0.002733,
+        "mean_fp32": 0.019265,
+        "mean_qat": 0.020097,
+        "direction": "fp32_lower"
+      }
+    },
+    "extreme_ratio": {
+      "fp32_vs_real": {
+        "statistic": 3124937.5,
+        "p_value": 0.0,
+        "mean_fp32": 0.004498,
+        "mean_real": 0.008798,
+        "direction": "fp32_lower"
+      },
+      "qat_vs_real": {
+        "statistic": 3559000.5,
+        "p_value": 0.0,
+        "mean_qat": 0.004291,
+        "mean_real": 0.008798,
+        "direction": "qat_lower"
+      },
+      "fp32_vs_qat": {
+        "statistic": 1941843.5,
+        "p_value": 0.0,
+        "mean_fp32": 0.004498,
+        "mean_qat": 0.004291,
+        "direction": "qat_lower"
+      }
+    }
+  }
+}
