@@ -1,0 +1,29 @@
+{
+  "experiment": "FID-to-FP32",
+  "num_images": 5000,
+  "dims": 2048,
+  "results": {
+    "fid_to_fp32": {
+      "ref": "FP32_gen",
+      "gen": "QAT_gen",
+      "value": 4.59205143864591
+    },
+    "fid_real_vs_fp32": {
+      "ref": "Real",
+      "gen": "FP32_gen",
+      "value": 15.647529760458099
+    },
+    "fid_real_vs_qat": {
+      "ref": "Real",
+      "gen": "QAT_gen",
+      "value": 14.942024708328347
+    }
+  },
+  "paths": {
+    "fp32_dir": "/home/jimmy/diffae/mycache/gen_images/ffhq128_autoenc_latent_T100",
+    "qat_dir": "/home/jimmy/diffae/mycache/gen_images/ffhq128_autoenc_latent_QAT_T100",
+    "qat_subset_dir": "/tmp/qat_fid_subset_pi_y8i5p",
+    "real_dir": "/home/jimmy/diffae/mycache/eval_images/ffhqlmdb256_size128_5000_5000"
+  },
+  "timestamp": "2026-06-07T04:30:23.371207+00:00"
+}

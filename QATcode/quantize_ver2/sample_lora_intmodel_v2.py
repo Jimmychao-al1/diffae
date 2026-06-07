@@ -786,15 +786,146 @@ def main_baseline_aq() -> Any:
         raise
 
 
+def _qat_tt_ckpt_path_for_steps(num_steps: int) -> str:
+    """QAT TT checkpoint path aligned with main_float_model() / main_int_model()."""
+    if num_steps == 100:
+        return "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth"
+    return "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best_20steps.pth"
+
+
+def _load_act_scale_list_from_qat_ckpt(quant_model: nn.Module, ckpt_path: str) -> int:
+    """Load only TemporalActivationQuantizer.scale_list from QAT TT EMA checkpoint."""
+    from QATcode.cache_method.a_L1_L2_cosine.similarity_calculation import (
+        _collect_prefixed_state_dict,
+    )
+
+    ckpt = torch.load(ckpt_path, map_location="cpu", weights_only=False)
+    ema_sd = _collect_prefixed_state_dict(ckpt, "ema_model.model.", add_prefix="model.")
+    act_sd = {k: v for k, v in ema_sd.items() if "act_quantizer.scale_list" in k}
+    if not act_sd:
+        raise KeyError(
+            f"No act_quantizer.scale_list under ema_model.model.* in: {ckpt_path}"
+        )
+    msg = quant_model.load_state_dict(act_sd, strict=False)
+    n_scales = len(act_sd)
+    assert n_scales > 0, f"Expected >0 scale_list tensors, got {n_scales}"
+    LOGGER.info(
+        "[Row 3] Act quantizer source=QAT TT checkpoint: path=%s, scale_tensors=%d, "
+        "missing=%d, unexpected=%d",
+        ckpt_path,
+        n_scales,
+        len(msg.missing_keys),
+        len(msg.unexpected_keys),
+    )
+    if msg.missing_keys:
+        LOGGER.warning("[Row 3] scale_list missing keys (first 5): %s", msg.missing_keys[:5])
+    return n_scales
+
+
+@time_operation
+def main_baseline_qat_act() -> Any:
+    """
+    Row 3 — BASELINE + QAT-trained act scales:
+    - FP32 org_weight (no LoRA merge)
+    - TemporalActivationQuantizer.scale_list from QAT TT checkpoint (EMA)
+    - No on-the-fly calibration loop
+    """
+    from QATcode.quantize_ver2.quant_layer_v2 import TemporalActivationQuantizer
+
+    LOGGER.info("=" * 50)
+    LOGGER.info("Row 3: BASELINE + QAT-trained act quantizer scales (no LoRA weights)")
+    LOGGER.info("Act quantizer source: QAT TT checkpoint (NOT calibration)")
+    LOGGER.info("QAT checkpoint: %s", CONFIG.BEST_CKPT_PATH)
+    LOGGER.info("=" * 50)
+
+    _seed_all(CONFIG.SEED)
+
+    try:
+        base_model: LitModel = load_diffae_model()
+        LOGGER.info("✅ Diff-AE loaded (FP32 ema, no LoRA ckpt)")
+        diffusion_model = base_model.ema_model
+
+        quant_model: QuantModel_DiffAE_LoRA = create_float_quantized_model(
+            diffusion_model,
+            num_steps=CONFIG.NUM_DIFFUSION_STEPS,
+            lora_rank=CONFIG.LORA_RANK,
+            mode=CONFIG.MODE,
+        )
+        quant_model.to(CONFIG.DEVICE)
+        quant_model.eval()
+
+        for m in quant_model.modules():
+            if isinstance(m, QuantModule_DiffAE_LoRA):
+                m.use_original_weight = True
+        LOGGER.info("✅ use_original_weight=True (FP32 org_weight, skip LoRA)")
+
+        n_scales = _load_act_scale_list_from_qat_ckpt(quant_model, CONFIG.BEST_CKPT_PATH)
+
+        for m in quant_model.modules():
+            if isinstance(m, TemporalActivationQuantizer):
+                m.calibration_mode = False
+                m.inited = True
+                m.current_step = CONFIG.NUM_DIFFUSION_STEPS - 1
+        LOGGER.info(
+            "✅ TemporalActivationQuantizer: calibration_mode=False, inited=True "
+            "(loaded %d scale_list from QAT)",
+            n_scales,
+        )
+
+        quant_model.set_quant_state(False, True)
+        LOGGER.info("set_quant_state(weight=False, act=True)")
+
+        base_model.ema_model = quant_model
+        base_model.to(CONFIG.DEVICE)
+        base_model.eval()
+        base_model.setup()
+
+        T = CONFIG.NUM_DIFFUSION_STEPS
+        base_model.train_dataloader()
+        sampler = base_model.conf._make_diffusion_conf(T=T).make_sampler()
+        latent_sampler = base_model.conf._make_latent_diffusion_conf(T=T).make_sampler()
+
+        LOGGER.info("開始正式推論生成 (Row 3)...")
+        conf = base_model.conf.clone()
+        conf.eval_num_images = CONFIG.EVAL_SAMPLES
+
+        score = evaluate_fid(
+            sampler,
+            base_model.ema_model,
+            conf,
+            device=CONFIG.DEVICE,
+            train_data=base_model.train_data,
+            val_data=base_model.val_data,
+            latent_sampler=latent_sampler,
+            conds_mean=base_model.conds_mean,
+            conds_std=base_model.conds_std,
+            remove_cache=False,
+            clip_latent_noise=False,
+            T=T,
+            output_dir=f"{conf.generate_dir}_BASELINE_QAT_ACT_T{T}",
+        )
+        LOGGER.info(f"[Row 3 BASELINE+QAT_ACT] FID@{CONFIG.EVAL_SAMPLES} T={T} score: {score}")
+        LOGGER.info("=" * 50)
+
+    except Exception as e:
+        LOGGER.error(f"BASELINE+QAT_ACT (Row 3) error: {e}")
+        raise
+
+
 if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser()
     add_common_generation_args(parser)
     parser.add_argument(
+        "--baseline-qat-act",
+        action="store_true",
+        help="Row 3: FP32 weights + QAT-trained act quantizer scales (from TT checkpoint)",
+    )
+    parser.add_argument(
         "--baseline-aq",
         action="store_true",
-        help="啟用 BASELINE+AQ 實驗模式：使用原始權重（不載入 LoRA）+ per-timestep activation 校正後推論",
+        help="Row 4: FP32 weights + calibration-only act quantizer (on-the-fly scale_list)",
     )
     parser.add_argument(
         "--quant-state",
@@ -867,21 +998,18 @@ if __name__ == "__main__":
         CONFIG.QUANT_STATE_ACT,
     )
     LOGGER.info(f"Log file: {CONFIG.LOG_FILE}")
-    if args.baseline_aq:
+    # NUM_DIFFUSION_STEPS is set from args.num_steps above (line ~812) before dispatch.
+    if args.baseline_qat_act:
+        CONFIG.BEST_CKPT_PATH = _qat_tt_ckpt_path_for_steps(CONFIG.NUM_DIFFUSION_STEPS)
+        LOGGER.info("Row 3 ckpt (T=%d): %s", CONFIG.NUM_DIFFUSION_STEPS, CONFIG.BEST_CKPT_PATH)
+        main_baseline_qat_act()
+    elif args.baseline_aq:
         main_baseline_aq()
     elif args.mode == "float":
-        CONFIG.BEST_CKPT_PATH = (
-            "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth"
-            if CONFIG.NUM_DIFFUSION_STEPS == 100
-            else "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best_20steps.pth"
-        )
+        CONFIG.BEST_CKPT_PATH = _qat_tt_ckpt_path_for_steps(CONFIG.NUM_DIFFUSION_STEPS)
         main_float_model()
     elif args.mode == "int":
-        CONFIG.BEST_CKPT_PATH = (
-            "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth"
-            if CONFIG.NUM_DIFFUSION_STEPS == 100
-            else "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best_20steps.pth"
-        )
+        CONFIG.BEST_CKPT_PATH = _qat_tt_ckpt_path_for_steps(CONFIG.NUM_DIFFUSION_STEPS)
         main_int_model()
     elif args.mode == "final":
         CONFIG.BEST_CKPT_PATH = "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best_final.pth"
