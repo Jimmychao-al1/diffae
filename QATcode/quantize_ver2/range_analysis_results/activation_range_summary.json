@@ -1,0 +1,25 @@
+{
+  "n_samples": 8,
+  "ddim_steps": 100,
+  "total_layers": 140,
+  "total_datapoints": 14000,
+  "delta_over_std": {
+    "global_mean": 0.10199701238460736,
+    "global_median": 0.09323196898641668,
+    "pct_below_0.05": 25.0,
+    "pct_below_0.10": 56.43571428571429,
+    "worst_layer": "model.output_blocks.14.0.out_layers.3",
+    "worst_layer_value": 0.7298468587851504
+  },
+  "err_rel_l2": {
+    "global_mean": 0.0525330443030772,
+    "global_max": 0.6338840052485466,
+    "worst_layer": "model.input_blocks.8.0.cond_emb_layers.1",
+    "worst_step": 99
+  },
+  "act_std_temporal_stability": {
+    "cv_mean_across_layers": 0.12560357224335897,
+    "cv_max": 0.3827133430889832,
+    "most_unstable_layer": "model.input_blocks.5.0.out_layers.3"
+  }
+}
