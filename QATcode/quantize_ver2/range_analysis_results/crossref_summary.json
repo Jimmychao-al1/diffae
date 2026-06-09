@@ -1,0 +1,133 @@
+{
+  "correlations": {
+    "per_layer": [
+      {
+        "x": "w_delta_over_std",
+        "y": "fid_sensitivity",
+        "n": 140,
+        "pearson_r": 0.3383300205697213,
+        "pearson_p": 4.3412823820362294e-05,
+        "spearman_r": 0.27670854796527417,
+        "spearman_p": 0.0009343851603569152
+      },
+      {
+        "x": "act_delta_over_std_mean",
+        "y": "fid_sensitivity",
+        "n": 140,
+        "pearson_r": 0.15265358443634686,
+        "pearson_p": 0.07176652724847722,
+        "spearman_r": 0.09572281028109923,
+        "spearman_p": 0.260572599645083
+      },
+      {
+        "x": "act_err_rel_l2_mean",
+        "y": "fid_sensitivity",
+        "n": 140,
+        "pearson_r": -0.059574468899173984,
+        "pearson_p": 0.4844293745003083,
+        "spearman_r": -0.12423236910107792,
+        "spearman_p": 0.1436233624663635
+      },
+      {
+        "x": "w_delta_over_std",
+        "y": "act_delta_over_std_mean",
+        "n": 140,
+        "pearson_r": 0.4306631657866215,
+        "pearson_p": 1.0887619044694116e-07,
+        "spearman_r": 0.44465242395749066,
+        "spearman_p": 3.71575485113163e-08
+      },
+      {
+        "x": "w_kurtosis",
+        "y": "w_delta_over_std",
+        "n": 140,
+        "pearson_r": 0.6613237917186034,
+        "pearson_p": 5.934502600600204e-19,
+        "spearman_r": 0.6202925805252456,
+        "spearman_p": 3.004162463472995e-16
+      }
+    ],
+    "per_block": [
+      {
+        "x": "w_delta_over_std_mean",
+        "y": "fid_sensitivity",
+        "n": 30,
+        "pearson_r": 0.6275868306545398,
+        "pearson_p": 0.00020544301680484845,
+        "spearman_r": 0.4941628831342742,
+        "spearman_p": 0.005510379586797591
+      },
+      {
+        "x": "act_delta_over_std_mean",
+        "y": "fid_sensitivity",
+        "n": 30,
+        "pearson_r": 0.3459049565450098,
+        "pearson_p": 0.061156345735966,
+        "spearman_r": 0.3459963329440976,
+        "spearman_p": 0.06108343493687306
+      },
+      {
+        "x": "act_err_rel_l2_mean",
+        "y": "fid_sensitivity",
+        "n": 30,
+        "pearson_r": -0.14034261027919895,
+        "pearson_p": 0.45948317324680965,
+        "spearman_r": -0.1391119276785547,
+        "spearman_p": 0.463468557508105
+      }
+    ]
+  },
+  "layer_type_summary": {
+    "cond_emb_layers": {
+      "count": 35,
+      "w_dos_mean": 0.05379637317758253,
+      "w_dos_std": 0.012824031251133962,
+      "act_dos_mean": 0.030573137171753344,
+      "act_dos_std": 0.0007790924381161708,
+      "act_err_mean": 0.012086287211260892,
+      "act_err_std": 0.006218929488361859,
+      "fid_sens_mean": 0.07444231297288623,
+      "fid_sens_std": 0.20054553087667226
+    },
+    "emb_layers": {
+      "count": 35,
+      "w_dos_mean": 0.07152688013162795,
+      "w_dos_std": 0.019126196539927434,
+      "act_dos_mean": 0.1306675993380022,
+      "act_dos_std": 0.0006313770931599956,
+      "act_err_mean": 0.041670061267912395,
+      "act_err_std": 0.0013247979490365845,
+      "fid_sens_mean": 0.07444231297288623,
+      "fid_sens_std": 0.20054553087667226
+    },
+    "in_layers": {
+      "count": 35,
+      "w_dos_mean": 0.10138537071207653,
+      "w_dos_std": 0.022174901992693525,
+      "act_dos_mean": 0.10216282485851162,
+      "act_dos_std": 0.030676745539583918,
+      "act_err_mean": 0.07470371826212588,
+      "act_err_std": 0.07709481515760457,
+      "fid_sens_mean": 0.07444231297288623,
+      "fid_sens_std": 0.20054553087667226
+    },
+    "out_layers": {
+      "count": 35,
+      "w_dos_mean": 0.10392484694909032,
+      "w_dos_std": 0.04083210280803057,
+      "act_dos_mean": 0.14458448817016226,
+      "act_dos_std": 0.08255113548418609,
+      "act_err_mean": 0.08167211047100967,
+      "act_err_std": 0.060435783043290135,
+      "fid_sens_mean": 0.07444231297288623,
+      "fid_sens_std": 0.20054553087667226
+    }
+  },
+  "key_findings": [
+    "No meaningful per-layer correlation: act_delta_over_std_mean \u2194 fid_sensitivity (Spearman |\u03c1|=0.096 < 0.1).",
+    "Significant per-layer correlation: w_delta_over_std \u2194 act_delta_over_std_mean (Spearman \u03c1=+0.445, p=0.000).",
+    "Significant per-layer correlation: w_kurtosis \u2194 w_delta_over_std (Spearman \u03c1=+0.620, p=0.000).",
+    "Significant per-block correlation: w_delta_over_std_mean \u2194 fid_sensitivity (Spearman \u03c1=+0.494, p=0.006, N=30).",
+    "Layer-type w_delta_over_std range: cond_emb_layers (lowest=0.0538) vs out_layers (highest=0.1039)."
+  ]
+}

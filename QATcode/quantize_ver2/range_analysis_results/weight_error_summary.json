@@ -1,0 +1,31 @@
+{
+  "total_layers": 140,
+  "std_ratio": {
+    "mean": 0.9999603518283834,
+    "median": 0.9998848713772417,
+    "min": 0.9960620613619526,
+    "max": 1.0086424708475745,
+    "pct_between_0.9_and_1.1": 100.0
+  },
+  "kurtosis": {
+    "mean": -0.038749698037148075,
+    "median": -0.3256197066728852,
+    "target_uniform": -1.2,
+    "pct_below_minus_1.0": 3.571428571428571
+  },
+  "ks_stat": {
+    "mean": 0.00904873564515795,
+    "median": 0.00847330582141878,
+    "max": 0.023644596385955785
+  },
+  "entropy_ratio": {
+    "mean": 0.9998570965775745,
+    "median": 0.9998621252057034,
+    "min": 0.9995328964544263
+  },
+  "pct_within_half_delta": {
+    "mean": 0.9993686015301372,
+    "min": 0.9953884548611112
+  },
+  "interpretation": "Quantization error deviates from uniform (std_ratio=1.000, kurtosis=-0.326)."
+}
