@@ -539,6 +539,7 @@ def main_sample_with_optional_stage2_scheduler(
     force_full_runtime_blocks: Optional[List[str]] = None,
     safety_first_input_block: bool = False,
     allow_missing_k_per_zone: bool = False,
+    use_fp: bool = False,
     # Run-artifact params (all optional; if None, no artifacts are written).
     run_output_dir: Optional[Path] = None,
     scheduler_name: str = "unknown",
@@ -588,40 +589,50 @@ def main_sample_with_optional_stage2_scheduler(
         LOGGER.info("=" * 50)
         _seed_all(CONFIG.SEED)
 
-        base_model = load_diffae_model()
-        LOGGER.info("✅ Diff-AE 模型載入成功")
-        quant_model = create_float_quantized_model(
-            base_model.ema_model,
-            num_steps=CONFIG.NUM_DIFFUSION_STEPS,
-            lora_rank=CONFIG.LORA_RANK,
-            mode=CONFIG.MODE,
-        )
-        quant_model.to(CONFIG.DEVICE)
-        quant_model.eval()
+        if use_fp:
+            from QATcode.cache_method.common.fp_diffae_loader import load_fp_diffae_for_sampling
 
-        cali_images, cali_t, cali_y = load_calibration_data()
-        quant_model.set_first_last_layer_to_8bit()
-        quant_model.set_quant_state(CONFIG.QUANT_STATE_WEIGHT, CONFIG.QUANT_STATE_ACT)
-        if hasattr(quant_model, "set_runtime_mode"):
-            quant_model.set_runtime_mode(mode="train", use_cached_aw=False, clear_cached_aw=True)
-        _ = quant_model(
-            x=cali_images[:32].to(CONFIG.DEVICE),
-            t=cali_t[:32].to(CONFIG.DEVICE),
-            cond=cali_y[:32].to(CONFIG.DEVICE),
-        )
-
-        ckpt = torch.load(CONFIG.BEST_CKPT_PATH, map_location="cpu", weights_only=False)
-        _load_quant_and_ema_from_ckpt(base_model, quant_model, ckpt)
-        if hasattr(base_model.ema_model, "set_runtime_mode"):
-            base_model.ema_model.set_runtime_mode(
-                mode="infer", use_cached_aw=True, clear_cached_aw=True
+            base_model = load_fp_diffae_for_sampling(
+                model_path="checkpoints/ffhq128_autoenc_latent/last.ckpt",
+                device=CONFIG.DEVICE,
+                num_steps=CONFIG.NUM_DIFFUSION_STEPS,
             )
-        LOGGER.info("✅ 量化模型權重載入成功")
+            LOGGER.info("✅ FP Diff-AE 模型載入成功（無 QuantModel wrapper）")
+        else:
+            base_model = load_diffae_model()
+            LOGGER.info("✅ Diff-AE 模型載入成功")
+            quant_model = create_float_quantized_model(
+                base_model.ema_model,
+                num_steps=CONFIG.NUM_DIFFUSION_STEPS,
+                lora_rank=CONFIG.LORA_RANK,
+                mode=CONFIG.MODE,
+            )
+            quant_model.to(CONFIG.DEVICE)
+            quant_model.eval()
 
-        base_model.to(CONFIG.DEVICE)
-        base_model.eval()
-        base_model.setup()
-        base_model.train_dataloader()
+            cali_images, cali_t, cali_y = load_calibration_data()
+            quant_model.set_first_last_layer_to_8bit()
+            quant_model.set_quant_state(CONFIG.QUANT_STATE_WEIGHT, CONFIG.QUANT_STATE_ACT)
+            if hasattr(quant_model, "set_runtime_mode"):
+                quant_model.set_runtime_mode(mode="train", use_cached_aw=False, clear_cached_aw=True)
+            _ = quant_model(
+                x=cali_images[:32].to(CONFIG.DEVICE),
+                t=cali_t[:32].to(CONFIG.DEVICE),
+                cond=cali_y[:32].to(CONFIG.DEVICE),
+            )
+
+            ckpt = torch.load(CONFIG.BEST_CKPT_PATH, map_location="cpu", weights_only=False)
+            _load_quant_and_ema_from_ckpt(base_model, quant_model, ckpt)
+            if hasattr(base_model.ema_model, "set_runtime_mode"):
+                base_model.ema_model.set_runtime_mode(
+                    mode="infer", use_cached_aw=True, clear_cached_aw=True
+                )
+            LOGGER.info("✅ 量化模型權重載入成功")
+
+            base_model.to(CONFIG.DEVICE)
+            base_model.eval()
+            base_model.setup()
+            base_model.train_dataloader()
 
         T = CONFIG.NUM_DIFFUSION_STEPS
         sampler = base_model.conf._make_diffusion_conf(T=T).make_sampler()
@@ -645,33 +656,46 @@ def main_sample_with_optional_stage2_scheduler(
                 "✅ Stage2 cache scheduler enabled: %s", _resolve_repo_path(cache_scheduler_json)
             )
             LOGGER.info("scheduler blocks=%d, T=%d", len(runtime_cache_scheduler), T)
-            output_dir = f"{conf.generate_dir}_QAT_T{T}_cache_stage2"
+            _tag = "FP" if use_fp else "QAT"
+            output_dir = f"{conf.generate_dir}_{_tag}_T{T}_cache_stage2"
         else:
             conf.cache_scheduler = None
-            LOGGER.info("🚫 use_cache_scheduler=False, run baseline Q-DiffAE sampling path")
-            output_dir = f"{conf.generate_dir}_QAT_T{T}"
+            if use_fp:
+                LOGGER.info("🚫 use_cache_scheduler=False, run baseline FP Diff-AE sampling path")
+                output_dir = f"{conf.generate_dir}_FP_T{T}"
+            else:
+                LOGGER.info("🚫 use_cache_scheduler=False, run baseline Q-DiffAE sampling path")
+                output_dir = f"{conf.generate_dir}_QAT_T{T}"
 
-        score = evaluate_fid(
-            sampler,
-            base_model.ema_model,
-            conf,
-            device=CONFIG.DEVICE,
-            train_data=base_model.train_data,
-            val_data=base_model.val_data,
-            latent_sampler=latent_sampler,
-            conds_mean=base_model.conds_mean,
-            conds_std=base_model.conds_std,
-            remove_cache=False,
-            clip_latent_noise=False,
-            T=T,
-            output_dir=output_dir,
-        )
-        _score = score
-        LOGGER.info("FID@%d T=%d score: %s", CONFIG.EVAL_SAMPLES, T, score)
+        try:
+            score = evaluate_fid(
+                sampler,
+                base_model.ema_model,
+                conf,
+                device=CONFIG.DEVICE,
+                train_data=base_model.train_data,
+                val_data=base_model.val_data,
+                latent_sampler=latent_sampler,
+                conds_mean=base_model.conds_mean,
+                conds_std=base_model.conds_std,
+                remove_cache=False,
+                clip_latent_noise=False,
+                T=T,
+                output_dir=output_dir,
+            )
+            _score = score
+            LOGGER.info("FID@%d T=%d score: %s", CONFIG.EVAL_SAMPLES, T, score)
+        except Exception as fid_exc:
+            _score = None
+            LOGGER.warning(
+                "FID evaluation failed (sampling completed; score omitted): %s",
+                fid_exc,
+            )
         LOGGER.info("Output dir: %s", output_dir)
 
         if use_cache_scheduler and runtime_override_run_record is not None:
-            runtime_override_run_record["fid_score"] = score
+            if _score is not None:
+                runtime_override_run_record["fid_score"] = _score
             out_p = Path(output_dir)
             out_p.mkdir(parents=True, exist_ok=True)
             sidecar = out_p / "cache_runtime_overrides_run.json"
@@ -912,6 +936,11 @@ Sampling how-to: QATcode/cache_method/start_run/sampleStage2FidGuide.md
 
     g_q = parser.add_argument_group("Quantization (passed to CONFIG)")
     g_q.add_argument(
+        "--fp",
+        action="store_true",
+        help="FP Diff-AE: skip QAT ckpt and QuantModel wrapper",
+    )
+    g_q.add_argument(
         "--quant-state",
         type=str,
         default="tt",
@@ -1009,6 +1038,7 @@ Sampling how-to: QATcode/cache_method/start_run/sampleStage2FidGuide.md
         CONFIG.QUANT_STATE_ACT,
     )
     LOGGER.info("best_ckpt=%s", CONFIG.BEST_CKPT_PATH)
+    LOGGER.info("use_fp=%s", bool(args.fp))
     LOGGER.info("use_cache_scheduler=%s", bool(args.use_cache_scheduler))
     LOGGER.info("cache_scheduler_json=%s", _resolve_repo_path(args.cache_scheduler_json))
     if args.use_cache_scheduler:
@@ -1036,6 +1066,7 @@ Sampling how-to: QATcode/cache_method/start_run/sampleStage2FidGuide.md
         ),
         safety_first_input_block=bool(args.safety_first_input_block),
         allow_missing_k_per_zone=bool(args.allow_missing_k_per_zone),
+        use_fp=bool(args.fp),
         run_output_dir=Path(args.run_output_dir) if args.run_output_dir else None,
         scheduler_name=str(args.scheduler_name),
         runs_index_path=Path(args.runs_index_path) if args.runs_index_path else None,

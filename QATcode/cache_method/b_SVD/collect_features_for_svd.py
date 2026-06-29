@@ -87,6 +87,8 @@ class Config:
     SVD_COMPUTE_ENERGY = True
     SIMILARITY_NPZ = None
     SKIP_CORRELATION = False
+    USE_FP = False
+    SVD_METRICS_SUBDIR = "svd_metrics"
 
 
 CONFIG = Config()
@@ -331,64 +333,65 @@ def main() -> Any:
     LOGGER.info("=" * 80)
 
     try:
-        # 1. 載入基礎模型
-        base_model: LitModel = load_diffae_model(CONFIG.MODEL_PATH)
-        LOGGER.info("✅ Diff-AE 模型載入成功")
+        if CONFIG.USE_FP:
+            from QATcode.cache_method.common.fp_diffae_loader import load_fp_diffae_for_sampling
 
-        diffusion_model = base_model.ema_model
+            base_model: LitModel = load_fp_diffae_for_sampling(
+                model_path=CONFIG.MODEL_PATH,
+                device=CONFIG.DEVICE,
+                num_steps=CONFIG.NUM_DIFFUSION_STEPS,
+            )
+            LOGGER.info("✅ FP Diff-AE 模型載入成功（無 QuantModel wrapper）")
+        else:
+            # 1. 載入基礎模型
+            base_model: LitModel = load_diffae_model(CONFIG.MODEL_PATH)
+            LOGGER.info("✅ Diff-AE 模型載入成功")
 
-        # 2. 創建量化模型
-        quant_model: QuantModel_DiffAE_LoRA = create_float_quantized_model(
-            diffusion_model,
-            num_steps=CONFIG.NUM_DIFFUSION_STEPS,
-            lora_rank=CONFIG.LORA_RANK,
-            mode=CONFIG.MODE,
-        )
-        quant_model.to(CONFIG.DEVICE)
-        quant_model.eval()
+            diffusion_model = base_model.ema_model
 
-        # 動態掛子模組
-        for name, module in quant_model.named_modules():
-            if (
-                isinstance(module, QuantModule_DiffAE_LoRA)
-                and module.ignore_reconstruction is False
-            ):
-                module.intn_dequantizer = SimpleDequantizer(
-                    uaq=module.weight_quantizer, weight=module.weight
-                ).to(CONFIG.DEVICE)
+            # 2. 創建量化模型
+            quant_model: QuantModel_DiffAE_LoRA = create_float_quantized_model(
+                diffusion_model,
+                num_steps=CONFIG.NUM_DIFFUSION_STEPS,
+                lora_rank=CONFIG.LORA_RANK,
+                mode=CONFIG.MODE,
+            )
+            quant_model.to(CONFIG.DEVICE)
+            quant_model.eval()
 
-        # for name, module in quant_model.named_modules():
-        #    if isinstance(module, QuantModule_DiffAE_LoRA) and module.ignore_reconstruction is False:
-        #        module.intn_dequantizer.delta.data.copy_(module.weight_quantizer.delta.to(CONFIG.DEVICE))
-        #        module.intn_dequantizer.zero_point.data.copy_(module.weight_quantizer.zero_point.to(CONFIG.DEVICE))
+            # 動態掛子模組
+            for name, module in quant_model.named_modules():
+                if (
+                    isinstance(module, QuantModule_DiffAE_LoRA)
+                    and module.ignore_reconstruction is False
+                ):
+                    module.intn_dequantizer = SimpleDequantizer(
+                        uaq=module.weight_quantizer, weight=module.weight
+                    ).to(CONFIG.DEVICE)
 
-        # 載入校準資料
-        cali_images, cali_t, cali_y = load_calibration_data()
+            # 載入校準資料
+            cali_images, cali_t, cali_y = load_calibration_data()
 
-        # 設定量化
-        quant_model.set_first_last_layer_to_8bit()
-        device = CONFIG.DEVICE
-        quant_model.set_quant_state(True, True)
+            # 設定量化
+            quant_model.set_first_last_layer_to_8bit()
+            device = CONFIG.DEVICE
+            quant_model.set_quant_state(True, True)
 
-        # for name, module in quant_model.named_modules():
-        #    if isinstance(module, QuantModule_DiffAE_LoRA) and module.ignore_reconstruction is False:
-        #        module.intn_dequantizer = SimpleDequantizer(uaq=module.weight_quantizer, weight=module.weight)
+            # First run to init
+            with torch.no_grad():
+                _ = quant_model(
+                    x=cali_images[:4].to(device), t=cali_t[:4].to(device), cond=cali_y[:4].to(device)
+                )
 
-        # First run to init
-        with torch.no_grad():
-            _ = quant_model(
-                x=cali_images[:4].to(device), t=cali_t[:4].to(device), cond=cali_y[:4].to(device)
+            # 載入 checkpoint
+            ckpt = torch.load(CONFIG.BEST_CKPT_PATH, map_location="cpu", weights_only=False)
+            from QATcode.cache_method.a_L1_L2_cosine.similarity_calculation import (
+                _load_quant_and_ema_from_ckpt,
             )
 
-        # 載入 checkpoint
-        ckpt = torch.load(CONFIG.BEST_CKPT_PATH, map_location="cpu", weights_only=False)
-        from QATcode.cache_method.a_L1_L2_cosine.similarity_calculation import (
-            _load_quant_and_ema_from_ckpt,
-        )
+            _load_quant_and_ema_from_ckpt(base_model, quant_model, ckpt)
 
-        _load_quant_and_ema_from_ckpt(base_model, quant_model, ckpt)
-
-        LOGGER.info("✅ 量化模型載入成功")
+            LOGGER.info("✅ 量化模型載入成功")
 
         # 3. 準備基礎設定
         base_model.to(CONFIG.DEVICE)
@@ -436,22 +439,28 @@ def main() -> Any:
 
         # 8. 呼叫 evaluate_fid（驅動生成流程）
         LOGGER.info("[SVD] 開始生成與收集...")
-        score = evaluate_fid(
-            sampler,
-            base_model.ema_model,
-            conf,
-            device=CONFIG.DEVICE,
-            train_data=base_model.train_data,
-            val_data=base_model.val_data,
-            latent_sampler=latent_sampler,
-            conds_mean=base_model.conds_mean,
-            conds_std=base_model.conds_std,
-            remove_cache=False,
-            clip_latent_noise=False,
-            T=T,
-            output_dir=f"{conf.generate_dir}_SVD_T{T}_feature",
-        )
-        LOGGER.info(f"[SVD] FID@{conf.eval_num_images} {T} steps score: {score}")
+        try:
+            score = evaluate_fid(
+                sampler,
+                base_model.ema_model,
+                conf,
+                device=CONFIG.DEVICE,
+                train_data=base_model.train_data,
+                val_data=base_model.val_data,
+                latent_sampler=latent_sampler,
+                conds_mean=base_model.conds_mean,
+                conds_std=base_model.conds_std,
+                remove_cache=False,
+                clip_latent_noise=False,
+                T=T,
+                output_dir=f"{conf.generate_dir}_SVD_T{T}_feature",
+            )
+            LOGGER.info(f"[SVD] FID@{conf.eval_num_images} {T} steps score: {score}")
+        except Exception as fid_exc:
+            LOGGER.warning(
+                "[SVD] FID evaluation failed (feature collection still proceeds): %s",
+                fid_exc,
+            )
 
         # 9. 移除 hook
         svd_collector.remove_hooks()
@@ -469,7 +478,7 @@ def main() -> Any:
 
             from QATcode.cache_method.b_SVD.svd_metrics import process_feature_buffers_in_memory
 
-            svd_metrics_dir = Path(CONFIG.SVD_OUTPUT_ROOT) / "svd_metrics"
+            svd_metrics_dir = Path(CONFIG.SVD_OUTPUT_ROOT) / CONFIG.SVD_METRICS_SUBDIR
             svd_result = process_feature_buffers_in_memory(
                 feature_buffers=svd_collector.feature_buffers,
                 meta=meta,
@@ -545,6 +554,11 @@ if __name__ == "__main__":
     parser.add_argument(
         "--skip_correlation", action="store_true", help="in-memory pipeline 只跑 A->B，略過 C"
     )
+    parser.add_argument(
+        "--fp",
+        action="store_true",
+        help="FP Diff-AE: skip QAT ckpt and QuantModel wrapper; write to svd_metrics_fp",
+    )
 
     args = parser.parse_args()
 
@@ -560,6 +574,9 @@ if __name__ == "__main__":
     CONFIG.SVD_COMPUTE_ENERGY = not args.no_compute_energy
     CONFIG.SIMILARITY_NPZ = args.similarity_npz
     CONFIG.SKIP_CORRELATION = args.skip_correlation
+    CONFIG.USE_FP = bool(args.fp)
+    if CONFIG.USE_FP:
+        CONFIG.SVD_METRICS_SUBDIR = "svd_metrics_fp"
 
     # 重設 logger（加上 log_file）
     if CONFIG.LOG_FILE:

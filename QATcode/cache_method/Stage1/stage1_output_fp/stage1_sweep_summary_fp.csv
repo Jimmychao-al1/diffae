@@ -1,0 +1,4 @@
+run_id,K,smooth_window,lambda,k_max,num_zones,total_recompute_ratio,avg_zone_length,schedule_json_path
+fp_K25_sw2_lam0.50,25,2,0.5,4,16,32.0%,6.2,/home/jimmy/diffae/QATcode/cache_method/Stage1/stage1_output_fp/sweep_K25_sw2_lam0.5_kmax4/scheduler_config.json
+fp_K16_sw3_lam0.50,16,3,0.5,4,11,29.0%,9.1,/home/jimmy/diffae/QATcode/cache_method/Stage1/stage1_output_fp/sweep_K16_sw3_lam0.5_kmax4/scheduler_config.json
+fp_K25_sw3_lam0.50,25,3,0.5,4,16,31.0%,6.2,/home/jimmy/diffae/QATcode/cache_method/Stage1/stage1_output_fp/sweep_K25_sw3_lam0.5_kmax4/scheduler_config.json

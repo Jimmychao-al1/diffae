@@ -131,6 +131,19 @@ def _load_quant_model_for_sampling(
     return base_model
 
 
+def _load_fp_model_for_sampling(
+    *,
+    repo_root: Path,
+    model_path: str,
+    device: torch.device,
+) -> LitModel:
+    """載入 FP Diff-AE（無 QuantModel wrapper）。"""
+    from QATcode.cache_method.common.fp_diffae_loader import load_fp_diffae_for_sampling
+
+    mp = model_path if os.path.isabs(model_path) else str(repo_root / model_path)
+    return load_fp_diffae_for_sampling(model_path=mp, device=device)
+
+
 def _run_single_render(
     *,
     conf,
@@ -377,6 +390,7 @@ def run_stage2_refine(
     model_path: str = "checkpoints/ffhq128_autoenc_latent/last.ckpt",
     best_ckpt_path: str = "QATcode/quantize_ver2/checkpoints/diffae_step6_lora_best.pth",
     calib_path: str = "QATcode/quantize_ver2/calibration_diffae.pth",
+    use_fp: bool = False,
     device: Optional[torch.device] = None,
     threshold_config_path: Optional[str] = None,
     force_full_prefix_steps: int = 0,
@@ -427,12 +441,20 @@ def run_stage2_refine(
         _ov_active = bool(int(force_full_prefix_steps) > 0 or blocks_eff)
         _contract = _cache_runtime_override_contract(override_active=_ov_active)
 
-        base_model = _load_quant_model_for_sampling(
-            repo_root=_REPO_ROOT,
-            model_path=model_path,
-            best_ckpt_path=best_ckpt_path,
-            calib_path=calib_path,
-            device=device,
+        base_model = (
+            _load_fp_model_for_sampling(
+                repo_root=_REPO_ROOT,
+                model_path=model_path,
+                device=device,
+            )
+            if use_fp
+            else _load_quant_model_for_sampling(
+                repo_root=_REPO_ROOT,
+                model_path=model_path,
+                best_ckpt_path=best_ckpt_path,
+                calib_path=calib_path,
+                device=device,
+            )
         )
         conf = base_model.conf.clone()
         total_eval_images = int(eval_num_images)
@@ -820,6 +842,11 @@ See QATcode/cache_method/Stage2/stage2ExperimentsGuide.md and README.md section 
     g_model.add_argument(
         "--calib", type=str, default="QATcode/quantize_ver2/calibration_diffae.pth"
     )
+    g_model.add_argument(
+        "--fp",
+        action="store_true",
+        help="FP Diff-AE: skip QAT ckpt and QuantModel wrapper",
+    )
 
     g_eval = p.add_argument_group("Diagnostics eval (Stage2 cache vs full)")
     g_eval.add_argument(
@@ -872,6 +899,7 @@ See QATcode/cache_method/Stage2/stage2ExperimentsGuide.md and README.md section 
         model_path=args.model_path,
         best_ckpt_path=args.best_ckpt,
         calib_path=args.calib,
+        use_fp=bool(args.fp),
         threshold_config_path=args.threshold_config,
         force_full_prefix_steps=args.force_full_prefix_steps,
         force_full_runtime_blocks=_parse_force_full_runtime_blocks(args.force_full_runtime_blocks),

@@ -127,6 +127,7 @@ class TrainingConfig:
     SIMILARITY_COLLECT_SAMPLES = 15  # 實際收集用於相似度計算的樣本數（建議 10-15）
     SIMILARITY_TARGET_BLOCK = None  # 例如 "model.input_blocks.0"
     SIMILARITY_OUTPUT_ROOT = "QATcode/cache_method/a_L1_L2_cosine"
+    SIMILARITY_VERSION = "fp_v1"  # output subdir: T_{T}/{SIMILARITY_VERSION}/
     SIMILARITY_SAVE_DTYPE = "float16"  # npz 儲存精度：float16 / float32
     SIMILARITY_PLOT_COSINE_STEP = False  # cosine 只做 heatmap 時可關閉
 
@@ -272,8 +273,8 @@ class SimilarityCollector:
         self.l2_dir = self.save_root / "L2"
         self.cos_dir = self.save_root / "cosine"
         self.tier_plot_dir = self.save_root / "tier_plots"
-        # v1 後續實驗不需要 result_npz，只保留 L1 與 cosine
-        for d in [self.l1_dir, self.cos_dir]:
+        self.result_npz_dir = self.save_root / "result_npz"
+        for d in [self.l1_dir, self.cos_dir, self.result_npz_dir]:
             d.mkdir(parents=True, exist_ok=True)
 
         self.hooks = []
@@ -315,6 +316,23 @@ class SimilarityCollector:
         # 當前 batch 的累加器（用於累積當前 batch 的資料，直到達到 collect_samples）
         self.current_batch_accumulator = {}  # {block_name: {l1: {...}, l2: {...}, cos: {...}}}
 
+    @staticmethod
+    def _canonical_block_name(name: str) -> str:
+        """Normalize hook name to model.* form used by Stage0 npz conventions."""
+        return name if name.startswith("model.") else f"model.{name}"
+
+    @staticmethod
+    def _block_name_matches(name: str, target: Optional[str]) -> bool:
+        if not target:
+            return True
+        if name == target:
+            return True
+        if target.startswith("model.") and name == target[len("model.") :]:
+            return True
+        if name.startswith("model.") and target == name[len("model.") :]:
+            return True
+        return False
+
     def register_hooks(self, model: nn.Module, sampler: Any) -> Any:
         """註冊 block hook + model step hook。"""
         from model.blocks import TimestepEmbedSequential
@@ -333,10 +351,11 @@ class SimilarityCollector:
                 continue
             if "encoder" in name:
                 continue
-            if self.target_block and name != self.target_block:
+            if self.target_block and not self._block_name_matches(name, self.target_block):
                 continue
-            self.hooks.append(module.register_forward_hook(self._create_block_hook(name)))
-            LOGGER.info(f"[Similarity] 註冊 block hook: {name}")
+            hook_name = self._canonical_block_name(name)
+            self.hooks.append(module.register_forward_hook(self._create_block_hook(hook_name)))
+            LOGGER.info(f"[Similarity] 註冊 block hook: {name} -> {hook_name}")
 
         # model pre-hook: 更新 step index
         self.hooks.append(
@@ -889,9 +908,44 @@ class SimilarityCollector:
             )
 
             l1_step_mean, l1_step_std = self._step_mean_std(block_name, "l1")
+            l1_rate_step_mean, l1_rate_step_std = self._step_mean_std(block_name, "l1_rate")
             cos_step_mean, cos_step_std = self._step_mean_std(block_name, "cos")
 
             block_slug = block_name.replace(".", "_")
+            npz_path = self.result_npz_dir / f"{block_slug}.npz"
+            T = int(self.max_timesteps)
+            step_idx_arr = np.array(self.step_idx_list, dtype=np.int32)
+            t_pointwise_arr = (T - 1) - step_idx_arr
+            interval_j_arr = np.arange(T - 1, dtype=np.int32)
+            t_curr_interval_arr = (T - 2) - interval_j_arr
+            mapped_t = (
+                np.array(self.mapped_t_list, dtype=np.int32)
+                if self.mapped_t_list is not None
+                else np.array([-1] * len(self.step_idx_list), dtype=np.int32)
+            )
+            np.savez_compressed(
+                npz_path,
+                l1rel=l1_mean.astype(self.save_dtype),
+                l1rel_rate=l1_rate_mean.astype(self.save_dtype),
+                cosine=cos_mean.astype(self.save_dtype),
+                step_idx=step_idx_arr,
+                mapped_t=mapped_t,
+                axis_convention=np.array(
+                    "analysis index i (point-wise): display_t=(T-1)-i; "
+                    "interval index j: display_t_curr=(T-2)-j",
+                    dtype=object,
+                ),
+                t_pointwise=t_pointwise_arr,
+                t_curr_interval=t_curr_interval_arr,
+                l1_step_mean=l1_step_mean.astype(self.save_dtype),
+                l1_step_std=l1_step_std.astype(self.save_dtype),
+                l1_rate_step_mean=l1_rate_step_mean.astype(self.save_dtype),
+                l1_rate_step_std=l1_rate_step_std.astype(self.save_dtype),
+                cos_step_mean=cos_step_mean.astype(self.save_dtype),
+                cos_step_std=cos_step_std.astype(self.save_dtype),
+            )
+            LOGGER.info("[Similarity] wrote %s", npz_path)
+
             l1_block_dir = self.l1_dir / block_slug
             cos_block_dir = self.cos_dir / block_slug
             for d in [l1_block_dir, cos_block_dir]:
@@ -1236,7 +1290,7 @@ def main_float_model() -> Any:
             LOGGER.info(f"擴散步數: {T}")
             LOGGER.info("=" * 50)
 
-            similarity_root = f"{CONFIG.SIMILARITY_OUTPUT_ROOT}/T_{T}/v1"
+            similarity_root = f"{CONFIG.SIMILARITY_OUTPUT_ROOT}/T_{T}/{CONFIG.SIMILARITY_VERSION}"
             # 計算總共要收集的樣本數：每個 batch 收集 similarity_collect_samples 個
             # 如果 similarity_samples = 128, batch_size = 32，會有 4 個 batch
             # 每個 batch 收集 15 個，總共收集 60 個（但實際上會收集 4 組資料，每組 15 個）
@@ -1259,22 +1313,28 @@ def main_float_model() -> Any:
             similarity_collector.register_hooks(base_model.ema_model, sampler)
 
             conf.eval_num_images = CONFIG.SIMILARITY_SAMPLES
-            score = evaluate_fid(
-                sampler,
-                base_model.ema_model,
-                conf,
-                device=CONFIG.DEVICE,
-                train_data=base_model.train_data,
-                val_data=base_model.val_data,
-                latent_sampler=latent_sampler,
-                conds_mean=base_model.conds_mean,
-                conds_std=base_model.conds_std,
-                remove_cache=True,
-                clip_latent_noise=False,
-                T=T,
-                output_dir=f"{conf.generate_dir}_QAT_T{T}_similarity",
-            )
-            LOGGER.info(f"[Similarity] FID@{CONFIG.SIMILARITY_SAMPLES} {T} steps score: {score}")
+            try:
+                score = evaluate_fid(
+                    sampler,
+                    base_model.ema_model,
+                    conf,
+                    device=CONFIG.DEVICE,
+                    train_data=base_model.train_data,
+                    val_data=base_model.val_data,
+                    latent_sampler=latent_sampler,
+                    conds_mean=base_model.conds_mean,
+                    conds_std=base_model.conds_std,
+                    remove_cache=True,
+                    clip_latent_noise=False,
+                    T=T,
+                    output_dir=f"{conf.generate_dir}_FP_T{T}_similarity",
+                )
+                LOGGER.info(f"[Similarity] FID@{CONFIG.SIMILARITY_SAMPLES} {T} steps score: {score}")
+            except Exception as fid_exc:
+                LOGGER.warning(
+                    "[Similarity] FID evaluation failed (evidence collection still proceeds): %s",
+                    fid_exc,
+                )
 
             similarity_collector.remove_hooks()
             similarity_collector.finalize()
@@ -1353,6 +1413,12 @@ if __name__ == "__main__":
         help="樣本採樣策略: first=取前N個(最快), random=隨機選擇(增加多樣性), uniform=均勻分佈",
     )
     parser.add_argument(
+        "--similarity_version",
+        type=str,
+        default="fp_v1",
+        help="Similarity 輸出版本子目錄（位於 T_{num_steps}/ 下）",
+    )
+    parser.add_argument(
         "--run_all_blocks",
         action="store_true",
         help="自動執行所有 31 個 block 的實驗（類似 run_similarity_experiments.sh）",
@@ -1374,6 +1440,7 @@ if __name__ == "__main__":
     CONFIG.SIMILARITY_SAVE_DTYPE = args.similarity_dtype
     CONFIG.SIMILARITY_PLOT_COSINE_STEP = args.similarity_cosine_step_plot
     CONFIG.SIMILARITY_SAMPLE_STRATEGY = args.similarity_sample_strategy
+    CONFIG.SIMILARITY_VERSION = args.similarity_version
     # 如果指定了 log_file，則使用指定的路徑；否則使用預設值
     if args.log_file is not None:
         CONFIG.LOG_FILE = args.log_file

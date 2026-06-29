@@ -680,15 +680,51 @@ def run_stage0e(
 # 主程式入口
 # =============================================================================
 
+FP_L1_COS_DEFAULT = "QATcode/cache_method/a_L1_L2_cosine/T_100/fp_v1/result_npz"
+FP_SVD_DEFAULT = "QATcode/cache_method/b_SVD/svd_metrics_fp"
+QDIFFAE_FID_DEFAULT = (
+    "QATcode/cache_method/c_FID/fid_cache_sensitivity/fid_sensitivity_results.json"
+)
+FP_STAGE0E_OUTPUT_DEFAULT = "QATcode/cache_method/Stage0/stage0e_output_fp"
+
+
 if __name__ == "__main__":
-    # 預設路徑（repo root 為 /.../diffae）
+    import argparse
+
     repo_root = Path(__file__).resolve().parents[3]
-    l1_cos_dir = repo_root / "QATcode/cache_method/a_L1_L2_cosine/T_100/v2_latest/result_npz"
-    svd_dir = repo_root / "QATcode/cache_method/b_SVD/svd_metrics"
-    fid_json_path = (
-        repo_root / "QATcode/cache_method/c_FID/fid_cache_sensitivity/fid_sensitivity_results.json"
+    parser = argparse.ArgumentParser(description="Stage-0E: normalize tri-evidence for scheduler")
+    parser.add_argument(
+        "--l1_cos_dir",
+        type=str,
+        default=str(repo_root / FP_L1_COS_DEFAULT),
+        help="L1/Cosine result_npz directory",
     )
-    output_dir = repo_root / "QATcode/cache_method/Stage0/stage0e_output"
+    parser.add_argument(
+        "--svd_dir",
+        type=str,
+        default=str(repo_root / FP_SVD_DEFAULT),
+        help="SVD metrics JSON directory",
+    )
+    parser.add_argument(
+        "--fid_json_path",
+        type=str,
+        default=str(repo_root / QDIFFAE_FID_DEFAULT),
+        help="c_FID sensitivity JSON (reuse Q-DiffAE)",
+    )
+    parser.add_argument(
+        "--output_dir",
+        type=str,
+        default=str(repo_root / FP_STAGE0E_OUTPUT_DEFAULT),
+        help="Stage0e normalized output directory",
+    )
+    parser.add_argument("--eps_noise", type=float, default=0.5)
+    parser.add_argument("--strict", action="store_true")
+    args = parser.parse_args()
+
+    l1_cos_dir = Path(args.l1_cos_dir)
+    svd_dir = Path(args.svd_dir)
+    fid_json_path = Path(args.fid_json_path)
+    output_dir = Path(args.output_dir)
 
     required_inputs = [
         ("l1_cos_dir", l1_cos_dir, True),
@@ -697,15 +733,15 @@ if __name__ == "__main__":
     ]
     for label, p, expect_dir in required_inputs:
         if expect_dir and not p.is_dir():
-            raise FileNotFoundError(f"[Stage0E] default {label} directory not found: {p}")
+            raise FileNotFoundError(f"[Stage0E] {label} directory not found: {p}")
         if (not expect_dir) and not p.is_file():
-            raise FileNotFoundError(f"[Stage0E] default {label} file not found: {p}")
+            raise FileNotFoundError(f"[Stage0E] {label} file not found: {p}")
 
     run_stage0e(
         l1_cos_dir=str(l1_cos_dir),
         svd_dir=str(svd_dir),
         fid_json_path=str(fid_json_path),
         output_dir=str(output_dir),
-        eps_noise=0.5,
-        quantile=0.95,
+        eps_noise=float(args.eps_noise),
+        strict=bool(args.strict),
     )
