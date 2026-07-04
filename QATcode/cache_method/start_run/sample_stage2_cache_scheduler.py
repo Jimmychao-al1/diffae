@@ -550,6 +550,7 @@ def main_sample_with_optional_stage2_scheduler(
     run_output_dir: Optional[Path] = None,
     scheduler_name: str = "unknown",
     runs_index_path: Optional[Path] = None,
+    generate_dir_override: Optional[str] = None,
 ) -> None:
     """Public function main_sample_with_optional_stage2_scheduler."""
     import datetime as _dt
@@ -663,7 +664,10 @@ def main_sample_with_optional_stage2_scheduler(
             )
             LOGGER.info("scheduler blocks=%d, T=%d", len(runtime_cache_scheduler), T)
             _tag = "FP" if use_fp else "QAT"
-            output_dir = f"{conf.generate_dir}_{_tag}_T{T}_cache_stage2"
+            if generate_dir_override:
+                output_dir = f"{generate_dir_override}/{conf.name}_{_tag}_T{T}_cache_stage2"
+            else:
+                output_dir = f"{conf.generate_dir}_{_tag}_T{T}_cache_stage2"
         else:
             conf.cache_scheduler = None
             if use_fp:
@@ -1031,6 +1035,16 @@ Sampling how-to: QATcode/cache_method/start_run/sampleStage2FidGuide.md
             "(paths relative to repo root)"
         ),
     )
+    g_out.add_argument(
+        "--generate-dir-override",
+        type=str,
+        default=None,
+        help=(
+            "Override output directory for generated images only. "
+            "Does not affect FID reference cache or numerical computation. "
+            "Used for parallel Stage B execution."
+        ),
+    )
     args = parser.parse_args()
 
     CONFIG.NUM_DIFFUSION_STEPS = int(args.num_steps)
@@ -1087,6 +1101,7 @@ Sampling how-to: QATcode/cache_method/start_run/sampleStage2FidGuide.md
         run_output_dir=Path(args.run_output_dir) if args.run_output_dir else None,
         scheduler_name=str(args.scheduler_name),
         runs_index_path=Path(args.runs_index_path) if args.runs_index_path else None,
+        generate_dir_override=args.generate_dir_override,
     )
 
 
