@@ -139,6 +139,12 @@ def _fid_index_key(num_images: int) -> str:
     return f"FID@{num_images}"
 
 
+def _fid_summary_key(num_images: int) -> str:
+    if num_images % 1000 == 0:
+        return f"fid_{num_images // 1000}k"
+    return f"fid_{num_images}"
+
+
 def _round_fid_index(x: Optional[float]) -> Optional[float]:
     if x is None:
         return None
@@ -780,6 +786,17 @@ def main_sample_with_optional_stage2_scheduler(
         _write_json(run_output_dir / "run_manifest.json", _manifest)
 
         _fps = int(force_full_prefix_steps)
+        _n_summary = int(CONFIG.EVAL_SAMPLES)
+        _fid_value = float(_score) if _score is not None else None
+        _fid_key = _fid_summary_key(_n_summary)
+        fid_fields: Dict[str, Any] = {
+            "fid": _fid_value,
+            "fid_key": _fid_key,
+            # Legacy compatibility: keep fid_5k present, but never let non-5K
+            # runs masquerade as 5K in old readers.
+            "fid_5k": _fid_value if _fid_key == "fid_5k" else None,
+        }
+        fid_fields[_fid_key] = _fid_value
         summary_obj: Dict[str, Any] = {
             "run_id": run_id,
             "status": "success",
@@ -790,7 +807,7 @@ def main_sample_with_optional_stage2_scheduler(
             "force-full-prefix-steps": _fps,
             "num_images": CONFIG.EVAL_SAMPLES,
             "seed": CONFIG.SEED,
-            "fid_5k": float(_score) if _score is not None else None,
+            **fid_fields,
             "full_compute_ratio": sched_stats.get("full_compute_ratio"),
             "total_full_compute_count": sched_stats.get("total_full_compute_count"),
             "total_cache_reuse_count": sched_stats.get("total_cache_reuse_count"),

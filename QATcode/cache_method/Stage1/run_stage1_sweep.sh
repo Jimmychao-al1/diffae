@@ -12,14 +12,15 @@ cd "$(git rev-parse --show-toplevel)"
 STAGE0_DIR="${STAGE0_DIR:-QATcode/cache_method/Stage0/stage0e_output}"
 BASE_OUT="${BASE_OUT:-QATcode/cache_method/Stage1/stage1_output}"
 BASE_FIG="${BASE_FIG:-QATcode/cache_method/Stage1/stage1_figures}"
+PYTHON="${PYTHON:-/home/jimmy/anaconda3/envs/diffae_bw/bin/python}"
 SCHEDULER="QATcode/cache_method/Stage1/stage1_scheduler.py"
 VISUALIZE="QATcode/cache_method/Stage1/visualize_stage1.py"
 VERIFY="QATcode/cache_method/Stage1/verify_scheduler.py"
 
-# 預設掃描範圍（可自行改小以縮短時間）
-K_LIST=(16 25)
-SW_LIST=(2 3)
-LAM_LIST=(0.5 1.0)
+# Pre-registered Q-DiffAE resweep grid (5 × 3 × 4 × 1 = 60 configs)
+K_LIST=(8 12 16 20 25)
+SW_LIST=(2 3 5)
+LAM_LIST=(0.25 0.5 1.0 2.0)
 KMAX_LIST=(4)
 
 echo "================================================================"
@@ -45,7 +46,7 @@ for K in "${K_LIST[@]}"; do
         echo "  output : ${OUT_DIR}"
         echo "────────────────────────────────────────"
 
-        python3 "${SCHEDULER}" \
+        "$PYTHON" "${SCHEDULER}" \
           --stage0_dir "${STAGE0_DIR}" \
           --output_dir "${OUT_DIR}" \
           --K "${K}" \
@@ -53,8 +54,8 @@ for K in "${K_LIST[@]}"; do
           --lambda "${LAM}" \
           --k_max "${KMAX}"
 
-        python3 "${VERIFY}" --config "${OUT_DIR}/scheduler_config.json"
-        python3 "${VISUALIZE}" --stage1_output_dir "${OUT_DIR}" --output_dir "${FIG_DIR}"
+        "$PYTHON" "${VERIFY}" --config "${OUT_DIR}/scheduler_config.json"
+        "$PYTHON" "${VISUALIZE}" --stage1_output_dir "${OUT_DIR}" --output_dir "${FIG_DIR}"
         echo ""
       done
     done
