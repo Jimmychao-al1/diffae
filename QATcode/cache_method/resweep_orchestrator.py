@@ -6,13 +6,15 @@ from __future__ import annotations
 import argparse
 import csv
 import datetime as dt
+import hashlib
 import json
+import math
 import os
 from pathlib import Path
 import shlex
 import subprocess
 import sys
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -35,6 +37,10 @@ STAGE2_Q_PEAK = 0.80
 STAGE2_PEAK_OVER_ZONE_RATIO_MIN = 1.3
 STAGE2_EVAL_NUM_IMAGES = 8
 STAGE2_EVAL_CHUNK_SIZE = 1
+
+# PRE-REGISTERED Stage C amendment (2026-07-05 pre Stage C commit); DO NOT MODIFY.
+STAGE_C_AMENDMENT_REF = "2026-07-05 pre Stage C"
+STAGE_C_TIE_BREAK_EPS = 0.01
 
 PRESET_60 = {
     "K": [8, 12, 16, 20, 25],
@@ -179,6 +185,7 @@ def ensure_dirs(output_dir: Path, dry_run: bool) -> Dict[str, Path]:
         "stage_a": output_dir / "stage_a_stage1_sweep",
         "stage_a2": output_dir / "stage_a2_stage2",
         "stage_b": output_dir / "stage_b_fid5k",
+        "stage_c": output_dir / "stage_c_selection",
         "stage_d": output_dir / "stage_d_fid50k",
     }
     if not dry_run:
@@ -825,7 +832,350 @@ def print_incomplete_warning(success_count: int, total: int, failures: List[Dict
     print("    (b) Proceed with incomplete selection using --allow-incomplete-selection")
 
 
-def stage_c(
+def _load_refined_scheduler(path: Path) -> Optional[Dict[str, Any]]:
+    if not path.is_file():
+        return None
+    with open(path, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def _extract_functional_payload(scheduler: Dict[str, Any]) -> Tuple[List[List[int]], List[List[int]]]:
+    blocks = scheduler.get("blocks")
+    if not isinstance(blocks, list) or not blocks:
+        raise ValueError("missing or empty blocks")
+    ordered = sorted(blocks, key=lambda b: int(b.get("id", b.get("scheduler_local_block_id", 0))))
+    masks = [[int(x) for x in b["expanded_mask"]] for b in ordered]
+    kzones = [[int(x) for x in b["k_per_zone"]] for b in ordered]
+    return masks, kzones
+
+
+def _compute_functional_key(scheduler: Dict[str, Any]) -> Tuple[str, str, str]:
+    masks, kzones = _extract_functional_payload(scheduler)
+    mask_bytes = json.dumps(masks, separators=(",", ":")).encode("utf-8")
+    k_bytes = json.dumps(kzones, separators=(",", ":")).encode("utf-8")
+    mask_hash = hashlib.sha256(mask_bytes).hexdigest()
+    k_hash = hashlib.sha256(k_bytes).hexdigest()
+    group_key = f"{mask_hash}:{k_hash}"
+    return group_key, mask_hash, k_hash
+
+
+def _select_canonical(member_ids: List[str], cfg_by_id: Dict[str, Dict[str, Any]]) -> str:
+    return min(member_ids, key=lambda cid: (float(cfg_by_id[cid]["lambda"]), cid))
+
+
+def _group_by_functional_identity(
+    grid: List[Dict[str, Any]],
+    dirs: Dict[str, Path],
+    log_lines: List[str],
+) -> Tuple[List[Dict[str, Any]], List[str]]:
+    key_to_members: Dict[str, List[str]] = {}
+    key_meta: Dict[str, Tuple[str, str]] = {}
+    warnings: List[str] = []
+
+    for cfg in grid:
+        cid = cfg["id"]
+        path = stage2_refined_scheduler_path(dirs, cid)
+        scheduler = _load_refined_scheduler(path)
+        if scheduler is None:
+            msg = f"[stage_c] WARNING: missing refined scheduler for {cid}: {path}"
+            warnings.append(msg)
+            log_lines.append(msg)
+            key = f"missing:{cid}"
+        else:
+            try:
+                group_key, mask_hash, k_hash = _compute_functional_key(scheduler)
+                key_meta[group_key] = (mask_hash, k_hash)
+                key = group_key
+            except (KeyError, TypeError, ValueError) as exc:
+                msg = f"[stage_c] WARNING: invalid scheduler schema for {cid}: {exc}"
+                warnings.append(msg)
+                log_lines.append(msg)
+                key = f"invalid:{cid}"
+        key_to_members.setdefault(key, []).append(cid)
+
+    cfg_by_id = {c["id"]: c for c in grid}
+    groups: List[Dict[str, Any]] = []
+    for idx, (key, members) in enumerate(sorted(key_to_members.items()), start=1):
+        members_sorted = sorted(members)
+        mask_hash, k_hash = key_meta.get(key, ("", ""))
+        groups.append(
+            {
+                "group_id": f"G{idx:02d}",
+                "group_key": key,
+                "canonical_config_id": _select_canonical(members_sorted, cfg_by_id),
+                "members": members_sorted,
+                "expanded_mask_hash": mask_hash,
+                "k_per_zone_hash": k_hash,
+            }
+        )
+    return groups, warnings
+
+
+def _build_stage_b_fid_rows(
+    grid: List[Dict[str, Any]], state: Dict[str, Any]
+) -> List[Dict[str, Any]]:
+    rows: List[Dict[str, Any]] = []
+    for cfg in grid:
+        cid = cfg["id"]
+        rec = state["stage_b"].get(cid, {})
+        summary = Path(rec.get("summary", ""))
+        fid = read_fid(summary, "fid_5k")
+        rows.append(
+            {
+                "config_id": cid,
+                "fid_5k": fid,
+                "status": rec.get("status", "missing"),
+                "summary": str(summary) if str(summary) != "." else "",
+                "K": cfg["K"],
+                "sw": cfg["sw"],
+                "lambda": cfg["lambda"],
+                "k_max": cfg["k_max"],
+            }
+        )
+    return rows
+
+
+def _tuple_diversity(rows: List[Dict[str, Any]]) -> int:
+    return len({(int(r["K"]), int(r["sw"])) for r in rows})
+
+
+def _apply_tie_break(
+    ranked: List[Dict[str, Any]],
+    top_k: int,
+    eps: float,
+) -> Tuple[List[Dict[str, Any]], bool, List[str]]:
+    tie_log: List[str] = []
+    if len(ranked) < top_k:
+        return ranked[:top_k], False, tie_log
+
+    selected = list(ranked[:top_k])
+    rank_k = selected[top_k - 1]
+    fid_k = float(rank_k["fid_5k"])
+
+    boundary_candidates: List[Dict[str, Any]] = []
+    for cand in ranked[top_k:]:
+        fid_c = float(cand["fid_5k"])
+        if abs(fid_c - fid_k) <= eps:
+            boundary_candidates.append(cand)
+        elif fid_c - fid_k > eps:
+            break
+
+    if boundary_candidates:
+        cand_summary = ", ".join(
+            f"{c['config_id']}(fid={float(c['fid_5k']):.4f},K={c['K']},sw={c['sw']})"
+            for c in boundary_candidates
+        )
+        tie_log.append(f"Rank {top_k} boundary candidates within eps={eps}: {cand_summary}")
+
+    if not boundary_candidates:
+        return selected, False, tie_log
+
+    base_div = _tuple_diversity(selected)
+    best: Optional[Dict[str, Any]] = None
+    best_div = base_div
+    for cand in boundary_candidates:
+        trial = selected[: top_k - 1] + [cand]
+        div = _tuple_diversity(trial)
+        fid_c = float(cand["fid_5k"])
+        if div > best_div:
+            best_div = div
+            best = cand
+        elif div == best_div and div > base_div and best is not None and fid_c < float(best["fid_5k"]):
+            best = cand
+        elif div == best_div and div > base_div and best is None:
+            best = cand
+
+    if best is None or best_div <= base_div:
+        return selected, False, tie_log
+
+    replaced = selected[top_k - 1]
+    selected[top_k - 1] = best
+    tie_log.append(
+        f"Rank {top_k} boundary tie-break (eps={eps}): "
+        f"replaced {replaced['config_id']} (K={replaced['K']},sw={replaced['sw']},lambda={replaced['lambda']}) "
+        f"with {best['config_id']} (K={best['K']},sw={best['sw']},lambda={best['lambda']}) "
+        f"for (K,sw) diversity ({base_div} -> {best_div}), "
+        f"|ΔFID|={abs(float(best['fid_5k']) - fid_k):.4f}. "
+        f"Rank 1..{top_k - 1} unchanged by design."
+    )
+    return selected, True, tie_log
+
+
+def _write_stage_c_artifacts(
+    selection_dir: Path,
+    groups: List[Dict[str, Any]],
+    ranked_canonicals: List[Dict[str, Any]],
+    top_rows: List[Dict[str, Any]],
+    tie_break_applied: bool,
+    tie_break_log: List[str],
+    log_lines: List[str],
+    total_configs: int,
+    cfg_by_id: Dict[str, Dict[str, Any]],
+    fid_by_cid: Dict[str, Optional[float]],
+    valid_group_canonicals: set,
+    excluded_canonicals: List[Dict[str, str]],
+) -> None:
+    selection_dir.mkdir(parents=True, exist_ok=True)
+
+    groups_out: Dict[str, Any] = {
+        "amendment_ref": STAGE_C_AMENDMENT_REF,
+        "grouping_key": "(hash(expanded_mask), hash(k_per_zone))",
+        "canonical_rule": "min(lambda) within group",
+        "groups": [],
+        "total_configs": total_configs,
+        "total_groups": len(groups),
+        "reduction_ratio": total_configs / len(groups) if groups else 0.0,
+    }
+    for g in groups:
+        canonical = g["canonical_config_id"]
+        member_fids: List[float] = []
+        members_with_fid: List[Dict[str, Any]] = []
+        for member_id in g["members"]:
+            fid_m = fid_by_cid.get(member_id)
+            members_with_fid.append(
+                {
+                    "config_id": member_id,
+                    "lambda": cfg_by_id[member_id]["lambda"],
+                    "fid_5k": fid_m,
+                }
+            )
+            if fid_m is not None and isinstance(fid_m, (int, float)) and math.isfinite(float(fid_m)):
+                member_fids.append(float(fid_m))
+        within_group_range = max(member_fids) - min(member_fids) if len(member_fids) >= 2 else None
+        groups_out["groups"].append(
+            {
+                "group_id": g["group_id"],
+                "canonical_config_id": canonical,
+                "members": g["members"],
+                "members_with_fid": members_with_fid,
+                "expanded_mask_hash": g["expanded_mask_hash"],
+                "k_per_zone_hash": g["k_per_zone_hash"],
+                "canonical_fid_5k": fid_by_cid.get(canonical),
+                "within_group_fid_range": within_group_range,
+                "within_group_size": len(g["members"]),
+            }
+        )
+
+    ranking_out: Dict[str, Any] = {
+        "amendment_ref": STAGE_C_AMENDMENT_REF,
+        "eps": STAGE_C_TIE_BREAK_EPS,
+        "total_groups": len(groups),
+        "valid_canonicals_count": len(valid_group_canonicals),
+        "excluded_canonicals": excluded_canonicals,
+        "ranked_canonicals": ranked_canonicals,
+        "tie_break_applied": tie_break_applied,
+        "tie_break_log": tie_break_log,
+        "top_3": [
+            {
+                "rank": i,
+                "config_id": r["config_id"],
+                "fid_5k": r["fid_5k"],
+                "K": r["K"],
+                "sw": r["sw"],
+                "lambda": r["lambda"],
+                "group_id": r.get("group_id"),
+            }
+            for i, r in enumerate(top_rows, start=1)
+        ],
+    }
+
+    with open(selection_dir / "functional_groups.json", "w", encoding="utf-8") as f:
+        json.dump(groups_out, f, indent=2)
+        f.write("\n")
+    with open(selection_dir / "stage_c_ranking.json", "w", encoding="utf-8") as f:
+        json.dump(ranking_out, f, indent=2)
+        f.write("\n")
+    with open(selection_dir / "stage_c_selection.log", "w", encoding="utf-8") as f:
+        f.write("\n".join(log_lines) + "\n")
+
+
+def _verify_dedup_diagnostics(
+    groups: List[Dict[str, Any]],
+    cfg_by_id: Dict[str, Dict[str, Any]],
+    fid_by_cid: Dict[str, Optional[float]],
+) -> Dict[str, Any]:
+    v1 = all(
+        len({float(cfg_by_id[m]["lambda"]) for m in g["members"]}) == len(g["members"])
+        for g in groups
+    )
+    multi = [g for g in groups if len(g["members"]) >= 2]
+    v2 = len(multi) >= 15
+    zero_range = 0
+    nonzero_range = 0
+    for g in multi:
+        fids = [
+            float(fid_by_cid[m])
+            for m in g["members"]
+            if fid_by_cid.get(m) is not None and math.isfinite(float(fid_by_cid[m]))
+        ]
+        if len(fids) < 2:
+            continue
+        if max(fids) - min(fids) == 0.0:
+            zero_range += 1
+        else:
+            nonzero_range += 1
+    v3 = nonzero_range == 0 or zero_range >= 5
+    v4 = all(
+        len(g["members"]) == 1
+        for g in groups
+        if float(cfg_by_id[g["canonical_config_id"]]["lambda"]) == 0.25
+    )
+    return {
+        "lambda_unique_within_group": v1,
+        "groups_size_ge_2": len(multi),
+        "groups_size_ge_2_pass": v2,
+        "multi_member_zero_fid_range": zero_range,
+        "multi_member_nonzero_fid_range": nonzero_range,
+        "identical_scheduler_fid_pass": v3,
+        "lam025_standalone_pass": v4,
+    }
+
+
+def _print_stage_c_dry_run_summary(
+    groups: List[Dict[str, Any]],
+    excluded_canonicals: List[Dict[str, str]],
+    valid_group_canonicals: set,
+    ranked_canonicals: List[Dict[str, Any]],
+    top_rows: List[Dict[str, Any]],
+    tie_break_applied: bool,
+    tie_break_log: List[str],
+    diagnostics: Dict[str, Any],
+) -> None:
+    print("[dry-run] Stage C amendment selection summary:")
+    print(f"  total functional groups: {len(groups)}")
+    print(f"  missing/invalid excluded canonicals: {len(excluded_canonicals)}")
+    if excluded_canonicals:
+        for exc in excluded_canonicals:
+            print(f"    EXCLUDED {exc['config_id']} ({exc['reason']})")
+    print(f"  valid canonicals: {len(valid_group_canonicals)}")
+    print(f"  ranked canonicals (success + finite fid_5k): {len(ranked_canonicals)}")
+    print(f"  tie_break_applied: {tie_break_applied}")
+    for line in tie_break_log:
+        print(f"  tie_break: {line}")
+    print("  top_k:")
+    for i, row in enumerate(top_rows, start=1):
+        print(
+            f"    {i}. {row['config_id']} "
+            f"K={row['K']} sw={row['sw']} lambda={row['lambda']} "
+            f"fid_5k={float(row['fid_5k']):.4f} group={row.get('group_id')}"
+        )
+    print("  diagnostics:")
+    print(f"    v1 lambda unique within group: {'PASS' if diagnostics['lambda_unique_within_group'] else 'FAIL'}")
+    print(
+        f"    v2 groups size>=2: {diagnostics['groups_size_ge_2']} "
+        f"({'PASS' if diagnostics['groups_size_ge_2_pass'] else 'FAIL'})"
+    )
+    print(
+        f"    v3 multi-member fid range zero={diagnostics['multi_member_zero_fid_range']} "
+        f"nonzero={diagnostics['multi_member_nonzero_fid_range']} "
+        f"({'PASS' if diagnostics['identical_scheduler_fid_pass'] else 'FAIL'})"
+    )
+    print(
+        f"    v4 lam0.25 standalone: {'PASS' if diagnostics['lam025_standalone_pass'] else 'FAIL'}"
+    )
+
+
+def stage_c_legacy(
     grid: List[Dict[str, Any]],
     state: Dict[str, Any],
     top_k: int,
@@ -901,6 +1251,187 @@ def stage_c(
         "updated_at": utc_now(),
     }
     return top
+
+
+def stage_c_amendment(
+    grid: List[Dict[str, Any]],
+    state: Dict[str, Any],
+    dirs: Dict[str, Path],
+    output_dir: Path,
+    top_k: int,
+    dry_run: bool,
+    allow_incomplete_selection: bool,
+    simulate_failures: int = 0,
+) -> List[Dict[str, Any]]:
+    total = len(grid)
+    cfg_by_id = {c["id"]: c for c in grid}
+    log_lines: List[str] = [
+        f"Stage C selection started at {utc_now()}",
+        f"amendment_ref={STAGE_C_AMENDMENT_REF}",
+        f"tie_break_eps={STAGE_C_TIE_BREAK_EPS}",
+    ]
+
+    if dry_run and simulate_failures <= 0 and not state.get("stage_b"):
+        print(
+            f"[dry-run] stage_c amendment would group {total} configs by functional scheduler "
+            f"identity and pick top {top_k} canonical representatives."
+        )
+        return []
+
+    groups, _warnings = _group_by_functional_identity(grid, dirs, log_lines)
+    log_lines.append(f"[stage_c] functional groups: {len(groups)} from {total} configs")
+
+    valid_group_canonicals: set = set()
+    excluded_canonicals: List[Dict[str, str]] = []
+    for g in groups:
+        if g["group_key"].startswith(("missing:", "invalid:")):
+            excluded_canonicals.append(
+                {
+                    "config_id": g["canonical_config_id"],
+                    "reason": g["group_key"].split(":", 1)[0],
+                }
+            )
+        else:
+            valid_group_canonicals.add(g["canonical_config_id"])
+
+    log_lines.append(
+        f"[stage_c] valid canonicals: {len(valid_group_canonicals)}, "
+        f"excluded canonicals (missing/invalid scheduler): {len(excluded_canonicals)}"
+    )
+    for exc in excluded_canonicals:
+        log_lines.append(f"[stage_c] EXCLUDED canonical {exc['config_id']} ({exc['reason']})")
+
+    canonical_to_group = {g["canonical_config_id"]: g["group_id"] for g in groups}
+
+    if dry_run and simulate_failures > 0:
+        success_count = max(0, total - int(simulate_failures))
+        failures = [
+            {"config_id": cfg["id"], "stage": "stage_b", "reason": "simulated failure"}
+            for cfg in grid[-int(simulate_failures) :]
+        ]
+    else:
+        success_count = stage_b_success_count(grid, state)
+        failures = failed_or_missing_stage_b(grid, state)
+
+    all_rows = _build_stage_b_fid_rows(grid, state)
+    fid_by_cid = {r["config_id"]: r["fid_5k"] for r in all_rows}
+    canonical_rows = [
+        r
+        for r in all_rows
+        if r["config_id"] in valid_group_canonicals
+        and r["status"] == "success"
+        and r["fid_5k"] is not None
+        and math.isfinite(float(r["fid_5k"]))
+    ]
+    ranked_canonicals = sorted(canonical_rows, key=lambda r: float(r["fid_5k"]))
+    for rank_idx, row in enumerate(ranked_canonicals, start=1):
+        row["rank"] = rank_idx
+        row["group_id"] = canonical_to_group.get(row["config_id"])
+
+    log_lines.append(f"[stage_c] ranked canonicals: {len(ranked_canonicals)}")
+
+    if success_count < total:
+        print_incomplete_warning(success_count, total, failures)
+        state["stage_c"] = {
+            "status": "incomplete_allowed" if allow_incomplete_selection else "skipped_incomplete",
+            "success_count": success_count,
+            "total_count": total,
+            "failed_configs": failures,
+            "allow_incomplete_selection": bool(allow_incomplete_selection),
+            "selection_mode": STAGE_C_AMENDMENT_REF,
+            "warning": (
+                f"top-3 selected from {success_count}/{total} successful configs (incomplete sweep)"
+                if allow_incomplete_selection
+                else "top-3 selection skipped due to incomplete sweep"
+            ),
+            "updated_at": utc_now(),
+        }
+        if not allow_incomplete_selection:
+            return []
+
+    top_rows, tie_break_applied, tie_break_log = _apply_tie_break(
+        ranked_canonicals, int(top_k), STAGE_C_TIE_BREAK_EPS
+    )
+    log_lines.extend(tie_break_log)
+
+    diagnostics = _verify_dedup_diagnostics(groups, cfg_by_id, fid_by_cid)
+
+    if dry_run:
+        _print_stage_c_dry_run_summary(
+            groups,
+            excluded_canonicals,
+            valid_group_canonicals,
+            ranked_canonicals,
+            top_rows,
+            tie_break_applied,
+            tie_break_log,
+            diagnostics,
+        )
+        return top_rows
+
+    selection_dir = dirs["stage_c"]
+    _write_stage_c_artifacts(
+        selection_dir,
+        groups,
+        ranked_canonicals,
+        top_rows,
+        tie_break_applied,
+        tie_break_log,
+        log_lines,
+        total,
+        cfg_by_id,
+        fid_by_cid,
+        valid_group_canonicals,
+        excluded_canonicals,
+    )
+
+    state["stage_c"] = {
+        "status": "success" if top_rows else "failed",
+        "selection_mode": STAGE_C_AMENDMENT_REF,
+        "ranked": ranked_canonicals,
+        "top_k": top_rows,
+        "functional_groups_json": str(selection_dir / "functional_groups.json"),
+        "ranking_json": str(selection_dir / "stage_c_ranking.json"),
+        "selection_log": str(selection_dir / "stage_c_selection.log"),
+        "total_groups": len(groups),
+        "valid_canonicals_count": len(valid_group_canonicals),
+        "excluded_canonicals": excluded_canonicals,
+        "tie_break_applied": tie_break_applied,
+        "tie_break_log": tie_break_log,
+        "success_count": success_count,
+        "total_count": total,
+        "failed_configs": failures,
+        "allow_incomplete_selection": bool(allow_incomplete_selection),
+        "updated_at": utc_now(),
+    }
+    return top_rows
+
+
+def stage_c(
+    grid: List[Dict[str, Any]],
+    state: Dict[str, Any],
+    dirs: Dict[str, Path],
+    output_dir: Path,
+    top_k: int,
+    dry_run: bool,
+    allow_incomplete_selection: bool,
+    simulate_failures: int = 0,
+    legacy_stage_c: bool = False,
+) -> List[Dict[str, Any]]:
+    if legacy_stage_c:
+        return stage_c_legacy(
+            grid, state, top_k, dry_run, allow_incomplete_selection, simulate_failures
+        )
+    return stage_c_amendment(
+        grid,
+        state,
+        dirs,
+        output_dir,
+        top_k,
+        dry_run,
+        allow_incomplete_selection,
+        simulate_failures,
+    )
 
 
 def configs_by_ids(grid: List[Dict[str, Any]], ids: Iterable[str]) -> List[Dict[str, Any]]:
@@ -1170,6 +1701,11 @@ def parse_args() -> argparse.Namespace:
         help="Dry-run only: simulate N Stage A2/Stage B failures for guard previews.",
     )
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument(
+        "--legacy-stage-c",
+        action="store_true",
+        help="Use pre-amendment Stage C (rank all 60 configs, no deduplication).",
+    )
     return parser.parse_args()
 
 
@@ -1233,10 +1769,13 @@ def main() -> int:
             stage_c(
                 grid,
                 state,
+                dirs,
+                output_dir,
                 int(args.top_k),
                 args.dry_run,
                 bool(args.allow_incomplete_selection),
                 int(args.simulate_failures),
+                legacy_stage_c=bool(args.legacy_stage_c),
             )
         elif stage == "stage_d":
             top = state.get("stage_c", {}).get("top_k", [])
@@ -1250,10 +1789,13 @@ def main() -> int:
                 top = top or stage_c(
                     grid,
                     state,
+                    dirs,
+                    output_dir,
                     int(args.top_k),
                     args.dry_run,
                     bool(args.allow_incomplete_selection),
                     int(args.simulate_failures),
+                    legacy_stage_c=bool(args.legacy_stage_c),
                 )
                 top_ids = [row["config_id"] for row in top]
                 top_configs = configs_by_ids(grid, top_ids)

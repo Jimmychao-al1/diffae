@@ -1,0 +1,323 @@
+{
+  "method": "blockwise_quantile_v1",
+  "block_identity_semantics": {
+    "block_id": "canonical runtime block index",
+    "canonical_runtime_block_id": "same as block_id (explicit alias for readability)"
+  },
+  "source_diagnostics_path": "/home/jimmy/diffae/QATcode/cache_method/resweep_output/stage_a2_stage2/K16_sw2_lam0.25_kmax4/00_global_refine/stage2_runtime_diagnostics.json",
+  "q_zone": 0.9,
+  "q_peak": 0.8,
+  "peak_over_zone_ratio_min": 1.3,
+  "per_block": [
+    {
+      "block_id": 0,
+      "canonical_runtime_block_id": 0,
+      "canonical_name": "model.input_blocks.0",
+      "runtime_name": "encoder_layer_0",
+      "num_zone_samples": 11,
+      "num_step_samples": 100,
+      "zone_l1_threshold": 0.028489757950107258,
+      "peak_l1_threshold": 0.03703668533513944
+    },
+    {
+      "block_id": 1,
+      "canonical_runtime_block_id": 1,
+      "canonical_name": "model.input_blocks.1",
+      "runtime_name": "encoder_layer_1",
+      "num_zone_samples": 11,
+      "num_step_samples": 100,
+      "zone_l1_threshold": 0.053013865603134036,
+      "peak_l1_threshold": 0.06891802528407424
+    },
+    {
+      "block_id": 2,
+      "canonical_runtime_block_id": 2,
+      "canonical_name": "model.input_blocks.2",
+      "runtime_name": "encoder_layer_2",
+      "num_zone_samples": 11,
+      "num_step_samples": 100,
+      "zone_l1_threshold": 0.07846410091345508,
+      "peak_l1_threshold": 0.10200333118749161
+    },
+    {
+      "block_id": 3,
+      "canonical_runtime_block_id": 3,
+      "canonical_name": "model.input_blocks.3",
+      "runtime_name": "encoder_layer_3",
+      "num_zone_samples": 11,
+      "num_step_samples": 100,
+      "zone_l1_threshold": 0.08519388347243269,
+      "peak_l1_threshold": 0.1107520485141625
+    },
+    {
+      "block_id": 4,
+      "canonical_runtime_block_id": 4,
+      "canonical_name": "model.input_blocks.4",
+      "runtime_name": "encoder_layer_4",
+      "num_zone_samples": 11,
+      "num_step_samples": 100,
+      "zone_l1_threshold": 0.11277619594087203,
+      "peak_l1_threshold": 0.14660905472313365
+    },
+    {
+      "block_id": 5,
+      "canonical_runtime_block_id": 5,
+      "canonical_name": "model.input_blocks.5",
+      "runtime_name": "encoder_layer_5",
+      "num_zone_samples": 11,
+      "num_step_samples": 100,
+      "zone_l1_threshold": 0.1721651622404655,
+      "peak_l1_threshold": 0.22381471091260516
+    },
+    {
+      "block_id": 6,
+      "canonical_runtime_block_id": 6,
+      "canonical_name": "model.input_blocks.6",
+      "runtime_name": "encoder_layer_6",
+      "num_zone_samples": 11,
+      "num_step_samples": 100,
+      "zone_l1_threshold": 0.14057995177184543,
+      "peak_l1_threshold": 0.18275393730339906
+    },
+    {
+      "block_id": 7,
+      "canonical_runtime_block_id": 7,
+      "canonical_name": "model.input_blocks.7",
+      "runtime_name": "encoder_layer_7",
+      "num_zone_samples": 11,
+      "num_step_samples": 100,
+      "zone_l1_threshold": 0.1521830049653848,
+      "peak_l1_threshold": 0.19783790645500027
+    },
+    {
+      "block_id": 8,
+      "canonical_runtime_block_id": 8,
+      "canonical_name": "model.input_blocks.8",
+      "runtime_name": "encoder_layer_8",
+      "num_zone_samples": 11,
+      "num_step_samples": 100,
+      "zone_l1_threshold": 0.2999657156566779,
+      "peak_l1_threshold": 0.3899554303536813
+    },
+    {
+      "block_id": 9,
+      "canonical_runtime_block_id": 9,
+      "canonical_name": "model.input_blocks.9",
+      "runtime_name": "encoder_layer_9",
+      "num_zone_samples": 11,
+      "num_step_samples": 100,
+      "zone_l1_threshold": 0.2574383520210783,
+      "peak_l1_threshold": 0.3346698576274018
+    },
+    {
+      "block_id": 10,
+      "canonical_runtime_block_id": 10,
+      "canonical_name": "model.input_blocks.10",
+      "runtime_name": "encoder_layer_10",
+      "num_zone_samples": 11,
+      "num_step_samples": 100,
+      "zone_l1_threshold": 0.21103960881009698,
+      "peak_l1_threshold": 0.2743514914531261
+    },
+    {
+      "block_id": 11,
+      "canonical_runtime_block_id": 11,
+      "canonical_name": "model.input_blocks.11",
+      "runtime_name": "encoder_layer_11",
+      "num_zone_samples": 11,
+      "num_step_samples": 100,
+      "zone_l1_threshold": 0.23041758313775063,
+      "peak_l1_threshold": 0.2995428580790758
+    },
+    {
+      "block_id": 12,
+      "canonical_runtime_block_id": 12,
+      "canonical_name": "model.input_blocks.12",
+      "runtime_name": "encoder_layer_12",
+      "num_zone_samples": 11,
+      "num_step_samples": 100,
+      "zone_l1_threshold": 0.1875739546958357,
+      "peak_l1_threshold": 0.24384614110458644
+    },
+    {
+      "block_id": 13,
+      "canonical_runtime_block_id": 13,
+      "canonical_name": "model.input_blocks.13",
+      "runtime_name": "encoder_layer_13",
+      "num_zone_samples": 11,
+      "num_step_samples": 100,
+      "zone_l1_threshold": 0.15795144950971007,
+      "peak_l1_threshold": 0.2053368843626231
+    },
+    {
+      "block_id": 14,
+      "canonical_runtime_block_id": 14,
+      "canonical_name": "model.input_blocks.14",
+      "runtime_name": "encoder_layer_14",
+      "num_zone_samples": 11,
+      "num_step_samples": 100,
+      "zone_l1_threshold": 0.18695275438949466,
+      "peak_l1_threshold": 0.24303858070634307
+    },
+    {
+      "block_id": 15,
+      "canonical_runtime_block_id": 15,
+      "canonical_name": "model.middle_block",
+      "runtime_name": "middle_layer",
+      "num_zone_samples": 11,
+      "num_step_samples": 100,
+      "zone_l1_threshold": 0.2905138204805553,
+      "peak_l1_threshold": 0.3776679666247219
+    },
+    {
+      "block_id": 16,
+      "canonical_runtime_block_id": 16,
+      "canonical_name": "model.output_blocks.0",
+      "runtime_name": "decoder_layer_0",
+      "num_zone_samples": 11,
+      "num_step_samples": 100,
+      "zone_l1_threshold": 0.3580641532316804,
+      "peak_l1_threshold": 0.46548339920118453
+    },
+    {
+      "block_id": 17,
+      "canonical_runtime_block_id": 17,
+      "canonical_name": "model.output_blocks.1",
+      "runtime_name": "decoder_layer_1",
+      "num_zone_samples": 11,
+      "num_step_samples": 100,
+      "zone_l1_threshold": 0.32318875566124916,
+      "peak_l1_threshold": 0.4201453823596239
+    },
+    {
+      "block_id": 18,
+      "canonical_runtime_block_id": 18,
+      "canonical_name": "model.output_blocks.2",
+      "runtime_name": "decoder_layer_2",
+      "num_zone_samples": 11,
+      "num_step_samples": 100,
+      "zone_l1_threshold": 0.35246323235332966,
+      "peak_l1_threshold": 0.45820220205932854
+    },
+    {
+      "block_id": 19,
+      "canonical_runtime_block_id": 19,
+      "canonical_name": "model.output_blocks.3",
+      "runtime_name": "decoder_layer_3",
+      "num_zone_samples": 11,
+      "num_step_samples": 100,
+      "zone_l1_threshold": 0.470887482787172,
+      "peak_l1_threshold": 0.6121537276233237
+    },
+    {
+      "block_id": 20,
+      "canonical_runtime_block_id": 20,
+      "canonical_name": "model.output_blocks.4",
+      "runtime_name": "decoder_layer_4",
+      "num_zone_samples": 11,
+      "num_step_samples": 100,
+      "zone_l1_threshold": 0.5685268118977547,
+      "peak_l1_threshold": 0.7390848554670811
+    },
+    {
+      "block_id": 21,
+      "canonical_runtime_block_id": 21,
+      "canonical_name": "model.output_blocks.5",
+      "runtime_name": "decoder_layer_5",
+      "num_zone_samples": 11,
+      "num_step_samples": 100,
+      "zone_l1_threshold": 0.7054815230270227,
+      "peak_l1_threshold": 0.9171259799351296
+    },
+    {
+      "block_id": 22,
+      "canonical_runtime_block_id": 22,
+      "canonical_name": "model.output_blocks.6",
+      "runtime_name": "decoder_layer_6",
+      "num_zone_samples": 11,
+      "num_step_samples": 100,
+      "zone_l1_threshold": 0.7797505942483743,
+      "peak_l1_threshold": 1.0136757725228867
+    },
+    {
+      "block_id": 23,
+      "canonical_runtime_block_id": 23,
+      "canonical_name": "model.output_blocks.7",
+      "runtime_name": "decoder_layer_7",
+      "num_zone_samples": 11,
+      "num_step_samples": 100,
+      "zone_l1_threshold": 0.6058495448281368,
+      "peak_l1_threshold": 0.7876044082765778
+    },
+    {
+      "block_id": 24,
+      "canonical_runtime_block_id": 24,
+      "canonical_name": "model.output_blocks.8",
+      "runtime_name": "decoder_layer_8",
+      "num_zone_samples": 11,
+      "num_step_samples": 100,
+      "zone_l1_threshold": 0.6472634486854076,
+      "peak_l1_threshold": 0.84144248329103
+    },
+    {
+      "block_id": 25,
+      "canonical_runtime_block_id": 25,
+      "canonical_name": "model.output_blocks.9",
+      "runtime_name": "decoder_layer_9",
+      "num_zone_samples": 11,
+      "num_step_samples": 100,
+      "zone_l1_threshold": 0.621048261721929,
+      "peak_l1_threshold": 0.8073627402385076
+    },
+    {
+      "block_id": 26,
+      "canonical_runtime_block_id": 26,
+      "canonical_name": "model.output_blocks.10",
+      "runtime_name": "decoder_layer_10",
+      "num_zone_samples": 11,
+      "num_step_samples": 100,
+      "zone_l1_threshold": 0.4035576532284419,
+      "peak_l1_threshold": 0.5246249491969744
+    },
+    {
+      "block_id": 27,
+      "canonical_runtime_block_id": 27,
+      "canonical_name": "model.output_blocks.11",
+      "runtime_name": "decoder_layer_11",
+      "num_zone_samples": 11,
+      "num_step_samples": 100,
+      "zone_l1_threshold": 0.3436942199865977,
+      "peak_l1_threshold": 0.44680248598257705
+    },
+    {
+      "block_id": 28,
+      "canonical_runtime_block_id": 28,
+      "canonical_name": "model.output_blocks.12",
+      "runtime_name": "decoder_layer_12",
+      "num_zone_samples": 11,
+      "num_step_samples": 100,
+      "zone_l1_threshold": 0.27416585230578977,
+      "peak_l1_threshold": 0.3564156079975267
+    },
+    {
+      "block_id": 29,
+      "canonical_runtime_block_id": 29,
+      "canonical_name": "model.output_blocks.13",
+      "runtime_name": "decoder_layer_13",
+      "num_zone_samples": 11,
+      "num_step_samples": 100,
+      "zone_l1_threshold": 0.21429106344779333,
+      "peak_l1_threshold": 0.27857838248213135
+    },
+    {
+      "block_id": 30,
+      "canonical_runtime_block_id": 30,
+      "canonical_name": "model.output_blocks.14",
+      "runtime_name": "decoder_layer_14",
+      "num_zone_samples": 11,
+      "num_step_samples": 100,
+      "zone_l1_threshold": 0.5258572868381938,
+      "peak_l1_threshold": 0.6836144728896519
+    }
+  ]
+}
